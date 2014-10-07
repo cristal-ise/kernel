@@ -16,6 +16,7 @@ OD/StateMachine
 OD/ItemInitialization
 EA/CreateNewItem
 EA/CreateNewAgent
+EA/CreateNewRole
 CA/NoWorkflow
 CA/ServerItemWorkflow
 SC/ServerNewEntity

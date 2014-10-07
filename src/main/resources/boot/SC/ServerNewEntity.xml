@@ -22,11 +22,33 @@
 
 -->
 <cristalscript>
-	<output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
+	<output name="errors" type="com.c2kernel.scripting.ErrorInfo"/>
 	<script language="javascript" name="ServerNewEntity"><![CDATA[
 
-		var schema = job.getActPropString("SchemaType");
-		var predef = schema.equals("Item")?"CreateNewItem":"CreateNewAgent";
+        importClass(Packages.com.c2kernel.utils.Logger);
+
+        var predef = "";
+		var schema = String(job.getActPropString("SchemaType"));
+
+		switch (schema) {
+            case "Item":
+                predef = "CreateNewItem";
+                break;
+                
+            case "Agent":
+                predef = "CreateNewAgent";
+                break;
+
+            case "Role":
+                predef = "CreateNewRole";
+                break;
+
+            default:
+                throw "Unhandled schema '" + schema + "'";
+        }
+
+        Logger.debug( "agent.execute - prede step:'" + predef + "'" );
+
 		agent.execute(item, predef, job.getOutcomeString());
 
 		]]></script>
