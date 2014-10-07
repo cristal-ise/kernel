@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="CentrePoint">
+		<xs:complexType>
+			<xs:attribute name="x" type="xs:short" use="required"/>
+			<xs:attribute name="y" type="xs:short" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="CompositeActivityDef">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="childrenGraphModel">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="GraphModelCastorData">
+								<xs:complexType>
+									<xs:choice minOccurs="0" maxOccurs="unbounded">
+										<xs:element name="ActivitySlotDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" minOccurs="4" maxOccurs="4"/>
+													<xs:element ref="InEdgeId" minOccurs="0"/>
+													<xs:element ref="OutEdgeId" minOccurs="0"/>
+													<xs:element ref="Properties"/>
+													<xs:element name="activityDef" type="xs:string"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="JoinDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" maxOccurs="unbounded"/>
+													<xs:element ref="InEdgeId" maxOccurs="unbounded"/>
+													<xs:element ref="OutEdgeId" minOccurs="0"/>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="LoopDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" minOccurs="4" maxOccurs="4"/>
+													<xs:element ref="InEdgeId"/>
+													<xs:element ref="OutEdgeId" maxOccurs="unbounded"/>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+												<xs:attribute name="isNext" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="NextDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="OriginPoint">
+														<xs:complexType>
+															<xs:attribute name="x" type="xs:short" use="required"/>
+															<xs:attribute name="y" type="xs:short" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="TerminusPoint">
+														<xs:complexType>
+															<xs:attribute name="x" type="xs:short" use="required"/>
+															<xs:attribute name="y" type="xs:short" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="OriginVertexId" type="xs:integer" use="required"/>
+												<xs:attribute name="TerminusVertexId" type="xs:integer" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="XOrSplitDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" minOccurs="4" maxOccurs="4"/>
+													<xs:element ref="InEdgeId" minOccurs="0"/>
+													<xs:element ref="OutEdgeId" maxOccurs="unbounded"/>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="OrSplitDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" minOccurs="4" maxOccurs="4"/>
+													<xs:element ref="InEdgeId" minOccurs="0"/>
+													<xs:element ref="OutEdgeId" maxOccurs="unbounded"/>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="AndSplitDef">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element ref="CentrePoint"/>
+													<xs:element ref="OutlinePoint" minOccurs="4" maxOccurs="4"/>
+													<xs:element ref="InEdgeId" minOccurs="0"/>
+													<xs:element ref="OutEdgeId" maxOccurs="unbounded"/>
+													<xs:element ref="Properties"/>
+												</xs:sequence>
+												<xs:attribute name="ID" type="xs:integer" use="required"/>
+												<xs:attribute name="Name" type="xs:string" use="required"/>
+												<xs:attribute name="Height" type="xs:integer" use="required"/>
+												<xs:attribute name="Width" type="xs:integer" use="required"/>
+												<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+												<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+											</xs:complexType>
+										</xs:element>
+									</xs:choice>
+									<xs:attribute name="ClassNameOfVertexOutlineCreator" type="xs:string" use="optional"/>
+									<xs:attribute name="StartVertexId" type="xs:integer" use="required"/>
+									<xs:attribute name="NextId" type="xs:integer" use="required"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element ref="Properties"/>
+				<xs:element name="castorNonLayoutableChildren" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="ID" type="xs:integer" use="required"/>
+			<xs:attribute name="Name" type="xs:string" use="required"/>
+			<xs:attribute name="Height" type="xs:integer" use="required"/>
+			<xs:attribute name="Width" type="xs:integer" use="required"/>
+			<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+			<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="InEdgeId" type="xs:integer"/>
+	<xs:element name="OutEdgeId" type="xs:integer"/>
+	<xs:element name="OutlinePoint">
+		<xs:complexType>
+			<xs:attribute name="x" type="xs:short" use="required"/>
+			<xs:attribute name="y" type="xs:short" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Properties">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="Key" type="xs:string" use="required"/>
+						<xs:attribute name="isAbstract" type="xs:boolean" use="optional"/>
+						<xs:attribute name="String" type="xs:string" use="optional"/>
+						<xs:attribute name="Boolean" type="xs:boolean" use="optional"/>
+						<xs:attribute name="Integer" type="xs:int" use="optional"/>
+						<xs:attribute name="Float" type="xs:double" use="optional"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

@@ -1,0 +1,15 @@
+Cristal console
+---------------
+Commands entered here are directly parsed by the beanshell engine. You can call methods directly on these pre-loaded objects:
+proxy - the EntityProxyManager
+storage - the TransactionManager
+db - the ClusterStorageManager
+lookup - the LDAPLookup (server context)
+orb - the ORB
+user - the current logged in user, or the system user if connected to the server console
+
+Built-in commands:
+log(level) - Change the log level of your stream.
+help() - View this message.
+version() - View kernel and module versions.
+shutdown() - Stop this CRISTAL instance.

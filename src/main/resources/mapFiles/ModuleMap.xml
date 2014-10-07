@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.process.module.Module">
+		<map-to xml="CristalModule" />
+		<field name="ns" direct="false" type="string" get-method="getNamespace" set-method="setNamespace">
+			<bind-xml name="ns" node="attribute" />
+		</field>
+		<field name="name" direct="false" type="string">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="id" direct="false" type="string" get-method="getID" set-method="setID">
+			<bind-xml name="id" node="attribute" />
+		</field>		
+		<field name="info" direct="false" type="org.cristalise.kernel.process.module.ModuleInfo">
+			<bind-xml name="Info" node="element" />
+		</field>
+		<field name="resURL" direct="false" type="string">
+			<bind-xml name="ResourceURL" node="element" />
+		</field>
+		<field name="imports" direct="false" type="org.cristalise.kernel.process.module.ModuleImports">
+			<bind-xml name="Imports" node="element" />
+		</field>
+    	<field name="config" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleConfig">    		   
+			<bind-xml name="Config" node="element" />
+    		</field>
+    	<field name="scripts" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleScript">    		   
+			<bind-xml name="Script" node="element" />
+    	</field>    		
+	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleImports">
+		<map-to xml="Imports"/>
+		<field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.process.module.ModuleImport">    		   
+				<bind-xml auto-naming="deriveByClass" node="element" />
+		</field>
+   	</class>  
+   	<class name="org.cristalise.kernel.process.module.ModuleInfo">
+    	<map-to xml="Info"/>
+		<field name="desc" direct="true" type="string">
+			<bind-xml name="Description" node="element" />
+		</field>
+		<field name="version" direct="true" type="string">
+			<bind-xml name="Version" node="element" />
+		</field>
+		<field name="dependency" collection="arraylist" direct="true"
+			type="string">
+			<bind-xml name="Dependency" node="element" />
+		</field>
+   	</class> 
+   	<class name="org.cristalise.kernel.process.module.ModuleImport">
+   		<field name="name" direct="false" type="string">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="id" direct="false" type="string" get-method="getID" set-method="setID">
+			<bind-xml name="id" node="attribute" />
+		</field>
+   	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleResource" extends="org.cristalise.kernel.process.module.ModuleImport">
+		<map-to xml="Resource"/>
+		<field name="version" direct="false" type="integer">
+			<bind-xml name="version" node="attribute" />
+		</field>
+		<field name="resourceType" direct="false" type="string">
+			<bind-xml name="type" node="attribute" />
+		</field>
+		<field name="resourceLocation" direct="false" type="string">
+			<bind-xml node="text" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleConfig">
+		<map-to xml="Config"/>
+		<field name="name" direct="true" type="string">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="target" direct="true" type="string">
+			<bind-xml name="target" node="attribute" />
+		</field>	
+		<field name="value" direct="true" type="string">
+			<bind-xml node="text" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleScript">
+		<map-to xml="Script"/>
+		<field name="target" direct="true" type="string">
+			<bind-xml name="target" node="attribute" />
+		</field>
+		<field name="event" direct="true" type="string">
+			<bind-xml name="event" node="attribute" />
+		</field>
+		<field name="lang" direct="true" type="string">
+			<bind-xml name="lang" node="attribute" />
+		</field>		
+		<field name="script" direct="true" type="string">
+			<bind-xml node="text" />
+		</field>
+	</class>	
+</mapping>

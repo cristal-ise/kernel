@@ -1,0 +1,236 @@
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<CompositeActivityDef ID="-1" Name="ServerItemWorkflow" Height="0" Width="0" IsLayoutable="false" IsComposite="true">
+	<childrenGraphModel>
+		<GraphModelCastorData StartVertexId="4" NextId="21">
+			<JoinDef ID="9" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="244" y="378"/>
+				<OutlinePoint x="214" y="366"/>
+				<OutlinePoint x="274" y="366"/>
+				<OutlinePoint x="274" y="390"/>
+				<OutlinePoint x="214" y="390"/>
+				<InEdgeId>16</InEdgeId>
+				<InEdgeId>17</InEdgeId>
+				<Properties>
+					<KeyValuePair Key="Type" String="Join"/>
+				</Properties>
+			</JoinDef>
+			<LoopDef ID="8" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false" isNext="0">
+				<CentrePoint x="448" y="271"/>
+				<OutlinePoint x="418" y="259"/>
+				<OutlinePoint x="478" y="259"/>
+				<OutlinePoint x="478" y="283"/>
+				<OutlinePoint x="418" y="283"/>
+				<InEdgeId>15</InEdgeId>
+				<OutEdgeId>16</OutEdgeId>
+				<OutEdgeId>19</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="LastNum" String="2"/>
+					<KeyValuePair Key="RoutingScriptName" String="javascript:true;"/>
+				</Properties>
+			</LoopDef>
+			<LoopDef ID="7" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false" isNext="0">
+				<CentrePoint x="36" y="284"/>
+				<OutlinePoint x="6" y="272"/>
+				<OutlinePoint x="66" y="272"/>
+				<OutlinePoint x="66" y="296"/>
+				<OutlinePoint x="6" y="296"/>
+				<InEdgeId>14</InEdgeId>
+				<OutEdgeId>17</OutEdgeId>
+				<OutEdgeId>18</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="LastNum" String="2"/>
+					<KeyValuePair Key="RoutingScriptName" String="javascript:true;"/>
+				</Properties>
+			</LoopDef>
+			<JoinDef ID="6" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="431" y="73"/>
+				<OutlinePoint x="401" y="61"/>
+				<OutlinePoint x="461" y="61"/>
+				<OutlinePoint x="461" y="85"/>
+				<OutlinePoint x="401" y="85"/>
+				<InEdgeId>11</InEdgeId>
+				<InEdgeId>19</InEdgeId>
+				<OutEdgeId>13</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="Type" String="Join"/>
+				</Properties>
+			</JoinDef>
+			<JoinDef ID="5" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="51" y="78"/>
+				<OutlinePoint x="21" y="66"/>
+				<OutlinePoint x="81" y="66"/>
+				<OutlinePoint x="81" y="90"/>
+				<OutlinePoint x="21" y="90"/>
+				<InEdgeId>10</InEdgeId>
+				<InEdgeId>18</InEdgeId>
+				<OutEdgeId>12</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="Type" String="Join"/>
+				</Properties>
+			</JoinDef>
+			<AndSplitDef ID="4" Name="" Height="24" Width="60" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="239" y="23"/>
+				<OutlinePoint x="209" y="11"/>
+				<OutlinePoint x="269" y="11"/>
+				<OutlinePoint x="269" y="35"/>
+				<OutlinePoint x="209" y="35"/>
+				<OutEdgeId>10</OutEdgeId>
+				<OutEdgeId>11</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="RoutingScriptName" String=""/>
+				</Properties>
+			</AndSplitDef>
+			<ActivitySlotDef ID="2" Name="CreateNewAgent_" Height="60" Width="130" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="339" y="189"/>
+				<OutlinePoint x="274" y="159"/>
+				<OutlinePoint x="404" y="159"/>
+				<OutlinePoint x="404" y="219"/>
+				<OutlinePoint x="274" y="219"/>
+				<InEdgeId>13</InEdgeId>
+				<OutEdgeId>15</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="Prefill" Boolean="false"/>
+					<KeyValuePair Key="Prefill Version" String="-1"/>
+					<KeyValuePair Key="Name" String="CreateNewAgent"/>
+					<KeyValuePair Key="Version" Integer="0"/>
+				</Properties>
+				<activityDef>CreateNewAgent</activityDef>
+			</ActivitySlotDef>
+			<ActivitySlotDef ID="0" Name="CreateNewItem_" Height="60" Width="130" IsLayoutable="true" IsComposite="false">
+				<CentrePoint x="165" y="190"/>
+				<OutlinePoint x="100" y="160"/>
+				<OutlinePoint x="230" y="160"/>
+				<OutlinePoint x="230" y="220"/>
+				<OutlinePoint x="100" y="220"/>
+				<InEdgeId>12</InEdgeId>
+				<OutEdgeId>14</OutEdgeId>
+				<Properties>
+					<KeyValuePair Key="Prefill" Boolean="false"/>
+					<KeyValuePair Key="Prefill Version" String="-1"/>
+					<KeyValuePair Key="Name" String="CreateNewItem"/>
+					<KeyValuePair Key="Version" Integer="0"/>
+				</Properties>
+				<activityDef>CreateNewItem</activityDef>
+			</ActivitySlotDef>
+			<NextDef ID="19" OriginVertexId="8" TerminusVertexId="6">
+				<OriginPoint x="448" y="271"/>
+				<TerminusPoint x="431" y="73"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+					<KeyValuePair Key="Alias" String="true"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="18" OriginVertexId="7" TerminusVertexId="5">
+				<OriginPoint x="36" y="284"/>
+				<TerminusPoint x="51" y="78"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+					<KeyValuePair Key="Alias" String="true"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="17" OriginVertexId="7" TerminusVertexId="9">
+				<OriginPoint x="36" y="284"/>
+				<TerminusPoint x="244" y="378"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+					<KeyValuePair Key="Alias" String="false"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="16" OriginVertexId="8" TerminusVertexId="9">
+				<OriginPoint x="448" y="271"/>
+				<TerminusPoint x="244" y="378"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+					<KeyValuePair Key="Alias" String="false"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="15" OriginVertexId="2" TerminusVertexId="8">
+				<OriginPoint x="339" y="189"/>
+				<TerminusPoint x="448" y="271"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="14" OriginVertexId="0" TerminusVertexId="7">
+				<OriginPoint x="165" y="190"/>
+				<TerminusPoint x="36" y="284"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="13" OriginVertexId="6" TerminusVertexId="2">
+				<OriginPoint x="431" y="73"/>
+				<TerminusPoint x="339" y="189"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="12" OriginVertexId="5" TerminusVertexId="0">
+				<OriginPoint x="51" y="78"/>
+				<TerminusPoint x="165" y="190"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="11" OriginVertexId="4" TerminusVertexId="6">
+				<OriginPoint x="239" y="23"/>
+				<TerminusPoint x="431" y="73"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+			<NextDef ID="10" OriginVertexId="4" TerminusVertexId="5">
+				<OriginPoint x="239" y="23"/>
+				<TerminusPoint x="51" y="78"/>
+				<Properties>
+					<KeyValuePair Key="Type" String="Straight"/>
+				</Properties>
+			</NextDef>
+		</GraphModelCastorData>
+	</childrenGraphModel>
+	<Properties>
+		<KeyValuePair Key="Expected Time" Integer="0"/>
+		<KeyValuePair Key="Repeatable" Boolean="false"/>
+		<KeyValuePair Key="Has Timeout" Boolean="false"/>
+		<KeyValuePair Key="Time Out Action" Integer="2"/>
+		<KeyValuePair Key="Agent Name" String=""/>
+		<KeyValuePair Key="Autostart" Boolean="true"/>
+		<KeyValuePair Key="Expected Time Unit" Integer="3"/>
+		<KeyValuePair Key="Maximum Time" Integer="0"/>
+		<KeyValuePair Key="Mail Message" String=""/>
+		<KeyValuePair Key="Mail event" String=""/>
+		<KeyValuePair Key="Maximum Time Unit" Integer="3"/>
+		<KeyValuePair Key="Description" String=""/>
+		<KeyValuePair Key="SchemaVersion" String=""/>
+		<KeyValuePair Key="Show time" Boolean="true"/>
+		<KeyValuePair Key="Viewpoint" String=""/>
+		<KeyValuePair Key="Agent Role" String=""/>
+		<KeyValuePair Key="Timeout Activated" Boolean="false"/>
+		<KeyValuePair Key="SchemaType" String=""/>
+		<KeyValuePair Key="ScriptName" String=""/>
+		<KeyValuePair Key="Ignorable" Boolean="false"/>
+		<KeyValuePair Key="ScriptVersion" String=""/>
+		<KeyValuePair Key="Skippable" Boolean="false"/>
+	</Properties>
+</CompositeActivityDef>

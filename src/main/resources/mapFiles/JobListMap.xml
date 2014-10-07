@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.entity.agent.Job">
+		<map-to xml="Job"/>
+		<field name="id" type="integer" direct="false" get-method="getId" set-method="setId">
+			<bind-xml name="Id" node="attribute"/>
+		</field>
+        <field name="mItemPath" type="string" direct="false" get-method="getItemUUID" set-method="setItemUUID">
+            <bind-xml name="ItemUUID" node="attribute"/>
+	    </field>
+		<field name="stepName" type="string" direct="false" get-method="getStepName" set-method="setStepName">
+			<bind-xml name="StepName" node="attribute"/>
+		</field>		
+		<field name="stepType" type="string" direct="false" get-method="getStepType" set-method="setStepType">
+			<bind-xml name="StepType" node="attribute"/>
+		</field>
+		<field name="stepPath" type="string" direct="false" get-method="getStepPath" set-method="setStepPath">
+			<bind-xml name="StepPath" node="attribute"/>
+		</field>
+		<field name="transition" type="org.cristalise.kernel.lifecycle.instance.stateMachine.Transition" direct="false" get-method="getTransition" set-method="setTransition">
+			<bind-xml name="Transition" node="element"/>
+		</field>
+        <field name="mAgentPath" type="string" direct="false" get-method="getAgentUUID" set-method="setAgentUUID">
+            <bind-xml name="AgentUUID" node="attribute"/>
+	    </field>
+		<field name="originStateName" type="string" direct="false" get-method="getOriginStateName" set-method="setOriginStateName">
+			<bind-xml name="OriginState" node="attribute"/>
+		</field>
+		<field name="targetStateName" type="string" direct="false" get-method="getTargetStateName" set-method="setTargetStateName">
+			<bind-xml name="TargetState" node="attribute"/>
+		</field>
+		<field name="agentRole" type="string" direct="false" get-method="getAgentRole" set-method="setAgentRole">
+			<bind-xml name="AgentRole" node="attribute"/>
+		</field>
+		<field name="actProps" type="org.cristalise.kernel.utils.KeyValuePair" collection="array" container="false" direct="false" get-method="getKeyValuePairs" set-method="setKeyValuePairs">
+			<bind-xml name="ActProps" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.entity.agent.JobArrayList">
+		<map-to xml="JobArrayList"/>
+		<field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.entity.agent.Job">
+			<bind-xml name="JobArrayList" node="element"/>
+		</field>
+	</class>
+</mapping>

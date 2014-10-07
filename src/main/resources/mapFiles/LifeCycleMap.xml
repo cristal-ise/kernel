@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.lifecycle.NextDef" extends="org.cristalise.kernel.graph.model.GraphableEdge">
+		<map-to xml="NextDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.WfVertexDef" extends="org.cristalise.kernel.graph.model.GraphableVertex">
+		<map-to xml="WfVertexDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.ActivityDef" extends="org.cristalise.kernel.lifecycle.WfVertexDef">
+		<map-to xml="ActivityDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.CompositeActivityDef" extends="org.cristalise.kernel.lifecycle.ActivityDef">
+		<map-to xml="CompositeActivityDef"/>
+		<field name="castorNonLayoutableChildren" type="string" direct="false" collection="array">
+			<bind-xml name="castorNonLayoutableChildren" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.ActivitySlotDef" extends="org.cristalise.kernel.lifecycle.WfVertexDef">
+		<map-to xml="ActivitySlotDef"/>
+		<field name="activityDef" type="string" direct="false">
+			<bind-xml name="activityDef" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.JoinDef" extends="org.cristalise.kernel.lifecycle.WfVertexDef">
+		<map-to xml="JoinDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.AndSplitDef" extends="org.cristalise.kernel.lifecycle.WfVertexDef">
+		<map-to xml="AndSplitDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.OrSplitDef" extends="org.cristalise.kernel.lifecycle.AndSplitDef">
+		<map-to xml="OrSplitDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.XOrSplitDef" extends="org.cristalise.kernel.lifecycle.AndSplitDef">
+		<map-to xml="XOrSplitDef"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.LoopDef" extends="org.cristalise.kernel.lifecycle.XOrSplitDef">
+		<map-to xml="LoopDef"/>
+		<field name="isNext" type="integer" direct="true">
+			<bind-xml name="isNext" node="attribute"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.Next" extends="org.cristalise.kernel.graph.model.GraphableEdge">
+		<map-to xml="Next"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.WfVertex" extends="org.cristalise.kernel.graph.model.GraphableVertex"/>
+	<class name="org.cristalise.kernel.lifecycle.instance.Activity" extends="org.cristalise.kernel.lifecycle.instance.WfVertex">
+		<map-to xml="AtomicActivity"/>
+		<field name="active" type="boolean" direct="false">
+			<bind-xml name="active" node="attribute"/>
+		</field>
+		<field name="state" type="integer" direct="false">
+			<bind-xml name="state" node="attribute"/>
+		</field>
+		<field name="type" type="string" direct="false">
+			<bind-xml name="Type" node="attribute"/>
+		</field>
+		<field name="eventIds" type="string" transient="true">
+			<bind-xml name="eventIds" node="element"/>
+		</field>
+		<field name="stateDate" type="org.cristalise.kernel.common.GTimeStamp" direct="false">
+			<bind-xml name="stateDate" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.CompositeActivity" extends="org.cristalise.kernel.lifecycle.instance.Activity">
+		<map-to xml="CompositeActivity"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.Workflow" extends="org.cristalise.kernel.lifecycle.instance.CompositeActivity">
+		<map-to xml="Workflow"/>
+		<field name="mItemPath" type="string" direct="false" get-method="getItemUUID" set-method="setItemUUID">
+            <bind-xml name="ItemUUID" node="attribute"/>
+	    </field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.Join" extends="org.cristalise.kernel.lifecycle.instance.WfVertex">
+		<map-to xml="Join"/>
+		<field name="counter" type="integer" direct="true">
+			<bind-xml name="counter" node="attribute"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.Split" extends="org.cristalise.kernel.lifecycle.instance.WfVertex">
+		<map-to xml="Split"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.AndSplit" extends="org.cristalise.kernel.lifecycle.instance.Split">
+		<map-to xml="AndSplit"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.OrSplit" extends="org.cristalise.kernel.lifecycle.instance.Split">
+		<map-to xml="OrSplit"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.XOrSplit" extends="org.cristalise.kernel.lifecycle.instance.Split">
+		<map-to xml="XOrSplit"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.Loop" extends="org.cristalise.kernel.lifecycle.instance.XOrSplit">
+		<map-to xml="Loop"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer">
+		<field name="ID" type="integer" direct="false">
+			<bind-xml name="id" node="attribute"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.predefined.server.ServerPredefinedStepContainer" 
+		extends="org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer">
+		<map-to xml="ServerPredefinedStepContainer"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.predefined.item.ItemPredefinedStepContainer" 
+		extends="org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer">
+		<map-to xml="PredefinedStepContainer"/>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefinedStepContainer" 
+		extends="org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer">
+		<map-to xml="AgentPredefinedStepContainer"/>
+	</class>	
+	<class name="org.cristalise.kernel.scripting.ErrorInfo">
+		<map-to xml="Errors"/>
+		<field name="fatal" type="boolean" direct="false">
+			<bind-xml name="fatal" node="attribute"/>
+		</field>
+		<field name="msg" type="string" direct="false" collection="arraylist" get-method="getErrors" set-method="setErrors">
+			<bind-xml name="Message" node="element"/>
+		</field>	
+	</class>
+</mapping>

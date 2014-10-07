@@ -1,0 +1,106 @@
+/**
+ * This file is part of the CRISTAL-iSE kernel.
+ * Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ *
+ * http://www.fsf.org/licensing/licenses/lgpl.html
+ */
+package org.cristalise.kernel.process.resource;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.PropertyDescriptionList;
+
+
+public class DefaultResourceImportHandler implements ResourceImportHandler {
+
+	String schemaName;
+	String typeRoot;
+	DomainPath typeRootPath;
+	String wfDef;
+	PropertyDescriptionList props;
+	
+	public DefaultResourceImportHandler(String resType) throws Exception {
+    	if (resType.equals("CA")) {
+    		wfDef = "ManageCompositeActDef";
+    		schemaName = "CompositeActivityDef";
+    		typeRoot = "/desc/ActivityDesc";
+    	}
+    	else if (resType.equals("EA")) {
+    		wfDef = "ManageElementaryActDef";
+    		schemaName = "ElementaryActivityDef";
+    		typeRoot = "/desc/ActivityDesc";
+    	}
+    	else if (resType.equals("OD")) {
+    		wfDef = "ManageSchema";
+    		schemaName = "Schema";
+    		typeRoot = "/desc/OutcomeDesc";
+    	}
+    	else if (resType.equals("SC")) {
+    		wfDef = "ManageScript";
+    		schemaName = "Script";
+    		typeRoot = "/desc/Script";
+    	}
+    	else if (resType.equals("SM")) {
+    		wfDef = "ManageStateMachine";
+    		schemaName = "StateMachine";
+    		typeRoot = "/desc/StateMachine";
+    	}
+    	else throw new Exception("Unknown bootstrap item type: "+resType);
+    	typeRootPath = new DomainPath(typeRoot);
+		props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
+	}
+	
+	@Override
+	public DomainPath getTypeRoot() {
+		return typeRootPath;
+	}
+	
+	@Override
+	public String getName() {
+		return schemaName;
+	}
+
+	@Override
+	public DomainPath getPath(String name, String ns) throws Exception {
+		return new DomainPath(typeRoot+"/system/"+(ns==null?"kernel":ns)+'/'+name);
+	}
+
+	@Override
+	public Set<Outcome> getResourceOutcomes(String name, String ns, String location, int version) throws Exception {
+		HashSet<Outcome> retArr = new HashSet<Outcome>();
+		String data = Gateway.getResource().getTextResource(ns, location);
+        if (data == null)
+            throw new Exception("No data found for "+schemaName+" "+name);
+		Outcome resOutcome = new Outcome(0, data, schemaName, 0);
+		retArr.add(resOutcome);
+		return retArr;
+	}
+	
+    @Override
+    public PropertyDescriptionList getPropDesc() throws Exception {
+    	return props;
+	}
+
+	@Override
+	public String getWorkflowName() throws Exception {
+		return wfDef;
+	}
+}

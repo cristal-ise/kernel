@@ -1,0 +1,18 @@
+importClass(org.cristalise.kernel.process.Gateway);
+
+function log(level) { 
+	org.cristalise.kernel.utils.Logger.removeLogStream(output); 
+	org.cristalise.kernel.utils.Logger.addLogStream(output, level);
+}
+function help() { 
+	var help = Gateway.getResource().getAllTextResources("textFiles/consoleHelp.txt").values().iterator();
+	while (help.hasNext())
+		println(help.next());
+}
+function version() { 
+	print("Kernel version: "+Gateway.getKernelVersion()); 
+	print("Modules loaded: "+Gateway.getModuleManager().getModuleVersions());
+}
+function shutdown() { 
+	org.cristalise.kernel.process.AbstractMain.shutdown(0);  
+}

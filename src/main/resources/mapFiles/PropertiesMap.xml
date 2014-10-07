@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.property.Property">
+		<map-to xml="Property"/>
+		<field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
+			<bind-xml name="name" node="attribute"/>
+		</field>
+		<field name="mMutable" type="boolean" direct="false" get-method="isMutable" set-method="setMutable">
+			<bind-xml name="mutable" node="attribute"/>
+		</field>		
+		<field name="mValue" type="string" direct="false" get-method="getValue" set-method="setValue">
+			<bind-xml node="text"/>
+		</field>
+	</class>
+
+	<class name="org.cristalise.kernel.property.PropertyDescription">
+		<map-to xml="PropertyDescription"/>
+		<field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
+			<bind-xml name="Name" node="attribute"/>
+		</field>
+		<field name="mIsClassIdentifier" type="boolean" direct="false" get-method="getIsClassIdentifier" set-method="setIsClassIdentifier">
+			<bind-xml name="IsClassIdentifier" node="attribute"/>
+		</field>
+		<field name="mDefaultValue" type="string" direct="false" get-method="getDefaultValue" set-method="setDefaultValue">
+			<bind-xml name="DefaultValue" node="attribute"/>
+		</field>
+		<field name="mIsMutable" type="boolean" direct="false" get-method="getIsMutable" set-method="setIsMutable">
+			<bind-xml name="IsMutable" node="attribute"/>
+		</field>
+	</class>
+
+
+    <class name="org.cristalise.kernel.property.PropertyDescriptionList">
+    	<map-to xml="AllProperties"/>
+    	<field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.property.PropertyDescription">
+			<bind-xml name="PropertyDescription" node="element"/>
+	    </field>	
+   	</class>    
+
+    <class name="org.cristalise.kernel.property.PropertyArrayList">
+    	<map-to xml="PropertyList"/>
+    	<field name="list" 
+    		   collection="arraylist" 
+    		   direct="true" 
+    		   type="org.cristalise.kernel.property.Property">    		   
+			<bind-xml name="Property" node="element"/>
+    	</field>
+   	</class>       	   	 
+</mapping>

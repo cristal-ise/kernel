@@ -1,0 +1,199 @@
+/**
+ * This file is part of the CRISTAL-iSE kernel.
+ * Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ *
+ * http://www.fsf.org/licensing/licenses/lgpl.html
+ */
+#ifndef __Entity_Idl__
+#define __Entity_Idl__
+
+/*
+ * Copyright (C) 2001 CERN - European Organization for Nuclear Research
+ * All rights reserved.
+ *
+ * @author $Author: abranson $ $Date: 2005/04/26 06:47:48 $
+ * @version $Revision: 1.24 $
+ */
+
+#include <CommonTypes.idl>
+
+#pragma prefix "org.cristalise.kernel"
+
+module entity
+{
+    /**
+    * ManageableEntity is the CORBA super-interface for Entities. It is uniquely 
+    * identifiable by its <i>system key</i>, and contains XML fragments arranged 
+    * in a tree structure. 
+    **/ 
+
+     interface Item
+    {
+
+        /**
+        * System generated unique key of the Entity. It is a 128 bit UUID, expressed as two 64 bit longs in the IDLs, but as a UUID object in the Java kernel. The ItemPath is used as the Item identifier in the kernel and its API, 
+        which can be derived from either a UUID object or a SystemKey structure.
+        **/
+        common::SystemKey getSystemKey();
+
+        /** Initialises a new Item. Initial properties and the lifecycle are supplied. They should come from the Item's description.
+        *
+        * @param agentKey the Agent doing the initialisation
+        * @param itemProps The XML marshalled {@link org.cristalise.kernel.Property.PropertyArrayList PropertyArrayList} containing the initial
+    	* Property objects of the Item
+        * @param workflow The XML marshalled new lifecycle of the Item
+        * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
+        * @exception ObjectNotFoundException
+        **/
+        void initialise( in common::SystemKey  agentKey,
+        				 in string             itemProps,
+                         in string             workflow,
+                         in string             collections )
+            raises( common::AccessRightsException,
+                    common::InvalidDataException,
+                    common::PersistencyException,
+                    common::ObjectNotFoundException,
+                    common::InvalidCollectionModification );
+                    
+        /**
+        * Returns a chunk of XML which may be a serialized C2KLocalObject, or in the case of Outcomes is merely a fragment of XML.
+        * 
+        * @param path - All Entity data is arranged in a tree structure which uniquely identifies that object within the Entity it is contained, according to the following scheme:
+        * <ul><li><code>LifeCycle/workflow</code> <i>(Items only)</i>: The Workflow object for this Item, containing the graph of activities defining the Item's lifecycle, and the Predefined Step container for data modification</li>
+        * <li><code>Collection/{Name}</code> <i>(Items only)</i>: Collection objects defining links between Items</li>
+        * <li><code>Property/{Name}</code>: Name value pairs to idenfity this Entity, define its type, and hold any other oft-changing indicators that would be heavy to extract from Outcomes</li>
+		* <li><code>AuditTrail/{ID}</code> <i>(Items only)</i>: Events describing all activity state changes in this Item.</li>
+		* <li><code>Outcome/{Schema name}/{Schema version}/{Event ID}</code> <i>(Items only)</i>: XML fragments resulting from the execution of an Activity, validated against the XML Schema defined by that activity.</li>
+		* <li><code>ViewPoint/{Schema name}/{Name}</code> <i>(Items only)</i>: A named pointer to the latest version of an Outcome, defined by the Activity.</li>
+		* <li><code>Job/{ID}</code> <i>(Agents only)</i>: A persistent Job, reflecting a request for execution of an Activity to this Agent. Not all roles create persistent Jobs like this, only those specifically flagged to do so.</li> 
+		*  
+		* @see org.cristalise.kernel.persistency.ClusterStorage#getPath
+		* 
+        * @return The XML string of the data. All fragments except Outcomes will deserialize into objects with the kernel CastorXMLUtility available in the Gateway. 
+        * 
+        * @exception ObjectNotFoundException when the path is not present in this Entity
+        * @exception AccessRightsException <i>Not currently implemented</i>
+        * @exception PersistencyException when the path could not be loaded because of a problem with the storage subsystem.
+        **/
+        string queryData( in string path )
+            raises( common::AccessRightsException,
+                    common::ObjectNotFoundException,
+                    common::PersistencyException );
+
+        /**
+        * Requests a transition of an Activity in this Item's workflow. If possible and permitted, an Event is 
+        * generated and stored, the Activity's state is updated, which may cause the Workflow to proceed. If 
+        * this transition requires Outcome data, this is supplied and stored, and a Viewpoint will be created 
+        * or updated to point to this latest version. In the case of PredefinedSteps, additional data changes 
+        * may be performed in the server data.
+        * 
+        * This method should not be called directly, as there is a large client side to activity execution 
+        * implemented in the Proxy objects, such as script execution and schema validation.
+        *
+        * @param agentKey The SystemKey of the Agent. Some activities may be restricted in which roles may execute them.
+        * Some transitions cause the activity to be assigned to the executing Agent.
+        *
+        * @param stepPath The path in the Workflow to the desired Activity
+        *
+        * @param transitionID The transition to be performed
+        *
+        * @param requestData The XML Outcome of the work defined by the Activity. Must be valid to the XML Schema,
+        * though this is not verified on the server, rather in the AgentProxy in the Client API.
+        *
+        * @throws AccessRightsException The Agent is not permitted to perform the operation. Either it does not 
+        * have the correct role, or the Activity is reserved by another Agent. Also thrown when the given Agent ID doesn't exist.
+        * @throws InvalidTransitionException The Activity is not in the correct state to make the requested transition.
+        * @throws ObjectNotFoundException The Activity or a container of it does not exist.
+        * @throws InvalidDataException An activity property for the requested Activity was invalid e.g. SchemaVersion was not a number. 
+        Also thrown when an uncaught Java exception or error occurred.
+        * @throws PersistencyException There was a problem committing the changes to storage.
+        * @throws ObjectAlreadyExistsException Not normally thrown, but reserved for PredefinedSteps to throw if they need to.
+        **/
+        string requestAction( in common::SystemKey agentKey,
+                            in string              stepPath,
+                            in unsigned long       transitionID,
+                            in string    			requestData
+                          )
+            raises( common::AccessRightsException,
+                    common::InvalidTransitionException,
+                    common::ObjectNotFoundException,
+                    common::InvalidDataException,
+                    common::PersistencyException,
+                    common::ObjectAlreadyExistsException,
+                    common::InvalidCollectionModification);
+
+
+        /**
+        * Returns a set of Jobs for this Agent on this Item. Each Job represents a possible transition
+        * of a particular Activity in the Item's lifecycle. The list may be filtered to only refer to 
+        * currently active activities. 
+        *
+        * @param agentKey The system key of the Agent requesting Jobs.
+        * @param filter If true, then only Activities which are currently active will be included.
+        * @return An XML marshalled {@link org.cristalise.kernel.entity.agent.JobArrayList JobArrayList}
+        * @throws AccessRightsException - when the Agent doesn't exist
+        * @throws ObjectNotFoundException - when the Item doesn't have a lifecycle
+        * @throws PersistencyException - when there was a storage or other unknown error
+        **/
+        string queryLifeCycle( in common::SystemKey   agentKey,                              
+                               in boolean             filter )
+            raises( common::AccessRightsException,
+                    common::ObjectNotFoundException,
+                    common::PersistencyException );                    
+    };
+
+
+    /**************************************************************************
+    * Agent is a ManageableEntity that represents an Activity executor in the 
+    * system. It holds a job list, which are persistent requests for execution 
+    * from waiting activities assigned to a role that has such Job pushing enabled.
+    **************************************************************************/
+    interface Agent : Item
+    {
+                    
+        /** Supplies the new set of jobs for the given item and activity. The Agent should replace all existing jobs for that activity 
+          * with the given set. This method should generally only be called by a workflow while performing an execution.
+          *
+          * @param itemKey the item which generated the jobs. The Agent should discard any existing jobs for that Item.
+          * @param stepPath the Activity within the lifecycle of the item which the jobs relate to
+          * @param newJobs an XML marshalled {@link org.cristalise.kernel.entity.agent.JobArrayList JobArrayList} containing the new Jobs
+          **/
+		void refreshJobList( in common::SystemKey itemKey,
+							 in string stepPath,
+							 in string newJobs );
+		
+		/** Add this Agent to the given role
+		  * @param roleName the new role to add
+		  * @throws ObjectNotFoundException when the role doesn't exist
+		  * @throws CannotManageException when an error occurs writing the data to LDAP
+		  **/
+		void addRole( in string roleName )
+			raises( common::ObjectNotFoundException,
+					common::CannotManageException );
+
+		/** Remove this Agent from the given role
+		  * @param the role name to remove
+		  * @throws CannotManageException when an error occurs writing the data to LDAP
+		  **/
+		void removeRole( in string roleName )
+			raises( common::ObjectNotFoundException,
+					common::CannotManageException );
+    };
+
+}; //end of module entity
+
+#endif //__Entity_Idl__

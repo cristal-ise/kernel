@@ -1,0 +1,4 @@
+LocalCentre=local
+ClusterStorage=LDAPClusterStorage,XMLClusterStorage
+XMLStorage.root=/path/to/xmldb/dir
+ItemServer.Console.allow=localhost

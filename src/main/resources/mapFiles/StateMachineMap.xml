@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine">
+		<map-to xml="StateMachine" />
+		<field name="states" type="org.cristalise.kernel.lifecycle.instance.stateMachine.State"
+			collection="arraylist" direct="false" get-method="getStates" set-method="setStates">
+			<bind-xml name="State" node="element" />
+		</field>
+		<field name="transitions"
+			type="org.cristalise.kernel.lifecycle.instance.stateMachine.Transition"
+			collection="arraylist" direct="false">
+			<bind-xml name="Transition" node="element" />
+		</field>
+		<field name="initialStateCode" type="integer">
+			<bind-xml name="initialState" node="attribute" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.stateMachine.State">
+		<map-to xml="State"/>
+		<field name="id" type="integer" direct="false">
+			<bind-xml name="id" node="attribute" />
+		</field>
+		<field name="name" type="string" direct="false">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="finished" type="boolean" direct="false">
+			<bind-xml name="proceeds" node="attribute" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.stateMachine.Transition">
+		<map-to xml="Transition"/>
+		<field name="id" type="integer" direct="false">
+			<bind-xml name="id" node="attribute" />
+		</field>
+		<field name="name" type="string" direct="false">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="originStateId" type="integer" direct="false">
+			<bind-xml name="origin" node="attribute" />
+		</field>
+		<field name="targetStateId" type="integer" direct="false">
+			<bind-xml name="target" node="attribute" />
+		</field>
+		<field name="enabledProp" type="string" direct="false">
+			<bind-xml name="enablingProperty" node="attribute" />
+		</field>
+		<field name="roleOverride" type="string" direct="false">
+			<bind-xml name="roleOverride" node="attribute" />
+		</field>
+		<field name="reservation" type="string" direct="false">
+			<bind-xml name="reservation" node="attribute" />
+		</field>		
+		<field name="outcome" type="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionOutcome" direct="false">
+			<bind-xml name="Outcome" node="element" />
+		</field>
+		<field name="script" type="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionScript" direct="false">
+			<bind-xml name="Script" node="element" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionOutcome">
+		<map-to xml="Outcome"/>
+		<field name="schemaName" type="string" direct="false">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="schemaVersion" type="string" direct="false">
+			<bind-xml name="version" node="attribute" />
+		</field>
+		<field name="required" type="boolean" direct="false">
+			<bind-xml name="required" node="attribute" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionScript">
+		<map-to xml="Script"/>
+		<field name="scriptName" type="string" direct="false">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="scriptVersion" type="string" direct="false">
+			<bind-xml name="version" node="attribute" />
+		</field>
+	</class>
+</mapping>

@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+	<class name="org.cristalise.kernel.entity.imports.ImportItem">
+		<map-to xml="Item"/>
+		<field name="name" type="string" direct="false">
+			<bind-xml name="name" node="attribute"/>
+		</field>
+		<field name="initialPath" type="string" direct="false">
+			<bind-xml name="initialPath" node="attribute"/>
+		</field>
+		<field name="itemPath" type="string" direct="false" get-method="getID" set-method="setID">
+            <bind-xml name="id" node="attribute"/>
+	    </field>
+		<field name="workflow" type="string" direct="false">
+			<bind-xml name="workflow" node="attribute"/>
+		</field>
+		<field name="workflowVer" type="integer" direct="false">
+			<bind-xml name="workflowVer" node="attribute"/>
+		</field>		
+		<field name="properties" collection="arraylist" direct="false" type="org.cristalise.kernel.property.Property">
+			<bind-xml name="Property" node="element"/>
+		</field>
+		<field name="outcomes" collection="arraylist" direct="false" type="org.cristalise.kernel.entity.imports.ImportOutcome">
+			<bind-xml name="Outcome" node="element"/>
+		</field>
+		<field name="dependencyList" collection="arraylist" direct="false" type="org.cristalise.kernel.entity.imports.ImportDependency">
+			<bind-xml name="Dependency" node="element"/>
+		</field>
+		<field name="aggregationList" collection="arraylist" direct="false" type="org.cristalise.kernel.entity.imports.ImportAggregation">
+			<bind-xml name="Aggregation" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.ImportAggregation">
+		<field name="name" type="string" direct="true">
+			<bind-xml name="name" node="attribute"/>
+		</field>
+		<field name="version" type="integer" direct="true">
+			<bind-xml name="version" node="attribute"/>
+		</field>
+		<field name="isDescription" type="boolean" direct="true">
+			<bind-xml name="isDescription" node="attribute"/>
+		</field>
+		<field name="aggregationMemberList" collection="arraylist" direct="true" type="org.cristalise.kernel.entity.imports.ImportAggregationMember">
+			<bind-xml name="AggregationMember" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.ImportAggregationMember">
+		<field name="slotNo" type="int" direct="true">
+			<bind-xml name="slotNo" node="attribute"/>
+		</field>
+		<field name="itemDescriptionPath" type="string" direct="true">
+			<bind-xml name="itemDescriptionPath" node="attribute"/>
+		</field>
+		<field name="itemDescriptionVersion" type="string" direct="true">
+			<bind-xml name="itemDescriptionVersion" node="attribute"/>
+		</field>		
+		<field name="itemPath" type="string" direct="true">
+			<bind-xml name="itemPath" node="attribute"/>
+		</field>
+		<field name="geometry" direct="true" type="org.cristalise.kernel.entity.imports.Geometry">
+			<bind-xml name="Geometry" node="element"/>
+		</field>
+		<field name="props" type="org.cristalise.kernel.utils.KeyValuePair" collection="array" container="false" direct="false"
+			   get-method="getKeyValuePairs" set-method="setKeyValuePairs">
+			<bind-xml name="MemberProperties" node="element"/>
+		</field>		
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.Geometry">
+		<field name="x" type="int" direct="true">
+			<bind-xml name="x" node="attribute"/>
+		</field>
+		<field name="y" type="int" direct="true">
+			<bind-xml name="y" node="attribute"/>
+		</field>
+		<field name="width" type="int" direct="true">
+			<bind-xml name="width" node="attribute"/>
+		</field>
+		<field name="height" type="int" direct="true">
+			<bind-xml name="height" node="attribute"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.ImportDependency">
+		<field name="name" type="string" direct="true">
+			<bind-xml name="name" node="attribute"/>
+		</field>
+		<field name="version" type="integer" direct="true">
+			<bind-xml name="version" node="attribute"/>
+		</field>		
+		<field name="isDescription" type="boolean" direct="true">
+			<bind-xml name="isDescription" node="attribute"/>
+		</field>
+		<field name="itemDescriptionPath" type="string" direct="true">
+			<bind-xml name="itemDescriptionPath" node="attribute"/>
+		</field>
+		<field name="itemDescriptionVersion" type="string" direct="true">
+			<bind-xml name="itemDescriptionVersion" node="attribute"/>
+		</field>		
+		<field name="dependencyMemberList" collection="arraylist" direct="true" type="org.cristalise.kernel.entity.imports.ImportDependencyMember">
+			<bind-xml name="DependencyMember" node="element"/>
+		</field>
+		<field name="props" type="org.cristalise.kernel.utils.KeyValuePair" collection="array" container="false" direct="false"
+			   get-method="getKeyValuePairs" set-method="setKeyValuePairs">
+			<bind-xml name="CollectionProperties" node="element"/>
+		</field>		
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.ImportDependencyMember">
+		<field name="itemPath" type="string" direct="true">
+			<bind-xml name="itemPath" node="attribute"/>
+		</field>
+		<field name="props" type="org.cristalise.kernel.utils.KeyValuePair" collection="array" container="false" direct="false"
+			   get-method="getKeyValuePairs" set-method="setKeyValuePairs">
+			<bind-xml name="MemberProperties" node="element"/>
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.entity.imports.ImportOutcome">
+		<field name="viewname" type="string" direct="true">
+			<bind-xml name="viewname" node="attribute"/>
+		</field>
+		<field name="schema" type="string" direct="true">
+			<bind-xml name="schema" node="attribute"/>
+		</field>
+		<field name="version" type="integer" direct="true">
+			<bind-xml name="version" node="attribute"/>
+		</field>
+		<field name="path" type="string" direct="true">
+			<bind-xml name="viewname" node="text"/>
+		</field>
+	</class>		
+	<class name="org.cristalise.kernel.entity.imports.ImportAgent">
+		<map-to xml="Agent"/>
+		<field name="name" type="string" direct="false">
+			<bind-xml name="name" node="attribute"/>
+		</field>
+		<field name="password" type="string" direct="false">
+			<bind-xml name="password" node="attribute"/>
+		</field>
+		<field name="roles" collection="arraylist" direct="false" type="string">
+			<bind-xml name="Role" node="element"/>
+		</field>
+		<field name="properties" collection="arraylist" direct="false" type="org.cristalise.kernel.property.Property">
+			<bind-xml name="Property" node="element"/>
+		</field>
+		<field name="mItemPath" type="string" direct="false" get-method="getID" set-method="setID">
+            <bind-xml name="id" node="attribute"/>
+	    </field>
+	</class>	
+	<class name="org.cristalise.kernel.entity.imports.ImportRole">
+		<map-to xml="Role"/>
+		<field name="name" type="string" direct="false">
+			<bind-xml name="name" node="text"/>
+		</field>
+		<field name="jobList" type="boolean" direct="false" get-method="hasJobList">
+			<bind-xml name="jobList" node="attribute"/>
+		</field>
+	</class>
+</mapping>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+	<xs:element name="StateMachine">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="State" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:attribute name="id" type="xs:int" use="required" />
+						<xs:attribute name="name" type="xs:string" use="required" />
+						<xs:attribute name="proceeds" type="xs:boolean" />
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Transition" maxOccurs="unbounded" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Outcome" maxOccurs="1" minOccurs="0">
+								<xs:complexType>
+									<xs:attribute name="name" type="xs:string" use="required" />
+									<xs:attribute name="version" type="xs:string" use="required" />
+									<xs:attribute name="required" type="xs:boolean" use="optional" />
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Script" maxOccurs="1" minOccurs="0">
+								<xs:complexType>
+									<xs:attribute name="name" type="xs:string" use="required" />
+									<xs:attribute name="version" type="xs:string" use="required" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="id" type="xs:int" use="required" />
+						<xs:attribute name="name" type="xs:string" use="required" />
+						<xs:attribute name="origin" type="xs:int" use="required" />
+						<xs:attribute name="target" type="xs:int" use="required" />
+						<xs:attribute name="enablingProperty" type="xs:string" />
+						<xs:attribute name="roleOverride" type="xs:string" />
+						<xs:attribute name="reservation">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="set" />
+									<xs:enumeration value="clear" />
+									<xs:enumeration value="preserve" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="initialState" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
+
+
