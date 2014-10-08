@@ -25,7 +25,7 @@
 	<output name="errors" type="com.c2kernel.scripting.ErrorInfo"/>
 	<script language="javascript" name="ServerNewEntity"><![CDATA[
 
-        importClass(Packages.com.c2kernel.utils.Logger);
+        importClass(Packages.org.cristalise.kernel.utils.Logger);
 
         var predef = "";
 		var schema = String(job.getActPropString("SchemaType"));
