@@ -18,13 +18,14 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
+var agent = org.cristalise.gui.MainFrame.userAgent;
 var serverPath=new org.cristalise.kernel.lookup.DomainPath("/servers/pcuwe04.cern.ch");
 var serverItem=proxy.getProxy(serverPath);
 
-var predef = "AddDomainContext"; var params = new Array(1); params[0] = "/test/context"; agent.execute(serverItem, predef, params);
+var predef = "AddDomainContext"; var params = new Array(1); params[0] = "/test/context/"; agent.execute(serverItem, predef, params);
 var predef = "RemoveDomainContext"; agent.execute(serverItem, predef, params);
 params[0] = "/test"; agent.execute(serverItem, predef, params);
-var predef = "SetAgentPassword"; params = Array(2); params[0] = "dev"; params[1] = "hunter2"; agent.execute(serverItem, predef, params); 
+var predef = "SetAgentPassword"; params = Array(1); params[0] = "hunter2"; agent.execute(agent, predef, params); 
 org.cristalise.kernel.process.Gateway.login("dev", "hunter2");
 var predef = "SetAgentRoles"; agent.execute(serverItem, predef, params); //Role shouldn't exist
 params = Array(3); params[0] = "dev"; params[1] = "Admin"; params[2] = "UserCode"; agent.execute(serverItem, predef, params);
