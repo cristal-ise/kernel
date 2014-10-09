@@ -32,7 +32,6 @@ import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
-import org.cristalise.kernel.entity.ItemOperations;
 import org.cristalise.kernel.entity.agent.JobArrayList;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
@@ -200,29 +199,25 @@ public class ItemImplementation implements ItemOperations {
 			return finalOutcome;
 			// Normal operation exceptions
 		} catch (AccessRightsException ex) {
-			Logger.msg("Propagating AccessRightsException back to the calling agent");
+			Logger.msg("Propagating AccessRightsException back to the calling agent: "+ex.getMessage());
 			throw ex;
 		} catch (InvalidTransitionException ex) {
-			Logger.msg("Propagating InvalidTransitionException back to the calling agent");
+			Logger.msg("Propagating InvalidTransitionException back to the calling agent: "+ex.getMessage());
 			throw ex;
 		} catch (ObjectNotFoundException ex) {
-			Logger.msg("Propagating ObjectNotFoundException back to the calling agent");
+			Logger.msg("Propagating ObjectNotFoundException back to the calling agent: "+ex.getMessage());
 			throw ex;
 			// errors
 		} catch (InvalidItemPathException ex) {
-			Logger.error(ex);
 			throw new AccessRightsException("Invalid Agent Id: " + agentId);
 		} catch (InvalidDataException ex) {
-			Logger.error(ex);
-			Logger.msg("Propagating InvalidDataException back to the calling agent");
+			Logger.msg("Propagating InvalidDataException back to the calling agent: "+ex.getMessage());
 			throw ex;
 		} catch (ObjectAlreadyExistsException ex) {
-			Logger.error(ex);
-			Logger.msg("Propagating ObjectAlreadyExistsException back to the calling agent");
+			Logger.msg("Propagating ObjectAlreadyExistsException back to the calling agent: "+ex.getMessage());
 			throw ex;
 		} catch (InvalidCollectionModification ex) {
-			Logger.error(ex);
-			Logger.msg("Propagating InvalidCollectionModification back to the calling agent");
+			Logger.msg("Propagating InvalidCollectionModification back to the calling agent: "+ex.getMessage());
 			throw ex;
 		} catch (Throwable ex) { // non-CORBA exception hasn't been caught!
 			Logger.error("Unknown Error: requestAction on " + mItemPath
