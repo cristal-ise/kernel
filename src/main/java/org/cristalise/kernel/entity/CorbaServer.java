@@ -23,11 +23,8 @@ package org.cristalise.kernel.entity;
 import java.util.Map;
 
 import org.cristalise.kernel.common.CannotManageException;
-import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.entity.AgentHelper;
-import org.cristalise.kernel.entity.ItemHelper;
 import org.cristalise.kernel.entity.agent.ActiveEntity;
 import org.cristalise.kernel.entity.agent.ActiveLocator;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -59,7 +56,7 @@ public class CorbaServer {
     private POA         mAgentPOA;
     private POAManager  mPOAManager;
 
-    public CorbaServer() throws InvalidDataException {
+    public CorbaServer() throws CannotManageException {
         mItemCache   = new SoftCache<ItemPath, Servant>(50);
 
         // init POA
@@ -68,7 +65,7 @@ public class CorbaServer {
             mPOAManager.activate();
         } catch (Exception ex) {
             Logger.error(ex);
-            throw new InvalidDataException("Error initialising POA");
+            throw new CannotManageException("Error initialising POA");
         }
 
         new Thread(new Runnable() {
