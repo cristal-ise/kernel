@@ -91,7 +91,7 @@ public class ClearSlot extends PredefinedStep
         boolean stored = false;
         for (AggregationMember member : agg.getMembers().list) {
             if (member.getID() == slotNo) {
-                if (member.getItemPath() != null)
+                if (member.getItemPath() == null)
                     throw new ObjectCannotBeUpdated("ClearSlot: Member slot "+slotNo+" already empty");
                 member.clearItem();
                 stored = true;

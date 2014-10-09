@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance.predefined.agent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -43,9 +44,8 @@ public class SetAgentRoles extends PredefinedStep {
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
 			int transitionID, String requestData) throws InvalidDataException {
 	
-		Logger.msg(1, "SetAgentRoles::request() - Starting.");
-		
 		String[] params = getDataList(requestData);
+		if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
 		AgentPath targetAgent;
 		try {
 			targetAgent = new AgentPath(item);

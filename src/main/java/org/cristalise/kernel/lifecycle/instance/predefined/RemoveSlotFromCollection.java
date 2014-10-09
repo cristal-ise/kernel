@@ -29,6 +29,8 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
@@ -75,7 +77,13 @@ public class RemoveSlotFromCollection extends PredefinedStep
         try {
             collName = params[0];
             if (params.length>1 && params[1].length()>0) slotNo = Integer.parseInt(params[1]);
-            if (params.length>2 && params[2].length()>0) currentChild = new ItemPath(params[2]);
+            if (params.length>2 && params[2].length()>0) {
+            	try {
+            		currentChild = new ItemPath(params[2]);
+            	} catch (InvalidItemPathException e) {
+            		currentChild = new DomainPath(params[2]).getItemPath();
+            	}
+            }
         } catch (Exception e) {
             throw new InvalidDataException("RemoveSlotFromCollection: Invalid parameters "+Arrays.toString(params));
         }

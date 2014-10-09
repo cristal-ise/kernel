@@ -29,6 +29,8 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
@@ -84,7 +86,13 @@ public class AddNewSlot extends PredefinedStep
         // resolve desc item path and version
         try {
             collName = params[0];
-            if (params.length > 1 && params[1].length() > 0) descKey = new ItemPath(params[1]);
+            if (params.length > 1 && params[1].length() > 0) {
+            	try {
+            		descKey = new ItemPath(params[1]);
+            	} catch (InvalidItemPathException e) {
+            		descKey = new DomainPath(params[1]).getItemPath();
+            	}
+            }
             if (params.length > 2 && params[2].length() > 0) descVer = params[2];
         } catch (Exception e) {
             throw new InvalidDataException("AddNewSlot: Invalid parameters "+Arrays.toString(params));

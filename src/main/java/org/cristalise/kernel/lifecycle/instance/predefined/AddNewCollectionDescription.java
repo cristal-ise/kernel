@@ -92,9 +92,9 @@ public class AddNewCollectionDescription extends PredefinedStep
         
         CollectionDescription<?> newCollDesc;
         
-        if (collType.equals("Aggregation"))
+        if (collType.equalsIgnoreCase("Aggregation"))
         	newCollDesc = new AggregationDescription(collName);
-        if (collType.equals("Dependency"))
+        else if (collType.equalsIgnoreCase("Dependency"))
         	newCollDesc = new DependencyDescription(collName);
         else
         	throw new InvalidDataException("AddNewCollectionDescription: Invalid collection type specified: '"+collType+"'. Must be Aggregation or Dependency.");

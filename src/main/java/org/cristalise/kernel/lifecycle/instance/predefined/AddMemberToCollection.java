@@ -31,6 +31,8 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
@@ -80,7 +82,11 @@ public class AddMemberToCollection extends PredefinedStep
         if (Logger.doLog(3)) Logger.msg(3, "AddMemberToCollection: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
         try {
             collName = params[0];
-            newChild = new ItemPath(params[1]);
+        	try {
+        		newChild = new ItemPath(params[1]);
+        	} catch (InvalidItemPathException e) {
+        		newChild = new DomainPath(params[1]).getItemPath();
+        	}
             if (params.length > 2)
             	props = (CastorHashMap)Gateway.getMarshaller().unmarshall(params[2]);
             

@@ -32,6 +32,8 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
@@ -80,8 +82,13 @@ public class AssignItemToSlot extends PredefinedStep
         try {
             collName = params[0];
             slotNo = Integer.parseInt(params[1]);
-            childItem = new ItemPath(params[2]);
+        	try {
+        		childItem = new ItemPath(params[2]);
+        	} catch (InvalidItemPathException e) {
+        		childItem = new DomainPath(params[2]).getItemPath();
+        	}
         } catch (Exception e) {
+        	Logger.error(e);
             throw new InvalidDataException("AssignItemToSlot: Invalid parameters "+Arrays.toString(params));
         }
 
