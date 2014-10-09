@@ -60,6 +60,7 @@ public class AddMemberToCollection extends PredefinedStep
      * Params:
      * 0 - collection name
      * 1 - target entity key
+     * 2 - slot properties
      * @throws ObjectAlreadyExistsException 
      * @throws PersistencyException 
      * @throws ObjectNotFoundException 
