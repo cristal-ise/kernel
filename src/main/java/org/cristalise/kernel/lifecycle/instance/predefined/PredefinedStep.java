@@ -24,10 +24,19 @@ import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.cristalise.kernel.common.CannotManageException;
+import org.cristalise.kernel.common.InvalidCollectionModification;
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectAlreadyExistsException;
+import org.cristalise.kernel.common.ObjectCannotBeUpdated;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefinedStepContainer;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.ItemPredefinedStepContainer;
 import org.cristalise.kernel.lifecycle.instance.predefined.server.ServerPredefinedStepContainer;
+import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.CDATASection;
@@ -126,6 +135,20 @@ public abstract class PredefinedStep extends Activity
 		}
 		return "PredefinedStepOutcome"; // default to standard if not found - server may be a newer version
 	}
+	
+	/**
+	 * All predefined steps must override this to implement their action
+	 */
+	@Override
+	protected abstract String runActivityLogic(AgentPath agent, ItemPath itemPath,
+			int transitionID, String requestData) throws 
+			InvalidDataException, 
+			InvalidCollectionModification, 
+			ObjectAlreadyExistsException, 
+			ObjectCannotBeUpdated,
+			ObjectNotFoundException, 
+			PersistencyException, 
+			CannotManageException;
 	
 	// generic bundling of parameters
 	static public String bundleData(String[] data)
