@@ -49,7 +49,7 @@ public class AddDomainContext extends PredefinedStep {
         if (Logger.doLog(3)) Logger.msg(3, "AddDomainContext: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
         if (params.length != 1) throw new InvalidDataException("AddDomainContext: Invalid parameters "+Arrays.toString(params));
 		
-		DomainPath pathToAdd = new DomainPath(params);
+		DomainPath pathToAdd = new DomainPath(params[0]);
 		if (pathToAdd.exists())
 			throw new ObjectAlreadyExistsException("Context "+pathToAdd+" already exists");
 		// collect parent paths if they don't exist
