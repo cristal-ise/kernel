@@ -149,6 +149,9 @@ public class Module extends ImportItem {
 			thisItem.create(systemAgent.getPath(), reset);
 		}
 		
+		// Import the module item
+		this.create(systemAgent.getPath(), reset);
+		
 	}
 	
 	public Properties getProperties(boolean isServer) {
