@@ -56,7 +56,7 @@ public class RemoveSlotFromCollection extends PredefinedStep
     /**
      * Params:
      * 0 - collection name
-     * 1 - slot number OR if null:
+     * 1 - slot number OR if -1:
      * 2 - target entity key
      * @throws ObjectNotFoundException 
      * @throws PersistencyException 
