@@ -214,18 +214,58 @@ public class ItemProxy
 
     }
     
+    /** Gets the current version of the named collection
+     * 
+     * @param collName The collection name
+     * @return the Collection object
+     * @throws ObjectNotFoundException
+     */
     public Collection<?> getCollection(String collName) throws ObjectNotFoundException {
-    	return (Collection<?>)getObject(ClusterStorage.COLLECTION+"/"+collName+"/last");
+    	return getCollection(collName, null);
     }
     
+    /** Gets a numbered version (snapshot) of a collection
+     * 
+     * @param collName The collection name
+     * @param version The collection number (null for the current version)
+     * @return 
+     * @throws ObjectNotFoundException
+     */
+    public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
+    	String verStr = version==null?"last":String.valueOf(version);
+    	return (Collection<?>)getObject(ClusterStorage.COLLECTION+"/"+collName+"/"+verStr);
+    }
+    
+    /** Gets the Workflow object of this Item
+     * 
+     * @return the Item's Workflow object
+     * @throws ObjectNotFoundException
+     */
     public Workflow getWorkflow() throws ObjectNotFoundException {
     	return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
     }
     
+    /** Gets the named viewpoint
+     * 
+     * @param schemaName Outcome schema name
+     * @param viewName Viewpoint name
+     * @return a Viewpoint object
+     * @throws ObjectNotFoundException
+     */
     public Viewpoint getViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
     	return (Viewpoint)getObject(ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
     }
     
+    /** Tries to find a job with the given name for the given Agent in
+     * the workflow.
+     * 
+     * @param actName The activity name to look for
+     * @param agent The agent to fetch jobs for
+     * @return
+     * @throws AccessRightsException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException Error loading the relevant objects
+     */
     public Job getJobByName(String actName, AgentProxy agent)
     throws AccessRightsException,
            ObjectNotFoundException,
