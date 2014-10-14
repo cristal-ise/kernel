@@ -94,15 +94,12 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
     		throw new ObjectAlreadyExistsException("The agent name " +newName+ " exists already.");
     	} catch (ObjectNotFoundException ex) { }
 
-        // generate new entity key
-        Logger.msg(6, "CreateItemFromDescription - Requesting new agent path");
+        // generate new system key
+        Logger.msg(6, "CreateAgentFromDescription - Requesting new agent path");
         AgentPath newAgentPath = new AgentPath(new ItemPath(), newName);
 
-        // resolve the item factory
-        Logger.msg(6, "CreateItemFromDescription - Resolving item factory");
-
         // create the Item object
-        Logger.msg(3, "CreateItemFromDescription - Creating Item");
+        Logger.msg(3, "CreateAgentFromDescription - Creating Agent");
         CorbaServer factory = Gateway.getCorbaServer();
         if (factory == null) throw new CannotManageException("This process cannot create new Items");
         ActiveEntity newAgent = factory.createAgent(newAgentPath);
@@ -110,7 +107,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 
         // initialise it with its properties and workflow
 
-        Logger.msg(3, "CreateItemFromDescription - Initializing Item");
+        Logger.msg(3, "CreateAgentFromDescription - Initializing Agent");
 
         try {
 			newAgent.initialise(

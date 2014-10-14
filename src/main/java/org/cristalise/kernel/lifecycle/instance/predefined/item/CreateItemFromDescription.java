@@ -84,12 +84,9 @@ public class CreateItemFromDescription extends PredefinedStep
 
 		/* ITEM CREATION */
 
-        // generate new entity key
+        // generate new item path with random uuid
         Logger.msg(6, "CreateItemFromDescription - Requesting new item path");
         ItemPath newItemPath = new ItemPath();
-
-        // resolve the item factory
-        Logger.msg(6, "CreateItemFromDescription - Resolving item factory");
 
         // create the Item object
         Logger.msg(3, "CreateItemFromDescription - Creating Item");
@@ -113,7 +110,7 @@ public class CreateItemFromDescription extends PredefinedStep
 		} catch (PersistencyException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new InvalidDataException("CreateAgentFromDescription: Problem initializing new Agent. See log: "+e.getMessage());
+			throw new InvalidDataException("CreateItemFromDescription: Problem initializing new Item. See log: "+e.getMessage());
 		}
         // add its domain path
         Logger.msg(3, "CreateItemFromDescription - Creating "+context);
@@ -172,8 +169,6 @@ public class CreateItemFromDescription extends PredefinedStep
         try {
         	CompositeActivityDef wfDef = (CompositeActivityDef)LocalObjectLoader.getActDef(wfDefName, wfDefVer);
             return (CompositeActivity)wfDef.instantiate();
-        } catch (ObjectNotFoundException ex) {
-            throw new InvalidDataException("Workflow def '"+wfDefName+"'v"+wfDefVer+" not found");
         } catch (ClassCastException ex) {
          	throw new InvalidDataException("Activity def '"+wfDefName+"' was not Composite");
         }
