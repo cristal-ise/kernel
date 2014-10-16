@@ -231,7 +231,7 @@ public class Gateway
                PersistencyException
     {
     	try {
-    		Authenticator auth = (Authenticator)mC2KProps.getInstance("Authenticator");
+    		Authenticator auth = getAuthenticator();
     		auth.authenticate("System");
     		
             mLookup = (Lookup)mC2KProps.getInstance("Lookup");
@@ -262,13 +262,18 @@ public class Gateway
      * @throws InstantiationException 
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
-    throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
+    throws InvalidDataException, ObjectNotFoundException, PersistencyException
     {
-        Authenticator auth = (Authenticator)mC2KProps.getInstance("Authenticator");
+        Authenticator auth = getAuthenticator();
         if (!auth.authenticate(agentName, agentPassword, resource))
         	throw new InvalidDataException("Login failed");
         
-        mLookup = (Lookup)mC2KProps.getInstance("Lookup");
+        try {
+        	mLookup = (Lookup)mC2KProps.getInstance("Lookup");
+        } catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
+		}  
         mLookup.open(auth);
 
         mStorage = new TransactionManager(auth);
@@ -284,6 +289,15 @@ public class Gateway
         mModules.runScripts("startup");
         
 		return userProxy;
+    }
+    
+    static public Authenticator getAuthenticator() throws InvalidDataException {
+    	try {
+			return (Authenticator)mC2KProps.getInstance("Authenticator");
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
+		} 
     }
     
     static public AgentProxy connect(String agentName, String agentPassword) 
