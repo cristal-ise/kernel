@@ -154,6 +154,8 @@ public class CreateItemFromDescription extends PredefinedStep
 		CollectionMember wfMember = thisCol.getMembers().list.get(0);
 		wfDefName = wfMember.resolveItem().getName();
 		Object wfVerObj = wfMember.getProperties().get("Version");
+		if (wfVerObj == null || String.valueOf(wfVerObj).length() == 0)
+			throw new InvalidDataException("Workflow version number not set");
 		try {
 			wfDefVer = Integer.parseInt(wfVerObj.toString());
 		} catch (NumberFormatException ex) {
