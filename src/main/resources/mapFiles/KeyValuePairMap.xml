@@ -59,6 +59,16 @@
 		       <bind-xml name="Boolean" node="attribute"/>
 		</field>				
 	</class>
+	<class name="org.cristalise.kernel.utils.CastorHashMap">
+		<map-to xml="CastorHashMap"/>
+    	<field name="list" 
+    		   collection="array" 
+    		   direct="false" 
+    		   get-method="getKeyValuePairs" set-method="setKeyValuePairs"
+    		   type="org.cristalise.kernel.utils.KeyValuePair">    		   
+			<bind-xml name="Entry" node="element"/>
+    	</field>
+   	</class> 
 	<class name="org.cristalise.kernel.common.GTimeStamp">
 		<map-to xml="TimeStamp"/>
 		<field name="mYear" type="java.lang.Integer" direct="true"><bind-xml name="Y" node="attribute"/></field>

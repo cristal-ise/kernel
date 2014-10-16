@@ -106,7 +106,7 @@ public class AddMemberToCollection extends PredefinedStep
     	else
     		dep.addMember(newChild, props, null);
 
-        Gateway.getStorage().put(newChild, dep, null);
+        Gateway.getStorage().put(item, dep, null);
         return requestData;
     }
 }
