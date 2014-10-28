@@ -123,24 +123,6 @@ public class ItemImplementation implements ItemOperations {
 			mStorage.abort(locker);
 			throw new PersistencyException("Error storing event and outcome");
 		}
-		
-		// create wf
-		try {
-			Workflow lc = null;
-			if (initWfString == null || initWfString.length() == 0)
-				lc = new Workflow(new CompositeActivity(), getNewPredefStepContainer());
-			else
-				lc = new Workflow((CompositeActivity) Gateway
-						.getMarshaller().unmarshall(initWfString), getNewPredefStepContainer());
-			lc.initialise(mItemPath, agentPath);
-			mStorage.put(mItemPath, lc, locker);
-		} catch (Throwable ex) {
-			Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
-					+ ") - Workflow was invalid: " + initWfString);
-			Logger.error(ex);
-			mStorage.abort(locker);
-			throw new InvalidDataException("Workflow was invalid");
-		}
 
 		// init collections
 		if (initCollsString != null && initCollsString.length() > 0) {
@@ -160,7 +142,29 @@ public class ItemImplementation implements ItemOperations {
 			}
 		}
 		
+		// create wf
+		Workflow lc = null;
+		try {
+			if (initWfString == null || initWfString.length() == 0)
+				lc = new Workflow(new CompositeActivity(), getNewPredefStepContainer());
+			else
+				lc = new Workflow((CompositeActivity) Gateway
+						.getMarshaller().unmarshall(initWfString), getNewPredefStepContainer());
+			mStorage.put(mItemPath, lc, locker);
+		} catch (Throwable ex) {
+			Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
+					+ ") - Workflow was invalid: " + initWfString);
+			Logger.error(ex);
+			mStorage.abort(locker);
+			throw new InvalidDataException("Workflow was invalid");
+		}
+		
 		mStorage.commit(locker);
+		
+		// All objects are in place, initialize the workflow to get the Item running
+		lc.initialise(mItemPath, agentPath);
+		mStorage.put(mItemPath, lc, null);
+		
 		Logger.msg(3, "Initialisation of item " + mItemPath
 				+ " was successful");
 	}
