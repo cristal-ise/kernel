@@ -62,8 +62,8 @@
 		<url>http://dev.cccs.uwe.ac.uk:8080/job/cristal-kernel-github/</url>
 	</ciManagement>
 	<scm>
-		<developerConnection>https://github.com/cristal-ise/kernel.git</developerConnection>
-		<url>scm:https://github.com/cristal-ise/kernel</url>
+		<developerConnection>scm:https://github.com/cristal-ise/kernel.git</developerConnection>
+		<url>https://github.com/cristal-ise/kernel</url>
 		<tag>master</tag>
 	</scm>
 	<mailingLists>
