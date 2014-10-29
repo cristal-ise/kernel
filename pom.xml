@@ -50,21 +50,21 @@
 		</developer>		
 	</developers>
 	<issueManagement>
-		<url>http://dev.cccs.uwe.ac.uk/redmine/projects/cristal-kernel/</url>
-		<system>Redmine</system>
+		<url>https://github.com/cristal-ise/kernel/issues</url>
+		<system>GitHub</system>
 	</issueManagement>
 	<organization>
-		<name>The CRISTAL Consortium</name>
-		<url>http://dev.cccs.uwe.ac.uk/redmine/projects/cristal</url>
+		<name>CRISTAL-iSE</name>
+		<url>http://cristal-ise.github.io/</url>
 	</organization>
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://dev.cccs.uwe.ac.uk:8080/job/cristal-kernel/</url>
+		<url>http://dev.cccs.uwe.ac.uk:8080/job/cristal-kernel-github/</url>
 	</ciManagement>
 	<scm>
-		<developerConnection>scm:git:ssh://dev.cccs.uwe.ac.uk/var/git/cristal-kernel.git</developerConnection>
-		<url>http://dev.cccs.uwe.ac.uk/redmine/projects/cristal-kernel/repository</url>
-		<tag>HEAD</tag>
+		<developerConnection>https://github.com/cristal-ise/kernel.git</developerConnection>
+		<url>https://github.com/cristal-ise/kernel</url>
+		<tag>master</tag>
 	</scm>
 	<mailingLists>
 		<mailingList>
