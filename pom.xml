@@ -63,7 +63,7 @@
 	</ciManagement>
 	<scm>
 		<developerConnection>https://github.com/cristal-ise/kernel.git</developerConnection>
-		<url>https://github.com/cristal-ise/kernel</url>
+		<url>scm:https://github.com/cristal-ise/kernel</url>
 		<tag>master</tag>
 	</scm>
 	<mailingLists>
