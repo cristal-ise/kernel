@@ -183,6 +183,7 @@ public class Activity extends WfVertex
 		}
 		
 		// Get new state
+		State oldState = getStateMachine().getState(this.state);
 		State newState = getStateMachine().traverse(this, transition, agent);
 		
 		// Run extra logic in predefined steps here
@@ -226,7 +227,7 @@ public class Activity extends WfVertex
 		}
 
 		if (newState.isFinished()) {
-			if (!getProperties().get("Breakpoint").equals(Boolean.TRUE))
+			if (!(getProperties().get("Breakpoint").equals(Boolean.TRUE) && !oldState.isFinished()))
 				runNext(agent, itemPath);
 		}
 		

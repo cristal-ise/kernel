@@ -39,6 +39,7 @@
                           <Outcome name="Errors" version="0"/>
               </Transition>
               <Transition id="4" name="Resume" origin="3" target="1" roleOverride="Admin" reservation="preserve"/>
+              <Transition id="5" name="Proceed" origin="2" target="2"/>
 </StateMachine>
 
 
