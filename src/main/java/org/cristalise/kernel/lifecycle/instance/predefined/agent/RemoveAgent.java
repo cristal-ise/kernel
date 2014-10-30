@@ -38,6 +38,7 @@ public class RemoveAgent extends PredefinedStep {
 
 	public RemoveAgent() {
         super();
+        getProperties().put("Agent Role", "Admin");
 	}
 	
 	@Override

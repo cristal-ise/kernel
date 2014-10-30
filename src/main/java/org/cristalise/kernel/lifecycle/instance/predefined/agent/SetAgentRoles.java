@@ -38,6 +38,7 @@ public class SetAgentRoles extends PredefinedStep {
 
 	public SetAgentRoles() {
         super();
+        getProperties().put("Agent Role", "Admin");
 	}
 	
 	@Override
