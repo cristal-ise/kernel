@@ -207,7 +207,7 @@ public class ItemProxy
 
     	ArrayList<Job> jobList = getJobList(agent, true);
     	for (Job job : jobList) {
-			if (job.getStepName().equals(actName) && job.hasOutcome())
+			if (job.getStepName().equals(actName) && job.getTransition().isFinishing())
 					return job;
     	}
     	return null;
