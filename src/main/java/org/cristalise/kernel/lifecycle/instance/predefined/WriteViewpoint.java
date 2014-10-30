@@ -73,7 +73,10 @@ public class WriteViewpoint extends PredefinedStep {
 			Logger.error(e);
 			throw new PersistencyException("WriteViewpoint: Could not load event "+evId);
 		}
-        
+        if (ev.getSchemaName() == null || ev.getSchemaName().length() == 0)
+        	throw new InvalidDataException("Event "+evId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
+       	if (!ev.getSchemaName().equals(schemaName))
+       		throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
         // Write new viewpoint
         Viewpoint newView = new Viewpoint(item, schemaName, viewName, ev.getSchemaVersion(), evId);
         try {
