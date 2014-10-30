@@ -40,6 +40,7 @@ public class RemoveRole extends PredefinedStep
     public RemoveRole()
     {
         super();
+        getProperties().put("Agent Role", "Admin");
     }
 
 	//requestdata is xmlstring
