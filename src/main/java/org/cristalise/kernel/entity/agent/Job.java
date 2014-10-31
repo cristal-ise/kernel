@@ -28,6 +28,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.instance.Activity;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
@@ -42,6 +43,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -89,6 +91,7 @@ public class Job implements C2KLocalObject
     private ItemProxy item = null;
 
     private boolean outcomeSet;
+    private boolean transitionResolved = false;
     
     // outcome initiator cache
     
@@ -186,11 +189,24 @@ public class Job implements C2KLocalObject
     }
     
     public Transition getTransition() {
+    	if (transition != null && transitionResolved == false) {
+    		String name = getActPropString("StateMachineName");
+			int version = (Integer)getActProp("StateMachineVersion");
+			StateMachine sm;
+			try {
+				sm = LocalObjectLoader.getStateMachine(name, version);
+			} catch (Exception e) {
+				return transition;
+			}
+			transition = sm.getTransition(transition.getId());
+    		transitionResolved = true;
+    	}
     	return transition;
     }
     
     public void setTransition(Transition transition) {
     	this.transition = transition;
+    	transitionResolved = false;
     }
 
     public AgentPath getAgentPath() throws ObjectNotFoundException {

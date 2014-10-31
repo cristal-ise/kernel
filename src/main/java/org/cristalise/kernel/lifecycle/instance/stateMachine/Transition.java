@@ -153,13 +153,13 @@ public class Transition {
 	protected boolean resolveStates(HashMap<Integer, State> states) {
 		boolean allFound = true;
 		if (states.keySet().contains(originStateId)) {
-			originState = states.get(originStateId);
+			setOriginState(states.get(originStateId));
 			originState.addPossibleTransition(this);
 		}
 		else
 			allFound = false;
 		if (states.keySet().contains(targetStateId))
-			targetState = states.get(targetStateId);
+			setTargetState(states.get(targetStateId));
 		else
 			allFound = false;
 		return allFound;
