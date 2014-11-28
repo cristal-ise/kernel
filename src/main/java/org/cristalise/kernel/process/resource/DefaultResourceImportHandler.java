@@ -38,28 +38,24 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 	PropertyDescriptionList props;
 	
 	public DefaultResourceImportHandler(String resType) throws Exception {
+		wfDef = "NoWorkflow";
     	if (resType.equals("CA")) {
-    		wfDef = "ManageCompositeActDef";
     		schemaName = "CompositeActivityDef";
     		typeRoot = "/desc/ActivityDesc";
     	}
     	else if (resType.equals("EA")) {
-    		wfDef = "ManageElementaryActDef";
     		schemaName = "ElementaryActivityDef";
     		typeRoot = "/desc/ActivityDesc";
     	}
     	else if (resType.equals("OD")) {
-    		wfDef = "ManageSchema";
     		schemaName = "Schema";
     		typeRoot = "/desc/OutcomeDesc";
     	}
     	else if (resType.equals("SC")) {
-    		wfDef = "ManageScript";
     		schemaName = "Script";
     		typeRoot = "/desc/Script";
     	}
     	else if (resType.equals("SM")) {
-    		wfDef = "ManageStateMachine";
     		schemaName = "StateMachine";
     		typeRoot = "/desc/StateMachine";
     	}
