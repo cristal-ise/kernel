@@ -231,8 +231,7 @@ public class ProxyManager
     	if (path instanceof ItemPath) itemPath = (ItemPath)path;
     	else itemPath = path.getItemPath();
         Logger.msg(8,"ProxyManager::getProxy(" + path.toString() + ")");
-        return getProxy( Gateway.getLookup().resolve(itemPath),
-        		itemPath );
+        return getProxy( itemPath.getIOR(), itemPath );
 
     }
     

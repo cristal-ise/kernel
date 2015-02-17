@@ -194,13 +194,14 @@ public abstract class Path
         if (mIOR==null) { // if not cached try to resolve
             Lookup myLookup = Gateway.getLookup();
             try {
-                newIOR = myLookup.resolve(this);
+                String iorString = myLookup.getIOR(this);
+                newIOR = Gateway.getORB().string_to_object(iorString);
             } catch (ObjectNotFoundException ex) {
             }
             setIOR(newIOR);
         }
         return mIOR;
-    }
+    } 
 
     @Override
 	public String toString() {

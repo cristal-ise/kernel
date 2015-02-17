@@ -137,7 +137,7 @@ public class ProxyLoader extends ClusterStorage {
 
         try {
             Logger.msg(7, "ProxyLoader.getIOR() - Resolving "+thisPath+".");
-            org.omg.CORBA.Object ior = lookup.resolve(thisPath);
+            org.omg.CORBA.Object ior = thisPath.getIOR();
 
             Item thisItem = null;
             try {

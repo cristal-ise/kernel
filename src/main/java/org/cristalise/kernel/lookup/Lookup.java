@@ -72,10 +72,10 @@ public interface Lookup {
 	 * Resolve a path to a CORBA Object Item or Agent
 	 * 
 	 * @param path The path to be resolved
-	 * @return The CORBA Object
+	 * @return The CORBA Object's IOR
 	 * @throws ObjectNotFoundException When the Path doesn't exist, or doesn't have an IOR associated with it
 	 */
-	public org.omg.CORBA.Object resolve(Path path) throws ObjectNotFoundException;
+	public String getIOR(Path path) throws ObjectNotFoundException;
 
 	// Path finding and searching
 	
