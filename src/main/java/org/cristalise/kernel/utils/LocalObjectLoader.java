@@ -105,7 +105,7 @@ public class LocalObjectLoader {
 	}
 	
 	static public StateMachine getStateMachine(String smName, int smVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading activity def "+smName+" v"+smVersion);
+		Logger.msg(5, "Loading activity state machine "+smName+" v"+smVersion);
 		return smCache.get(smName, smVersion);
 	}
 }
