@@ -131,9 +131,9 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	public String requestAction(AgentPath agent, String stepPath, ItemPath itemPath, int transitionID, String requestData)
 		throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
-		Logger.msg(3, "Action: " + transitionID + " " + stepPath + " by " + agent);
+		Logger.msg(3, "Workflow::requestAction() - transition:" + transitionID + " step:" + stepPath + " agent:" + agent);
 		if (search(stepPath) != null)
-			 return ((Activity) search(stepPath)).request(agent, itemPath, transitionID, requestData);
+			return ((Activity) search(stepPath)).request(agent, itemPath, transitionID, requestData);
 		else
 			throw new ObjectNotFoundException(stepPath + " not found");
 	}
@@ -262,5 +262,4 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	{
 		return ClusterStorage.LIFECYCLE;
 	}
-
 }

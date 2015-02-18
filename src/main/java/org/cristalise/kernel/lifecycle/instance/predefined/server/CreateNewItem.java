@@ -55,7 +55,7 @@ public class CreateNewItem extends PredefinedStep
 			newItem = (ImportItem)Gateway.getMarshaller().unmarshall(requestData);
 		} catch (Exception e) {
 			Logger.error(e);
-			throw new InvalidDataException("CreateNewAgent: Couldn't unmarshall new Agent: "+requestData);
+			throw new InvalidDataException("CreateNewItem: Couldn't unmarshall new Item: "+requestData);
 		}
         newItem.create(agent, false);
         return requestData;

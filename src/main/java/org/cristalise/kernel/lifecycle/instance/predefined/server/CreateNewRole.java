@@ -45,14 +45,13 @@ public class CreateNewRole extends PredefinedStep
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
 			int transitionID, String requestData) throws InvalidDataException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException {
-    	
 
     	ImportRole newRole;
 		try {
 			newRole = (ImportRole)Gateway.getMarshaller().unmarshall(requestData);
 		} catch (Exception e) {
 			Logger.error(e);
-			throw new InvalidDataException("CreateNewAgent: Couldn't unmarshall new Agent: "+requestData);
+			throw new InvalidDataException("CreateNewRole: Couldn't unmarshall new Role: "+requestData);
 		}
     	newRole.create(agent, true);
     	return requestData;
