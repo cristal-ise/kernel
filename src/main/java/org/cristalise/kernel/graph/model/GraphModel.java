@@ -254,16 +254,14 @@ public class GraphModel {
     }
 
     public int addVertexAndCreateId(Vertex v, GraphPoint location) {
-        if (location!= null)
-        {
+        if (location != null) {
 	        if (mVertexOutlineCreator == null) {
-	            Logger.msg(1,"You cannot add a vertex with no outline creator");
+	            Logger.warning("You cannot add a vertex with no outline creator");
 	            return -1;
-
-	        	}
-	        mVertexHashtable.put(String.valueOf(mNextId), v);
+	        }
 	        placeVertex(v, location);
 	    }
+        mVertexHashtable.put(String.valueOf(mNextId), v);
 		v.setID(mNextId);
         return mNextId++;
     }
