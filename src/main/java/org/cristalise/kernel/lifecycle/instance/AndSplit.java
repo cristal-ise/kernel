@@ -40,8 +40,8 @@ public class AndSplit extends Split
 	@Override
 	public void runNext(AgentPath agent, ItemPath item) throws InvalidDataException
 	{
-		AdvancementCalculator adv = new AdvancementCalculator();
-		adv.calculate((CompositeActivity) getParent());
+//		AdvancementCalculator adv = new AdvancementCalculator();
+//		adv.calculate((CompositeActivity) getParent());
 		Vertex[] outVertices = getOutGraphables();
 		for (Vertex outVertice : outVertices)
 			((WfVertex) outVertice).run(agent, item);
