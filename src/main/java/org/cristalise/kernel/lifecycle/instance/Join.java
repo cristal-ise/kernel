@@ -83,10 +83,18 @@ public class Join extends WfVertex
 	 *
 	 * @param idNext
 	 */
-	public void addNext(String idNext)
+	public Next addNext(String idNext)
 	{
-		new Next(this, (WfVertex) getParent().search(idNext));
+        return addNext( (WfVertex)getParent().search(idNext) );
 	}
+    /**
+     * @see org.cristalise.kernel.lifecycle.instance.WfVertex#addNext(org.cristalise.kernel.lifecycle.instance.WfVertex)
+     */
+    @Override
+    public Next addNext(WfVertex vertex)
+    {
+        return new Next(this, vertex);
+    }
 	/**
 	 * @throws InvalidDataException 
 	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#reinit(int)
@@ -188,14 +196,6 @@ public class Join extends WfVertex
 	public void run(AgentPath agent, ItemPath item) throws InvalidDataException
 	{
 		runNext(agent, item);
-	}
-	/**
-	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#addNext(org.cristalise.kernel.lifecycle.instance.WfVertex)
-	 */
-	@Override
-	public Next addNext(WfVertex vertex)
-	{
-		return new Next(this, vertex);
 	}
 	/**
 	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#loop()
