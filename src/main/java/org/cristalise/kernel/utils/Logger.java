@@ -64,6 +64,7 @@ public class Logger
                 
                 try {
                     element.println(message);
+                    element.flush();
                 } catch (Exception ex) {
                     iter.remove();
                 }
