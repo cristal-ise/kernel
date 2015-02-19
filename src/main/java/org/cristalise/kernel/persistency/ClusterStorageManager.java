@@ -315,7 +315,10 @@ public class ClusterStorageManager {
         if (Logger.doLog(9)) dumpCacheContents(9);
 
         // transmit proxy event
-        Gateway.getProxyServer().sendProxyEvent( new ProxyMessage(itemPath, path, ProxyMessage.ADDED));
+        if(Gateway.getProxyServer() != null)
+            Gateway.getProxyServer().sendProxyEvent(new ProxyMessage(itemPath, path, ProxyMessage.ADDED));
+        else
+            Logger.warning("ClusterStorageManager.put() - ProxyServer is null - Proxies are not notified of this event");
     }
 
     /** Deletes a cluster from all writers */
@@ -339,9 +342,11 @@ public class ClusterStorageManager {
             }
         }
 
-
         // transmit proxy event
-        Gateway.getProxyServer().sendProxyEvent( new ProxyMessage(itemPath, path, ProxyMessage.DELETED));
+        if(Gateway.getProxyServer() != null)
+            Gateway.getProxyServer().sendProxyEvent(new ProxyMessage(itemPath, path, ProxyMessage.DELETED));
+        else
+            Logger.warning("ClusterStorageManager.remove() - ProxyServer is null - Proxies are not notified of this event");
     }
 
     public void clearCache(ItemPath itemPath, String path) {

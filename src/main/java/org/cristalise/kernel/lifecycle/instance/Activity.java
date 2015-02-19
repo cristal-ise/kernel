@@ -91,9 +91,9 @@ public class Activity extends WfVertex
 	}
 
 	/** add the activity which id is idNext as next of the current one */
-	void addNext(String idNext)
+	Next addNext(String idNext)
 	{
-		new Next(this, (WfVertex) getParent().search(idNext));
+		return addNext((WfVertex) getParent().search(idNext));
 	}
 	/**
 	 * adds a New link between the current Activity and the WfVertex passed in param
@@ -419,8 +419,8 @@ public class Activity extends WfVertex
 	@Override
 	public void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException
 	{
-		Logger.debug(8, getPath() + " run " + getState());
-		
+		Logger.debug(8, "Activity::run() path:" + getPath() + " state:" + getState());
+
 		if (!getActive()) setActive(true);
 		boolean finished = getStateMachine().getState(getState()).isFinished();
 		if (finished)

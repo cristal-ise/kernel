@@ -59,8 +59,8 @@ public class OrSplit extends Split
 		try
 		{
 			DirectedEdge[] outEdges = getOutEdges();
-            AdvancementCalculator adv = new AdvancementCalculator();
-            adv.calculate((CompositeActivity)getParent());
+//            AdvancementCalculator adv = new AdvancementCalculator();
+//            adv.calculate((CompositeActivity)getParent());
 			while (tok.hasMoreTokens())
 			{
 				String thisNext = tok.nextToken();

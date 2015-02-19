@@ -49,6 +49,17 @@ import org.cristalise.kernel.utils.Logger;
  */
 public abstract class WfVertex extends GraphableVertex
 {
+    public enum Types {
+        Atomic,
+        Composite,
+        OrSplit,
+        XOrSplit,
+        AndSplit,
+        LoopSplit,
+        Join,
+        Route
+    }
+    
     /**sets the activity available to be executed on start of Workflow or composite activity (when it is the first one of the
      * (sub)process
      * @throws InvalidDataException 
@@ -61,13 +72,13 @@ public abstract class WfVertex extends GraphableVertex
     public abstract void runFirst(AgentPath agent, ItemPath itemPath) throws InvalidDataException;
 
     /**
-	 * @see java.lang.Object#Object()
-	 */
-	public WfVertex()
+     * @see java.lang.Object#Object()
+     */
+    public WfVertex()
     {
-    	super();
-		setIsLayoutable(true);
-		setIsComposite(false);
+        super();
+    	setIsLayoutable(true);
+    	setIsComposite(false);
     }
 
     /**

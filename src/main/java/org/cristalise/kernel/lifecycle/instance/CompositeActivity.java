@@ -47,8 +47,6 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class CompositeActivity extends Activity
 {
-	
-
     /*
      * --------------------------------------------
      * ----------------CONSTRUCTOR-----------------
@@ -60,7 +58,7 @@ public class CompositeActivity extends Activity
         setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
         setIsComposite(true);
     }
-    
+
     // State machine
 	public static final int START = 0;
 	public static final int COMPLETE = 1;
@@ -99,27 +97,32 @@ public class CompositeActivity extends Activity
     }
 
     /**
-     * Method initChild.
+     * Initialize Activity and attach to the current activity
      *
      * @param act
-     * @param first
+     * @param first if true, the Waiting state will be one of the first launched by the parent activity
      * @param point
-     */
-    /**
-     * Create an initialize a Activity attached to the current activity
-     *
-     * @param first :
-     *            if true, the activity Waiting will be one of the first
-     *            launched by the parent activity
      */
     public void initChild(Activity act, boolean first, GraphPoint point)
     {
-        this.addChild(act, new GraphPoint(point.x, point.y));
-        if (first)
-        {
+        safeAddChild(act, point);
+
+        if (first) {
             getChildrenGraphModel().setStartVertexId(act.getID());
-            Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity :: " + getID() + " is first");
+            Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::initChild() " + getName() + ":" + getID() + " was set to be first");
         }
+    }
+
+    /**
+     * Adds vertex to graph cloning GraphPoint first (NPE safe)
+     * 
+     * @param v
+     * @param g
+     */
+    private void safeAddChild(GraphableVertex v, GraphPoint g) {
+        GraphPoint p = null;
+        if(g != null) p = new GraphPoint(g.x, g.y);
+        addChild(v, p);
     }
 
     /**
@@ -133,7 +136,7 @@ public class CompositeActivity extends Activity
     public WfVertex newExistingChild(Activity child, String Name, GraphPoint point)
     {
         child.setName(Name);
-        addChild(child, new GraphPoint(point.x, point.y));
+        safeAddChild(child, point);
         return child;
     }
 
@@ -158,39 +161,35 @@ public class CompositeActivity extends Activity
      * @param vertexTypeId
      * @param point
      * @return WfVertex
+     * @throws InvalidDataException 
      */
     public WfVertex newChild(String vertexTypeId, GraphPoint point)
     {
-        WfVertex wfVertex = null;
-        if (vertexTypeId.equals("Atomic"))
-        {
-            wfVertex = newAtomChild("False id", false, point);
-        } else if (vertexTypeId.equals("Composite"))
-        {
-            wfVertex = newCompChild("False id", false, point);
-        } else if (vertexTypeId.endsWith("Split"))
-        {
-            if (vertexTypeId.startsWith("Or"))
-            {
-                wfVertex = newSplitChild("Or", point);
-            } else if (vertexTypeId.startsWith("XOr"))
-            {
-                wfVertex = newSplitChild("XOr", point);
-            } else if (vertexTypeId.startsWith("Loop"))
-            {
-                wfVertex = newSplitChild("Loop", point);
-            } else
-            {
-                wfVertex = newSplitChild("And", point);
-            }
-        } else if (vertexTypeId.equals("Join"))
-        {
-            wfVertex = newJoinChild(point);
-        } else if (vertexTypeId.equals("Route"))
-        {
-            wfVertex = newRouteChild(point);
+        return newChild(Types.valueOf(vertexTypeId), "False id", false, point);
+    }
+
+    /**
+     * 
+     * @param type
+     * @param name
+     * @param first
+     * @param point
+     * @return
+     */
+    public WfVertex newChild(Types type, String name, boolean first, GraphPoint point) {
+        switch (type) {
+            case Atomic:    return newAtomChild(name, first, point);
+            case Composite: return newCompChild(name, first, point);
+            case OrSplit:   return newSplitChild("Or", point);
+            case XOrSplit:  return newSplitChild("XOr", point);
+            case AndSplit:  return newSplitChild("And", point);
+            case LoopSplit: return newSplitChild("Loop", point);
+            case Join:      return newJoinChild(point);
+            case Route:     return newRouteChild(point);
+    
+            default:
+                throw new IllegalArgumentException("Unhandled enum value of WfVertex.Type:" + type.name());
         }
-        return wfVertex;
     }
 
     /**
@@ -237,21 +236,15 @@ public class CompositeActivity extends Activity
      */
     public Split newSplitChild(String Type, GraphPoint point)
     {
-        Split split;
-        if (Type.equals("Or"))
-        {
-            split = new OrSplit();
-        } else if (Type.equals("XOr"))
-        {
-            split = new XOrSplit();
-        } else if (Type.equals("Loop"))
-        {
-            split = new Loop();
-        } else
-        {
-            split = new AndSplit();
-        }
-        addChild(split, new GraphPoint(point.x, point.y));
+        Split split = null;
+
+        if      (Type.equals("Or"))   { split = new OrSplit(); } 
+        else if (Type.equals("XOr"))  { split = new XOrSplit(); }
+        else if (Type.equals("Loop")) { split = new Loop(); }
+        else                          { split = new AndSplit(); }
+
+        safeAddChild(split, point);
+
         return split;
     }
 
@@ -265,7 +258,7 @@ public class CompositeActivity extends Activity
     {
         Join join = new Join();
         join.getProperties().put("Type", "Join");
-        addChild(join, new GraphPoint(point.x, point.y));
+        safeAddChild(join, point);
         return join;
     }
 
@@ -273,37 +266,19 @@ public class CompositeActivity extends Activity
     {
         Join join = new Join();
         join.getProperties().put("Type", "Route");
-        addChild(join, new GraphPoint(point.x, point.y));
+        safeAddChild(join, point);
         return join;
     }
 
     /**
-     * Method search.
-     *
-     * @param ids
+     * None recursive search by id
+     * 
+     * @param id
      * @return WfVertex
      */
-    WfVertex search(int ids)
+    WfVertex search(int id)
     {
-        for (int i = 0; i < getChildren().length; i++)
-        {
-            WfVertex ver = (WfVertex) getChildren()[i];
-            if (ver instanceof Split)
-            {
-                if (ver.getID() == ids)
-                {
-                    return ver;
-                }
-            }
-            if (ver instanceof Join)
-            {
-                if (ver.getID() == ids)
-                {
-                    return ver;
-                }
-            }
-        }
-        return null;
+        return (WfVertex)getGraphModel().resolveVertex(id);
     }
 
     /**
@@ -319,6 +294,8 @@ public class CompositeActivity extends Activity
     @Override
 	public void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException
     {
+        Logger.debug(8, getPath() + "CompisiteActivity::run() state: " + getState());
+
         super.run(agent, itemPath);
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
         {
@@ -402,10 +379,7 @@ public class CompositeActivity extends Activity
      */
     public Next addNext(int originID, int terminusID)
     {
-        Next n = new Next();
-        n.setParent(this);
-        getChildrenGraphModel().addEdgeAndCreateId(n, originID, terminusID);
-        return n;
+        return addNext(search(originID), search(terminusID));
     }
 
     /**
