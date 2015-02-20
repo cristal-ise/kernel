@@ -132,7 +132,7 @@ public abstract class GraphableVertex extends Vertex
 
 	public GraphableVertex[] getLayoutableChildren()
 	{
-		if (getIsComposite())
+		if (getIsComposite() && mChildrenGraphModel != null)
 		{
 			Vertex[] vs = mChildrenGraphModel.getVertices();
 			GraphableVertex[] gvs = new GraphableVertex[vs.length];
