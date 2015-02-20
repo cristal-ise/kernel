@@ -244,8 +244,12 @@ public class AgentProxy extends ItemProxy
     		param = PredefinedStep.bundleData(params);
     	else
     		param = params[0];
-    	
-        return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/"+predefStep, PredefinedStep.DONE, param);
+    	try {
+    		return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/"+predefStep, PredefinedStep.DONE, param);
+    	} catch (Exception ex) {
+    		Logger.error(ex);
+    		throw ex;
+    	}
     }
     
     /**
