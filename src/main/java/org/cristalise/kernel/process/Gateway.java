@@ -291,6 +291,20 @@ public class Gateway
 		return userProxy;
     }
     
+    static public AgentProxy login(String agentName, String agentPassword, String resource) 
+    		throws InvalidDataException, ObjectNotFoundException {
+        Authenticator auth = getAuthenticator();
+        if (!auth.authenticate(agentName, agentPassword, resource))
+        	throw new InvalidDataException("Login failed");
+
+        // find agent proxy
+        AgentPath agentPath = mLookup.getAgentPath(agentName);
+        AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
+        userProxy.setAuthObj(auth);
+        
+		return userProxy;
+    }
+    
     static public Authenticator getAuthenticator() throws InvalidDataException {
     	try {
 			return (Authenticator)mC2KProps.getInstance("Authenticator");
