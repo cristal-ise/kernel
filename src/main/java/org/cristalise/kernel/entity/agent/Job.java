@@ -333,9 +333,16 @@ public class Job implements C2KLocalObject
             desc = "No Description";
         return desc;
     }
+    
 	public void setOutcome(String outcome)
     {
 		outcomeData = outcome;
+        outcomeSet = !(outcomeData == null);
+    }
+	
+	public void setOutcome(Outcome outcome)
+    {
+		outcomeData = outcome.getData();
         outcomeSet = !(outcomeData == null);
     }
     

@@ -165,7 +165,7 @@ public class ImportItem extends ModuleImport {
                     Gateway.getMarshaller().marshall(compact.instantiate()),
                     Gateway.getMarshaller().marshall(colls));
         } catch (Exception ex) {
-            Logger.error("Error initialising new item "+name );
+            Logger.error("Error initialising new item "+ns+"/"+name );
             Logger.error(ex);
             throw new CannotManageException("Problem initialising new item. See server log.");
         }
@@ -175,30 +175,35 @@ public class ImportItem extends ModuleImport {
         XMLUnit.setIgnoreComments(true);
         History hist = new History(getItemPath(), null);
         for (ImportOutcome thisOutcome : outcomes) {
-            Outcome newOutcome = new Outcome(-1, thisOutcome.getData(ns), thisOutcome.schema, thisOutcome.version);
+            Outcome newOutcome;
+			try {
+				newOutcome = new Outcome(-1, thisOutcome.getData(ns), thisOutcome.schema, thisOutcome.version);
+			} catch (InvalidDataException e1) {
+				throw new ObjectCannotBeUpdated("XML is not valid in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
+			}
         	Viewpoint impView;
         	try {
         		impView = (Viewpoint)Gateway.getStorage().get(getItemPath(), ClusterStorage.VIEWPOINT+"/"+thisOutcome.schema+"/"+thisOutcome.viewname, null);
 
                 Diff xmlDiff = new Diff(newOutcome.getDOM(), impView.getOutcome().getDOM());
                 if (xmlDiff.identical()) {
-                    Logger.msg(5, "NewItem.create() - View "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+name+" identical, no update required");
+                    Logger.msg(5, "NewItem.create() - View "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name+" identical, no update required");
                     continue;
                 }
                 else {
-                	Logger.msg("NewItem.create() - Difference found in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+name+": "+xmlDiff.toString());
+                	Logger.msg("NewItem.create() - Difference found in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name+": "+xmlDiff.toString());
                 	if (!reset && !impView.getEvent().getStepPath().equals("Import")) {
                 		Logger.msg("Last edit was not done by import, and reset not requested. Not overwriting.");
                 		continue;
                 	}
                 }
         	} catch (ObjectNotFoundException ex) { 
-        		Logger.msg(3, "View "+thisOutcome.schema+"/"+thisOutcome.viewname+" not found in "+name+". Creating.");
+        		Logger.msg(3, "View "+thisOutcome.schema+"/"+thisOutcome.viewname+" not found in "+ns+"/"+name+". Creating.");
         		impView = new Viewpoint(getItemPath(), thisOutcome.schema, thisOutcome.viewname, thisOutcome.version, -1);
         	} catch (PersistencyException e) {
-        		throw new ObjectCannotBeUpdated("Could not check data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+name);
+        		throw new ObjectCannotBeUpdated("Could not check data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
 			} catch (InvalidDataException e) {
-				throw new ObjectCannotBeUpdated("Could not check previous event for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+name);
+				throw new ObjectCannotBeUpdated("Could not check previous event for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
 			}
         	
         	// write new view/outcome/event
@@ -210,7 +215,7 @@ public class ImportItem extends ModuleImport {
 				Gateway.getStorage().put(getItemPath(), newOutcome, null);
 				Gateway.getStorage().put(getItemPath(), impView, null);
 			} catch (PersistencyException e) {
-				throw new ObjectCannotBeUpdated("Could not store data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+name);
+				throw new ObjectCannotBeUpdated("Could not store data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
 			}
 		}
         

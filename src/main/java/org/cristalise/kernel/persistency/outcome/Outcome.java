@@ -19,6 +19,7 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.persistency.outcome;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.StringTokenizer;
 
@@ -46,14 +47,14 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 public class Outcome implements C2KLocalObject {
     Integer mID;
-    String mData;
     String mSchemaType;
     int mSchemaVersion;
-    Document dom;
+    Document mDOM;
     static DocumentBuilder parser;
     static DOMImplementationLS impl;
     static XPath xpath;
@@ -82,16 +83,36 @@ public class Outcome implements C2KLocalObject {
         XPathFactory xPathFactory = XPathFactory.newInstance();
         xpath = xPathFactory.newXPath();
     }
+    
+    public Outcome(int id, String xml, String schemaType, int schemaVersion) throws InvalidDataException {
+    	this(id, (Document)null, schemaType, schemaVersion);
+    	try {
+    		mDOM = parse(xml);
+    	} catch (IOException | SAXException ex) {
+    		Logger.error(ex);
+    		throw new InvalidDataException("XML not valid: "+ex.getMessage());
+    	}
+    }
 
     //id is the eventID
-    public Outcome(int id, String data, String schemaType, int schemaVersion) {
+    public Outcome(int id, Document dom, String schemaType, int schemaVersion) {
         mID = id;
-        mData = data;
+        mDOM = dom;
         mSchemaType = schemaType;
         mSchemaVersion = schemaVersion;
     }
+    
+    public Outcome(String path, String xml) throws PersistencyException, InvalidDataException {
+    	this(path, (Document)null);
+    	try {
+    		mDOM = parse(xml);
+    	} catch (IOException | SAXException ex) {
+    		Logger.error(ex);
+    		throw new InvalidDataException("XML not valid: "+ex.getMessage());
+    	}
+    }
 
-    public Outcome(String path, String data) throws PersistencyException {
+    public Outcome(String path, Document data) throws PersistencyException {
     // derive all the meta data from the path
         StringTokenizer tok = new StringTokenizer(path,"/");
         if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
@@ -109,7 +130,7 @@ public class Outcome implements C2KLocalObject {
         } catch (NumberFormatException ex) {
             mID = null;
         }
-        mData = data;
+        mDOM = data;
     }
 
     public void setID(Integer ID) {
@@ -134,14 +155,12 @@ public class Outcome implements C2KLocalObject {
         return mID.toString();
     }
 
-    public void setData(String data) {
-        mData = data;
-        dom = null;
+    public void setData(String xml) throws SAXException, IOException {
+        mDOM = parse(xml);
     }
 
-    public void setData(Document data) {
-        dom = data;
-        mData = null;
+    public void setDOM(Document dom) {
+        mDOM = dom;
     }
     
     public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
@@ -181,7 +200,7 @@ public class Outcome implements C2KLocalObject {
     	else if (field.getNodeType()==Node.ELEMENT_NODE) {
     		NodeList fieldChildren = field.getChildNodes();
     		if (fieldChildren.getLength() == 0) {
-    			field.appendChild(dom.createTextNode(data));
+    			field.appendChild(mDOM.createTextNode(data));
     		}
     		else if (fieldChildren.getLength() == 1) {
     			Node child = fieldChildren.item(0);
@@ -205,10 +224,11 @@ public class Outcome implements C2KLocalObject {
 
 
     public String getData() {
-    	if (mData == null && dom != null) {
-    		mData = serialize(dom, false);
-    	}
-        return mData;
+    	return serialize(mDOM, false);
+    }
+    
+    public Document getDOM() {
+    	return mDOM;
     }
 
     public Schema getSchema() throws ObjectNotFoundException {
@@ -241,25 +261,20 @@ public class Outcome implements C2KLocalObject {
     /**
      * Parses the outcome into a DOM tree
      * @return a DOM Document
+     * @throws IOException 
+     * @throws SAXException 
      */
-    public Document getDOM() {
-    	if (dom == null)
-        try {
-            synchronized (parser) {
-            	if (mData!=null)
-            		dom = parser.parse(new InputSource(new StringReader(mData)));
-            	else
-            		dom = parser.newDocument();
-            }
-        } catch (Exception e) {
-            Logger.error(e);
-            return null;
+    public static Document parse(String xml) throws SAXException, IOException {
+        synchronized (parser) {
+        	if (xml!=null)
+        		return parser.parse(new InputSource(new StringReader(xml)));
+        	else
+        		return parser.newDocument();
         }
-    	return dom;
     }
     
     public String getField(String name) {
-    	 NodeList elements = getDOM().getDocumentElement().getElementsByTagName(name);
+    	 NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
     	 if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
     		 return ((Text)elements.item(0).getFirstChild()).getData();
     	 else
@@ -269,14 +284,14 @@ public class Outcome implements C2KLocalObject {
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
     	
     	XPathExpression expr = xpath.compile(xpathExpr);
-    	return (NodeList)expr.evaluate(getDOM(), XPathConstants.NODESET);
+    	return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
     	
     }
     
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
     	
     	XPathExpression expr = xpath.compile(xpathExpr);
-    	return (Node)expr.evaluate(getDOM(), XPathConstants.NODE);
+    	return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
     	
     }
 
