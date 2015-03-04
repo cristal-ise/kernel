@@ -350,7 +350,7 @@
 		<KeyValuePair Key="Maximum Time Unit" isAbstract="false"
 			Integer="3" />
 		<KeyValuePair Key="StateMachineName" isAbstract="false"
-			String="Default" />
+			String="CompositeActivity" />
 		<KeyValuePair Key="Expected Time Unit" isAbstract="false"
 			Integer="3" />
 		<KeyValuePair Key="Expected Time" isAbstract="false"
