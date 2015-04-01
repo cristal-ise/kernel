@@ -111,6 +111,7 @@ public class Resource implements ResourceLoader {
 	 */
     @Override
 	public URL getModuleResourceURL(String ns, String resName) throws MalformedURLException {
+    	if (!moduleBaseURLs.containsKey(ns)) throw new MalformedURLException("Could not locate resource. Namespace '"+ns+"' not registered.");
         return new URL(moduleBaseURLs.get(ns), resName);
     }
 
