@@ -1,4 +1,4 @@
-CRISTAL-iSE kernel
+CRISTAL-iSE kernel [![Build Status](https://travis-ci.org/cristal-ise/kernel.svg?branch=master)](https://travis-ci.org/cristal-ise/kernel)
 ==================
 
 The core java library of CRISTAL, which provides client and server APIs.
