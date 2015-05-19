@@ -204,7 +204,8 @@ public class Script
 
     }
 
-    public void setScriptEngine(String lang) throws ScriptingEngineException {
+    public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
+    	String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
     	engine = new ScriptEngineManager(getClass().getClassLoader()).getEngineByName(lang);
     	if (engine==null)
     		throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
@@ -568,5 +569,6 @@ public class Script
     	for(ScriptEngineFactory sef: new ScriptEngineManager().getEngineFactories()) {
     		System.out.println(sef.getEngineName()+" v"+sef.getEngineVersion()+" using "+sef.getLanguageName()+" v"+sef.getLanguageVersion()+" "+sef.getNames());
     	}
+    	System.out.println("Preferred javascript engine: "+new ScriptEngineManager().getEngineByName("javascript").getClass().getName());
     }
 }
