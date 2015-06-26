@@ -46,8 +46,6 @@ import org.cristalise.kernel.process.module.ModuleManager;
 import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.utils.CastorXMLUtility;
-import org.cristalise.kernel.utils.FileStringUtility;
-import org.cristalise.kernel.utils.Language;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
 
@@ -155,13 +153,6 @@ public class Gateway
 
         // dump properties
         dumpC2KProps(7);
-
-        //Initialise language file
-        String languageFile = getProperties().getString("language.file");
-        if (languageFile != null && languageFile.length() > 0) {
-            Language.isTranlated=true;
-            Language.mTableOfTranslation = FileStringUtility.loadLanguageFile(languageFile);
-        }
     }
 
     /**
