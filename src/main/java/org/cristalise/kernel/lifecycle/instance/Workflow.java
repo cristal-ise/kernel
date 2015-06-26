@@ -41,7 +41,6 @@ import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
-import org.cristalise.kernel.utils.Language;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -56,17 +55,17 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	/** TypeNameAndConstructionInfo[] variables added by Steve */
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
-			new TypeNameAndConstructionInfo(Language.translate("AND Split"), "AndSplit"),
-			new TypeNameAndConstructionInfo(Language.translate("OR Split"), "OrSplit"),
-			new TypeNameAndConstructionInfo(Language.translate("XOR Split"), "XOrSplit"),
-			new TypeNameAndConstructionInfo(Language.translate("Join"), "Join"),
-			new TypeNameAndConstructionInfo(Language.translate("Loop"), "LoopSplit"),
-			new TypeNameAndConstructionInfo(Language.translate("Activity"), "Atomic"),
-			new TypeNameAndConstructionInfo(Language.translate("Composite"), "Composite")
+			new TypeNameAndConstructionInfo("AND Split", "AndSplit"),
+			new TypeNameAndConstructionInfo("OR Split", "OrSplit"),
+			new TypeNameAndConstructionInfo("XOR Split", "XOrSplit"),
+			new TypeNameAndConstructionInfo("Join", "Join"),
+			new TypeNameAndConstructionInfo("Loop", "LoopSplit"),
+			new TypeNameAndConstructionInfo("Activity", "Atomic"),
+			new TypeNameAndConstructionInfo("Composite", "Composite")
 			};
 	private final TypeNameAndConstructionInfo[] mEdgeTypeNameAndConstructionInfo =
 		{
-			new TypeNameAndConstructionInfo(Language.translate("Next"), "Next")
+			new TypeNameAndConstructionInfo("Next", "Next")
 		};
 	/**
 	 * @see java.lang.Object#Object()

@@ -28,7 +28,6 @@ import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
-import org.cristalise.kernel.utils.Language;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -39,17 +38,17 @@ public class CompositeActivityDef extends ActivityDef
 {
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
-			new TypeNameAndConstructionInfo(Language.translate("Activity"), "Atomic"),
-			new TypeNameAndConstructionInfo(Language.translate("Composite"), "Composite"),
-			new TypeNameAndConstructionInfo(Language.translate("AND Split"), "And"),
-			new TypeNameAndConstructionInfo(Language.translate("OR Split"), "Or"),
-			new TypeNameAndConstructionInfo(Language.translate("XOR Split"), "XOr"),
-			new TypeNameAndConstructionInfo(Language.translate("Join"), "Join"),
-			new TypeNameAndConstructionInfo(Language.translate("Loop"), "Loop"),
+			new TypeNameAndConstructionInfo("Activity", "Atomic"),
+			new TypeNameAndConstructionInfo("Composite", "Composite"),
+			new TypeNameAndConstructionInfo("AND Split", "And"),
+			new TypeNameAndConstructionInfo("OR Split", "Or"),
+			new TypeNameAndConstructionInfo("XOR Split", "XOr"),
+			new TypeNameAndConstructionInfo("Join", "Join"),
+			new TypeNameAndConstructionInfo("Loop", "Loop"),
 			};
 	private final TypeNameAndConstructionInfo[] mEdgeTypeNameAndConstructionInfo =
 		{
-			new TypeNameAndConstructionInfo(Language.translate("Next Edge"), "Next")
+			new TypeNameAndConstructionInfo("Next Edge", "Next")
 		};
 	public TypeNameAndConstructionInfo[] getVertexTypeNameAndConstructionInfo()
 	{

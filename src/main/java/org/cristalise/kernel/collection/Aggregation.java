@@ -31,7 +31,6 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
-import org.cristalise.kernel.utils.Language;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -45,7 +44,7 @@ abstract public class Aggregation extends Collection<AggregationMember>
     protected GraphModel mLayout = new GraphModel(new AggregationVertexOutlineCreator());
 
     private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo = {
-            new TypeNameAndConstructionInfo(Language.translate("Slot"), "AggregationMember")
+            new TypeNameAndConstructionInfo("Slot", "AggregationMember")
     };
 
     public Aggregation()
