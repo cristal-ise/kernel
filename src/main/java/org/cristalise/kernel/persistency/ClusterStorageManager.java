@@ -242,43 +242,41 @@ public class ClusterStorageManager {
 				result = new History(itemPath, null);
             if (path.equals(ClusterStorage.JOB))
             	result =  new JobList(itemPath, null);
-            if (result!=null) {
-                synchronized(sysKeyMemCache) {
-                    sysKeyMemCache.put(path, result);
-                 }
-                return result;
-            }
-            	
 		}
 
-        // else try each reader in turn until we find it
-        ArrayList<ClusterStorage> readers = findStorages(ClusterStorage.getClusterType(path), false);
-        for (ClusterStorage thisReader : readers) {
-            try {
-                result = thisReader.get(itemPath, path);
-                Logger.msg(7, "ClusterStorageManager.get() - reading "+path+" from "+thisReader.getName() + " for item " + itemPath);
-                if (result != null) { // got it!
-                    // store it in the cache
-	                if (sysKeyMemCache == null) { // create cache if needed
-	                	boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
-	                    Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
-	                    sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
-                        synchronized (memoryCache) {
-                           memoryCache.put(itemPath, sysKeyMemCache);
-                        }
-                    }
-                    synchronized(sysKeyMemCache) {
-                       sysKeyMemCache.put(path, result);
-                    }
-                    // then return it
-                    return result;
+		if (result == null) {
+	        // else try each reader in turn until we find it
+	        ArrayList<ClusterStorage> readers = findStorages(ClusterStorage.getClusterType(path), false);
+	        for (ClusterStorage thisReader : readers) {
+	            try {
+	                result = thisReader.get(itemPath, path);
+	                Logger.msg(7, "ClusterStorageManager.get() - reading "+path+" from "+thisReader.getName() + " for item " + itemPath);
+	                if (result != null) break; // got it!
+	            } catch (PersistencyException e) {
+	                Logger.msg(7, "ClusterStorageManager.get() - reader " + thisReader.getName() + " could not retrieve " + itemPath +
+	                    "/" + path + ": " + e.getMessage());
+	            }
+	        }
+		}
+		
+		if (result == null)
+			throw new ObjectNotFoundException("ClusterStorageManager.get() - Path " + path + " not found in " + itemPath);
+		else {
+			// got it! store it in the cache
+            if (sysKeyMemCache == null) { // create cache if needed
+            	boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
+                Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
+                sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
+                synchronized (memoryCache) {
+                   memoryCache.put(itemPath, sysKeyMemCache);
                 }
-            } catch (PersistencyException e) {
-                Logger.msg(7, "ClusterStorageManager.get() - reader " + thisReader.getName() + " could not retrieve " + itemPath +
-                    "/" + path + ": " + e.getMessage());
             }
-        }
-        throw new ObjectNotFoundException("ClusterStorageManager.get() - Path " + path + " not found in " + itemPath);
+            synchronized(sysKeyMemCache) {
+               sysKeyMemCache.put(path, result);
+            }
+            // then return it
+            return result;
+		}
     }
 
     /** Internal put method. Creates or overwrites a cluster in all writers. Used when committing transactions. */
