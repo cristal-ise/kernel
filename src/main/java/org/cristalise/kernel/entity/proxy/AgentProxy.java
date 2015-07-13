@@ -188,7 +188,7 @@ public class AgentProxy extends ItemProxy
         return result;
     }
 
-    private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException {
+    private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException {
     	Script script = new Script(item, this, job);
     	return script.execute();
     }

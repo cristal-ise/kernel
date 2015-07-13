@@ -38,6 +38,7 @@ import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
@@ -142,9 +143,9 @@ public class Script
         this(lang, expr, Object.class);
     }
 
-    public Script(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException
+    public Script(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException, InvalidDataException
     {
-        this(job.getActPropString("ScriptName"), getScriptVersion(job));
+        this(job.getScriptName(), job.getScriptVersion());
         // set environment - this needs to be well documented for script developers
         if (!mInputParams.containsKey("item"))
         	addInputParam("item", ItemProxy.class);
@@ -160,14 +161,6 @@ public class Script
 
         if (!mOutputParams.containsKey("errors"))
         	addOutput("errors", ErrorInfo.class);
-    }
-    
-    public static int getScriptVersion(Job job) {
-    	String verStr = job.getActPropString("ScriptVersion");
-    	if (verStr != null)
-    		return Integer.parseInt(verStr);
-    	else
-    		return -1;
     }
     
     /**

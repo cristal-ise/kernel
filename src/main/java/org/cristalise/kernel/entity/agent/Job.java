@@ -283,7 +283,7 @@ public class Job implements C2KLocalObject
     
     public String getScriptName() {
     	if (transition.hasScript(actProps)) {
-			return transition.getScript().getScriptName();
+			return transition.getScriptName(actProps);
     	}
    		return null;
 	}
