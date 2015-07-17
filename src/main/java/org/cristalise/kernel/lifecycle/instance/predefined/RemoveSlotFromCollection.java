@@ -90,7 +90,7 @@ public class RemoveSlotFromCollection extends PredefinedStep
         }
         
         if (slotNo == -1 && currentChild == null)
-        	throw new InvalidDataException("RemoveSlotFromCollection: Must give either slot number or entity key");
+        	throw new InvalidDataException("RemoveSlotFromCollection: Must give either slot number or item UUID");
 
         // load collection
         try {

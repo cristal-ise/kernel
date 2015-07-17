@@ -79,7 +79,7 @@ public class ProxyServerConnection extends Thread
                             sendMessage(ProxyMessage.pingMessage);
                         } catch (InvalidDataException ex) { // invalid proxy message
                             if (input != null)
-                                Logger.error("EntityProxyManager - Invalid proxy message: "+input);
+                                Logger.error("ProxyManager - Invalid proxy message: "+input);
                         }
                     }
                 }

@@ -201,7 +201,7 @@ public class TransactionManager {
     /**
      * Removes all child objects from the given path
      *
-     * @param sysKey - entity to delete from
+     * @param itemPath - Item to delete from
      * @param path - root path to delete
      * @param locker - locking object
      *

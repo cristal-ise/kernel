@@ -60,11 +60,11 @@ import org.cristalise.kernel.utils.ObjectProperties;
  * <ul>
  * <li>Lookup - Provides access to the CRISTAL directory. Find or
  * search for Items or Agents.
- * <li>EntityProxyManager - Gives a local proxy object for Entities found
- * in LDAP. Execute activities in Items, query or subscribe to Entity data.
+ * <li>ProxyManager - Gives a local proxy object for Entities found
+ * in the directory. Execute activities in Items, query or subscribe to Entity data.
  * <li>TransactionManager - Access to the configured CRISTAL databases
  * <li>CorbaServer - Manages the memory pool of active Entities
- * <li>mORB - the Orbacus CORBA ORB
+ * <li>ORB - the CORBA ORB
  * </ul>
  *
  * @author $Author: abranson $ $Date: 2005/10/12 12:51:54 $
