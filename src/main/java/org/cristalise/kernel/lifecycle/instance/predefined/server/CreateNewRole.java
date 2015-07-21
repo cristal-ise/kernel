@@ -53,6 +53,8 @@ public class CreateNewRole extends PredefinedStep
 			Logger.error(e);
 			throw new InvalidDataException("CreateNewRole: Couldn't unmarshall new Role: "+requestData);
 		}
+		if (Gateway.getLookup().getRolePath(newRole.getName()).exists())
+			throw new ObjectAlreadyExistsException("Role '"+newRole.getName()+"' already exists.");
     	newRole.create(agent, true);
     	return requestData;
     }
