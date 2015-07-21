@@ -43,6 +43,7 @@ public class ImportRole extends ModuleImport {
 	@Override
 	public void create(AgentPath agentPath, boolean reset) throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException {
 		RolePath parent = new RolePath();
+		String roleName = name;
 		if (name.indexOf('/') > -1) {
 			String[] roleComp = name.split("/");
 			for (int i=0; i<roleComp.length-1; i++) {
@@ -58,10 +59,18 @@ public class ImportRole extends ModuleImport {
 				}
 				if (!found) throw new ObjectNotFoundException("Parent role "+roleComp[i]+" was not found");
 			}
-			name = roleComp[roleComp.length-1];
+			roleName = roleComp[roleComp.length-1];
 		}
-		RolePath newRole = new RolePath(parent, name, jobList);
-		if (!newRole.exists()) Gateway.getLookupManager().createRole(newRole);
+		RolePath newRole = new RolePath(parent, roleName, jobList);
+		
+		// check that the role name is unique
+		try {
+			RolePath existingRole = Gateway.getLookup().getRolePath(roleName);
+			if (!newRole.getPath().equals(existingRole.getPath()))
+				throw new ObjectAlreadyExistsException("Role '"+roleName+"' already exists under a different path: "+existingRole.getPath());
+		} catch (ObjectNotFoundException ex) { // no existing role
+			Gateway.getLookupManager().createRole(newRole);
+		}
 	}
 
 	public boolean hasJobList() {
