@@ -63,5 +63,11 @@ public class StandardServer extends AbstractMain
     {
 		//initialise everything
         standardInitialisation( args );
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				AbstractMain.shutdown(0);
+			}
+		});
     }
 }

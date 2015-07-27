@@ -26,6 +26,12 @@ abstract public class StandardClient extends AbstractMain
 
 	static public void main(String[] args) throws Exception {
 		Gateway.init(readC2KArgs(args));
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				AbstractMain.shutdown(0);
+			}
+		});
 		//AgentProxy user = Gateway.connect("username", "password");
 	}
 }
