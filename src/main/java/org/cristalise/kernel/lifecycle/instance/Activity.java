@@ -211,7 +211,7 @@ public class Activity extends WfVertex
 				Gateway.getStorage().put(itemPath, newOutcome, locker);
 				
 				// update specific view if defined
-				if (viewName != null && !viewName.equals("")) {
+				if (viewName != null && !viewName.equals("") && !viewName.equals("last")) {
 					Viewpoint currentView = new Viewpoint(itemPath, schema.docType, viewName, schema.docVersion, newEvent.getID());
 					Gateway.getStorage().put(itemPath, currentView, locker);
 				} 
