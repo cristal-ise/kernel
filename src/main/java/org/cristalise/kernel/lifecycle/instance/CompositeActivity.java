@@ -62,6 +62,9 @@ public class CompositeActivity extends Activity
     // State machine
 	public static final int START = 0;
 	public static final int COMPLETE = 1;
+	public static final int WAITING = 0;
+	public static final int STARTED = 1;
+	public static final int FINISHED = 2;
 	@Override
 	protected String getDefaultSMName() {
 		return "CompositeActivity";
@@ -299,8 +302,21 @@ public class CompositeActivity extends Activity
         super.run(agent, itemPath, locker);
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
         {
+			switch (getState()) { 
+			case CompositeActivity.WAITING:
+				try {
+					request(agent, itemPath, CompositeActivity.START, null, locker);
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (Exception e) { // Agent didn't have permission to start the activity, so leave it waiting
+					Logger.error(e);
+					return;
+				}
+			case CompositeActivity.STARTED:
             WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
             first.run(agent, itemPath, locker);
+			default:
+			}
         }
     }
 
@@ -313,7 +329,8 @@ public class CompositeActivity extends Activity
 			} catch (RuntimeException e) {
 				throw e;
 			} catch (Exception e) { 
-				Logger.error(e); // current agent couldn't complete the composite, so leave it
+				Logger.error(e); // current agent couldn't complete the composite, so leave it for someoen who can
+				return;
 			} 
         super.runNext(agent, itemPath, locker);
     }
