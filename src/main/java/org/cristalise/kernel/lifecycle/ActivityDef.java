@@ -46,8 +46,14 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	{
 		mErrors = new Vector<String>(0, 1);
 		setProperties(new WfCastorHashMap());
+		getProperties().put("StateMachineName", getDefaultSMName());
 		setIsLayoutable(false);
 	}
+	
+	protected String getDefaultSMName() {
+		return "Default";
+	}
+	
 	/**
 	 * @see org.cristalise.kernel.graph.model.Vertex#setID(int)
 	 */

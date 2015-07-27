@@ -62,8 +62,14 @@ public class CompositeActivityDef extends ActivityDef
 	public CompositeActivityDef()
 	{
 		super();
+		getProperties().put("StateMachineName", getDefaultSMName());
 		setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
 		setIsComposite(true);
+	}
+	
+	@Override
+	protected String getDefaultSMName() {
+		return "CompositeActivity";
 	}
 
 	/**
