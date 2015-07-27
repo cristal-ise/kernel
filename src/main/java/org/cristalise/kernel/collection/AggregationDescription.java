@@ -58,7 +58,7 @@ public class AggregationDescription extends Aggregation implements CollectionDes
     		AggregationMember mem = mMembers.list.get(i);
 			//get the propdesc of the member item and look for an explicit version
     		String descVer = getDescVer(mem);
-			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer);
+			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
 			if (pdList!=null)
 			{
 				//create the new props of the member object

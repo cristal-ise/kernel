@@ -131,7 +131,7 @@ public class CreateItemFromDescription extends PredefinedStep
 
 	protected PropertyArrayList getNewProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent, Object locker) throws ObjectNotFoundException, InvalidDataException {
         // copy properties -- intend to create from propdesc
-        PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer);
+        PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, locker);
         PropertyArrayList props = pdList.instantiate(initProps);
         // set Name prop or create if not present
         boolean foundName = false;

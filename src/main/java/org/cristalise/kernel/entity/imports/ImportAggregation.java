@@ -68,7 +68,7 @@ public class ImportAggregation {
             	}
             	
             	 String descVer = thisMem.itemDescriptionVersion==null?"last":thisMem.itemDescriptionVersion;
-                 PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer);
+                 PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
                  for (PropertyDescription pd : propList.list) {
 					thisMem.props.put(pd.getName(), pd.getDefaultValue());
 					if (pd.getIsClassIdentifier())

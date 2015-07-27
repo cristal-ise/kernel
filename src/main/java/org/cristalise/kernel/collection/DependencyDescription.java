@@ -48,7 +48,7 @@ public class DependencyDescription extends Dependency implements CollectionDescr
 		if (mMembers.list.size() == 1) { // constrain the members based on the property description
 			DependencyMember mem = mMembers.list.get(0);
 			String descVer = getDescVer(mem);
-			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer);
+			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
 			if (pdList!=null) {
 				newDep.setProperties(PropertyUtility.createProperty(pdList));
 				newDep.setClassProps(pdList.getClassProps());

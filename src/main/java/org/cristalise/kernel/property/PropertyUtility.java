@@ -67,11 +67,11 @@ public class PropertyUtility
 	}
 
 
-	static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer) throws ObjectNotFoundException
+	static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException
 	{
         try
         {
-            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", null);
+            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
 			return (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(outc.getData());
         }
         catch (Exception ex)

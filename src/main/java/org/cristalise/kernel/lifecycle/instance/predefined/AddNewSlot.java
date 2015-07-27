@@ -114,7 +114,7 @@ public class AddNewSlot extends PredefinedStep
         StringBuffer classProps = new StringBuffer();
         if (descKey != null) {
         	PropertyDescriptionList propList;
-			propList = PropertyUtility.getPropertyDescriptionOutcome(descKey, descVer);
+			propList = PropertyUtility.getPropertyDescriptionOutcome(descKey, descVer, locker);
             for (PropertyDescription pd : propList.list) {
 				props.put(pd.getName(), pd.getDefaultValue());
 				if (pd.getIsClassIdentifier())

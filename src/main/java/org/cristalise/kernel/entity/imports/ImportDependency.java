@@ -79,7 +79,7 @@ public class ImportDependency {
            		itemPath = new DomainPath(itemDescriptionPath).getItemPath();
            	}
         	String descVer = itemDescriptionVersion==null?"last":itemDescriptionVersion;
-        	PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer);
+        	PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
             StringBuffer classProps = new StringBuffer();
              for (PropertyDescription pd : propList.list) {
 				props.put(pd.getName(), pd.getDefaultValue());
