@@ -77,7 +77,10 @@ public class History extends RemoteMap<Event> {
         newEvent.setStepType(stepType);
         newEvent.setSchemaName(schemaName);
         newEvent.setSchemaVersion(schemaVersion);
-        newEvent.setViewName(viewName);
+        if (viewName == null || viewName.equals(""))
+        	newEvent.setViewName("last");
+        else
+        	newEvent.setViewName(viewName);
         newEvent.setOriginState(transition.getOriginStateId());
         newEvent.setTargetState(transition.getTargetStateId());
         newEvent.setTransition(transition.getId());
