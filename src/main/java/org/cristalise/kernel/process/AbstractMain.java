@@ -173,6 +173,8 @@ abstract public class AbstractMain
 				Gateway.close();
 			} catch (Exception ex) {
 				Logger.error(ex);
+			} finally { // on non-zero (error) exit code, do a hard exit
+		    	if (errCode > 0) System.exit(errCode);
 			}
     }
 }
