@@ -34,6 +34,7 @@ import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.graph.model.GraphPoint;
+import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -131,8 +132,9 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 		throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
 		Logger.msg(3, "Workflow::requestAction() - transition:" + transitionID + " step:" + stepPath + " agent:" + agent);
-		if (search(stepPath) != null)
-			return ((Activity) search(stepPath)).request(agent, itemPath, transitionID, requestData, this);
+		GraphableVertex vert = search(stepPath);
+		if (vert != null && vert instanceof Activity)
+			return ((Activity) vert).request(agent, itemPath, transitionID, requestData, this);
 		else
 			throw new ObjectNotFoundException(stepPath + " not found");
 	}
