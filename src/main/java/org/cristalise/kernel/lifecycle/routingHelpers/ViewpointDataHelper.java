@@ -20,67 +20,45 @@
  */
 package org.cristalise.kernel.lifecycle.routingHelpers;
 
+import javax.xml.xpath.XPathExpressionException;
+
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.utils.XmlElementParser;
 
 
-public class ViewpointDataHelper
+public class ViewpointDataHelper implements DataHelper
 {
-    static Object[] errArr = { "" };
     /**
      * Method get.
      * @param value
-     * @return String[]
+     * @return String
      * @throws Exception
      */
-    /**@param value : /UUID (or . if current) /SchemaName/Viewname/Path:XPathInOutcome */
-    public static Object [] get(String value) throws Exception
+    /**@param value : /UUID (or . if current) /SchemaName/Viewname/Path:XPathInOutcome 
+     * @throws PersistencyException */
+    @Override
+	public String get(ItemPath item, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        //Syntax of search : <EntityPath>/<ViewpointPath>:<XPathinOutcome>
-        String entityPath;
-        String viewpoint;
-        String xpath;
-        Object[] retArr;
-
-        // find syskey, viewname, xpath
-        int firstSlash = value.indexOf("/");
-        if (firstSlash > 0) {
-            entityPath = value.substring(0, firstSlash);
-            int startXPath = value.indexOf(":");
-            if (startXPath==-1) {
-                viewpoint = value.substring(firstSlash + 1);
-                xpath = null;
-            } else {
-                viewpoint = value.substring(firstSlash + 1, startXPath);
-                xpath = value.substring(startXPath+1);
-            }
-        }
-        else return errArr;
-
-        // find entity
-        ItemPath sourcePath = new ItemPath(entityPath);
-
-        try {
-            // load viewpoint
-            ItemProxy dataSource = Gateway.getProxyManager().getProxy(sourcePath);
-            Viewpoint view = (Viewpoint)dataSource.getObject(ClusterStorage.VIEWPOINT + "/" + viewpoint);
-            Outcome outcome = view.getOutcome();
-            if (xpath == null) {
-                retArr = new Object[1];
-                retArr[0] = outcome;
-            }
-            else
-                retArr = XmlElementParser.parse(outcome.getData(), xpath);
-            return retArr;
-
-        } catch (ObjectNotFoundException e) {
-            return errArr;
-        }
+        //Syntax of search : <ViewpointPath>:<XPathinOutcome>
+    	String[] paths = dataPath.split(":");
+    	if (paths.length != 2)
+    		throw new InvalidDataException("Invalid path: "+dataPath);
+        String viewpoint = paths[0];
+        String xpath = paths[1];
+        
+        // load viewpoint
+        Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
+        Outcome outcome = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+       	try {
+			return outcome.getFieldByXPath(xpath);
+		} catch (XPathExpressionException e) {
+			throw new InvalidDataException("Invalid XPath: "+xpath);
+		}
     }
 }
