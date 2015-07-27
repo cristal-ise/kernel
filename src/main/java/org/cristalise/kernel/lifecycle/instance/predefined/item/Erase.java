@@ -70,9 +70,6 @@ public class Erase extends PredefinedStep
         //clear out all storages
         Gateway.getStorage().removeCluster(item, "", locker);
 
-        //remove entity path
-        Gateway.getLookupManager().delete(item);
-
         Logger.msg(1, "Erase::request() - DONE.");
         return requestData;
     }

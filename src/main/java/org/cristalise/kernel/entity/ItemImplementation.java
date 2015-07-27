@@ -199,6 +199,11 @@ public class ItemImplementation implements ItemOperations {
 			// wf
 			if (!(stepPath.startsWith("workflow/predefined")))
 				mStorage.put(mItemPath, lifeCycle, null);
+			//remove entity path if transaction was successful
+			if (stepPath.equals("workflow/predefined/Erase")) { 
+				Logger.msg("Erasing item path "+mItemPath.toString());
+		        Gateway.getLookupManager().delete(mItemPath);
+			}
 
 			return finalOutcome;
 			// Normal operation exceptions
