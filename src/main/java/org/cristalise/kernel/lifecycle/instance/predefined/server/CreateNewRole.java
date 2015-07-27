@@ -44,7 +44,7 @@ public class CreateNewRole extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException {
 
     	ImportRole newRole;
 		try {

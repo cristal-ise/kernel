@@ -55,7 +55,7 @@ public class Erase extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException {
     	
         Logger.msg(1, "Erase::request() - Starting.");
 
@@ -68,7 +68,7 @@ public class Erase extends PredefinedStep
         }
 
         //clear out all storages
-        Gateway.getStorage().removeCluster(item, "", null);
+        Gateway.getStorage().removeCluster(item, "", locker);
 
         //remove entity path
         Gateway.getLookupManager().delete(item);

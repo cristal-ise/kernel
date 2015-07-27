@@ -44,7 +44,7 @@ public class CreateNewAgent extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
     	
         String redactedRequestData;
 

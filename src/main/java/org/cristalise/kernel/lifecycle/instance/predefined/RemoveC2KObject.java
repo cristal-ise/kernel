@@ -49,7 +49,7 @@ public class RemoveC2KObject extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
 
     	String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "RemoveC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
@@ -59,7 +59,7 @@ public class RemoveC2KObject extends PredefinedStep
         
         try
         {
-            Gateway.getStorage().remove( item, path, null );
+            Gateway.getStorage().remove( item, path, locker );
         }
         catch( PersistencyException ex )
         {

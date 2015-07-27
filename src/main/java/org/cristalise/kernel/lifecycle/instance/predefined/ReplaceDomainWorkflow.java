@@ -44,7 +44,7 @@ public class ReplaceDomainWorkflow extends PredefinedStep
 
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
 		
 		Workflow lifeCycle = getWf();
  
@@ -63,12 +63,12 @@ public class ReplaceDomainWorkflow extends PredefinedStep
 		domain.setName("domain");
 		lifeCycle.initChild(domain, true, new GraphPoint(150, 100));
 		// if new workflow, activate it, otherwise refresh the jobs
-		if (!domain.active) lifeCycle.run(agent, item);
+		if (!domain.active) lifeCycle.run(agent, item, locker);
 		else lifeCycle.refreshJobs(item);
 		
 		// store new wf
 		try {
-			Gateway.getStorage().put(item, lifeCycle, null);
+			Gateway.getStorage().put(item, lifeCycle, locker);
 		} catch (PersistencyException e) {
 			throw new PersistencyException("ReplaceDomainWorkflow: Could not write new workflow to storage: "+e.getMessage());
 		}

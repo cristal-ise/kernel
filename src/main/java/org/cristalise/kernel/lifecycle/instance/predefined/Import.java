@@ -55,7 +55,7 @@ public class Import extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
 
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "Import: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
@@ -87,7 +87,6 @@ public class Import extends PredefinedStep
         // write event, outcome and viewpoints to storage
 
         TransactionManager storage = Gateway.getStorage();
-        Object locker = getWf();
         History hist = getWf().getHistory();
 		Event event = hist.addEvent(agent, getCurrentAgentRole(), getName(), getPath(), getType(), schemaName, schemaVersion, getStateMachine().getName(), getStateMachine().getVersion(), getStateMachine().getTransition(transitionID), viewpoint, timestamp);
 

@@ -32,10 +32,13 @@ import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.GraphableVertex;
+import org.cristalise.kernel.lifecycle.routingHelpers.ActivityDataHelper;
+import org.cristalise.kernel.lifecycle.routingHelpers.DataHelper;
+import org.cristalise.kernel.lifecycle.routingHelpers.PropertyDataHelper;
 import org.cristalise.kernel.lifecycle.routingHelpers.ViewpointDataHelper;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
@@ -69,7 +72,7 @@ public abstract class WfVertex extends GraphableVertex
      * @throws InvalidTransitionException 
      * @throws PersistencyException 
      * @throws ObjectCannotBeUpdated */
-    public abstract void runFirst(AgentPath agent, ItemPath itemPath) throws InvalidDataException;
+    public abstract void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
      * @see java.lang.Object#Object()
@@ -91,11 +94,11 @@ public abstract class WfVertex extends GraphableVertex
      * @throws ObjectAlreadyExistsException 
      * @throws ObjectCannotBeUpdated 
 	 */
-	public void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
 		try
 		{
-			((CompositeActivity)getParent()).request(agent, itemPath, CompositeActivity.COMPLETE, null);
+			((CompositeActivity)getParent()).request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
 		}
 		catch (Exception e)
 		{
@@ -134,7 +137,7 @@ public abstract class WfVertex extends GraphableVertex
      * @throws PersistencyException 
      * @throws ObjectCannotBeUpdated 
 	 */
-	public abstract void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException;
+	public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
 	 * Method loop.
@@ -148,7 +151,7 @@ public abstract class WfVertex extends GraphableVertex
 	 */
 	public abstract Next addNext(WfVertex vertex);
 
-    protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath) throws ScriptingEngineException
+    protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath, Object locker) throws ScriptingEngineException
     {
 
         try
@@ -161,34 +164,52 @@ public abstract class WfVertex extends GraphableVertex
                 if (requiredInput.containsKey(element.getKey()))
                 {
                     String value = element.getStringValue();
-                    Object inputParam = value;
+                    DataHelper dataHelper;
+                    String[] valueSplit = value.split("//");
+                    if (valueSplit.length != 2)
+                    	throw new InvalidDataException("Invalid param: "+value);
+                    switch (valueSplit[0]) {
+                    case "viewpoint":
+                    	dataHelper = new ViewpointDataHelper();
+                    	break;
+                    case "property":
+                    	dataHelper = new PropertyDataHelper();
+                    	break;
+                    case "activity":
+                    	dataHelper = new ActivityDataHelper();
+                    	break;
+                    default:
+                    	throw new InvalidDataException("Unknown data type: "+value);
+                    }
 
-                    if (value.startsWith("viewpoint//"))
-                    {
-                        value = value.substring(11);
-                        if (value.startsWith("."))
-                            value = itemPath.getUUID() + value.substring(1);
-                        try {
-                            inputParam = ViewpointDataHelper.get(value)[0];
-                        } catch (ArrayIndexOutOfBoundsException ex) {
-                            throw new InvalidDataException("Could not retrieve data from viewpoint: "+value);
-                        }
+                    String entityPath; String dataPath;
+                    // find syskey, viewname, xpath
+                    int firstSlash = valueSplit[1].indexOf("/");
+                    if (firstSlash > 0) {
+                        entityPath = valueSplit[1].substring(0, firstSlash);
+                        dataPath = valueSplit[1].substring(firstSlash+1);
                     }
-                    if (value.startsWith("property//"))
-                    {
-                    	value = value.substring(10);
-                    	try {
-                    		inputParam = Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+value, null);
-                    	} catch (ObjectNotFoundException ex) {
-                    		inputParam = null;
-                    	}
-                    }
+                    else throw new InvalidDataException("Invalid path: "+valueSplit[1]);
+
+                    // find entity
+                    ItemPath sourcePath;
+                    if (entityPath.equals("."))
+                    	sourcePath = itemPath;
+            		else
+            			try {
+            				sourcePath = new ItemPath(entityPath);
+            			} catch (InvalidItemPathException e) {
+            				Logger.error(e);
+            				throw new InvalidDataException("Invalid Item UUID: "+entityPath);
+            			}
+
+                    
+                    String inputParam = dataHelper.get(sourcePath, valueSplit[1], locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + element.getKey() + " to " + inputParam);
                     script.setInputParamValue(element.getKey(), inputParam);
                 }
             }
 
-            //TODO: is this right?
             if (requiredInput.containsKey("item")) {
                 script.setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
             }

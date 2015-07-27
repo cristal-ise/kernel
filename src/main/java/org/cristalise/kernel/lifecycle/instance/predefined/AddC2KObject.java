@@ -50,7 +50,7 @@ public class AddC2KObject extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
 
     	String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
@@ -61,7 +61,7 @@ public class AddC2KObject extends PredefinedStep
 		} catch (Exception e) {
 			throw new InvalidDataException("AddC2KObject: Could not unmarshall new object: "+params[0]);
 		}
-		Gateway.getStorage().put(item, obj, null );
+		Gateway.getStorage().put(item, obj, locker);
 		return requestData;
     }
 }

@@ -70,7 +70,7 @@ public class AddMemberToCollection extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification {
     	
         String collName;
         ItemPath newChild;
@@ -96,7 +96,7 @@ public class AddMemberToCollection extends PredefinedStep
 
         // load collection
     	C2KLocalObject collObj;
-		collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+		collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
     	if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection: AddMemberToCollection operates on Dependency collections only.");
         dep = (Dependency)collObj;
         
@@ -104,9 +104,9 @@ public class AddMemberToCollection extends PredefinedStep
     	if (props == null)
     		dep.addMember(newChild);
     	else
-    		dep.addMember(newChild, props, null);
+    		dep.addMember(newChild, props, dep.getClassProps());
 
-        Gateway.getStorage().put(item, dep, null);
+        Gateway.getStorage().put(item, dep, locker);
         return requestData;
     }
 }

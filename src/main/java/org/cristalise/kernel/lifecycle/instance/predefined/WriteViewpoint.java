@@ -42,7 +42,7 @@ public class WriteViewpoint extends PredefinedStep {
 
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException {
 		
 		String schemaName;
 		String viewName;
@@ -68,7 +68,7 @@ public class WriteViewpoint extends PredefinedStep {
         
         Event ev;
        	try {
-			ev = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+evId, null);
+			ev = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+evId, locker);
 		} catch (PersistencyException e) {
 			Logger.error(e);
 			throw new PersistencyException("WriteViewpoint: Could not load event "+evId);
@@ -80,7 +80,7 @@ public class WriteViewpoint extends PredefinedStep {
         // Write new viewpoint
         Viewpoint newView = new Viewpoint(item, schemaName, viewName, ev.getSchemaVersion(), evId);
         try {
-			Gateway.getStorage().put(item, newView, null);
+			Gateway.getStorage().put(item, newView, locker);
 		} catch (PersistencyException e) {
 			Logger.error(e);
 			throw new PersistencyException("WriteViewpoint: Could not store new viewpoint");

@@ -62,7 +62,7 @@ public class Join extends WfVertex
 	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#runNext()
 	 */
 	@Override
-	public void runNext(AgentPath agent, ItemPath item) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{
 		AdvancementCalculator adv = new AdvancementCalculator();
 		adv.calculate((CompositeActivity) getParent());
@@ -72,10 +72,10 @@ public class Join extends WfVertex
 			if (outVertices.length > 0)
 			{
 				WfVertex nextAct = (WfVertex) outVertices[0];
-				nextAct.run(agent, item);
+				nextAct.run(agent, item, locker);
 			}
 			else
-				super.runNext(agent, item);
+				super.runNext(agent, item, locker);
 		}
 	}
 	/**
@@ -193,9 +193,9 @@ public class Join extends WfVertex
 	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
 	 */
 	@Override
-	public void run(AgentPath agent, ItemPath item) throws InvalidDataException
+	public void run(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{
-		runNext(agent, item);
+		runNext(agent, item, locker);
 	}
 	/**
 	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#loop()
@@ -216,9 +216,9 @@ public class Join extends WfVertex
 		return loop2;
 	}
 	@Override
-	public void runFirst(AgentPath agent, ItemPath item) throws InvalidDataException
+	public void runFirst(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{
-		runNext(agent, item);
+		runNext(agent, item, locker);
 	}
 	/*
 	 * (non-Javadoc)

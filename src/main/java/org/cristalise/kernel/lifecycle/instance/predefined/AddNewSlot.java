@@ -72,7 +72,7 @@ public class AddNewSlot extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
     	
         String collName;
         ItemPath descKey = null;
@@ -101,7 +101,7 @@ public class AddNewSlot extends PredefinedStep
         // load collection
     	C2KLocalObject collObj;
 		try {
-			collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+			collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("AddNewSlot: Error loading collection '\"+collName+\"': "+ex.getMessage());
@@ -125,7 +125,7 @@ public class AddNewSlot extends PredefinedStep
         agg.addSlot(props, classProps.toString());
 
 		try {
-            Gateway.getStorage().put(item, agg, null);
+            Gateway.getStorage().put(item, agg, locker);
         } catch (PersistencyException e) {
             Logger.error(e);
             throw new PersistencyException("AddNewSlot: Error saving collection '"+collName+"': "+e.getMessage());

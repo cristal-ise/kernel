@@ -65,7 +65,7 @@ public class CreateNewCollectionVersion extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, PersistencyException, ObjectNotFoundException 
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException 
     {
         String collName;
 
@@ -76,7 +76,7 @@ public class CreateNewCollectionVersion extends PredefinedStep
         	throw new InvalidDataException("CreateNewCollectionVersion: Invalid parameters "+Arrays.toString(params));
 
         collName = params[0];
-        Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+        Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
         
         // find last numbered version
         int lastVer = -1;
@@ -95,7 +95,7 @@ public class CreateNewCollectionVersion extends PredefinedStep
         
         // store it
 		try {
-            Gateway.getStorage().put(item, coll, null);
+            Gateway.getStorage().put(item, coll, locker);
         } catch (PersistencyException e) {
         	throw new PersistencyException("CreateNewCollectionVersion: Error saving new collection '"+collName+"': "+e.getMessage());
         }

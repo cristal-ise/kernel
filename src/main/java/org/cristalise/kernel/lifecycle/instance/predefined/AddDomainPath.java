@@ -47,7 +47,7 @@ public class AddDomainPath extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException {
     	
     	String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "AddDomainPath: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));

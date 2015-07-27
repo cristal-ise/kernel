@@ -63,7 +63,8 @@ public class RemoveSlotFromCollection extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, PersistencyException {
+			int transitionID, String requestData, Object locker) 
+					throws InvalidDataException, ObjectNotFoundException, PersistencyException {
 
         String collName;
         int slotNo = -1;
@@ -93,7 +94,7 @@ public class RemoveSlotFromCollection extends PredefinedStep
 
         // load collection
         try {
-			coll = (Collection<? extends CollectionMember>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+			coll = (Collection<? extends CollectionMember>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("RemoveSlotFromCollection: Error loading collection '\"+collName+\"': "+ex.getMessage());
@@ -127,7 +128,7 @@ public class RemoveSlotFromCollection extends PredefinedStep
 
         // Store the collection
 		try {
-            Gateway.getStorage().put(item, coll, null);
+            Gateway.getStorage().put(item, coll, locker);
         } catch (PersistencyException e) {
             Logger.error(e);
             throw new PersistencyException("Error storing collection");

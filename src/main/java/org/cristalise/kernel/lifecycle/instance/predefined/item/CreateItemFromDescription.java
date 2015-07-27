@@ -62,8 +62,9 @@ public class CreateItemFromDescription extends PredefinedStep
 
 	//requestdata is xmlstring
 	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated, PersistencyException {
+	protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) 
+					throws InvalidDataException, ObjectNotFoundException, ObjectAlreadyExistsException, 
+					CannotManageException, ObjectCannotBeUpdated, PersistencyException {
 		
 		String[] input = getDataList(requestData);
 		String newName = input[0];
@@ -103,9 +104,9 @@ public class CreateItemFromDescription extends PredefinedStep
         try {
 	        newItem.initialise(
 	            agent.getSystemKey(),
-	        	Gateway.getMarshaller().marshall(getNewProperties(itemPath, descVer, initProps, newName, agent)),
-	        	Gateway.getMarshaller().marshall(getNewWorkflow(itemPath, descVer)),
-	        	Gateway.getMarshaller().marshall(getNewCollections(itemPath, descVer))
+	        	Gateway.getMarshaller().marshall(getNewProperties(itemPath, descVer, initProps, newName, agent, locker)),
+	        	Gateway.getMarshaller().marshall(getNewWorkflow(itemPath, descVer, locker)),
+	        	Gateway.getMarshaller().marshall(getNewCollections(itemPath, descVer, locker))
 	        	);
 		} catch (PersistencyException e) {
 			throw e;
@@ -128,7 +129,7 @@ public class CreateItemFromDescription extends PredefinedStep
 		} 
 	}
 
-	protected PropertyArrayList getNewProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent) throws ObjectNotFoundException, InvalidDataException {
+	protected PropertyArrayList getNewProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent, Object locker) throws ObjectNotFoundException, InvalidDataException {
         // copy properties -- intend to create from propdesc
         PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer);
         PropertyArrayList props = pdList.instantiate(initProps);
@@ -145,12 +146,12 @@ public class CreateItemFromDescription extends PredefinedStep
         return props;
 	}
 	
-	protected CompositeActivity getNewWorkflow(ItemPath itemPath, String descVer) throws ObjectNotFoundException, InvalidDataException, PersistencyException {
+	protected CompositeActivity getNewWorkflow(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException, InvalidDataException, PersistencyException {
         // find the workflow def for the given description version
 
         String wfDefName = null; Integer wfDefVer = null;
         		
-    	Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/workflow/"+descVer, null);
+    	Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/workflow/"+descVer, locker);
 		CollectionMember wfMember = thisCol.getMembers().list.get(0);
 		wfDefName = wfMember.resolveItem().getName();
 		Object wfVerObj = wfMember.getProperties().get("Version");
@@ -176,12 +177,12 @@ public class CreateItemFromDescription extends PredefinedStep
         }
 	}
 	
-	protected CollectionArrayList getNewCollections(ItemPath itemPath, String descVer) throws ObjectNotFoundException, PersistencyException {
+	protected CollectionArrayList getNewCollections(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException, PersistencyException {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
         String[] collNames = Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.COLLECTION);
         for (String collName : collNames) {
-        	Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+collName+"/"+descVer, null);
+        	Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+collName+"/"+descVer, locker);
         	if (thisCol instanceof CollectionDescription) {
         		CollectionDescription<?> thisDesc = (CollectionDescription<?>)thisCol;
         		colls.put(thisDesc.newInstance());

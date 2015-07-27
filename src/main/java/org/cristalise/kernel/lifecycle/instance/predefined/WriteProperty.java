@@ -52,7 +52,7 @@ public class WriteProperty extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, PersistencyException {
 
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "WriteProperty: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
@@ -66,11 +66,11 @@ public class WriteProperty extends PredefinedStep
         Property prop;
         
         try {
-			prop = (Property)Gateway.getStorage().get(item, ClusterStorage.PROPERTY+"/"+name, null);
+			prop = (Property)Gateway.getStorage().get(item, ClusterStorage.PROPERTY+"/"+name, locker);
 			if (!prop.isMutable() && !newValue.equals(prop.getValue()))
 				throw new ObjectCannotBeUpdated("WriteProperty: Property '"+name+"' is not mutable.");
 			prop.setValue(newValue);
-			Gateway.getStorage().put(item, prop, null);
+			Gateway.getStorage().put(item, prop, locker);
 		} catch (ObjectNotFoundException e) {
 			throw new ObjectNotFoundException("WriteProperty: Property '"+name+"' not found.");
 		} 

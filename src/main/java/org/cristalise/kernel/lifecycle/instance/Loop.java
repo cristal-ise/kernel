@@ -48,15 +48,15 @@ public class Loop extends XOrSplit
 		return true;
 	}
 	@Override
-	public void followNext(Next activeNext, AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void followNext(Next activeNext, AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
 		WfVertex v = activeNext.getTerminusVertex();
 		if (!isInPrev(v))
-			v.run(agent, itemPath);
+			v.run(agent, itemPath, locker);
 		else
 		{
 			v.reinit(getID());
-			v.run(agent, itemPath);
+			v.run(agent, itemPath, locker);
 		}
 	}
 	/**

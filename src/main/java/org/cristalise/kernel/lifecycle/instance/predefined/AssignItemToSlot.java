@@ -68,7 +68,7 @@ public class AssignItemToSlot extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated, InvalidCollectionModification {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated, InvalidCollectionModification {
     	
         String collName;
         int slotNo;
@@ -95,7 +95,7 @@ public class AssignItemToSlot extends PredefinedStep
         // load collection
         C2KLocalObject collObj;
         try {
-        	collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+        	collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("AssignItemToSlot: Error loading collection '\"+collName+\"': "+ex.getMessage());
@@ -119,7 +119,7 @@ public class AssignItemToSlot extends PredefinedStep
         }
 
 		try {
-            Gateway.getStorage().put(item, agg, null);
+            Gateway.getStorage().put(item, agg, locker);
         } catch (PersistencyException e) {
         	throw new PersistencyException("AssignItemToSlot: Error saving collection '"+collName+"': "+e.getMessage());
         }

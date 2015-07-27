@@ -67,7 +67,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 	 */
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws ObjectNotFoundException, InvalidDataException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated {
+			int transitionID, String requestData, Object locker) throws ObjectNotFoundException, InvalidDataException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated {
 		
 		String[] params = getDataList(requestData);
 		if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
@@ -112,9 +112,9 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
         try {
 			newAgent.initialise(
 			    agent.getSystemKey(),
-				Gateway.getMarshaller().marshall(getNewProperties(item, descVer, initProps, newName, agent)),
-				Gateway.getMarshaller().marshall(getNewWorkflow(item, descVer)),
-				Gateway.getMarshaller().marshall(getNewCollections(item, descVer))
+				Gateway.getMarshaller().marshall(getNewProperties(item, descVer, initProps, newName, agent, locker)),
+				Gateway.getMarshaller().marshall(getNewWorkflow(item, descVer, locker)),
+				Gateway.getMarshaller().marshall(getNewCollections(item, descVer, locker))
 				);
 		} catch (PersistencyException e) {
 			// TODO Auto-generated catch block

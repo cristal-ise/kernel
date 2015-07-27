@@ -43,7 +43,7 @@ public class SetAgentRoles extends PredefinedStep {
 	
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException {
 	
 		String[] params = getDataList(requestData);
 		if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));

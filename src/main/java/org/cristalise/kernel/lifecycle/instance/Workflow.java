@@ -132,7 +132,7 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	{
 		Logger.msg(3, "Workflow::requestAction() - transition:" + transitionID + " step:" + stepPath + " agent:" + agent);
 		if (search(stepPath) != null)
-			return ((Activity) search(stepPath)).request(agent, itemPath, transitionID, requestData);
+			return ((Activity) search(stepPath)).request(agent, itemPath, transitionID, requestData, this);
 		else
 			throw new ObjectNotFoundException(stepPath + " not found");
 	}
@@ -206,7 +206,7 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	public void initialise(ItemPath itemPath, AgentPath agent) throws InvalidDataException
 	{
 		setItemPath(itemPath);
-		runFirst(agent, itemPath);
+		runFirst(agent, itemPath, this);
 	}
 
 	public ItemPath getItemPath() {

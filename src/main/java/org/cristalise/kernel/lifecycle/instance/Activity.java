@@ -160,7 +160,7 @@ public class Activity extends WfVertex
 	 * @throws ObjectCannotBeUpdated 
 	 * @throws CannotManageException 
 	 * @throws InvalidCollectionModification */
-	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
 
 		// Find requested transition
@@ -187,7 +187,7 @@ public class Activity extends WfVertex
 		State newState = getStateMachine().traverse(this, transition, agent);
 		
 		// Run extra logic in predefined steps here
-		String outcome = runActivityLogic(agent, itemPath, transitionID, requestData);
+		String outcome = runActivityLogic(agent, itemPath, transitionID, requestData, locker);
 
 		// set new state and reservation
 		setState(newState.getId());
@@ -208,27 +208,27 @@ public class Activity extends WfVertex
 	
 			if (storeOutcome) {
 				Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema.docType, schema.docVersion);
-				Gateway.getStorage().put(itemPath, newOutcome, getWf());
+				Gateway.getStorage().put(itemPath, newOutcome, locker);
 				
 				// update specific view if defined
 				if (viewName != null && !viewName.equals("")) {
 					Viewpoint currentView = new Viewpoint(itemPath, schema.docType, viewName, schema.docVersion, newEvent.getID());
-					Gateway.getStorage().put(itemPath, currentView, getWf());
+					Gateway.getStorage().put(itemPath, currentView, locker);
 				} 
 				// update last view
 				Viewpoint currentView = new Viewpoint(itemPath, schema.docType, "last", schema.docVersion, newEvent.getID());
-				Gateway.getStorage().put(itemPath, currentView, getWf());
+				Gateway.getStorage().put(itemPath, currentView, locker);
 			}
-			Gateway.getStorage().commit(getWf());
+			Gateway.getStorage().commit(locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
-			Gateway.getStorage().abort(getWf());
+			Gateway.getStorage().abort(locker);
 			throw ex;
 		}
 
 		if (newState.isFinished()) {
 			if (!(getProperties().get("Breakpoint").equals(Boolean.TRUE) && !oldState.isFinished()))
-				runNext(agent, itemPath);
+				runNext(agent, itemPath, locker);
 		}
 		
 		DateUtility.setToNow(mStateDate);
@@ -249,7 +249,7 @@ public class Activity extends WfVertex
 	}
 
 	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData) throws 
+			int transitionID, String requestData, Object locker) throws 
 			InvalidDataException, 
 			InvalidCollectionModification, 
 			ObjectAlreadyExistsException, 
@@ -332,7 +332,7 @@ public class Activity extends WfVertex
 	 * @throws ObjectAlreadyExistsException 
 	 * @throws ObjectCannotBeUpdated */
 	@Override
-	public void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
 		setActive(false);
 		try
@@ -356,7 +356,7 @@ public class Activity extends WfVertex
 				}
 			Logger.debug(8, Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
 			if (!hasNoNext)
-				 ((WfVertex) outVertices[0]).run(agent, itemPath);
+				 ((WfVertex) outVertices[0]).run(agent, itemPath, locker);
 			else
 			{
 				if (getParent() != null && getParent().getName().equals("domain")) // workflow
@@ -366,7 +366,7 @@ public class Activity extends WfVertex
 				{
 					CompositeActivity parent = (CompositeActivity) getParent();
 					if (parent != null)
-						parent.runNext(agent, itemPath);
+						parent.runNext(agent, itemPath, locker);
 				}
 			}
 		}
@@ -417,7 +417,7 @@ public class Activity extends WfVertex
 	 * @throws ObjectCannotBeUpdated 
 	 */
 	@Override
-	public void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
 		Logger.debug(8, "Activity::run() path:" + getPath() + " state:" + getState());
 
@@ -425,7 +425,7 @@ public class Activity extends WfVertex
 		boolean finished = getStateMachine().getState(getState()).isFinished();
 		if (finished)
 		{
-			runNext(agent, itemPath);
+			runNext(agent, itemPath, locker);
 		}
 		else
 		{
@@ -444,10 +444,10 @@ public class Activity extends WfVertex
 	 * @throws ObjectCannotBeUpdated 
 	 */
 	@Override
-	public void runFirst(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
 		Logger.debug(8, getPath() + " runfirst");
-		run(agent, itemPath);
+		run(agent, itemPath, locker);
 	}
 	/** @return the current ability to be executed */
 	public boolean getActive()

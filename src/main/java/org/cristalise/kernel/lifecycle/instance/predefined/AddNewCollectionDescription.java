@@ -64,7 +64,7 @@ public class AddNewCollectionDescription extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException {
     	
         String collName;
         String collType;
@@ -80,7 +80,7 @@ public class AddNewCollectionDescription extends PredefinedStep
 
         // check if collection already exists
 		try {
-			Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+			Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 			throw new ObjectAlreadyExistsException("Collection '"+collName+"' already exists");
 		} catch (ObjectNotFoundException ex) {
 			// collection doesn't exist
@@ -101,7 +101,7 @@ public class AddNewCollectionDescription extends PredefinedStep
         
         // store it
 		try {
-            Gateway.getStorage().put(item, newCollDesc, null);
+            Gateway.getStorage().put(item, newCollDesc, locker);
         } catch (PersistencyException e) {
         	throw new PersistencyException("AddNewCollectionDescription: Error saving new collection '"+collName+"': "+e.getMessage());
         }

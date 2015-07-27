@@ -46,14 +46,14 @@ public class XOrSplit extends Split
     }
 
     @Override
-	public void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
         ArrayList<DirectedEdge> nextsToFollow = new ArrayList<DirectedEdge>();
         String nexts;
 		String scriptName = (String) getProperties().get("RoutingScriptName");
 		Integer scriptVersion = getVersionNumberProperty("RoutingScriptVersion");
         try {
-			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath).toString();
+			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
 		} catch (ScriptingEngineException e) {
 			Logger.error(e);
 			throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
@@ -73,12 +73,12 @@ public class XOrSplit extends Split
         if (nextsToFollow.size() != 1)
             throw new InvalidDataException("not good number of active next");
 
-        followNext((Next)nextsToFollow.get(0), agent, itemPath);
+        followNext((Next)nextsToFollow.get(0), agent, itemPath, locker);
 
     }
 
-    public void followNext(Next activeNext, AgentPath agent, ItemPath itemPath) throws InvalidDataException {
-        activeNext.getTerminusVertex().run(agent, itemPath);
+    public void followNext(Next activeNext, AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
+        activeNext.getTerminusVertex().run(agent, itemPath, locker);
     }
 
 }

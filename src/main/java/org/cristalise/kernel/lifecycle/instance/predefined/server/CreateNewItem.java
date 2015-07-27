@@ -48,7 +48,7 @@ public class CreateNewItem extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification {
     	
         ImportItem newItem;
 		try {

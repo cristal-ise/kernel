@@ -67,7 +67,7 @@ public abstract class Split extends WfVertex
      * @see org.cristalise.kernel.lifecycle.instance.WfVertex#runNext()
      */
     @Override
-	public abstract void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException;
+	public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
      * Method addNext.
@@ -185,9 +185,9 @@ public abstract class Split extends WfVertex
      * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
      */
     @Override
-	public void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
-        runNext(agent, itemPath);
+        runNext(agent, itemPath, locker);
     }
 
     /**
@@ -234,9 +234,9 @@ public abstract class Split extends WfVertex
     }
 
     @Override
-	public void runFirst(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
-        runNext(agent, itemPath);
+        runNext(agent, itemPath, locker);
     }
 
 }

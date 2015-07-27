@@ -141,7 +141,7 @@ public abstract class PredefinedStep extends Activity
 	 */
 	@Override
 	protected abstract String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData) throws 
+			int transitionID, String requestData, Object locker) throws 
 			InvalidDataException, 
 			InvalidCollectionModification, 
 			ObjectAlreadyExistsException, 

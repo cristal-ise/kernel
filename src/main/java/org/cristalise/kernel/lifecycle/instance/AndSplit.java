@@ -38,12 +38,12 @@ public class AndSplit extends Split
 		super();
 	}
 	@Override
-	public void runNext(AgentPath agent, ItemPath item) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{
 //		AdvancementCalculator adv = new AdvancementCalculator();
 //		adv.calculate((CompositeActivity) getParent());
 		Vertex[] outVertices = getOutGraphables();
 		for (Vertex outVertice : outVertices)
-			((WfVertex) outVertice).run(agent, item);
+			((WfVertex) outVertice).run(agent, item, locker);
     }
 }

@@ -43,7 +43,7 @@ public class RemoveAgent extends PredefinedStep {
 	
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData) throws InvalidDataException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException {
 	
 		Logger.msg(1, "RemoveAgent::request() - Starting.");
 		
@@ -72,7 +72,7 @@ public class RemoveAgent extends PredefinedStep {
 		
 		//clear out all storages
         try {
-			Gateway.getStorage().removeCluster(targetAgent, "", null);
+			Gateway.getStorage().removeCluster(targetAgent, "", locker);
 		} catch (PersistencyException e) {
 			Logger.error(e);
 			throw new InvalidDataException("Error deleting storage for  "+agentName);

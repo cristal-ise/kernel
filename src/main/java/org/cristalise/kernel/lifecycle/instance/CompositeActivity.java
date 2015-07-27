@@ -292,30 +292,30 @@ public class CompositeActivity extends Activity
      * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
      */
     @Override
-	public void run(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
         Logger.debug(8, getPath() + "CompisiteActivity::run() state: " + getState());
 
-        super.run(agent, itemPath);
+        super.run(agent, itemPath, locker);
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
         {
             WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
-            first.run(agent, itemPath);
+            first.run(agent, itemPath, locker);
         }
     }
 
     @Override
-	public void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException 
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
     {
         if (!getStateMachine().getState(state).isFinished())
 			try {
-				request(agent, itemPath, CompositeActivity.COMPLETE, null);
+				request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
 			} catch (RuntimeException e) {
 				throw e;
 			} catch (Exception e) { 
 				Logger.error(e); // current agent couldn't complete the composite, so leave it
 			} 
-        super.runNext(agent, itemPath);
+        super.runNext(agent, itemPath, locker);
     }
 
 
@@ -423,12 +423,12 @@ public class CompositeActivity extends Activity
     }
 
     @Override
-	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished() && transitionID == CompositeActivity.START)
-        	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath);
+        	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
 
-        return super.request(agent, itemPath, transitionID, requestData);
+        return super.request(agent, itemPath, transitionID, requestData, locker);
     }
     
 	public void refreshJobs(ItemPath itemPath)

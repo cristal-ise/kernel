@@ -42,13 +42,13 @@ public class OrSplit extends Split
 		super();
 	}
 	@Override
-	public void runNext(AgentPath agent, ItemPath itemPath) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
 		String nexts;
 		String scriptName = (String) getProperties().get("RoutingScriptName");
 		Integer scriptVersion = getVersionNumberProperty("RoutingScriptVersion");
         try {
-			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath).toString();
+			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
 		} catch (ScriptingEngineException e) {
 			Logger.error(e);
 			throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
@@ -70,7 +70,7 @@ public class OrSplit extends Split
 					if (thisNext != null && thisNext.equals(nextEdge.getProperties().get("Alias")))
 					{
                         WfVertex term = nextEdge.getTerminusVertex();
-                        term.run(agent, itemPath);
+                        term.run(agent, itemPath, locker);
 						Logger.msg(7, "Running " + nextEdge.getProperties().get("Alias"));
 						active++;
 					}

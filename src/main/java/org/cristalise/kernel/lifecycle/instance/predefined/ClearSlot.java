@@ -62,7 +62,7 @@ public class ClearSlot extends PredefinedStep
      */
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated {
     	
         String collName;
         int slotNo;
@@ -81,7 +81,7 @@ public class ClearSlot extends PredefinedStep
 
         // load collection
         try {
-            agg = (Aggregation)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", null);
+            agg = (Aggregation)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("ClearSlot: Error loading collection '"+collName+"': "+ex.getMessage());
@@ -104,7 +104,7 @@ public class ClearSlot extends PredefinedStep
 
 
 		try {
-            Gateway.getStorage().put(item, agg, null);
+            Gateway.getStorage().put(item, agg, locker);
         } catch (PersistencyException e) {
             Logger.error(e);
             throw new PersistencyException("ClearSlot: Error storing collection");

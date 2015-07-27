@@ -47,7 +47,8 @@ public class RemoveDomainPath extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
+			int transitionID, String requestData, Object locker) 
+					throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
 
     	String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "RemoveDomainPath: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
