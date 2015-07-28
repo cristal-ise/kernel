@@ -75,12 +75,14 @@ public class History extends RemoteMap<Event> {
         newEvent.setStepName(stepName);
         newEvent.setStepPath(stepPath);
         newEvent.setStepType(stepType);
-        newEvent.setSchemaName(schemaName);
-        newEvent.setSchemaVersion(schemaVersion);
-        if (viewName == null || viewName.equals(""))
-        	newEvent.setViewName("last");
-        else
-        	newEvent.setViewName(viewName);
+        if (schemaName != null && !schemaName.equals("")) {
+        	newEvent.setSchemaName(schemaName);
+        	newEvent.setSchemaVersion(schemaVersion);
+            if (viewName == null || viewName.equals(""))
+            	newEvent.setViewName("last");
+            else
+            	newEvent.setViewName(viewName);
+        }
         newEvent.setOriginState(transition.getOriginStateId());
         newEvent.setTargetState(transition.getTargetStateId());
         newEvent.setTransition(transition.getId());
@@ -120,9 +122,14 @@ public class History extends RemoteMap<Event> {
         newEvent.setStepName(stepName);
         newEvent.setStepPath(stepPath);
         newEvent.setStepType(stepType);
-        newEvent.setSchemaName(schemaName);
-        newEvent.setSchemaVersion(schemaVersion);
-        newEvent.setViewName(viewName);
+        if (schemaName != null && !schemaName.equals("")) {
+        	newEvent.setSchemaName(schemaName);
+        	newEvent.setSchemaVersion(schemaVersion);
+            if (viewName == null || viewName.equals(""))
+            	newEvent.setViewName("last");
+            else
+            	newEvent.setViewName(viewName);
+        }
         newEvent.setOriginState(transition.getOriginStateId());
         newEvent.setTargetState(transition.getTargetStateId());
         newEvent.setTransition(transition.getId());
@@ -148,8 +155,7 @@ public class History extends RemoteMap<Event> {
 
 	@Override
 	public Event remove(Object key) {
-		// forbidden
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 }

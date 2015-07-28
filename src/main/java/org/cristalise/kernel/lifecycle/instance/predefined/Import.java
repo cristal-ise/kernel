@@ -23,6 +23,7 @@ package org.cristalise.kernel.lifecycle.instance.predefined;
 import java.util.Arrays;
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
@@ -55,7 +56,7 @@ public class Import extends PredefinedStep
 	//requestdata is xmlstring
     @Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
 
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "Import: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));

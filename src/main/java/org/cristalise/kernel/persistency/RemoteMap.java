@@ -56,9 +56,9 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 	private String mPath = "";
     Object keyLock = null;
 	TransactionManager storage;
-    ProxyObserver<V> listener;
     Comparator<String> comp;
-    ItemProxy source;
+    ItemProxy source; // for remote client processes to receive updates, disables puts
+    ProxyObserver<V> listener;
 	Object mLocker; // if this remote map will participate in a transaction
 
 	public RemoteMap(ItemPath itemPath, String path, Object locker) {
@@ -90,32 +90,46 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 		} catch (NumberFormatException e) {}
 		storage = Gateway.getStorage();
 		
-        listener = new ProxyObserver<V>() {
-            @Override
+	}
+	
+	public void activate() {
+    	listener = new ProxyObserver<V>() {
+	        @Override
 			public void add(V obj) {
-                synchronized (this) {
-                    putLocal(obj.getName(), obj);
-                }
-            }
-
-            @Override
+	            synchronized (this) {
+	                putLocal(obj.getName(), obj);
+	            }
+	        }
+	
+	        @Override
 			public void remove(String id) {
-                synchronized (this) {
-                    removeLocal(id);
-                }
-            }
-
+	            synchronized (this) {
+	                removeLocal(id);
+	            }
+	        }
+	
 			@Override
 			public void control(String control, String msg) { }
-        };
+	    };
 
-        try {
-            source = Gateway.getProxyManager().getProxy(mItemPath);
-            source.subscribe(new MemberSubscription<V>(listener, path, false));
-        } catch (Exception ex) {
-            Logger.error("Error subscribing to remote map. Changes will not be received");
-            Logger.error(ex);
-        }
+
+    	try {
+    		source = Gateway.getProxyManager().getProxy(mItemPath);
+    		source.subscribe(new MemberSubscription<V>(listener, mPath+mName, false));
+    	} catch (Exception ex) {
+    		Logger.error("Error subscribing to remote map. Changes will not be received");
+    		Logger.error(ex);
+    	}
+	}
+	
+	public void deactivate() {
+		if (source != null) source.unsubscribe(listener);
+	}
+	
+	@Override
+	public void finalize() {
+		deactivate();
+		Gateway.getStorage().clearCache(mItemPath, mPath+mName);
 	}
 
 	protected void loadKeys() {
@@ -258,6 +272,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 	 */
 	@Override
 	public synchronized V put(String key, V value) {
+		if (source != null) throw new UnsupportedOperationException("Cannot use an activated RemoteMap to write to storage.");
 		try {
             synchronized(this) {
                 storage.put(mItemPath, value, mLocker);
@@ -278,11 +293,12 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 	 */
 	@Override
 	public synchronized V remove(Object key) {
+		if (source != null) throw new UnsupportedOperationException("Cannot use an activated RemoteMap to write to storage.");
 		loadKeys();
 		if (containsKey(key)) try {
             synchronized(keyLock) {
 			    storage.remove(mItemPath, mPath+mName+"/"+key, mLocker);
-			    return super.remove(key);
+			    return removeLocal(key);
             }
 		} catch (PersistencyException e) {
 			Logger.error(e);
