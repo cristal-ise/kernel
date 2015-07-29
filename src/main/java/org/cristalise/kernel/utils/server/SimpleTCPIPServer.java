@@ -20,9 +20,11 @@
  */
 package org.cristalise.kernel.utils.server;
 
-import java.io.InterruptedIOException;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -66,6 +68,9 @@ public class SimpleTCPIPServer implements Runnable
         for (SocketHandler thisHandler : currentHandlers) {
             thisHandler.shutdown();
         }
+        try {
+			if (serverSocket!=null) serverSocket.close();
+		} catch (IOException e) { }
     }
 
     @Override
@@ -109,8 +114,8 @@ public class SimpleTCPIPServer implements Runnable
                         freeHandler.setSocket(connectionSocket);
                         new Thread(freeHandler).start();
                     }
-                } catch (InterruptedIOException ex1) { }// timeout just to check if we've been told to die
-
+                } catch (SocketTimeoutException ex1) { // timeout just to check if we've been told to die
+            	} catch (SocketException ex1) { } // we were closed during shutdown
             }
             serverSocket.close();
             Logger.msg("SimpleTCPIPServer: Server closed for " + handlerClass.getName() +" on port "+ port);
