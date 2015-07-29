@@ -168,13 +168,14 @@ abstract public class AbstractMain
     public static void shutdown(int errCode) {
     	if (shutdownHandler!= null)
     		shutdownHandler.shutdown(errCode, isServer);
-    	else
+    	else {
 			try {
 				Gateway.close();
 			} catch (Exception ex) {
 				Logger.error(ex);
-			} finally { // on non-zero (error) exit code, do a hard exit
-		    	if (errCode > 0) System.exit(errCode);
 			}
+    	}
+		System.exit(errCode); // if we get here, we get out
+
     }
 }
