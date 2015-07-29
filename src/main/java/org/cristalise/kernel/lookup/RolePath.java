@@ -117,7 +117,10 @@ public class RolePath extends Path
 	}
 
 	public String getName() {
-		return mPath[mPath.length-1];
+		if (mPath.length > 0)
+			return mPath[mPath.length-1];
+		else
+			return "role";
 	}
 
 }
