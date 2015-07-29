@@ -131,6 +131,10 @@ public class ProxyServerConnection extends Thread
     public void shutdown() {
         Logger.msg("Proxy Client: flagging shutdown.");
         listening = false;
+        if (serverConnection != null)
+        	try {
+        		serverConnection.close();
+        	} catch (IOException e) { }
     }
 
     /**
