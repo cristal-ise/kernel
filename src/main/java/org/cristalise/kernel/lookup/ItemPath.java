@@ -83,7 +83,7 @@ public class ItemPath extends Path
     // EntityPaths root in /entity
     @Override
 	public String getRoot() {
-        return "item";
+        return "entity";
     }
 
     @Override
