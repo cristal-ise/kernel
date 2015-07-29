@@ -99,7 +99,7 @@ public class ItemImplementation implements ItemOperations {
 			for (Property thisProp : props.list)
 				mStorage.put(mItemPath, thisProp, locker);
 		} catch (Throwable ex) {
-			Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
+			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
 					+ ") - Properties were invalid: " + propString);
 			Logger.error(ex);
 			mStorage.abort(locker);
@@ -117,7 +117,7 @@ public class ItemImplementation implements ItemOperations {
 	        Gateway.getStorage().put(mItemPath, initOutcome, locker);
 	        Gateway.getStorage().put(mItemPath, newLastView, locker);
 		} catch (Throwable ex) {
-			Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
+			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
 					+ ") - Could not store event and outcome.");
 			Logger.error(ex);
 			mStorage.abort(locker);
@@ -133,7 +133,7 @@ public class ItemImplementation implements ItemOperations {
 					mStorage.put(mItemPath, thisColl, locker);
 				}
 			} catch (Throwable ex) {
-				Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
+				Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
 						+ ") - Collections were invalid: "
 						+ initCollsString);
 				Logger.error(ex);
@@ -152,7 +152,7 @@ public class ItemImplementation implements ItemOperations {
 						.getMarshaller().unmarshall(initWfString), getNewPredefStepContainer());
 			mStorage.put(mItemPath, lc, locker);
 		} catch (Throwable ex) {
-			Logger.msg(8, "TraceableEntity::initialise(" + mItemPath
+			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
 					+ ") - Workflow was invalid: " + initWfString);
 			Logger.error(ex);
 			mStorage.abort(locker);
@@ -185,7 +185,7 @@ public class ItemImplementation implements ItemOperations {
 		try {
 			
 			AgentPath agent = new AgentPath(agentId);
-			Logger.msg(1, "TraceableEntity::request(" + mItemPath + ") - Transition "
+			Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition "
 					+ transitionID + " on " + stepPath + " by " + agent);
 
 			
@@ -243,7 +243,7 @@ public class ItemImplementation implements ItemOperations {
 	public String queryLifeCycle(SystemKey agentId, boolean filter)
 			throws AccessRightsException, ObjectNotFoundException,
 			PersistencyException {
-		Logger.msg(1, "TraceableEntity::queryLifeCycle(" + mItemPath
+		Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath
 				+ ") - agent: " + agentId);
 		try {
 			AgentPath agent;
@@ -262,7 +262,7 @@ public class ItemImplementation implements ItemOperations {
 			jobBag.list = filter ? 
 					domainWf.calculateJobs(agent, mItemPath, true) : 
 					domainWf.calculateAllJobs(agent, mItemPath, true);
-			Logger.msg(1, "TraceableEntity::queryLifeCycle(" + mItemPath
+			Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath
 					+ ") - Returning " + jobBag.list.size() + " jobs.");
 			try {
 				return Gateway.getMarshaller().marshall(jobBag);
@@ -271,7 +271,7 @@ public class ItemImplementation implements ItemOperations {
 				throw new PersistencyException("Error marshalling job bag");
 			}
 		} catch (Throwable ex) {
-			Logger.error("TraceableEntity::queryLifeCycle(" + mItemPath
+			Logger.error("ItemImplementation::queryLifeCycle(" + mItemPath
 					+ ") - Unknown error");
 			Logger.error(ex);
 			throw new PersistencyException(
@@ -285,7 +285,7 @@ public class ItemImplementation implements ItemOperations {
 
 		String result = "";
 
-		Logger.msg(1, "TraceableEntity::queryData(" + mItemPath + ") - "
+		Logger.msg(1, "ItemImplementation::queryData(" + mItemPath + ") - "
 				+ path);
 
 		try { // check for cluster contents query
@@ -312,14 +312,14 @@ public class ItemImplementation implements ItemOperations {
 		} catch (ObjectNotFoundException ex) {
 			throw ex;
 		} catch (Throwable ex) {
-			Logger.warning("TraceableEntity::queryData(" + mItemPath
+			Logger.warning("ItemImplementation::queryData(" + mItemPath
 					+ ") - " + path + " Failed: " + ex.getClass().getName());
 			throw new PersistencyException("Server exception: "
 					+ ex.getClass().getName());
 		}
 
 		if (Logger.doLog(9))
-			Logger.msg(9, "TraceableEntity::queryData(" + mItemPath
+			Logger.msg(9, "ItemImplementation::queryData(" + mItemPath
 					+ ") - result:" + result);
 
 		return result;

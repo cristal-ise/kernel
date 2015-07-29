@@ -40,7 +40,7 @@ public abstract class Path
     // types
     public static final short UNKNOWN = 0;
     public static final short CONTEXT = 1;
-    public static final short ENTITY  = 2;
+    public static final short ITEM  = 2;
 
     protected String[] mPath = new String[0];
 
@@ -143,7 +143,7 @@ public abstract class Path
     public void setIOR(org.omg.CORBA.Object IOR) {
         mIOR = IOR;
         if (IOR == null) mType = Path.CONTEXT;
-        else mType = Path.ENTITY;
+        else mType = Path.ITEM;
     }
 
     /* clone another path object
@@ -163,7 +163,7 @@ public abstract class Path
      * Getter Methods
      */
 
-     // root is defined as 'domain', 'entity' or 'system' in subclasses
+     // root is defined as 'domain', 'item' or 'role' in subclasses
     public abstract String getRoot();
 
     public String[] getPath()

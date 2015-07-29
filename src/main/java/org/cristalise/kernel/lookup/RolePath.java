@@ -34,7 +34,7 @@ import org.cristalise.kernel.process.Gateway;
 * @version $Revision: 1.7 $ $Date: 2005/04/26 06:48:12 $
 * @author  $Author: abranson $
 **/
-public class RolePath extends DomainPath
+public class RolePath extends Path
 {
     /**
      *
@@ -43,10 +43,8 @@ public class RolePath extends DomainPath
     private boolean hasJobList = false;
     
     public RolePath() {
-    	super("agent");
     }
 
-    @Override
 	public RolePath getParent() {
     	try {
     		if (mPath.length > 2) 
@@ -60,7 +58,7 @@ public class RolePath extends DomainPath
     }
     
     public RolePath(String[] path, boolean jobList) {
-        super(path);
+        super(path, Path.CONTEXT);
         hasJobList = jobList;
     }
 
@@ -84,12 +82,6 @@ public class RolePath extends DomainPath
     public void setHasJobList(boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
         this.hasJobList = hasJobList;
     }
-
-
-    @Override
-	protected void checkType() {
-        mType = CONTEXT;
-    }
     
     public Iterator<Path> getChildren() {
     	return Gateway.getLookup().getChildren(this);
@@ -111,6 +103,25 @@ public class RolePath extends DomainPath
                 getName()+
                 "\n        ";
     }
+
+	@Override
+	public String getRoot() {
+		// TODO Auto-generated method stub
+		return "role";
+	}
+
+	@Override
+	public ItemPath getItemPath() throws ObjectNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getName() {
+		if (mPath.length > 0)
+			return mPath[mPath.length-1];
+		else
+			return "role";
+	}
 
 }
 

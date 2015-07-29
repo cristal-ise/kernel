@@ -163,9 +163,9 @@ public class ModuleManager {
 	}
 	
 	public void registerModules() throws ModuleException {
-		ItemProxy serverEntity;
+		ItemProxy serverItem;
 		try {
-			serverEntity = Gateway.getProxyManager().getProxy(new DomainPath("/servers/"+Gateway.getProperties().getString("ItemServer.name")));
+			serverItem = Gateway.getProxyManager().getProxy(new DomainPath("/servers/"+Gateway.getProperties().getString("ItemServer.name")));
 		} catch (ObjectNotFoundException e) {
 			throw new ModuleException("Cannot find local server name.");
 		}
@@ -181,7 +181,7 @@ public class ModuleManager {
 				boolean thisReset = reset;
 				if (Gateway.getProperties().containsKey(thisResetKey))
 					thisReset = Gateway.getProperties().getBoolean(thisResetKey);
-				thisMod.importAll(serverEntity, user, modulesXML.get(thisMod.getNamespace()), thisReset);
+				thisMod.importAll(serverItem, user, modulesXML.get(thisMod.getNamespace()), thisReset);
 			} catch (Exception e) {
 				Logger.error(e);
 				throw new ModuleException("Error importing items for module "+thisMod.getName());

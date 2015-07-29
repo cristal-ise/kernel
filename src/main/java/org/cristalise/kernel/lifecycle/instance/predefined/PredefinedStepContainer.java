@@ -34,8 +34,8 @@ public abstract class PredefinedStepContainer extends CompositeActivity
 	}
 	public void createChildren()
 	{
-		predInit("AddDomainPath", "Adds a new path to this entity in the LDAP domain tree", new AddDomainPath());
-        predInit("RemoveDomainPath", "Removes an existing path to this Entity from the LDAP domain tree", new RemoveDomainPath());
+		predInit("AddDomainPath", "Adds a new path to this item in the LDAP domain tree", new AddDomainPath());
+        predInit("RemoveDomainPath", "Removes an existing path to this item from the LDAP domain tree", new RemoveDomainPath());
         predInit("ReplaceDomainWorkflow", "Replaces the domain CA with the supplied one. Used by the GUI to save new Wf layout", new ReplaceDomainWorkflow());
         predInit("AddC2KObject", "Adds or overwrites a C2Kernel object for this Item", new AddC2KObject());
         predInit("RemoveC2KObject", "Removes the named C2Kernel object from this Item.", new RemoveC2KObject());
@@ -44,8 +44,8 @@ public abstract class PredefinedStepContainer extends CompositeActivity
         predInit("AddNewCollectionDescription", "Creates a new collection description in this Item", new AddNewCollectionDescription());
         predInit("CreateNewCollectionVersion", "Creates a new numbered collection version in this Item from the current one.", new CreateNewCollectionVersion());
         predInit("AddNewSlot", "Creates a new slot in the given aggregation, that holds instances of the item description of the given key", new AddNewSlot());
-        predInit("AssignItemToSlot", "Assigns the referenced entity to a pre-existing slot in an aggregation", new AssignItemToSlot());
-        predInit("ClearSlot", "Clears an aggregation member slot, given a slot no or entity key", new ClearSlot());
+        predInit("AssignItemToSlot", "Assigns the referenced item to a pre-existing slot in an aggregation", new AssignItemToSlot());
+        predInit("ClearSlot", "Clears an aggregation member slot, given a slot no or item uuid", new ClearSlot());
         predInit("RemoveSlotFromCollection", "Removed the given slot from the aggregation", new RemoveSlotFromCollection());
         predInit("AddMemberToCollection", "Creates a new member slot for the given item in a dependency, and assigns the item", new AddMemberToCollection());
         predInit("Import", "Imports an outcome into the Item, with a given schema and viewpoint", new Import());

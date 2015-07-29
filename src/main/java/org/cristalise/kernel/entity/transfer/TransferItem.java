@@ -109,7 +109,7 @@ public class TransferItem {
         // check if already exists
         try {
             Property name = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/Name", null);
-            throw new Exception("Entity " + itemPath + " already in use as " + name.getValue());
+            throw new Exception("Item " + itemPath + " already in use as " + name.getValue());
         } catch (Exception ex) {
         }
 

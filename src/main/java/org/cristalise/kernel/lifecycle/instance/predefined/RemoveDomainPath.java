@@ -33,6 +33,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.LookupManager;
+import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -58,7 +59,7 @@ public class RemoveDomainPath extends PredefinedStep
         if (!domainPath.exists())
         	throw new ObjectNotFoundException("RemoveDomainPath: Domain path "+domainPath.toString()+" does not exist.");
         	
-        if (domainPath.getType()!=DomainPath.ENTITY)
+        if (domainPath.getType()!=Path.ITEM)
         	
         try {
         	if (!domainPath.getItemPath().equals(item))

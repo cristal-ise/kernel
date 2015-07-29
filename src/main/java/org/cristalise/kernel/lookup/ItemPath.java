@@ -71,7 +71,7 @@ public class ItemPath extends Path
         if (mPath.length == 1) {
         	try {
         		setSysKey(UUID.fromString(mPath[0]));
-        		mType = Path.ENTITY;
+        		mType = Path.ITEM;
         	} catch (IllegalArgumentException ex) {
         		throw new InvalidItemPathException(mPath[0]+" is not a valid UUID");
         	}
@@ -114,7 +114,7 @@ public class ItemPath extends Path
     private void setPathFromUUID(String uuid) {
     	mPath = new String[1];
     	mPath[0] = uuid;
-    	mType = Path.ENTITY;
+    	mType = Path.ITEM;
     }
 }
 

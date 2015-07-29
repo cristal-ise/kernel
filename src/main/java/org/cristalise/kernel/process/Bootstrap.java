@@ -362,24 +362,24 @@ public class Bootstrap
     	LookupManager lookupManager = Gateway.getLookupManager();
         String serverName = Gateway.getProperties().getString("ItemServer.name", InetAddress.getLocalHost().getHostName());
         thisServerPath = new DomainPath("/servers/"+serverName);
-        ItemPath serverEntity;
+        ItemPath serverItem;
         try {
-            serverEntity = thisServerPath.getItemPath();
+            serverItem = thisServerPath.getItemPath();
         } catch (ObjectNotFoundException ex) {
             Logger.msg("Creating server item "+thisServerPath);
-            serverEntity = new ItemPath();
-            Gateway.getCorbaServer().createItem(serverEntity);
-            lookupManager.add(serverEntity);
-            thisServerPath.setItemPath(serverEntity);
+            serverItem = new ItemPath();
+            Gateway.getCorbaServer().createItem(serverItem);
+            lookupManager.add(serverItem);
+            thisServerPath.setItemPath(serverItem);
             lookupManager.add(thisServerPath);
         }
-        Gateway.getStorage().put(serverEntity, new Property("Name", serverName, false), null);
-        Gateway.getStorage().put(serverEntity, new Property("Type", "Server", false), null);
-        Gateway.getStorage().put(serverEntity, new Property("KernelVersion", Gateway.getKernelVersion(), true), null);
+        Gateway.getStorage().put(serverItem, new Property("Name", serverName, false), null);
+        Gateway.getStorage().put(serverItem, new Property("Type", "Server", false), null);
+        Gateway.getStorage().put(serverItem, new Property("KernelVersion", Gateway.getKernelVersion(), true), null);
         int proxyPort = Gateway.getProperties().getInt("ItemServer.Proxy.port", 1553);
-        Gateway.getStorage().put(serverEntity,
+        Gateway.getStorage().put(serverItem,
                     new Property("ProxyPort", String.valueOf(proxyPort), false), null);
-        Gateway.getStorage().put(serverEntity,
+        Gateway.getStorage().put(serverItem,
                     new Property("ConsolePort", String.valueOf(Logger.getConsolePort()), true), null);
         Gateway.getProxyManager().connectToProxyServer(serverName, proxyPort);
 

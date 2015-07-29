@@ -92,7 +92,7 @@ public class DomainPath extends Path
         }
 
         target = newTarget;
-        mType = Path.ENTITY;
+        mType = Path.ITEM;
     }
 
     @Override
