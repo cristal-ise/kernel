@@ -312,9 +312,10 @@ public class CompositeActivity extends Activity
 					Logger.error(e);
 					return;
 				}
+			break;
 			case CompositeActivity.STARTED:
-            WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
-            first.run(agent, itemPath, locker);
+				WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
+				first.run(agent, itemPath, locker);
 			default:
 			}
         }
