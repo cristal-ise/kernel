@@ -166,7 +166,7 @@ public class StateMachine implements DescriptionObject
 			return transition.targetState;
 		}
 		else
-			throw new InvalidTransitionException("Transition '"+transition.getName()+"' not valid from state '"+currentState.getName());
+			throw new InvalidTransitionException("Transition '"+transition.getName()+"' not valid from state '"+currentState.getName()+"'");
 			
 	}
 	
