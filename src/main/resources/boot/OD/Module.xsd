@@ -233,6 +233,7 @@
 		<xs:simpleType>
 			<xs:restriction base="xs:string">
 				<xs:enumeration value="startup" />
+				<xs:enumeration value="initialized" />
 				<xs:enumeration value="shutdown" />
 				<xs:enumeration value="install" />
 				<xs:enumeration value="uninstall" />

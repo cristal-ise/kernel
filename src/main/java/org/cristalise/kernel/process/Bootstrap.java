@@ -104,6 +104,7 @@ public class Bootstrap
 		            Gateway.getModuleManager().registerModules();
 
 					Logger.msg("Bootstrap.run() - Bootstrapping complete");
+					Gateway.getModuleManager().runScripts("initialized");
 				} catch (Throwable e) {
 					Logger.error(e);
 					Logger.die("Exception performing bootstrap. Check that everything is OK.");
