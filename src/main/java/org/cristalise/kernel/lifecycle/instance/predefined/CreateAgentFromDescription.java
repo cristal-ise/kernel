@@ -18,7 +18,7 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
-package org.cristalise.kernel.lifecycle.instance.predefined.agent;
+package org.cristalise.kernel.lifecycle.instance.predefined;
 
 import java.util.Arrays;
 
@@ -71,14 +71,15 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 		
 		String[] params = getDataList(requestData);
 		if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-		if (params.length < 3 || params.length > 4) 
+		if (params.length < 4 || params.length > 5) 
 			throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(params));
 		
 		String newName = params[0];
 		String descVer = params[1];
 		String roles = params[2];
+		String passwd = params[3];
 		PropertyArrayList initProps = 
-				params.length > 3 ? getInitProperties(params[3]):new PropertyArrayList();
+				params.length > 4 ? getInitProperties(params[3]):new PropertyArrayList();
 				
 		Logger.msg(1, "CreateAgentFromDescription::request() - Starting.");
 
@@ -97,6 +98,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
         // generate new system key
         Logger.msg(6, "CreateAgentFromDescription - Requesting new agent path");
         AgentPath newAgentPath = new AgentPath(new ItemPath(), newName);
+        newAgentPath.setPassword(passwd);
 
         // create the Item object
         Logger.msg(3, "CreateAgentFromDescription - Creating Agent");

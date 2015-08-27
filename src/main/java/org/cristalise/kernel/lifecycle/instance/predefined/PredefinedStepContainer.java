@@ -49,7 +49,7 @@ public abstract class PredefinedStepContainer extends CompositeActivity
         predInit("RemoveSlotFromCollection", "Removed the given slot from the aggregation", new RemoveSlotFromCollection());
         predInit("AddMemberToCollection", "Creates a new member slot for the given item in a dependency, and assigns the item", new AddMemberToCollection());
         predInit("Import", "Imports an outcome into the Item, with a given schema and viewpoint", new Import());
-
+        predInit("CreateAgentFromDescription", "Create a new agent using this item as its description", new CreateAgentFromDescription());
 	}
 
 	public void predInit(String alias, String Description, PredefinedStep act)

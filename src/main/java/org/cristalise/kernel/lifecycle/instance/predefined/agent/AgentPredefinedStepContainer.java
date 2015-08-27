@@ -39,7 +39,6 @@ public class AgentPredefinedStepContainer extends PredefinedStepContainer {
 	public void createChildren()
     {
         super.createChildren();
-        predInit("CreateAgentFromDescription", "Create a new item using this item as its description", new CreateAgentFromDescription());
         predInit("RemoveAgent", "Deletes the Agent", new RemoveAgent());
         predInit("SetAgentPassword", "Changes the Agent's password", new SetAgentPassword());
         predInit("SetAgentRoles", "Sets the roles of the Agent", new SetAgentRoles());
