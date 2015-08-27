@@ -32,33 +32,43 @@ import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 
 
-public class ViewpointDataHelper implements DataHelper
-{
+/**
+ * Implements the Routing DataHelper to get Outcome data using Viewpoint path and XPath.
+ */
+public class ViewpointDataHelper implements DataHelper {
     /**
-     * Method get.
-     * @param value
-     * @return String
-     * @throws Exception
+     * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
+     * retrieves a single value based on XPath
+     * 
+     * @param item the current item to be used
+     * @param dataPath syntax is <pre><ViepointPath>:<XPathinOutcome></pre> e.g. /testSchema/last:/testdata/counter.
+     *                 XPath must select a single node.
+     * @param locker the transaction locker object
+     * @return
+     * @throws InvalidDataException dataPath has incorrect syntax
+     * @throws PersistencyException 
+     * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
-    /**@param value : /UUID (or . if current) /SchemaName/Viewname/Path:XPathInOutcome 
-     * @throws PersistencyException */
     @Override
 	public String get(ItemPath item, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        //Syntax of search : <ViewpointPath>:<XPathinOutcome>
-    	String[] paths = dataPath.split(":");
-    	if (paths.length != 2)
-    		throw new InvalidDataException("Invalid path: "+dataPath);
+        //FIXME: is this correct that it can use UUID in dataPath eg: /UUID (or . if current)
+        String[] paths = dataPath.split(":");
+
+        if (paths.length != 2) throw new InvalidDataException("Invalid path '"+dataPath+"' it must have only one colon (:)");
+
         String viewpoint = paths[0];
         String xpath = paths[1];
-        
+
         // load viewpoint
         Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
         Outcome outcome = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+
+        // apply the XPath to its outcome
        	try {
-			return outcome.getFieldByXPath(xpath);
-		} catch (XPathExpressionException e) {
-			throw new InvalidDataException("Invalid XPath: "+xpath);
-		}
+       	    return outcome.getFieldByXPath(xpath);
+       	} catch (XPathExpressionException e) {
+       	    throw new InvalidDataException("Invalid XPath: "+xpath);
+       	}
     }
 }

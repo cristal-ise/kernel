@@ -93,38 +93,36 @@ public abstract class WfVertex extends GraphableVertex
      * @throws PersistencyException 
      * @throws ObjectAlreadyExistsException 
      * @throws ObjectCannotBeUpdated 
-	 */
-	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
-    {
-		try
-		{
-			((CompositeActivity)getParent()).request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
-		}
-		catch (Exception e)
-		{
-			//Logger.error(e);
-		}
+     */
+    public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
+ {
+        try {
+            ((CompositeActivity) getParent()).request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
+        } 
+        catch (Exception e) {
+            // Logger.error(e);
+        }
 
     }
 
     /**
-	 * Method reinit.
-	 * @param idLoop
+     * Method reinit.
+     * @param idLoop
      * @throws InvalidDataException 
      * @throws ObjectNotFoundException 
 	 */
-	public abstract void reinit( int idLoop ) throws InvalidDataException;
+    public abstract void reinit( int idLoop ) throws InvalidDataException;
 
     /**
-	 * Method verify.
-	 * @return boolean
-	 */
+     * Method verify.
+     * @return boolean
+     */
 	public abstract boolean verify();
 
     /**
-	 * Method getErrors.
-	 * @return String
-	 */
+     * Method getErrors.
+     * @return String
+     */
 	public abstract String getErrors();
 
     /**
@@ -136,50 +134,51 @@ public abstract class WfVertex extends GraphableVertex
      * @throws InvalidTransitionException 
      * @throws PersistencyException 
      * @throws ObjectCannotBeUpdated 
-	 */
+     */
 	public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
-	 * Method loop.
-	 * @return boolean
-	 */
+     * Method loop.
+     * @return boolean
+     */
 	public abstract boolean loop();
 
     /**
-	 * Method addNext.
-	 * @param vertex
-	 */
+     * Method addNext.
+     * @param vertex
+     */
 	public abstract Next addNext(WfVertex vertex);
 
     protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath, Object locker) throws ScriptingEngineException
     {
-
-        try
-        {
+        try {
             Script script = getScript(scriptName, scriptVersion);
 
-            KeyValuePair[] k = getProperties().getKeyValuePairs();
-            HashMap<?, ?> requiredInput = script.getAllInputParams();
-            for (KeyValuePair element : k) {
-                if (requiredInput.containsKey(element.getKey()))
-                {
-                    String value = element.getStringValue();
+            HashMap<?, ?> scriptInputParams = script.getAllInputParams();
+
+            for (KeyValuePair vertexProp : getProperties().getKeyValuePairs()) {
+                if (scriptInputParams.containsKey(vertexProp.getKey())) {
+                    String value = vertexProp.getStringValue();
+                    Logger.msg(5,"WfVertex.evaluateScript() - Match found for '"+vertexProp.getKey()+"' => setting value from " + value);
+
                     DataHelper dataHelper;
                     String[] valueSplit = value.split("//");
-                    if (valueSplit.length != 2)
-                    	throw new InvalidDataException("Invalid param: "+value);
+
+                    if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+value);
+
                     switch (valueSplit[0]) {
                     case "viewpoint":
-                    	dataHelper = new ViewpointDataHelper();
-                    	break;
+                        dataHelper = new ViewpointDataHelper();
+                        break;
                     case "property":
-                    	dataHelper = new PropertyDataHelper();
-                    	break;
+                        dataHelper = new PropertyDataHelper();
+                        break;
                     case "activity":
-                    	dataHelper = new ActivityDataHelper();
-                    	break;
+//                        dataHelper = new ActivityDataHelper();
+                        dataHelper = new ActivityDataHelper(getWf());
+                        break;
                     default:
-                    	throw new InvalidDataException("Unknown data type: "+value);
+                        throw new InvalidDataException("Unknown data type (viewpoint/property/activity): "+value);
                     }
 
                     String entityPath; String dataPath;
@@ -193,27 +192,26 @@ public abstract class WfVertex extends GraphableVertex
 
                     // find entity
                     ItemPath sourcePath;
-                    if (entityPath.equals("."))
-                    	sourcePath = itemPath;
-            		else
-            			try {
-            				sourcePath = new ItemPath(entityPath);
-            			} catch (InvalidItemPathException e) {
-            				Logger.error(e);
-            				throw new InvalidDataException("Invalid Item UUID: "+entityPath);
-            			}
+                    if (entityPath.equals(".")) sourcePath = itemPath;
+                    else {
+                        try {
+                            sourcePath = new ItemPath(entityPath);
+                        } catch (InvalidItemPathException e) {
+                            Logger.error(e);
+                            throw new InvalidDataException("Invalid Item UUID: "+entityPath);
+                        }
+                    }
 
-                    
                     String inputParam = dataHelper.get(sourcePath, valueSplit[1], locker);
-                    Logger.msg(5, "Split.evaluateScript() - Setting param " + element.getKey() + " to " + inputParam);
-                    script.setInputParamValue(element.getKey(), inputParam);
+                    Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
+                    script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }
             }
 
-            if (requiredInput.containsKey("item")) {
+            if (scriptInputParams.containsKey("item")) {
                 script.setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
             }
-            if (requiredInput.containsKey("agent")) {
+            if (scriptInputParams.containsKey("agent")) {
                 AgentPath systemAgent = Gateway.getLookup().getAgentPath("system");
                 script.setInputParamValue("agent", Gateway.getProxyManager().getProxy(systemAgent));
             }
@@ -222,19 +220,19 @@ public abstract class WfVertex extends GraphableVertex
             if (retVal == null) retVal = "";
             return retVal;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Logger.msg(1, "Split.evaluateScript() - Error: Script " + scriptName);
             Logger.error(e);
-            throw new ScriptingEngineException();
+            throw new ScriptingEngineException(e.getMessage());
         }
     }
 
     private static Script getScript(String name, Integer version) throws ScriptingEngineException
     {
-    	if (name == null || name.length() == 0)  
-    		throw new ScriptingEngineException("Script name is empty");
+        if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
+        
         Script script;
+
         if (version!=null) {
             script = new Script(name, version);
         }
@@ -247,9 +245,9 @@ public abstract class WfVertex extends GraphableVertex
     }
 
 
-	public Workflow getWf()
-	{
-		return ((CompositeActivity)getParent()).getWf();
-	}
+    public Workflow getWf()
+    {
+        return ((CompositeActivity)getParent()).getWf();
+    }
 }
 
