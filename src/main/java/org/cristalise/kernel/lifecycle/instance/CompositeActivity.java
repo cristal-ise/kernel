@@ -261,9 +261,8 @@ public class CompositeActivity extends Activity
     public Join newJoinChild(String name, String type, boolean first, GraphPoint point)
     {
         Join join = new Join();
-        join.getProperties().put("Type", type);
-        initChild(join, first, point);
-        join.setName(name);
+        join.getProperties().put("Type", "Join");
+        safeAddChild(join, point);
         return join;
     }
 
