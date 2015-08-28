@@ -27,11 +27,14 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectAlreadyExistsException;
+import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
@@ -144,107 +147,260 @@ public class Bootstrap
             }
         }
     }
-                
-     public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, String dataLocation, boolean reset) throws Exception {
-    	 	LookupManager lookupManager = Gateway.getLookupManager();
-            ResourceImportHandler typeImpHandler = getHandler(itemType);
-    	 	Logger.msg(1, "Bootstrap.verifyResource() - Verifying version "+version+" of "+typeImpHandler.getName()+" "+itemName);
-            
-            // Find or create Item for Resource
-    	 	DomainPath modDomPath = typeImpHandler.getPath(itemName, ns);
-            ItemProxy thisProxy;
-            Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
-            if (!en.hasNext()) {
-            	if (itemPath == null) itemPath = new ItemPath();
-                Logger.msg("Bootstrap.verifyResource() - "+typeImpHandler.getName()+" "+itemName+" not found. Creating new.");
-                thisProxy = createResourceItem(typeImpHandler, itemName, ns, itemPath);
-            }
-            else {
-                DomainPath path = (DomainPath)en.next();
-                thisProxy = Gateway.getProxyManager().getProxy(path);
-                if (itemPath != null && !path.getItemPath().equals(itemPath)) {
-                	Logger.warning("Resource "+itemType+"/"+itemName+" should have path "+itemPath+" but was found with path "+path.getItemPath());
-                	itemPath = path.getItemPath();
-                }
-                if (itemPath == null) itemPath = path.getItemPath();
-	            // Verify module property and location
+
+    
+	/**
+	* Create a resource item from its module definition. The item should not already exist.
+	* 
+	* @param ns
+	* @param itemName
+	* @param version
+	* @param itemType
+	* @param outcomes
+	* @param reset
+	* @return
+	* @throws Exception
+	*/
+	public static DomainPath createResource(String ns, String itemName, int version, String itemType, Set<Outcome> outcomes, boolean reset)
+			throws Exception
+	{
+		return verifyResource(ns, itemName, version, itemType, null, outcomes, null, reset);
+	}
+
+    /**
+     * Verify a resource item against a module version, using a ResourceImportHandler configured to find outcomes at the given dataLocation
+     * @param ns
+     * @param itemName
+     * @param version
+     * @param itemType
+     * @param itemPath
+     * @param dataLocation
+     * @param reset
+     * @return
+     * @throws Exception
+     */
+    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, 
+            String dataLocation, boolean reset)
+                    throws Exception
+    {
+        return verifyResource(ns, itemName, version, itemType, itemPath, null, dataLocation, reset);
+    }
+
+    /**
+     * Verify a resource item against a module version, but supplies the resource outcomes directly instead of through a 
+     * 
+     * @param ns
+     * @param itemName
+     * @param version
+     * @param itemType
+     * @param itemPath
+     * @param outcomes
+     * @param reset
+     * @return
+     * @throws Exception
+     */
+    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, 
+            Set<Outcome> outcomes, boolean reset)
+                    throws Exception
+    {
+        return verifyResource(ns, itemName, version, itemType, itemPath, outcomes, null, reset);
+    }
+
+    /**
+     * 
+     * @param ns
+     * @param itemName
+     * @param version
+     * @param itemType
+     * @param itemPath
+     * @param outcomes
+     * @param dataLocation
+     * @param reset
+     * @return
+     * @throws Exception
+     */
+    private static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath,
+            Set<Outcome> outcomes, String dataLocation, boolean reset)
+                    throws Exception {
+		ResourceImportHandler typeImpHandler = getHandler(itemType);
+
+		Logger.msg(1, "Bootstrap.verifyResource() - Verifying version:'"
+				+ version + "' type:'" + typeImpHandler.getName() + "' name:'" + itemName + "'");
+
+		// Find or create Item for Resource
+		ItemProxy thisProxy;
+		DomainPath modDomPath = typeImpHandler.getPath(itemName, ns);
+
+		Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
+
+		if (en.hasNext()) {
+			Logger.msg("Bootstrap.verifyResource() - Found type:'"
+					+ typeImpHandler.getName() + " 'name:'" + itemName + "'.");
+
+			thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName,
+					itemPath, modDomPath, (DomainPath) en.next());
+		} 
+		else {
+			if (itemPath == null)
+				itemPath = new ItemPath();
+		
+			Logger.msg("Bootstrap.verifyResource() - Not found type'" 
+					+ typeImpHandler.getName() + "' name:'" + itemName + "'. Creating new.");
+
+			thisProxy = createResourceItem(typeImpHandler, itemName, ns, itemPath);
+		}
+
+		// Verify/Import Outcomes, creating events and views as necessary
+		if (outcomes == null || outcomes.size() == 0) {
+			outcomes = typeImpHandler.getResourceOutcomes(itemName, ns,
+					dataLocation, version);
+		}
+
+		if (outcomes.size() == 0)
+			Logger.warning("Bootstrap.verifyResource() - no Outcome found therefore nothing stored!");
+
+		for (Outcome newOutcome : outcomes) {
+			if (checkToStoreOutcomeVersion(thisProxy, newOutcome, version,
+					reset)) {
+				// validate it (but not for kernel objects because we need those
+				// to validate the rest)
+				if (ns != null) {
+					String error = OutcomeValidator.getValidator(newOutcome).validate(newOutcome.getData());
+					if (error.length() > 0) {
+						Logger.error("Outcome not valid: \n " + error);
+						throw new InvalidDataException(error);
+					}
+				}
+
+				storeOutcomeEventAndViews(thisProxy, newOutcome, version);
+			}
+		}
+
+		Gateway.getStorage().commit(thisProxy);
+		return modDomPath;
+	}
+
+    /**
+     * Verify module property and location
+     * 
+     * @param ns
+     * @param itemName
+     * @param itemPath
+     * @param lookupManager
+     * @param thisProxy
+     * @param modDomPath
+     * @param path
+     * @throws PersistencyException
+     * @throws ObjectCannotBeUpdated
+     * @throws ObjectAlreadyExistsException
+     * @throws CannotManageException 
+     */
+    private static ItemProxy verifyPathAndModuleProperty(String ns, String itemType, String itemName, ItemPath itemPath,
+                                                         DomainPath modDomPath, DomainPath path) throws Exception {
+    	
+        LookupManager lookupManager = Gateway.getLookupManager();
+        ItemProxy thisProxy = Gateway.getProxyManager().getProxy(path);
+
+        if (itemPath != null && !path.getItemPath().equals(itemPath)) {
+        	Logger.warning("Resource "+itemType+"/"+itemName+" should have path "+itemPath+" but was found with path "+path.getItemPath());
+            itemPath = path.getItemPath();
+        }
+        
+        if (itemPath == null) itemPath = path.getItemPath();
 	          	
 	            String moduleName = (ns==null?"kernel":ns);
 	            String itemModule;
 	            try{
 	            	itemModule = thisProxy.getProperty("Module");
 	                if (!itemModule.equals("") && !itemModule.equals("null") && !moduleName.equals(itemModule)) {
-	                	Logger.error("Bootstrap.verifyResource() - Module clash! Resource '"+itemName+"' included in module "+moduleName+" but is assigned to '"+itemModule+"'. Not overwriting.");
-	                	return path;
+                String error = "Module clash! Resource '"+itemName+"' included in module "+moduleName+" but is assigned to '"+itemModule + "'.";
+                Logger.error(error);
+                throw new InvalidDataException(error);
+            }
 	                }
-	            } catch (ObjectNotFoundException ex) { 
+        catch (ObjectNotFoundException ex) {
 	            	itemModule = "";
-	            }
-	            
-	            if (!moduleName.equals(itemModule)) { // write module property
-	            	Gateway.getStorage().put(itemPath, new Property("Module", moduleName, false), thisProxy);
 	            }
 	            
 	            if (!modDomPath.equals(path)) {	 // move item to module subtree
 	            	Logger.msg("Module item "+itemName+" found with path "+path.toString()+". Moving to "+modDomPath.toString());
 	            	modDomPath.setItemPath(itemPath);
-	            	if (!modDomPath.exists())
-	            		lookupManager.add(modDomPath);
+            
+            if (!modDomPath.exists()) lookupManager.add(modDomPath);
 	            	lookupManager.delete(path);
-	            }
-            }
-            
-            // Verify/Import Outcomes,  creating events and views as necessary
-            Set<Outcome> impList = typeImpHandler.getResourceOutcomes(itemName, ns, dataLocation, version);
-            for (Outcome newOutcome : impList) {
-            	try {
-	                Viewpoint currentData = (Viewpoint)thisProxy.getObject(ClusterStorage.VIEWPOINT+"/"+newOutcome.getSchemaType()+"/"+version);
-                    Outcome oldData = currentData.getOutcome();
-                    XMLUnit.setIgnoreWhitespace(true);
-                    XMLUnit.setIgnoreComments(true);
-                    Diff xmlDiff = new Diff(newOutcome.getDOM(), oldData.getDOM());
-                    if (xmlDiff.identical()) {
-                        Logger.msg(5, "Bootstrap.verifyResource() - Data identical, no update required");
-                        continue;
-                    }
-                    else {
-                    	Logger.msg("Difference found in "+itemName+": "+xmlDiff.toString());
-                    	if (!reset && !currentData.getEvent().getStepPath().equals("Bootstrap")) {
-                    		Logger.msg("Version "+version+" was not set by Bootstrap, and reset not requested. Not overwriting.");
-                    		continue;
-                    	}
-                    }
-                    
-                } catch (ObjectNotFoundException ex) {
-                    Logger.msg("Bootstrap.verifyResource() - Item "+itemName+" exists but version "+version+" not found! Attempting to insert new.");
-                }
-            
-	            // data was missing or doesn't match
-            	// validate it (but not for kernel objects because we need those to validate the rest)
-            	if (ns!= null) {
-            		OutcomeValidator validator = OutcomeValidator.getValidator(LocalObjectLoader.getSchema(newOutcome.getSchemaType(), newOutcome.getSchemaVersion()));
-            		String error = validator.validate(newOutcome.getData());
-            		if (error.length() > 0) {
-            			Logger.error("Outcome not valid: \n " + error);
-            			throw new InvalidDataException(error);
-            		}
-            	}
-                
-                // store
-	            Logger.msg("Bootstrap.verifyResource() - Writing new "+newOutcome.getSchemaType()+" v"+version+" to "+typeImpHandler.getName()+" "+itemName);
-	            History hist = new History(itemPath, thisProxy);
-	            Transition predefDone = new Transition(0, "Done", 0, 0);
-	            Event newEvent = hist.addEvent(systemAgents.get("system").getPath(), "Admin", "Bootstrap", "Bootstrap", "Bootstrap", newOutcome.getSchemaType(), 0, "PredefinedStep", 0, predefDone, String.valueOf(version));
-	            newOutcome.setID(newEvent.getID());
-	            Viewpoint newLastView = new Viewpoint(itemPath, newOutcome.getSchemaType(), "last", 0, newEvent.getID());
-	            Viewpoint newNumberView = new Viewpoint(itemPath, newOutcome.getSchemaType(), String.valueOf(version), 0, newEvent.getID());
-	            Gateway.getStorage().put(itemPath, newOutcome, thisProxy);
-	            Gateway.getStorage().put(itemPath, newLastView, thisProxy);
-	            Gateway.getStorage().put(itemPath, newNumberView, thisProxy);
-            }
-            Gateway.getStorage().commit(thisProxy);
-            return modDomPath;
+	    }
+        return thisProxy;
     }
+            
+    /**
+     * @param itemName
+     * @param version
+     * @param itemPath
+     * @param typeImpHandler
+     * @param thisProxy
+     * @param newOutcome
+     * @throws PersistencyException
+     */
+    private static void storeOutcomeEventAndViews(ItemProxy item, Outcome newOutcome, int version)
+            throws PersistencyException
+    {
+        Logger.msg("Bootstrap.storeOutcomeEventAndViews() - Writing new " + newOutcome.getSchemaType() + " v" + version /*+ " to " + "typeImpHandler.getName()" + " " + "itemName"*/);
+
+        History hist = new History( item.getPath(), item);
+        Transition transDone = new Transition(0, "Done", 0, 0);
+        String viewName = String.valueOf(version);
+
+        int eventID = hist.addEvent( systemAgents.get("system").getPath(), "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
+                newOutcome.getSchemaType(), 0, "PredefinedStep", 0, transDone, viewName).getID();
+
+        newOutcome.setID(eventID);
+
+        Viewpoint newLastView   = new Viewpoint(item.getPath(), newOutcome.getSchemaType(), "last",   0, eventID);
+        Viewpoint newNumberView = new Viewpoint(item.getPath(), newOutcome.getSchemaType(), viewName, 0, eventID);
+
+        Gateway.getStorage().put(item.getPath(), newOutcome,    item);
+        Gateway.getStorage().put(item.getPath(), newLastView,   item);
+        Gateway.getStorage().put(item.getPath(), newNumberView, item);
+    }
+
+    /**
+     * 
+     * @param item
+     * @param newOutcome
+     * @param version
+     * @param reset
+     * @return
+     * @throws PersistencyException
+     * @throws InvalidDataException
+     */
+    private static boolean checkToStoreOutcomeVersion(ItemProxy item, Outcome newOutcome, int version, boolean reset)
+            throws PersistencyException, InvalidDataException
+ {
+		try {
+			Viewpoint currentData = (Viewpoint) item.getObject(ClusterStorage.VIEWPOINT + "/"
+							+ newOutcome.getSchemaType() + "/" + version);
+			Outcome oldData = currentData.getOutcome();
+			
+			XMLUnit.setIgnoreWhitespace(true);
+			XMLUnit.setIgnoreComments(true);
+			Diff xmlDiff = new Diff(newOutcome.getDOM(), oldData.getDOM());
+			if (xmlDiff.identical()) {
+				Logger.msg(5,
+						"Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
+				return false;
+			} else {
+				Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:"	+ item.getPath() + newOutcome.getSchemaType() + ": " + xmlDiff.toString());
+				if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
+					Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
+					return false;
+				}
+			}
+		} catch (ObjectNotFoundException ex) {
+			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Item:"	+ item.getPath() + "Schema:" + newOutcome.getSchemaType()
+					+ " version:" + version + " not found! Attempting to insert new.");
+		}
+		return true;
+	}
     
     private static ResourceImportHandler getHandler(String resType) throws Exception {
     	if (resHandlerCache.containsKey(resType))
@@ -285,12 +441,13 @@ public class Bootstrap
         }
         
         CompositeActivity ca = new CompositeActivity();
-        if (ns!=null && Gateway.getProperties().getBoolean("Module.debug", false))
+        if (ns!=null && Gateway.getProperties().getBoolean("Module.debug", false)) {
         	try {
         		ca = (CompositeActivity) ((CompositeActivityDef)LocalObjectLoader.getActDef(impHandler.getWorkflowName(), 0)).instantiate();
         	} catch (ObjectNotFoundException ex) {
         		Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
         	}
+        }
 
 
         Gateway.getCorbaServer().createItem(itemPath);
@@ -307,6 +464,7 @@ public class Bootstrap
      * Checks for the existence of the admin users so you can use Cristal
      **************************************************************************/
      private static void checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
+    	 
          Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' user.");
          LookupManager lookup = Gateway.getLookupManager();
          
