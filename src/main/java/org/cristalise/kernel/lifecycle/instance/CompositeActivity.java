@@ -100,18 +100,18 @@ public class CompositeActivity extends Activity
     }
 
     /**
-     * Initialize Activity and attach to the current activity
+     * Initialize Vertex and attach to the current activity
      *
-     * @param act
+     * @param vertex
      * @param first if true, the Waiting state will be one of the first launched by the parent activity
      * @param point
      */
-    public void initChild(Activity act, boolean first, GraphPoint point)
+    public void initChild(WfVertex vertex, boolean first, GraphPoint point)
     {
-        safeAddChild(act, point);
+        safeAddChild(vertex, point);
 
         if (first) {
-            getChildrenGraphModel().setStartVertexId(act.getID());
+            getChildrenGraphModel().setStartVertexId(vertex.getID());
             Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::initChild() " + getName() + ":" + getID() + " was set to be first");
         }
     }
@@ -183,12 +183,12 @@ public class CompositeActivity extends Activity
         switch (type) {
             case Atomic:    return newAtomChild(name, first, point);
             case Composite: return newCompChild(name, first, point);
-            case OrSplit:   return newSplitChild("Or", point);
-            case XOrSplit:  return newSplitChild("XOr", point);
-            case AndSplit:  return newSplitChild("And", point);
-            case LoopSplit: return newSplitChild("Loop", point);
-            case Join:      return newJoinChild(point);
-            case Route:     return newRouteChild(point);
+            case OrSplit:   return newSplitChild(name, "Or",   first, point);
+            case XOrSplit:  return newSplitChild(name, "XOr",  first, point);
+            case AndSplit:  return newSplitChild(name, "And",  first, point);
+            case LoopSplit: return newSplitChild(name, "Loop", first, point);
+            case Join:      return newJoinChild(name, "Join",  first, point);
+            case Route:     return newJoinChild(name, "Route", first, point);
     
             default:
                 throw new IllegalArgumentException("Unhandled enum value of WfVertex.Type:" + type.name());
@@ -237,7 +237,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return Split
      */
-    public Split newSplitChild(String Type, GraphPoint point)
+    public Split newSplitChild(String name, String Type, boolean first, GraphPoint point)
     {
         Split split = null;
 
@@ -246,7 +246,8 @@ public class CompositeActivity extends Activity
         else if (Type.equals("Loop")) { split = new Loop(); }
         else                          { split = new AndSplit(); }
 
-        safeAddChild(split, point);
+        initChild(split, first, point);
+        split.setName(name);
 
         return split;
     }
@@ -257,14 +258,16 @@ public class CompositeActivity extends Activity
      * @param point
      * @return Join
      */
-    public Join newJoinChild(GraphPoint point)
+    public Join newJoinChild(String name, String type, boolean first, GraphPoint point)
     {
         Join join = new Join();
-        join.getProperties().put("Type", "Join");
-        safeAddChild(join, point);
+        join.getProperties().put("Type", type);
+        initChild(join, first, point);
+        join.setName(name);
         return join;
     }
 
+    /*
     public Join newRouteChild(GraphPoint point)
     {
         Join join = new Join();
@@ -272,6 +275,7 @@ public class CompositeActivity extends Activity
         safeAddChild(join, point);
         return join;
     }
+    */
 
     /**
      * None recursive search by id
