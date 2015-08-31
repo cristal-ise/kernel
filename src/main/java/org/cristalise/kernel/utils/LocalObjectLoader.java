@@ -29,6 +29,8 @@ import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.InvalidItemPathException;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
@@ -43,6 +45,20 @@ public class LocalObjectLoader {
 	static public ItemProxy loadLocalObjectDef(String root, String name)
 		throws ObjectNotFoundException
 	{
+		// first check for a UUID name
+		try {
+			ItemPath resItem = new ItemPath(name);
+			if (resItem.exists())
+				return Gateway.getProxyManager().getProxy(resItem);
+		} catch (InvalidItemPathException ex) { }
+			
+		// then check for a direct path
+		DomainPath directPath = new DomainPath(root+"/"+name);
+		if (directPath.exists() && directPath.getItemPath() != null) {
+			return Gateway.getProxyManager().getProxy(directPath);
+		}
+		
+		// else search for it below
 		DomainPath defRoot = new DomainPath(root);
 	    Iterator<Path> e = Gateway.getLookup().search(defRoot, name);
 	    if (e.hasNext()) {
