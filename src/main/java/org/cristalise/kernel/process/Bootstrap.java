@@ -349,7 +349,7 @@ public class Bootstrap
     	if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
     	
         // check for import user
-    	checkAgent("system", adminPassword, adminRole, new UUID(0, 0).toString());
+    	checkAgent("system", null, adminRole, new UUID(0, 0).toString());
     	
     	checkAgent("admin", adminPassword, adminRole, new UUID(0, 1).toString());
 
