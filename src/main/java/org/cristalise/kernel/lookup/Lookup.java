@@ -137,6 +137,8 @@ public interface Lookup {
 	public AgentPath getAgentPath(String agentName) throws ObjectNotFoundException;
 
 	/**
+	 * Find the RolePath for the named Role
+	 * 
 	 * @param roleName
 	 * @return
 	 * @throws ObjectNotFoundException
@@ -144,6 +146,8 @@ public interface Lookup {
 	public RolePath getRolePath(String roleName) throws ObjectNotFoundException;
 	
 	/**
+	 * Returns all of the Agents in this centre who hold this role (including sub-roles)
+	 * 
 	 * @param rolePath
 	 * @return
 	 * @throws ObjectNotFoundException
@@ -151,13 +155,15 @@ public interface Lookup {
 	public AgentPath[] getAgents(RolePath rolePath) throws ObjectNotFoundException;
 
 	/**
+	 * Get all roles held by the given Agent
+	 * 
 	 * @param agentPath
 	 * @return
 	 */
 	public RolePath[] getRoles(AgentPath agentPath);
 
 	/**
-	 * Returns all of the Agents in this centre who hold this role (including sub-roles)
+	 * Checks if an agent qualifies as holding the stated Role, including any sub-role logic. 
 	 * 
 	 * @param agentPath
 	 * @param role
@@ -166,6 +172,7 @@ public interface Lookup {
 	public boolean hasRole(AgentPath agentPath, RolePath role);
 
 	/**
+	 * Return the username of the Agent referenced by an AgentPath
 	 * @param agentPath
 	 * @return
 	 * @throws ObjectNotFoundException
