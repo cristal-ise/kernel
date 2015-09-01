@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.castor.xml.XMLProperties;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.resource.ResourceLoader;
@@ -162,7 +163,6 @@ public class CastorXMLUtility
             return ((Outcome)obj).getData();
         StringWriter sWriter    = new StringWriter();
         Marshaller   marshaller = mappingContext.createMarshaller();
-        
         marshaller.setWriter(sWriter);
         marshaller.setMarshalAsDocument( false );
         marshaller.marshal( obj );

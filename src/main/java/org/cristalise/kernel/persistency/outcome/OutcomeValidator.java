@@ -20,20 +20,13 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
-import java.io.IOException;
 import java.io.StringReader;
 
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xerces.parsers.IntegratedParserConfiguration;
-import org.apache.xerces.parsers.XMLGrammarPreparser;
-import org.apache.xerces.util.SymbolTable;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.XMLGrammarDescription;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
-import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
-import org.apache.xerces.xni.parser.XMLParserConfiguration;
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.utils.Logger;
 import org.xml.sax.ErrorHandler;
@@ -51,23 +44,13 @@ import org.xml.sax.SAXParseException;
  **************************************************************************/
 
 
-public class OutcomeValidator implements ErrorHandler, XMLErrorHandler {
-
-	protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
-	/** Validation feature id (http://xml.org/sax/features/validation). */
-	protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
-	/** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-	protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
-	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
-	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
-    public static final String GRAMMAR_POOL = "http://apache.org/xml/properties/internal/grammar-pool";
+public class OutcomeValidator implements ErrorHandler {
 
     static SchemaValidator schemaValid = new SchemaValidator();
 
     Schema schema;
+    javax.xml.validation.Schema xmlSchema;
     protected StringBuffer errors = null;
-    XMLGrammarPoolImpl schemaGrammarPool = new XMLGrammarPoolImpl(1);
-    SymbolTable sym = new SymbolTable();
 
     public static OutcomeValidator getValidator(Schema schema) throws InvalidDataException {
     	
@@ -88,21 +71,16 @@ public class OutcomeValidator implements ErrorHandler, XMLErrorHandler {
         if (schema.docType.equals("Schema"))
             throw new InvalidDataException("Use SchemaValidator to validate schema");
 
-		errors = new StringBuffer();
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        schemaFactory.setErrorHandler(this);
+        errors = new StringBuffer();
         Logger.msg(5, "Parsing "+schema.docType+" version "+schema.docVersion+". "+schema.schema.length()+" chars");
 
-        XMLGrammarPreparser preparser = new XMLGrammarPreparser(sym);
-        preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
-        preparser.setProperty(GRAMMAR_POOL, schemaGrammarPool);
+        
 
-        preparser.setFeature(NAMESPACES_FEATURE_ID, true);
-        preparser.setFeature(VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, true);
-        preparser.setErrorHandler(this);
         try {
-            preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, new XMLInputSource(null, null, null, new StringReader(schema.schema), null));
-        } catch (IOException ex) {
+        	xmlSchema = schemaFactory.newSchema(new StreamSource(new StringReader(schema.schema)));
+        } catch (SAXException ex) {
             throw new InvalidDataException("Error parsing schema: "+ex.getMessage());
         }
 
@@ -127,17 +105,10 @@ public class OutcomeValidator implements ErrorHandler, XMLErrorHandler {
         if (outcome == null) return "Outcome String was null";
         errors = new StringBuffer();
         try {
-            XMLParserConfiguration parserConfiguration = new IntegratedParserConfiguration(sym, schemaGrammarPool);
-            parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
-            parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
-            // now we can still do schema features just in case,
-            // so long as it's our configuraiton......
-            parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-            parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, true);
-            DOMParser parser = new DOMParser(parserConfiguration);
+        	Validator parser = xmlSchema.newValidator();
             parser.setErrorHandler(this);
 
-            parser.parse(new XMLInputSource(null, null, null, new StringReader(outcome), null));
+            parser.validate(new StreamSource(new StringReader(outcome)));
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -176,32 +147,4 @@ public class OutcomeValidator implements ErrorHandler, XMLErrorHandler {
 	public void warning(SAXParseException ex) throws SAXException {
         appendError("WARNING: ", ex);
     }
-
-    /**
-     * XMLErrorHandler for schema
-     */
-    @Override
-	public void error(String domain, String key, XMLParseException ex)
-        throws XNIException {
-        appendError("ERROR: ", ex);
-    }
-
-    /**
-     *
-     */
-    @Override
-	public void fatalError(String domain, String key, XMLParseException ex)
-        throws XNIException {
-        appendError("FATAL: ", ex);
-    }
-
-    /**
-     *
-     */
-    @Override
-	public void warning(String domain, String key, XMLParseException ex)
-        throws XNIException {
-            appendError("WARNING: ", ex);
-    }
-
 }

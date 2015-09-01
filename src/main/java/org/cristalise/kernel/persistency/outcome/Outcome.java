@@ -21,11 +21,20 @@
 package org.cristalise.kernel.persistency.outcome;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -43,9 +52,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -56,7 +62,6 @@ public class Outcome implements C2KLocalObject {
     int mSchemaVersion;
     Document mDOM;
     static DocumentBuilder parser;
-    static DOMImplementationLS impl;
     static XPath xpath;
 
     static {
@@ -66,20 +71,12 @@ public class Outcome implements C2KLocalObject {
         dbf.setNamespaceAware(false);
         try {
             parser = dbf.newDocumentBuilder();
+            Logger.msg(1, "DocumentBuilder: "+parser.getClass().getName());
         } catch (ParserConfigurationException e) {
             Logger.error(e);
             Logger.die("Cannot function without XML parser");
         }
 
-        // Set up serialiser
-        try {
-			DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-	    	impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
-		} catch (Exception e) {
-            Logger.error(e);
-            Logger.die("Cannot function without XML serialiser");
-		}
-        
         XPathFactory xPathFactory = XPathFactory.newInstance();
         xpath = xPathFactory.newXPath();
     }
@@ -297,9 +294,24 @@ public class Outcome implements C2KLocalObject {
 
     static public String serialize(Document doc, boolean prettyPrint)
     {
-    	LSSerializer writer = impl.createLSSerializer();
-    	writer.getDomConfig().setParameter("format-pretty-print", prettyPrint);
-    	writer.getDomConfig().setParameter("xml-declaration", false);
-    	return writer.writeToString(doc);
+    	TransformerFactory tf = TransformerFactory.newInstance();
+    	Transformer transformer;
+		try {
+			transformer = tf.newTransformer();
+		} catch (TransformerConfigurationException ex) {
+			Logger.error(ex);
+			return "";
+		}
+    	transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+    	transformer.setOutputProperty(OutputKeys.INDENT, prettyPrint?"yes":"no");
+    	transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    	
+    	Writer out = new StringWriter();
+    	try {
+			transformer.transform(new DOMSource(doc), new StreamResult(out));
+		} catch (TransformerException e) {
+			Logger.error(e);
+		}
+    	return out.toString();
     }
 }
