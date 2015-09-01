@@ -20,11 +20,8 @@
  */
 package org.cristalise.kernel.lookup;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-import org.apache.xerces.impl.dv.util.Base64;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
@@ -135,16 +132,6 @@ public class AgentPath extends ItemPath
         return super.dump()+
                 "\n        agentID="+
                 mAgentName;
-    }
-
-    public static String generateUserPassword(String pass, String algo) throws NoSuchAlgorithmException {
-        MessageDigest sha = MessageDigest.getInstance(algo);
-        sha.reset();
-        sha.update(pass.getBytes());
-        byte hash[] = sha.digest();
-        StringBuffer digest = new StringBuffer("{").append(algo).append("}");
-        digest.append(Base64.encode(hash));
-        return digest.toString();
     }
     
     public static AgentPath fromUUIDString(String uuid) throws InvalidAgentPathException {
