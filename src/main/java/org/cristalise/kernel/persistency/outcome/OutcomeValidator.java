@@ -28,6 +28,8 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -52,6 +54,11 @@ public class OutcomeValidator implements ErrorHandler {
     javax.xml.validation.Schema xmlSchema;
     protected StringBuffer errors = null;
 
+    public static OutcomeValidator getValidator(Outcome o) throws InvalidDataException, ObjectNotFoundException {
+    	Schema schema = LocalObjectLoader.getSchema(o.getSchemaType(), o.getSchemaVersion()); 
+    	return getValidator(schema);
+    }
+    
     public static OutcomeValidator getValidator(Schema schema) throws InvalidDataException {
     	
         if (schema.docType.equals("Schema") &&
