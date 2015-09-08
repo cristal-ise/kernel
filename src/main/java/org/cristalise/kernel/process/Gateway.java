@@ -225,6 +225,9 @@ public class Gateway
     		Authenticator auth = getAuthenticator();
     		auth.authenticate("System");
     		
+    		if (mLookup != null)
+    			mLookup.close();
+    		
             mLookup = (Lookup)mC2KProps.getInstance("Lookup");
             mLookup.open(auth);
             
@@ -260,6 +263,8 @@ public class Gateway
         	throw new InvalidDataException("Login failed");
         
         try {
+    		if (mLookup != null)
+    			mLookup.close();
         	mLookup = (Lookup)mC2KProps.getInstance("Lookup");
         } catch (Exception e) {
 			Logger.error(e);
@@ -287,7 +292,7 @@ public class Gateway
         Authenticator auth = getAuthenticator();
         if (!auth.authenticate(agentName, agentPassword, resource))
         	throw new InvalidDataException("Login failed");
-
+        
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);

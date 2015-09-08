@@ -75,6 +75,14 @@ public class AgentProxy extends ItemProxy
     	super(ior, agentPath);
     	mAgentPath = agentPath;
     }
+    
+    @Override
+    public void finalize() throws Throwable {
+    	if (auth!=null) {
+    		auth.disconnect();
+    	}
+    	super.finalize();
+    }
 
     public Authenticator getAuthObj() {
     	return auth;
