@@ -109,12 +109,18 @@ public class CompositeActivity extends Activity
     public void initChild(WfVertex vertex, boolean first, GraphPoint point)
     {
         safeAddChild(vertex, point);
-
-        if (first) {
-            getChildrenGraphModel().setStartVertexId(vertex.getID());
-            Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::initChild() " + getName() + ":" + getID() + " was set to be first");
-        }
+        if (first) setFirstVertex(vertex.getID());
     }
+
+    /**
+     * @param vertex
+     */
+    public void setFirstVertex(int vertexID) {
+        Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::setFirstVertex() vertexID:"+vertexID);
+
+        getChildrenGraphModel().setStartVertexId(vertexID);
+    }
+
 
     /**
      * Adds vertex to graph cloning GraphPoint first (NPE safe)
@@ -261,8 +267,9 @@ public class CompositeActivity extends Activity
     public Join newJoinChild(String name, String type, boolean first, GraphPoint point)
     {
         Join join = new Join();
-        join.getProperties().put("Type", "Join");
-        safeAddChild(join, point);
+        join.getProperties().put("Type", type);
+        initChild(join, first, point);
+        join.setName(name);
         return join;
     }
 
