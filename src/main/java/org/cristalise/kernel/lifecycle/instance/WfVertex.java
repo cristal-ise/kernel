@@ -166,7 +166,10 @@ public abstract class WfVertex extends GraphableVertex
 
                     if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+value);
 
-                    switch (valueSplit[0]) {
+                    String pathType = valueSplit[0];
+                    String fullPath = valueSplit[1];
+
+                    switch (pathType) {
                     case "viewpoint":
                         dataHelper = new ViewpointDataHelper();
                         break;
@@ -174,7 +177,6 @@ public abstract class WfVertex extends GraphableVertex
                         dataHelper = new PropertyDataHelper();
                         break;
                     case "activity":
-//                        dataHelper = new ActivityDataHelper();
                         dataHelper = new ActivityDataHelper(getWf());
                         break;
                     default:
@@ -183,12 +185,12 @@ public abstract class WfVertex extends GraphableVertex
 
                     String entityPath; String dataPath;
                     // find syskey, viewname, xpath
-                    int firstSlash = valueSplit[1].indexOf("/");
+                    int firstSlash = fullPath.indexOf("/");
                     if (firstSlash > 0) {
-                        entityPath = valueSplit[1].substring(0, firstSlash);
-                        dataPath = valueSplit[1].substring(firstSlash+1);
+                        entityPath = fullPath.substring(0, firstSlash);
+                        dataPath = fullPath.substring(firstSlash+1);
                     }
-                    else throw new InvalidDataException("Invalid path: "+valueSplit[1]);
+                    else throw new InvalidDataException("Invalid path: "+fullPath);
 
                     // find entity
                     ItemPath sourcePath;
@@ -202,7 +204,7 @@ public abstract class WfVertex extends GraphableVertex
                         }
                     }
 
-                    String inputParam = dataHelper.get(sourcePath, valueSplit[1], locker);
+                    String inputParam = dataHelper.get(sourcePath, dataPath, locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
                     script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }
