@@ -318,9 +318,11 @@ public class CompositeActivity extends Activity
 					request(agent, itemPath, CompositeActivity.START, null, locker);
 				} catch (RuntimeException e) {
 					throw e;
-				} catch (Exception e) { // Agent didn't have permission to start the activity, so leave it waiting
+				} catch (AccessRightsException e) { // Agent didn't have permission to start the activity, so leave it waiting
 					Logger.error(e);
 					return;
+				} catch (Exception e) {
+					throw new InvalidDataException("Problem initializing composite activity: "+e.getMessage());
 				}
 			break;
 			case CompositeActivity.STARTED:
