@@ -547,7 +547,7 @@ public class Bootstrap
     public static void initServerItemWf() throws Exception {
     	CompositeActivityDef serverWfCa = (CompositeActivityDef)LocalObjectLoader.getActDef("ServerItemWorkflow", 0);
         Workflow wf = new Workflow((CompositeActivity)serverWfCa.instantiate(), new ServerPredefinedStepContainer());
-        wf.initialise(thisServerPath.getItemPath(), systemAgents.get("system").getPath());
+        wf.initialise(thisServerPath.getItemPath(), systemAgents.get("system").getPath(), null);
         Gateway.getStorage().put(thisServerPath.getItemPath(), wf, null);
     }
 }

@@ -111,6 +111,7 @@ public class CreateItemFromDescription extends PredefinedStep
 		} catch (PersistencyException e) {
 			throw e;
 		} catch (Exception e) {
+			Gateway.getLookupManager().delete(newItemPath);
 			throw new InvalidDataException("CreateItemFromDescription: Problem initializing new Item. See log: "+e.getMessage());
 		}
         // add its domain path

@@ -159,12 +159,12 @@ public class ItemImplementation implements ItemOperations {
 			throw new InvalidDataException("Workflow was invalid");
 		}
 		
-		mStorage.commit(locker);
-		
 		// All objects are in place, initialize the workflow to get the Item running
-		lc.initialise(mItemPath, agentPath);
-		mStorage.put(mItemPath, lc, null);
-		
+		lc.initialise(mItemPath, agentPath, locker);
+		mStorage.put(mItemPath, lc, locker);
+
+		mStorage.commit(locker);
+
 		Logger.msg(3, "Initialisation of item " + mItemPath
 				+ " was successful");
 	}

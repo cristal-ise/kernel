@@ -82,13 +82,28 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 		addChild(predef, new GraphPoint(300, 100));
 	}
 	
-	public History getHistory() throws InvalidDataException {
+	/**
+	 * Caches a History object for this Item, using the workflow as a locker. This object will be used for all Event
+	 * storage during execution, to reduce the cost of creating a new one for each one.
+	 * 
+	 * For other storage, such as during initialization, a non-cached History is created
+	 * 
+	 * @param locker
+	 * @return
+	 * @throws InvalidDataException
+	 */
+	public History getHistory(Object locker) throws InvalidDataException {
+		if (locker != this) return new History(itemPath, locker);
 		if (history == null) {
 			if (itemPath == null)
 				throw new InvalidDataException("Workflow not initialized.");
 			history = new History(itemPath, this);
 		}
 		return history;
+	}
+	
+	public History getHistory() throws InvalidDataException {
+		return getHistory(this);
 	}
 
 	/**
@@ -205,10 +220,10 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	 * @throws ObjectAlreadyExistsException 
 	 * @throws ObjectCannotBeUpdated 
 	 */
-	public void initialise(ItemPath itemPath, AgentPath agent) throws InvalidDataException
+	public void initialise(ItemPath itemPath, AgentPath agent, Object locker) throws InvalidDataException
 	{
 		setItemPath(itemPath);
-		runFirst(agent, itemPath, this);
+		runFirst(agent, itemPath, locker);
 	}
 
 	public ItemPath getItemPath() {

@@ -196,7 +196,7 @@ public class Activity extends WfVertex
 		// store new event
 		Event newEvent = null;
 		try {
-			History hist = getWf().getHistory();
+			History hist = getWf().getHistory(locker);
 			if (storeOutcome)
 				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), schema.docType, schema.docVersion, 
 						getStateMachine().getName(), getStateMachine().getVersion(), transition, viewName);
