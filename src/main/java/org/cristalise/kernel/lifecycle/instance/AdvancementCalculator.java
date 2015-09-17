@@ -27,6 +27,7 @@ import org.cristalise.kernel.graph.model.Vertex;
 
 //import org.cristalise.kernel.utils.Logger;
 /** @author XSeb74 */
+@Deprecated
 public class AdvancementCalculator
 {
 	private CompositeActivity activity;

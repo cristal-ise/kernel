@@ -32,6 +32,7 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 
 /**
  * @version $Revision: 1.52 $ $Date: 2005/05/10 15:14:54 $
@@ -50,23 +51,38 @@ public class Join extends WfVertex
 	}
 	private boolean loopTested;
 	public int counter = 0;
+	
+	/**
+	 * 
+	 * @return
+	 * @throws InvalidDataException 
+	 */
+    private boolean hasPrevActiveActs() throws InvalidDataException {
+        if(Gateway.getProperties().getBoolean("Wf.UseAdvancementCalculator", false) ) {
+            AdvancementCalculator adv = new AdvancementCalculator();
+            adv.calculate((CompositeActivity) getParent());
+            return (adv.hasprevActive.get(String.valueOf(getID())) != null);
+        }
+        else {
+            for(Vertex v: GraphTraversal.getTraversal(getParent().getChildGraphModel(),this,GraphTraversal.kUp,true) ) {
+                if(v instanceof Activity && ((Activity)v).active) return true;
+            }
+            return false;
+        }
+    }
+
 
 	/**
-	 * @throws InvalidDataException 
-	 * @throws ObjectNotFoundException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws PersistencyException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated 
-	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#runNext()
+	 * 
+	 * @param agent
+	 * @param item
+	 * @param locker
+	 * @throws InvalidDataException
 	 */
 	@Override
 	public void runNext(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{
-		AdvancementCalculator adv = new AdvancementCalculator();
-		adv.calculate((CompositeActivity) getParent());
-		if (adv.hasprevActive.get(String.valueOf(getID())) == null)
+	    if(!hasPrevActiveActs())
 		{
 			Vertex[] outVertices = getOutGraphables();
 			if (outVertices.length > 0)
