@@ -46,7 +46,7 @@ public class GraphTraversal
         graphModel.clearTags(startVertex);
         visitVertex(startVertex, graphModel, path, direction, startVertex, ignoreBackLinks);
 
-        return vectorToVertexArray(path);
+        return path.toArray(new Vertex[path.size()]);
     }
 
 
@@ -87,20 +87,5 @@ public class GraphTraversal
                     visitVertex(children[i], graphModel, path, direction, tag, ignoreBackLinks);
             }
         }
-    }
-
-
-    private static Vertex[] vectorToVertexArray(Vector<Vertex> vector)
-    {
-        Vertex[] vertices = new Vertex[vector.size()];
-        int      i        = 0;
-
-
-        for(i=0; i<vertices.length; i++)
-        {
-            vertices[i] = vector.elementAt(i);
-        }
-
-        return vertices;
     }
 }
