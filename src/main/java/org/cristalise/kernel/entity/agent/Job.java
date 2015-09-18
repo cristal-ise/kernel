@@ -22,11 +22,13 @@ package org.cristalise.kernel.entity.agent;
 
 import java.util.HashMap;
 
+import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
@@ -84,7 +86,9 @@ public class Job implements C2KLocalObject
     
     private String agentName;
     
-    private String outcomeData;
+    private GTimeStamp creationDate;
+    
+	private String outcomeData;
     
     private ErrorInfo error;
 
@@ -102,10 +106,12 @@ public class Job implements C2KLocalObject
      **************************************************************************/
     public Job()
     {
+    	setCreationDate(Event.getGMT());
     }
 
     public Job(Activity act, ItemPath itemPath, Transition transition, AgentPath agent, String role) throws InvalidDataException, ObjectNotFoundException, InvalidAgentPathException {
         
+    	setCreationDate(Event.getGMT());
     	setItemPath(itemPath);
         setStepPath(act.getPath());
         setTransition(transition);
@@ -187,6 +193,14 @@ public class Job implements C2KLocalObject
     public void setStepType(String actType) {
         stepType = actType;
     }
+    
+    public GTimeStamp getCreationDate() {
+		return creationDate;
+	}	
+
+	public void setCreationDate(GTimeStamp creationDate) {
+		this.creationDate = creationDate;
+	}    
     
     public Transition getTransition() {
     	if (transition != null && transitionResolved == false) {

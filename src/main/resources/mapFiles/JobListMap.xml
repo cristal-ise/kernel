@@ -57,6 +57,9 @@
 		<field name="actProps" type="org.cristalise.kernel.utils.KeyValuePair" collection="array" container="false" direct="false" get-method="getKeyValuePairs" set-method="setKeyValuePairs">
 			<bind-xml name="ActProps" node="element"/>
 		</field>
+		<field name="creationDate" type="org.cristalise.kernel.common.GTimeStamp" direct="false" get-method="getCreationDate" set-method="setCreationDate">
+        	<bind-xml name="CreationDate" node="element"/>
+      	</field>		
 	</class>
 	<class name="org.cristalise.kernel.entity.agent.JobArrayList">
 		<map-to xml="JobArrayList"/>
