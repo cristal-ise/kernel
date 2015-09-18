@@ -47,7 +47,7 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class CompositeActivity extends Activity
 {
-    /*
+	/*
      * --------------------------------------------
      * ----------------CONSTRUCTOR-----------------
      * --------------------------------------------
@@ -55,6 +55,8 @@ public class CompositeActivity extends Activity
     public CompositeActivity()
     {
         super();
+        getProperties().put("StateMachineName", getDefaultSMName());
+        getProperties().put("Abortable", false);
         setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
         setIsComposite(true);
     }
@@ -451,6 +453,30 @@ public class CompositeActivity extends Activity
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
             ((WfVertex) getChildrenGraphModel().getStartVertex()).reinit(idLoop);
     }
+    
+    @Override
+	public void abort() {
+        GraphableVertex[] vChildren = getChildren();
+        for (int i = 0; i < vChildren.length; i++)
+        {
+            ((WfVertex) vChildren[i]).abort();
+        }
+		super.abort();
+	}
+    
+    @Override
+    public boolean hasActive() {
+    	GraphableVertex[] vChildren = getChildren();
+    	for (int i = 0; i < vChildren.length; i++) {
+    		if (vChildren[i] instanceof Activity && 
+    				((Activity)vChildren[i]).hasActive())
+    				return true; // if a child activity is active, or a child composite has active children
+    		if (vChildren[i] instanceof CompositeActivity && 
+    				((CompositeActivity)vChildren[i]).getActive())
+    				return true; // if child composites are active but with no active children themselves
+    	}
+    	return false; // don't include own status
+    }
 
     @Override
 	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
@@ -458,6 +484,13 @@ public class CompositeActivity extends Activity
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished() && transitionID == CompositeActivity.START)
         	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
 
+        if (transitionID == CompositeActivity.COMPLETE && hasActive()) {
+        	boolean abortable = "true".equals(String.valueOf(getProperties().get("Abortable")));
+        	if (abortable)
+        		abort();
+        	else
+        		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
+        }
         return super.request(agent, itemPath, transitionID, requestData, locker);
     }
     

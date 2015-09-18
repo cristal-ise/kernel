@@ -454,6 +454,12 @@ public class Activity extends WfVertex
 	{
 		return active;
 	}
+	
+	public boolean hasActive() 
+	{
+		return active;
+	}
+	
 	/** sets the ability to be executed */
 	public void setActive(boolean acti)
 	{
@@ -584,6 +590,11 @@ public class Activity extends WfVertex
 	public void setType(String type)
 	{
 		mType = type;
+	}
+
+	@Override
+	public void abort() {
+		active = false;
 	}
 
 }

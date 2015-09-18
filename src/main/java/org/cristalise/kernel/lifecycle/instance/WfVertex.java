@@ -112,6 +112,8 @@ public abstract class WfVertex extends GraphableVertex
      * @throws ObjectNotFoundException 
 	 */
     public abstract void reinit( int idLoop ) throws InvalidDataException;
+    
+    public void abort() { }
 
     /**
      * Method verify.
