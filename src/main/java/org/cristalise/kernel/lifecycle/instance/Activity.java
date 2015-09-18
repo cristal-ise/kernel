@@ -506,19 +506,34 @@ public class Activity extends WfVertex
 	}
 
 
-	public void pushJobsToAgents(ItemPath itemPath) {
+	protected void pushJobsToAgents(ItemPath itemPath) {
 		String agentRole = getCurrentAgentRole();
-		if (agentRole != null && agentRole.length()>0) {
-	        try {
-	        	RolePath myRole = Gateway.getLookup().getRolePath(agentRole);
-	        	pushJobsToAgents(itemPath, myRole);
-	        } catch (ObjectNotFoundException ex) { // non-existent role
-	    		Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '"+agentRole+" not found.");
-	    	}
+		if (agentRole != null && agentRole.length()>0)
+	        	pushJobsToAgents(itemPath, agentRole);
+		
+		// Also push override jobs if present
+		try {
+			for (Transition trans : getStateMachine().getTransitions()) {
+				if (trans.getOriginState().getId() != state) continue;
+				String override = trans.getRoleOverride();
+				if (override != null && override.length() > 0)
+			        	pushJobsToAgents(itemPath, override);
+			}
+		} catch (InvalidDataException e) {
+			Logger.error("Activity.pushJobsToAgents() - Problem loading state machine '"+getProperties().get("StateMachineName")+"' for Job distribution.");
 		}
 	}
 	
-	public void pushJobsToAgents(ItemPath itemPath, RolePath role)
+	private void pushJobsToAgents(ItemPath itemPath, String role) {
+        try {
+        	RolePath myRole = Gateway.getLookup().getRolePath(role);
+        	pushJobsToAgents(itemPath, myRole);
+        } catch (ObjectNotFoundException ex) { // non-existent role
+    		Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '"+role+" not found.");
+    	}
+	}
+	
+	private void pushJobsToAgents(ItemPath itemPath, RolePath role)
 	{
 		if (role.hasJobList())
 			new JobPusher(this, itemPath, role).start();
