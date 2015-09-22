@@ -49,6 +49,8 @@ public class Logger
 	static private void printMessage(String message, int msgLogLevel)
 	{
         synchronized(logStreams) {
+        	if (logStreams.isEmpty())
+        		System.out.println(message);
             for (Iterator<PrintStream> iter = logStreams.keySet().iterator(); iter.hasNext();) {
                 PrintStream element = iter.next();
                 int logLevel = logStreams.get(element);
