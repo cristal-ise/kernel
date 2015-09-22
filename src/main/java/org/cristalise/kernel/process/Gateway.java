@@ -223,7 +223,8 @@ public class Gateway
     {
     	try {
     		Authenticator auth = getAuthenticator();
-    		auth.authenticate("System");
+    		if (!auth.authenticate("System"))
+    			throw new InvalidDataException("Server authentication failed");
     		
     		if (mLookup != null)
     			mLookup.close();
