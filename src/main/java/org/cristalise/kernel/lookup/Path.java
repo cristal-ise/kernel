@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lookup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
@@ -87,11 +88,8 @@ public abstract class Path
      *  Create a path by appending a child string to an existing path
      */
     public Path(Path parent, String child, short type) {
-        String[] oldPath = parent.getPath();
-        mPath = new String[oldPath.length+1];
-        for (int i=0; i<oldPath.length; i++)
-            mPath[i] = oldPath[i];
-        mPath[oldPath.length] = child;
+    	mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length+1);
+        mPath[mPath.length-1] = child;
         mType = type;
     }
 
