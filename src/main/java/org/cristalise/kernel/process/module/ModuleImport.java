@@ -29,6 +29,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.Path;
 
 
 public abstract class ModuleImport {
@@ -41,7 +42,7 @@ public abstract class ModuleImport {
 	public ModuleImport() {
 	}
     
-	public abstract void create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException,
+	public abstract Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException,
 			ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification;
 	
     public void setID( String uuid ) throws InvalidItemPathException 

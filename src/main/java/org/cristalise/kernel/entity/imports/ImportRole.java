@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.entity.imports;
 
-import java.util.Iterator;
-
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
@@ -37,40 +35,21 @@ public class ImportRole extends ModuleImport {
 
 	private boolean jobList;
 	
-	public ImportRole() {
-	}
+	public ImportRole() {}
 	
 	@Override
-	public void create(AgentPath agentPath, boolean reset) throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException {
-		RolePath parent = new RolePath();
-		String roleName = name;
-		if (name.indexOf('/') > -1) {
-			String[] roleComp = name.split("/");
-			for (int i=0; i<roleComp.length-1; i++) {
-				Iterator<Path> childIter = parent.getChildren();
-				boolean found = false;
-				while (childIter.hasNext()) {
-					RolePath childRole = (RolePath)childIter.next();
-					if (childRole.getName().equals(roleComp[i])) {
-						parent = childRole;
-						found = true;
-						break;
-					}
-				}
-				if (!found) throw new ObjectNotFoundException("Parent role "+roleComp[i]+" was not found");
-			}
-			roleName = roleComp[roleComp.length-1];
-		}
-		RolePath newRole = new RolePath(parent, roleName, jobList);
-		
-		// check that the role name is unique
-		try {
-			RolePath existingRole = Gateway.getLookup().getRolePath(roleName);
-			if (!newRole.getPath().equals(existingRole.getPath()))
-				throw new ObjectAlreadyExistsException("Role '"+roleName+"' already exists under a different path: "+existingRole.getPath());
-		} catch (ObjectNotFoundException ex) { // no existing role
-			Gateway.getLookupManager().createRole(newRole);
-		}
+	public Path create(AgentPath agentPath, boolean reset) 
+	        throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException
+	{
+		RolePath newRolePath = new RolePath(name.split("/"), jobList);
+
+		//checks if parent exists
+		newRolePath.getParent();
+
+		//checks if Role already exists
+		Gateway.getLookupManager().createRole(newRolePath);
+
+		return newRolePath;
 	}
 
 	public boolean hasJobList() {
@@ -80,5 +59,4 @@ public class ImportRole extends ModuleImport {
 	public void setJobList(boolean jobList) {
 		this.jobList = jobList;
 	}
-
 }

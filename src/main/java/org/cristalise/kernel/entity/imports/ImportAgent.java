@@ -29,6 +29,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.agent.ActiveEntity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.ModuleImport;
@@ -52,7 +53,7 @@ public class ImportAgent extends ModuleImport {
     }
 
     @Override
-	public void create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
+	public Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
         AgentPath newAgent = new AgentPath(getItemPath(), name);
         newAgent.setPassword(password);
         ActiveEntity newAgentEnt = Gateway.getCorbaServer().createAgent(newAgent);
@@ -75,7 +76,7 @@ public class ImportAgent extends ModuleImport {
             }
             Gateway.getLookupManager().addRole(newAgent, thisRole);
         }
-
+        return newAgent;
     }
 
     @Override

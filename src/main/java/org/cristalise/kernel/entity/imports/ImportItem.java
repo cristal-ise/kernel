@@ -41,6 +41,7 @@ import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -109,7 +110,7 @@ public class ImportItem extends ModuleImport {
 	}
 
 	@Override
-	public void create(AgentPath agentPath, boolean reset) throws ObjectCannotBeUpdated, ObjectNotFoundException, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification {
+	public Path create(AgentPath agentPath, boolean reset) throws ObjectCannotBeUpdated, ObjectNotFoundException, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification {
         DomainPath domPath = new DomainPath(new DomainPath(initialPath), name);
         if (domPath.exists()) {
         	ItemPath domItem = domPath.getItemPath();
@@ -224,6 +225,8 @@ public class ImportItem extends ModuleImport {
         	domPath.setItemPath(getItemPath());
         	Gateway.getLookupManager().add(domPath);
         }
+        
+        return domPath;
     }
 	
     public String getInitialPath() {

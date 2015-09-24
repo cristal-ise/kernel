@@ -25,6 +25,7 @@ import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.utils.Logger;
 
@@ -41,11 +42,11 @@ public class ModuleResource extends ModuleImport {
 	}
 
 	@Override
-	public void create(AgentPath agentPath, boolean reset)
+	public Path create(AgentPath agentPath, boolean reset)
 			throws ObjectNotFoundException, ObjectCannotBeUpdated,
 			CannotManageException, ObjectAlreadyExistsException {
 		try {
-			domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
+			return domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
 		} catch (Exception e) {
 			Logger.error(e);
 			throw new CannotManageException("Exception verifying module resource "+ns+"/"+name);

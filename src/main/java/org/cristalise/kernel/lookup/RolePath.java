@@ -46,12 +46,10 @@ public class RolePath extends Path
     	super(Path.CONTEXT);
     }
 
-	public RolePath getParent() {
-    	try {
-    		if (mPath.length > 2) 
-    			return Gateway.getLookup().getRolePath(mPath[mPath.length-2]);
-    	} catch (ObjectNotFoundException ex) { }
-    	return null;
+	public RolePath getParent() throws ObjectNotFoundException {
+        if (mPath.length < 2) return null;
+
+        return Gateway.getLookup().getRolePath(mPath[mPath.length-2]);
 	}
 
 	public RolePath(RolePath parent, String roleName) {
