@@ -64,7 +64,7 @@ public class ProxyServer implements Runnable {
 	
 	@Override
 	public void run() {
-		
+		Thread.currentThread().setName("Proxy Server");
 		while(keepRunning) {
 			ProxyMessage message = messageQueue.poll();
 			if (message != null) {
