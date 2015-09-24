@@ -47,7 +47,7 @@ public abstract class Path
     // slash delimited path
     protected String   mStringPath = null;
     // entity or context
-    protected short    mType      = CONTEXT;
+    protected short    mType      = UNKNOWN;
     
     // item UUID (only valid for ItemPaths and DomainPaths that are aliases for Items)
     protected UUID			 mUUID;

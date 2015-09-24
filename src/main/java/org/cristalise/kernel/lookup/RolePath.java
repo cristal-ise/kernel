@@ -43,6 +43,7 @@ public class RolePath extends Path
     private boolean hasJobList = false;
     
     public RolePath() {
+    	super(Path.CONTEXT);
     }
 
 	public RolePath getParent() {
@@ -54,7 +55,7 @@ public class RolePath extends Path
 	}
 
 	public RolePath(RolePath parent, String roleName) {
-        super(parent, roleName);
+        super(parent, roleName, Path.CONTEXT);
     }
     
     public RolePath(String[] path, boolean jobList) {
