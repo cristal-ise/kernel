@@ -33,6 +33,7 @@ import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 
 /**
  * @version $Revision: 1.52 $ $Date: 2005/05/10 15:14:54 $
@@ -59,6 +60,7 @@ public class Join extends WfVertex
 	 */
     private boolean hasPrevActiveActs() throws InvalidDataException {
         if(Gateway.getProperties().getBoolean("Wf.UseAdvancementCalculator", false) ) {
+            Logger.warning("Join.hasPrevActiveActs() - Use of Deprecated API! Check Wf.UseAdvancementCalculator property");
             AdvancementCalculator adv = new AdvancementCalculator();
             adv.calculate((CompositeActivity) getParent());
             return (adv.hasprevActive.get(String.valueOf(getID())) != null);
