@@ -96,7 +96,7 @@ public abstract class Path
     }
 
      /*
-      * Create a path by appending a child and inheriting the type
+      * Create a path by appending a child
       */
     public Path(Path parent, String child) {
         this(parent, child, UNKNOWN);
