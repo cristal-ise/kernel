@@ -80,6 +80,7 @@ public class CorbaServer {
     public void close() {
         try {
             mPOAManager.deactivate(true, true);
+            mRootPOA.destroy(true, true);
         } catch (AdapterInactive ex) {
             Logger.error(ex);
         }
