@@ -343,10 +343,12 @@ public class CompositeActivity extends Activity
 				request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
 			} catch (RuntimeException e) {
 				throw e;
-			} catch (Exception e) { 
-				Logger.error(e); // current agent couldn't complete the composite, so leave it for someoen who can
+			} catch (AccessRightsException e) { // Agent didn't have permission to complete the activity, so leave it waiting
+				Logger.error(e);
 				return;
-			} 
+			} catch (Exception e) {
+				throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
+			}
         super.runNext(agent, itemPath, locker);
     }
 
@@ -461,21 +463,21 @@ public class CompositeActivity extends Activity
         {
             ((WfVertex) vChildren[i]).abort();
         }
-		super.abort();
 	}
     
-    @Override
     public boolean hasActive() {
     	GraphableVertex[] vChildren = getChildren();
     	for (int i = 0; i < vChildren.length; i++) {
-    		if (vChildren[i] instanceof Activity && 
-    				((Activity)vChildren[i]).hasActive())
-    				return true; // if a child activity is active, or a child composite has active children
-    		if (vChildren[i] instanceof CompositeActivity && 
-    				((CompositeActivity)vChildren[i]).getActive())
-    				return true; // if child composites are active but with no active children themselves
+    		if (!(vChildren[i] instanceof Activity))
+    			continue;
+    		Activity childAct = (Activity)vChildren[i];
+    		if (childAct.getActive())
+    				return true; // if a child activity is active
+    		if (childAct instanceof CompositeActivity && 
+    				((CompositeActivity)vChildren[i]).hasActive())
+    				return true; // if a child composite has active children
     	}
-    	return false; // don't include own status
+    	return false; // don't include own active status
     }
 
     @Override

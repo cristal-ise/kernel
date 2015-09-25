@@ -455,11 +455,6 @@ public class Activity extends WfVertex
 		return active;
 	}
 	
-	public boolean hasActive() 
-	{
-		return active;
-	}
-	
 	/** sets the ability to be executed */
 	public void setActive(boolean acti)
 	{
