@@ -124,7 +124,7 @@ public class ImportItem extends ModuleImport {
         	newItem = Gateway.getCorbaServer().getItem(getItemPath());
         } 
         else {
-        	Logger.msg(1, "ImportItem.create() - Creating module item "+getItemPath()+" at "+domPath);
+        	Logger.msg("ImportItem.create() - Creating module item "+getItemPath()+" at "+domPath);
 	        newItem = Gateway.getCorbaServer().createItem(getItemPath());
 	        Gateway.getLookupManager().add(getItemPath());
         }
@@ -199,7 +199,7 @@ public class ImportItem extends ModuleImport {
                 	}
                 }
         	} catch (ObjectNotFoundException ex) { 
-        		Logger.msg(3, "View "+thisOutcome.schema+"/"+thisOutcome.viewname+" not found in "+ns+"/"+name+". Creating.");
+        		Logger.msg("View "+thisOutcome.schema+"/"+thisOutcome.viewname+" not found in "+ns+"/"+name+". Creating.");
         		impView = new Viewpoint(getItemPath(), thisOutcome.schema, thisOutcome.viewname, thisOutcome.version, -1);
         	} catch (PersistencyException e) {
         		throw new ObjectCannotBeUpdated("Could not check data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);

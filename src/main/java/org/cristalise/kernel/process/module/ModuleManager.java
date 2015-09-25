@@ -34,6 +34,7 @@ import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.FileStringUtility;
@@ -153,6 +154,7 @@ public class ModuleManager {
 	
 	public void runScripts(String event) {
 		for (Module thisMod : modules) {
+			if (Bootstrap.shutdown) return;
 			try {
 				thisMod.runScript(event, user, isServer);
 			} catch (ScriptingEngineException e) {
@@ -174,7 +176,7 @@ public class ModuleManager {
 		boolean reset = Gateway.getProperties().getBoolean("Module.reset", false);
 
 		for (Module thisMod : modules) {
-			
+			if (Bootstrap.shutdown) return; 
 			Logger.msg("Registering module "+thisMod.getName());
 			try {
 				String thisResetKey = "Module."+thisMod.getNamespace()+".reset";

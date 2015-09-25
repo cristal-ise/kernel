@@ -166,6 +166,7 @@ abstract public class AbstractMain
     }
     
     public static void shutdown(int errCode) {
+		Bootstrap.abort();
     	if (shutdownHandler!= null)
     		shutdownHandler.shutdown(errCode, isServer);
 		try {

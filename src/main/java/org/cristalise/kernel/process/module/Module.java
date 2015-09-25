@@ -34,6 +34,7 @@ import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.RolePath;
+import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.scripting.ErrorInfo;
@@ -108,6 +109,7 @@ public class Module extends ImportItem {
 		setModuleXML(moduleXML);
 		
 		for (ModuleResource thisRes : imports.getResources()) {
+			if (Bootstrap.shutdown) return;
 			try {
 				thisRes.setNamespace(ns);
 				thisRes.create(systemAgent.getPath(), reset);
@@ -118,6 +120,7 @@ public class Module extends ImportItem {
 		}
 
 		for (ImportRole thisRole : imports.getRoles()) {
+			if (Bootstrap.shutdown) return;
 			RolePath rolePath;
 			try {
 				String roleName = thisRole.name;
@@ -135,6 +138,7 @@ public class Module extends ImportItem {
 		}
 		
 		for (ImportAgent thisAgent : imports.getAgents()) {
+			if (Bootstrap.shutdown) return;
 			try {
 				Gateway.getLookup().getAgentPath(thisAgent.name);
 			    Logger.msg(3, "Module.importAll() - User '"+thisAgent.name+"' found.");
@@ -145,6 +149,7 @@ public class Module extends ImportItem {
 		}
 		
 		for (ImportItem thisItem : imports.getItems()) {
+			if (Bootstrap.shutdown) return;
 			thisItem.setNamespace(ns);
 			thisItem.create(systemAgent.getPath(), reset);
 		}

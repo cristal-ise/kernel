@@ -75,6 +75,7 @@ public class Bootstrap
     static DomainPath thisServerPath;
     static HashMap<String, ResourceImportHandler> resHandlerCache = new HashMap<String, ResourceImportHandler>();
     static HashMap<String, AgentProxy> systemAgents = new HashMap<String, AgentProxy>();
+    public static boolean shutdown = false;
 
 	/**
 	 * Run everything without timing-out the service wrapper
@@ -96,24 +97,38 @@ public class Bootstrap
                     Thread.currentThread().setContextClassLoader(wClassLoader);
 
 					// make sure all of the boot items are up-to-date
-                    Logger.msg("Bootstrap.run() - Verifying kernel boot data items");
-					verifyBootDataItems();
+                    if (!shutdown) {
+                    	Logger.msg("Bootstrap.run() - Verifying kernel boot data items");
+                    	verifyBootDataItems();
+                    }
 
 					// verify the server item's wf
-					Logger.msg("Bootstrap.run() - Initialising Server Item Workflow");
-					initServerItemWf();
-					
-					Gateway.getModuleManager().setUser(systemAgents.get("system"));
-		            Gateway.getModuleManager().registerModules();
+                    if (!shutdown) {
+                    	Logger.msg("Bootstrap.run() - Initialising Server Item Workflow");
+                    	initServerItemWf();
+                    }
+                    
+                    if (!shutdown) {
+                    	Gateway.getModuleManager().setUser(systemAgents.get("system"));
+                    	Gateway.getModuleManager().registerModules();
+                    }
 
-					Logger.msg("Bootstrap.run() - Bootstrapping complete");
-					Gateway.getModuleManager().runScripts("initialized");
+					if (!shutdown) {
+						Logger.msg("Bootstrap.run() - Bootstrapping complete");
+						Gateway.getModuleManager().runScripts("initialized");
+					}	
+					
 				} catch (Throwable e) {
 					Logger.error(e);
 					Logger.die("Exception performing bootstrap. Check that everything is OK.");
 				}
 			}
 		}).start();
+	}
+	
+	public static void abort() {
+		Logger.msg("Bootstrap.abort() - Aborting shutdown");
+		shutdown = true;
 	}
 
     /**************************************************************************
@@ -129,7 +144,7 @@ public class Bootstrap
 
     private static void verifyBootDataItems(String bootList, String ns, boolean reset) throws InvalidItemPathException {
         StringTokenizer str = new StringTokenizer(bootList, "\n\r");
-        while (str.hasMoreTokens()) {
+        while (str.hasMoreTokens() && !shutdown) {
             String thisItem = str.nextToken();
             ItemPath itemPath = null;
             String[] itemParts = thisItem.split("/");
@@ -234,8 +249,8 @@ public class Bootstrap
 		Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
 
 		if (en.hasNext()) {
-			Logger.msg("Bootstrap.verifyResource() - Found type:'"
-					+ typeImpHandler.getName() + " 'name:'" + itemName + "'.");
+			Logger.msg(3, "Bootstrap.verifyResource() - Found "
+					+ typeImpHandler.getName() + " " + itemName + ".");
 
 			thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName,
 					itemPath, modDomPath, (DomainPath) en.next());
@@ -244,8 +259,8 @@ public class Bootstrap
 			if (itemPath == null)
 				itemPath = new ItemPath();
 		
-			Logger.msg("Bootstrap.verifyResource() - Not found type'" 
-					+ typeImpHandler.getName() + "' name:'" + itemName + "'. Creating new.");
+			Logger.msg("Bootstrap.verifyResource() - " 
+					+ typeImpHandler.getName() + " " + itemName + " not found. Creating new.");
 
 			thisProxy = createResourceItem(typeImpHandler, itemName, ns, itemPath);
 		}
@@ -396,8 +411,8 @@ public class Bootstrap
 				}
 			}
 		} catch (ObjectNotFoundException ex) {
-			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Item:"	+ item.getPath() + "Schema:" + newOutcome.getSchemaType()
-					+ " version:" + version + " not found! Attempting to insert new.");
+			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - " +item.getName() + " " + newOutcome.getSchemaType()
+					+ " v" + version + " not found! Attempting to insert new.");
 		}
 		return true;
 	}
