@@ -37,6 +37,7 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAManager;
 import org.omg.PortableServer.Servant;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
+import org.omg.PortableServer.POAPackage.WrongPolicy;
 
 
 /**************************************************************************
@@ -81,6 +82,10 @@ public class CorbaServer {
         try {
             mPOAManager.deactivate(true, true);
             mRootPOA.destroy(true, true);
+//            com.sun.corba.se.spi.transport.CorbaTransportManager mgr = ((com.sun.corba.se.impl.orb.ORBImpl)Gateway.getORB()).getCorbaTransportManager();
+//            for (Object accept: mgr.getAcceptors()) {
+//            	((com.sun.corba.se.pept.transport.Acceptor) accept).close();
+//            }
         } catch (AdapterInactive ex) {
             Logger.error(ex);
         }
@@ -174,11 +179,17 @@ public class CorbaServer {
     /**
      * @param itemPath
      * @return
+     * @throws WrongPolicy 
      */
     public TraceableEntity createItem(ItemPath itemPath) throws CannotManageException, ObjectAlreadyExistsException {
 
     	if (itemPath.exists()) throw new ObjectAlreadyExistsException();
-        org.omg.CORBA.Object obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
+    	org.omg.CORBA.Object obj;
+    	try {
+    		obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
+		} catch (WrongPolicy e) {
+			throw new CannotManageException(e.getMessage());
+		}
         itemPath.setIOR(obj);
         TraceableEntity item = new TraceableEntity(itemPath, mItemPOA);
         synchronized (mItemCache) {
@@ -189,7 +200,12 @@ public class CorbaServer {
     
     public ActiveEntity createAgent(AgentPath agentPath) throws CannotManageException, ObjectAlreadyExistsException {
     	if (agentPath.exists()) throw new ObjectAlreadyExistsException();
-        org.omg.CORBA.Object obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
+        org.omg.CORBA.Object obj;
+		try {
+			obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
+		} catch (WrongPolicy e) {
+			throw new CannotManageException(e.getMessage());
+		}
         agentPath.setIOR(obj);
         ActiveEntity agent;
 		agent = new ActiveEntity(agentPath, mAgentPOA);

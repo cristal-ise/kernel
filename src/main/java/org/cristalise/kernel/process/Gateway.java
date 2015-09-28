@@ -178,15 +178,15 @@ public class Gateway
 
             // Init ORB - set various config 
             String serverName = mC2KProps.getProperty("ItemServer.name");
-            if (serverName != null)
-            	mC2KProps.put("com.sun.CORBA.ORBServerHost", serverName);
             String serverPort = mC2KProps.getProperty("ItemServer.iiop", "1500");
-            mC2KProps.put("com.sun.CORBA.ORBServerPort", serverPort);
             //TODO: externalize this (or replace corba completely)
-            mC2KProps.put("com.sun.CORBA.POA.ORBServerId", "1");
-            mC2KProps.put("com.sun.CORBA.POA.ORBPersistentServerPort", serverPort);
-            mC2KProps.put("com.sun.CORBA.codeset.charsets", "0x05010001, 0x00010109"); // need to force UTF-8 in the Sun ORB
-            mC2KProps.put("com.sun.CORBA.codeset.wcharsets", "0x00010109, 0x05010001");
+            mC2KProps.put("OAPort", serverPort);
+            mC2KProps.put("jacorb.dns.enable", "on");
+    		mC2KProps.put("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
+    		mC2KProps.put("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
+    		mC2KProps.put("jacorb.implname","1");
+    		mC2KProps.put("jacorb.native_char_codeset", "UTF8");
+    		mC2KProps.put("jacorb.native_wchar_codeset", "UTF16");
             //Standard initialisation of the ORB
             orbDestroyed = false;
             mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);
@@ -372,6 +372,10 @@ public class Gateway
     	if (orbDestroyed) throw new RuntimeException("Gateway has been closed. ORB is destroyed. ");
 
     	if (mORB == null) {
+    		mC2KProps.put("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
+    		mC2KProps.put("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
+    		mC2KProps.put("jacorb.native_char_codeset", "UTF8");
+    		mC2KProps.put("jacorb.native_wchar_codeset", "UTF16");
     		mC2KProps.put("com.sun.CORBA.codeset.charsets", "0x05010001, 0x00010109"); // need to force UTF-8 in the Sun ORB
     		mC2KProps.put("com.sun.CORBA.codeset.wcharsets", "0x00010109, 0x05010001");
     		mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);

@@ -122,6 +122,11 @@
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.jacorb</groupId>
+			<artifactId>jacorb</artifactId>
+			<version>3.6.1</version>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
