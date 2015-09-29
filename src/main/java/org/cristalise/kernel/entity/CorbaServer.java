@@ -187,7 +187,7 @@ public class CorbaServer {
     	org.omg.CORBA.Object obj;
     	try {
     		obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
-		} catch (WrongPolicy e) {
+		} catch (Throwable e) {
 			throw new CannotManageException(e.getMessage());
 		}
         itemPath.setIOR(obj);
@@ -203,7 +203,7 @@ public class CorbaServer {
         org.omg.CORBA.Object obj;
 		try {
 			obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
-		} catch (WrongPolicy e) {
+		} catch (Throwable e) {
 			throw new CannotManageException(e.getMessage());
 		}
         agentPath.setIOR(obj);
