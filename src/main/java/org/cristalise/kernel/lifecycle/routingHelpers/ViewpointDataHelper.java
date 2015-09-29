@@ -50,7 +50,7 @@ public class ViewpointDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(ItemPath item, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
+	public String get(ItemPath item, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         //FIXME: is this correct that it can use UUID in dataPath eg: /UUID (or . if current)
         String[] paths = dataPath.split(":");

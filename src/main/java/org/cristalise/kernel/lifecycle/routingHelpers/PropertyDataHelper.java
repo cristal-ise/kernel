@@ -31,7 +31,7 @@ import org.exolab.castor.mapping.xml.Property;
 public class PropertyDataHelper implements DataHelper {
 
 	@Override
-	public String get(ItemPath item, String dataPath, Object locker)
+	public String get(ItemPath item, String actContext, String dataPath, Object locker)
 			throws InvalidDataException, PersistencyException,
 			ObjectNotFoundException {
 		//Syntax of search : <PropertyName>

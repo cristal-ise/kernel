@@ -58,7 +58,7 @@ public class ActivityDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(ItemPath item, String dataPath, Object locker)
+	public String get(ItemPath item, String actContext, String dataPath, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         if(workflow == null) workflow = (Workflow) Gateway.getStorage().get(item, ClusterStorage.LIFECYCLE, locker);
@@ -70,12 +70,18 @@ public class ActivityDataHelper implements DataHelper {
         String actPath = paths[0];
         String xpath   = paths[1];
 
+        if (!actPath.startsWith("/")) {
+        	actPath = actContext+(actContext.endsWith("/")?"":"/")+actPath;
+        }
+        
         // Find the referenced activity
         GraphableVertex act = workflow.search(actPath);
 
         // Get the schema and viewpoint names
         String schemaName = act.getProperties().get("SchemaType").toString();
         String viewName   = act.getProperties().get("Viewpoint").toString();
+        
+        if (viewName == null || viewName.equals("")) viewName = "last";
 
         // get the viewpoint and outcome
         Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName, locker);

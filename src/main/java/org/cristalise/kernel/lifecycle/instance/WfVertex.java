@@ -155,9 +155,12 @@ public abstract class WfVertex extends GraphableVertex
     {
         try {
             Script script = getScript(scriptName, scriptVersion);
-
             HashMap<?, ?> scriptInputParams = script.getAllInputParams();
-
+            
+            //derive the parent composite in which the script is running
+            String actContext = getPath();
+            actContext = actContext.substring(0, actContext.lastIndexOf('/'));
+            
             for (KeyValuePair vertexProp : getProperties().getKeyValuePairs()) {
                 if (scriptInputParams.containsKey(vertexProp.getKey())) {
                     String value = vertexProp.getStringValue();
@@ -205,8 +208,7 @@ public abstract class WfVertex extends GraphableVertex
                             throw new InvalidDataException("Invalid Item UUID: "+entityPath);
                         }
                     }
-
-                    String inputParam = dataHelper.get(sourcePath, dataPath, locker);
+                    String inputParam = dataHelper.get(sourcePath, actContext, dataPath, locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
                     script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }

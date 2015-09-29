@@ -27,5 +27,5 @@ import org.cristalise.kernel.lookup.ItemPath;
 
 public interface DataHelper {
 
-	public String get(ItemPath item, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException;
+	public String get(ItemPath item, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException;
 }
