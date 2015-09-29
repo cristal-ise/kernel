@@ -184,12 +184,7 @@ public class CorbaServer {
     public TraceableEntity createItem(ItemPath itemPath) throws CannotManageException, ObjectAlreadyExistsException {
 
     	if (itemPath.exists()) throw new ObjectAlreadyExistsException();
-    	org.omg.CORBA.Object obj;
-    	try {
-    		obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
-		} catch (WrongPolicy e) {
-			throw new CannotManageException(e.getMessage());
-		}
+    	org.omg.CORBA.Object obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
         itemPath.setIOR(obj);
         TraceableEntity item = new TraceableEntity(itemPath, mItemPOA);
         synchronized (mItemCache) {
@@ -200,12 +195,7 @@ public class CorbaServer {
     
     public ActiveEntity createAgent(AgentPath agentPath) throws CannotManageException, ObjectAlreadyExistsException {
     	if (agentPath.exists()) throw new ObjectAlreadyExistsException();
-        org.omg.CORBA.Object obj;
-		try {
-			obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
-		} catch (WrongPolicy e) {
-			throw new CannotManageException(e.getMessage());
-		}
+        org.omg.CORBA.Object obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
         agentPath.setIOR(obj);
         ActiveEntity agent;
 		agent = new ActiveEntity(agentPath, mAgentPOA);
