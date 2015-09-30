@@ -33,7 +33,6 @@ import org.cristalise.kernel.entity.agent.ActiveEntity;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.Logger;
@@ -76,6 +75,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 		
 		String newName = params[0];
 		String descVer = params[1];
+		if (descVer == null) descVer = "last";
 		String roles = params[2];
 		String passwd = params[3];
 		PropertyArrayList initProps = 
@@ -86,7 +86,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
     	// check if given roles exist
     	String[] roleArr = roles.split(",");
     	for(int i=0; i<roleArr.length; i++) {
-        	RolePath thisRole = Gateway.getLookup().getRolePath(roleArr[i]);
+        	Gateway.getLookup().getRolePath(roleArr[i]);
         }
     	
         // check if the path is already taken
