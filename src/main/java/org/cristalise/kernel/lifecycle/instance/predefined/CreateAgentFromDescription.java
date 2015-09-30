@@ -127,7 +127,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
         
         // add roles if given
         
-        for(int i=1; i<roleArr.length; i++) {
+        for(int i=0; i<roleArr.length; i++) {
         	newAgent.addRole(roleArr[i]);
         }
 
