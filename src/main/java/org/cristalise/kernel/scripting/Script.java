@@ -431,7 +431,7 @@ public class Script
             throw new ParameterException("Parameter " + name + " not found in parameter list");
 
         if (param != null) { // param is in this script
-            if (value.getClass() != param.getType())
+            if (param.getType().isInstance(value))
                 throw new ParameterException(
                     "Parameter " + name + " is wrong type \n" + "Required: " + param.getType().toString() + "\n" + "Supplied: " + value.getClass().toString());
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(name, value);
