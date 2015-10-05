@@ -81,6 +81,16 @@ public class CorbaServer {
         try {
             mPOAManager.deactivate(true, true);
             mRootPOA.destroy(true, true);
+            /* HACK: Sun ORB doesn't seem to close its listening ports correctly, so we have to force it
+             * Unfortunately we can't do this without using Restricted API, which can cause build errors 
+             * Fix this comment terminator to enable: * /
+            if (Gateway.getORB() instanceof com.sun.corba.se.impl.orb.ORBImpl) {
+            	com.sun.corba.se.spi.transport.CorbaTransportManager mgr = ((com.sun.corba.se.impl.orb.ORBImpl)Gateway.getORB()).getCorbaTransportManager();
+            	for (Object accept: mgr.getAcceptors()) {
+            		((com.sun.corba.se.pept.transport.Acceptor) accept).close(); 
+					}
+            }
+            // */
         } catch (AdapterInactive ex) {
             Logger.error(ex);
         }
