@@ -30,6 +30,7 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 
 
 /**
@@ -52,14 +53,19 @@ public class ViewpointDataHelper implements DataHelper {
     @Override
 	public String get(ItemPath item, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        //FIXME: is this correct that it can use UUID in dataPath eg: /UUID (or . if current)
         String[] paths = dataPath.split(":");
 
-        if (paths.length != 2) throw new InvalidDataException("Invalid path '"+dataPath+"' it must have only one colon (:)");
+        if (paths.length != 2) throw new InvalidDataException("Invalid path: '"+dataPath+"' should have only one colon (:)");
 
         String viewpoint = paths[0];
         String xpath = paths[1];
-
+        
+        // Leading dot now no longer necessary - remove if present
+        if (viewpoint.startsWith("./")) {
+        	Logger.warning("Removing leading dot on viewpoint data helper path at "+actContext+" in "+item.getUUID().toString() + ". Definition should be migrated.");
+        	viewpoint = viewpoint.substring(2);
+        }
+        
         // load viewpoint
         Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
         Outcome outcome = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);

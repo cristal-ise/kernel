@@ -37,7 +37,6 @@ import org.cristalise.kernel.lifecycle.routingHelpers.DataHelper;
 import org.cristalise.kernel.lifecycle.routingHelpers.PropertyDataHelper;
 import org.cristalise.kernel.lifecycle.routingHelpers.ViewpointDataHelper;
 import org.cristalise.kernel.lookup.AgentPath;
-import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
@@ -172,7 +171,7 @@ public abstract class WfVertex extends GraphableVertex
                     if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+value);
 
                     String pathType = valueSplit[0];
-                    String fullPath = valueSplit[1];
+                    String dataPath = value.substring(pathType.length()+2);
 
                     switch (pathType) {
                     case "viewpoint":
@@ -188,27 +187,7 @@ public abstract class WfVertex extends GraphableVertex
                         throw new InvalidDataException("Unknown data type (viewpoint/property/activity): "+value);
                     }
 
-                    String entityPath; String dataPath;
-                    // find syskey, viewname, xpath
-                    int firstSlash = fullPath.indexOf("/");
-                    if (firstSlash > 0) {
-                        entityPath = fullPath.substring(0, firstSlash);
-                        dataPath = fullPath.substring(firstSlash+1);
-                    }
-                    else throw new InvalidDataException("Invalid path: "+fullPath);
-
-                    // find entity
-                    ItemPath sourcePath;
-                    if (entityPath.equals(".")) sourcePath = itemPath;
-                    else {
-                        try {
-                            sourcePath = new ItemPath(entityPath);
-                        } catch (InvalidItemPathException e) {
-                            Logger.error(e);
-                            throw new InvalidDataException("Invalid Item UUID: "+entityPath);
-                        }
-                    }
-                    String inputParam = dataHelper.get(sourcePath, actContext, dataPath, locker);
+                    String inputParam = dataHelper.get(itemPath, actContext, dataPath, locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
                     script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }

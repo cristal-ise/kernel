@@ -70,8 +70,8 @@ public class ActivityDataHelper implements DataHelper {
         String actPath = paths[0];
         String xpath   = paths[1];
 
-        if (!actPath.startsWith("/")) {
-        	actPath = actContext+(actContext.endsWith("/")?"":"/")+actPath;
+        if (actPath.startsWith(".")) {
+        	actPath = actContext+(actContext.endsWith("/")?"":"/")+actPath.substring(2);
         }
         
         // Find the referenced activity
