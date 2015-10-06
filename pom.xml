@@ -158,7 +158,7 @@
 			<resource>
 				<directory>.</directory>
 				<includes>
-					<include>changelog</include>
+					<include>log4j.properties</include>
 					<include>LICENSE</include>
 				</includes>
 				<targetPath>.</targetPath>
