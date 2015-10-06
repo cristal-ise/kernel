@@ -18,6 +18,7 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
+
 package org.cristalise.kernel.utils;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -161,11 +162,13 @@ public class Logger
 
         synchronized(logStreams) {
             logStreams.put(console, logLevel);
-            if ((logLevel>10?logLevel-10:logLevel) > mHighestLogLevel) mHighestLogLevel = logLevel;
+            int thisLogLevel = logLevel>9?logLevel-10:logLevel;
+            if (thisLogLevel > mHighestLogLevel) mHighestLogLevel = thisLogLevel;
         }
 
     }
-    /**
+
+	/**
      * @param console
      */
     public static void removeLogStream(PrintStream console) {
@@ -175,7 +178,7 @@ public class Logger
             int logLevel = (logIntObj).intValue();
             logStreams.remove(console);
 
-            // recalculate lowest log level
+            // recalculate lowest log level if removed stream was highest
             if (logLevel == mHighestLogLevel || (logLevel > 9 && logLevel-10 == mHighestLogLevel)) {
                 mHighestLogLevel = 0;
                 for (Integer element : logStreams.values()) {
@@ -187,7 +190,7 @@ public class Logger
         }
     }
 
-    static public void initConsole(String id)
+    static public int initConsole(String id)
     {
         int port = Gateway.getProperties().getInt(id+".Console.port", 0);
         if (port == 0)
@@ -196,6 +199,7 @@ public class Logger
         mConsole = new SimpleTCPIPServer(port, ScriptConsole.class, 5);
         mConsole.startListening();
         Gateway.getProperties().setProperty(id+".Console.port", String.valueOf(mConsole.getPort()));
+        return mConsole.getPort();
     }
 
     static public int getConsolePort() {
@@ -206,5 +210,13 @@ public class Logger
     {
         if (mConsole != null)
             mConsole.stopListening();
+        mConsole = null;
     }
+
+	public static void removeAll() {
+		synchronized(logStreams) {
+			logStreams.clear();
+			mHighestLogLevel = 0;
+		}
+	}
 }

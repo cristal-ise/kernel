@@ -365,6 +365,9 @@ public class Gateway
         mResource = null;
         mMarshaller = null;
         mC2KProps.clear();
+        
+        // abandon any log streams
+        Logger.removeAll();
     }
 
     static public org.omg.CORBA.ORB getORB()
