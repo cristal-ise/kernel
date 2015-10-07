@@ -514,9 +514,8 @@ public class Activity extends WfVertex
 		
 		// Also push override jobs if present
 		try {
-			for (Transition trans : getStateMachine().getTransitions()) {
-				if (trans.getOriginState().getId() != state) continue;
-				String override = trans.getRoleOverride();
+			for (Transition trans : getStateMachine().getState(getState()).getPossibleTransitions().values()) {
+				String override = trans.getRoleOverride(getProperties());
 				if (override != null && override.length() > 0)
 			        	pushJobsToAgents(itemPath, override);
 			}

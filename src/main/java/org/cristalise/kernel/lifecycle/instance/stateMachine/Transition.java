@@ -121,6 +121,10 @@ public class Transition {
 	public String getRoleOverride() {
 		return roleOverride;
 	}
+	
+	public String getRoleOverride(CastorHashMap actProps) {
+		return resolveValue(roleOverride, actProps);
+	}
 
 	public void setRoleOverride(String roleOverride) {
 		this.roleOverride = roleOverride;
@@ -200,7 +204,7 @@ public class Transition {
 			throw new AccessRightsException("Activity must be active to perform this transition");
 		
 		RolePath role = null;
-		String overridingRole = resolveValue(roleOverride, act.getProperties());
+		String overridingRole = getRoleOverride(act.getProperties());
 		boolean override = overridingRole != null;
 		boolean isOwner = false, isOwned = true;
 		
