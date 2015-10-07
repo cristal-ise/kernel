@@ -70,7 +70,7 @@ public class AgentImplementation extends ItemImplementation implements
 
             // get our joblist
             if (currentJobs == null)
-                currentJobs = new JobList( itemPath, null);
+                currentJobs = new JobList( mAgentPath, null);
 
             // remove old jobs for this item
             currentJobs.removeJobsForStep( itemPath, stepPath );

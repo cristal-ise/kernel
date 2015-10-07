@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.RemoteMap;
@@ -42,9 +43,9 @@ public class JobList extends RemoteMap<Job>
     /**************************************************************************
     * Empty constructor for Castor
     **************************************************************************/
-    public JobList(ItemPath itemPath, Object locker)
+    public JobList(AgentPath agentPath, Object locker)
     {
-        super(itemPath, ClusterStorage.JOB, locker);
+        super(agentPath, ClusterStorage.JOB, locker);
     }
 
 

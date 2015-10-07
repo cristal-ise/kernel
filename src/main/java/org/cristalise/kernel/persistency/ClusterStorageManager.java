@@ -33,6 +33,7 @@ import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.JobList;
 import org.cristalise.kernel.entity.proxy.ProxyMessage;
 import org.cristalise.kernel.events.History;
+import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -241,7 +242,10 @@ public class ClusterStorageManager {
 			if (path.equals(ClusterStorage.HISTORY))
 				result = new History(itemPath, null);
             if (path.equals(ClusterStorage.JOB))
-            	result =  new JobList(itemPath, null);
+            	if (itemPath instanceof AgentPath)
+            		result =  new JobList((AgentPath)itemPath, null);
+            	else
+            		throw new ObjectNotFoundException("ClusterStorageManager.get() - Items do not have job lists");
 		}
 
 		if (result == null) {

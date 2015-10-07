@@ -28,6 +28,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.JobList;
 import org.cristalise.kernel.events.History;
+import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.utils.Logger;
@@ -82,7 +83,10 @@ public class TransactionManager {
 			if (path.equals(ClusterStorage.HISTORY) && locker != null)
 			    return new History(itemPath, locker);
             if (path.equals(ClusterStorage.JOB) && locker != null)
-                return new JobList(itemPath, locker);
+            	if (itemPath instanceof AgentPath)
+            		return new JobList((AgentPath)itemPath, locker);
+            	else
+            		throw new ObjectNotFoundException("TransactionManager.get() - Items do not have job lists");
 		}
 
         // check to see if the locker has been modifying this cluster
@@ -91,7 +95,7 @@ public class TransactionManager {
             for (TransactionEntry thisEntry : lockerTransaction) {
                 if (itemPath.equals(thisEntry.itemPath) && path.equals(thisEntry.path)) {
                     if (thisEntry.obj == null)
-                        throw new PersistencyException("ClusterStorageManager.get() - Cluster " + path + " has been deleted in " + itemPath +
+                        throw new PersistencyException("TransactionManager.get() - Cluster " + path + " has been deleted in " + itemPath +
                             " but not yet committed");
                     return thisEntry.obj;
                 }
