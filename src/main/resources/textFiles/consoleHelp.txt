@@ -6,7 +6,7 @@ storage - the TransactionManager
 db - the ClusterStorageManager
 lookup - the LDAPLookup (server context)
 orb - the ORB
-user - the current logged in user, or the system user if connected to the server console
+agent - the current logged in user for single-user client processes, or the system user if connected to the server console
 
 Built-in commands:
 log(level) - Change the log level of your stream.

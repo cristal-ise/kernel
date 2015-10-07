@@ -45,6 +45,7 @@ import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.process.module.ModuleManager;
 import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.process.resource.ResourceLoader;
+import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
@@ -280,6 +281,7 @@ public class Gateway
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
         userProxy.setAuthObj(auth);
+        ScriptConsole.setUser(userProxy);
         
         // Run module startup scripts. Server does this during bootstrap
         mModules.setUser(userProxy);

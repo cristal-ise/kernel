@@ -34,6 +34,7 @@ import java.util.StringTokenizer;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 
+import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.process.AbstractMain;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
@@ -57,6 +58,7 @@ public class ScriptConsole implements SocketHandler {
     Socket socket = null;
     ScriptEngine engine;
     Bindings beans;
+    static AgentProxy user;
     static ArrayList<String> securityHosts = new ArrayList<String>();
     public static final short NONE = 0;
     public static final short ALLOW = 1;
@@ -103,6 +105,10 @@ public class ScriptConsole implements SocketHandler {
     @Override
 	public boolean isBusy() {
         return (socket != null);
+    }
+    
+    public static void setUser(AgentProxy agent) {
+    	user = agent;
     }
 
     @Override
@@ -168,7 +174,7 @@ public class ScriptConsole implements SocketHandler {
             Logger.addLogStream(output, 0);
             Script context;           
             try {
-            	context = new Script("javascript", null, output);
+            	context = new Script("javascript", user, output);
             } catch (Exception ex) {
             	output.println("Error initializing console script context");
             	ex.printStackTrace(output);

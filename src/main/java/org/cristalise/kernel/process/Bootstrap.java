@@ -58,6 +58,7 @@ import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescription;
 import org.cristalise.kernel.property.PropertyDescriptionList;
+import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -478,15 +479,16 @@ public class Bootstrap
     /**************************************************************************
      * Checks for the existence of the admin users so you can use Cristal
      **************************************************************************/
-     private static void checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
+     private static AgentProxy checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
     	 
          Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' user.");
          LookupManager lookup = Gateway.getLookupManager();
          
          try {
-             systemAgents.put(name, Gateway.getProxyManager().getAgentProxy(lookup.getAgentPath(name)));
+        	 AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(lookup.getAgentPath(name));
+             systemAgents.put(name, agentProxy);
              Logger.msg(3, "Bootstrap.checkAgent() - User '"+name+"' found.");
-             return;
+             return agentProxy;
          } catch (ObjectNotFoundException ex) { }
          
          Logger.msg("Bootstrap.checkAgent() - User '"+name+"' not found. Creating.");
@@ -502,7 +504,9 @@ public class Bootstrap
              Gateway.getLookupManager().addRole(agentPath, rolePath);
              Gateway.getStorage().put(agentPath, new Property("Name", name, true), null);
              Gateway.getStorage().put(agentPath, new Property("Type", "Agent", false), null);
-             systemAgents.put(name, Gateway.getProxyManager().getAgentProxy(agentPath));
+             AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
+             systemAgents.put(name, agentProxy);
+             return agentProxy;
          } catch (Exception ex) {
              Logger.error("Unable to create "+name+" user.");
              throw ex;
@@ -521,7 +525,8 @@ public class Bootstrap
     	if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
     	
         // check for import user
-    	checkAgent("system", null, adminRole, new UUID(0, 0).toString());
+    	AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 0).toString());
+    	ScriptConsole.setUser(system);
     	
         // check for local usercode user & role
     	RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
