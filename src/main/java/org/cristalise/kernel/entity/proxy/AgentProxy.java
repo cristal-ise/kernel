@@ -20,8 +20,10 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
@@ -44,6 +46,7 @@ import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
@@ -298,9 +301,13 @@ public class AgentProxy extends ItemProxy
         return Gateway.getMarshaller().unmarshall(obj);
     }
 
-    /** Let scripts resolve items */
     public ItemProxy searchItem(String name) throws ObjectNotFoundException {
-        Iterator<Path> results = Gateway.getLookup().search(new DomainPath(""),name);
+    	return searchItem(new DomainPath(""), name);
+    }
+    
+    /** Let scripts resolve items */
+    public ItemProxy searchItem(Path root, String name) throws ObjectNotFoundException {
+        Iterator<Path> results = Gateway.getLookup().search(root, name);
 
         Path returnPath = null;
         if (!results.hasNext())
@@ -314,6 +321,20 @@ public class AgentProxy extends ItemProxy
         }
 
         return Gateway.getProxyManager().getProxy(returnPath);
+    }
+    
+    public List<ItemProxy> searchItems(Path start, PropertyDescriptionList props) {
+    	Iterator<Path> results = Gateway.getLookup().search(start, props);
+    	ArrayList<ItemProxy> returnList = new ArrayList<ItemProxy>();
+    	while(results.hasNext()) {
+    		Path nextMatch = results.next();
+    		try {
+				returnList.add(Gateway.getProxyManager().getProxy(nextMatch));
+			} catch (ObjectNotFoundException e) {
+				Logger.error("Path '"+nextMatch+"' did not resolve to an Item");
+			}
+    	}
+    	return returnList;
     }
 
     public ItemProxy getItem(String itemPath) throws ObjectNotFoundException {
