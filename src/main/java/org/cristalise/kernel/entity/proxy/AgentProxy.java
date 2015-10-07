@@ -46,6 +46,7 @@ import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
@@ -325,6 +326,15 @@ public class AgentProxy extends ItemProxy
     
     public List<ItemProxy> searchItems(Path start, PropertyDescriptionList props) {
     	Iterator<Path> results = Gateway.getLookup().search(start, props);
+    	return createItemProxyList(results);
+    }
+    
+    public List<ItemProxy> searchItems(Path start, Property... props) {
+    	Iterator<Path> results = Gateway.getLookup().search(start, props);
+    	return createItemProxyList(results);
+    }
+    
+    private List<ItemProxy> createItemProxyList(Iterator<Path> results) {
     	ArrayList<ItemProxy> returnList = new ArrayList<ItemProxy>();
     	while(results.hasNext()) {
     		Path nextMatch = results.next();
