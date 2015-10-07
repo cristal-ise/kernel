@@ -61,6 +61,16 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
         return false;
     }
     
+    public void add(String name, String value, boolean isClassId, boolean isMutable) {
+    	for (PropertyDescription element : list) {
+            if (element.getName().equals(name)) {
+                list.remove(element);
+                break;
+            }
+        }
+    	list.add(new PropertyDescription(name, value, isClassId, isMutable));
+    }
+    
     public boolean definesProperty(String name) {
     	for (PropertyDescription element : list) {
     		if (element.getName().equals(name))
