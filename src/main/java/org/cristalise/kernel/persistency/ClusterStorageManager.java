@@ -56,6 +56,7 @@ public class ClusterStorageManager {
     String[] clusterPriority = new String[0];
     HashMap<String, ArrayList<ClusterStorage>> clusterWriters = new HashMap<String, ArrayList<ClusterStorage>>();
     HashMap<String, ArrayList<ClusterStorage>> clusterReaders = new HashMap<String, ArrayList<ClusterStorage>>();
+    ArrayList<TransactionalClusterStorage> transactionalStores = new ArrayList<TransactionalClusterStorage>();
     // we don't need a soft cache for the top level cache - the proxies and entities clear that when reaped
     HashMap<ItemPath, Map<String, C2KLocalObject>> memoryCache = new HashMap<ItemPath, Map<String, C2KLocalObject>>();
 
@@ -99,7 +100,9 @@ public class ClusterStorageManager {
             Logger.msg(5, "ClusterStorageManager.init() - Cluster storage " + newStorage.getClass().getName() +
                 " initialised successfully.");
             allStores.put(newStorage.getId(), newStorage);
-            clusterPriority[clusterNo++] = newStorage.getId();			
+            clusterPriority[clusterNo++] = newStorage.getId();
+            if (newStorage instanceof TransactionalClusterStorage)
+            	transactionalStores.add((TransactionalClusterStorage)newStorage);
 		}
         clusterReaders.put(ClusterStorage.ROOT, rootStores); // all storages are queried for clusters at the root level
         
@@ -282,15 +285,22 @@ public class ClusterStorageManager {
             return result;
 		}
     }
+    
+    public void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException {
+    	put(itemPath, obj, null);
+    }
 
     /** Internal put method. Creates or overwrites a cluster in all writers. Used when committing transactions. */
-    public void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException {
+    public void put(ItemPath itemPath, C2KLocalObject obj, Object locker) throws PersistencyException {
     	String path = ClusterStorage.getPath(obj);
         ArrayList<ClusterStorage> writers = findStorages(ClusterStorage.getClusterType(path), true);
         for (ClusterStorage thisWriter : writers) {
             try {
                 Logger.msg(7, "ClusterStorageManager.put() - writing "+path+" to "+thisWriter.getName());
-                thisWriter.put(itemPath, obj);
+                if (thisWriter instanceof TransactionalClusterStorage && locker != null)
+                	((TransactionalClusterStorage)thisWriter).put(itemPath, obj, locker);
+                else
+                	thisWriter.put(itemPath, obj);
             } catch (PersistencyException e) {
                 Logger.error("ClusterStorageManager.put() - writer " + thisWriter.getName() + " could not store " +
                 		itemPath + "/" + path + ": " + e.getMessage());
@@ -323,13 +333,20 @@ public class ClusterStorageManager {
             Logger.warning("ClusterStorageManager.put() - ProxyServer is null - Proxies are not notified of this event");
     }
 
-    /** Deletes a cluster from all writers */
     public void remove(ItemPath itemPath, String path) throws PersistencyException {
+    	remove(itemPath, path, null);
+    }
+    
+    /** Deletes a cluster from all writers */
+    public void remove(ItemPath itemPath, String path, Object locker) throws PersistencyException {
         ArrayList<ClusterStorage> writers = findStorages(ClusterStorage.getClusterType(path), true);
         for (ClusterStorage thisWriter : writers) {
             try {
                 Logger.msg(7, "ClusterStorageManager.delete() - removing "+path+" from "+thisWriter.getName());
-                thisWriter.delete(itemPath, path);
+                if (thisWriter instanceof TransactionalClusterStorage && locker != null)
+                	((TransactionalClusterStorage)thisWriter).delete(itemPath, path, locker);
+                else
+                	thisWriter.delete(itemPath, path);
             } catch (PersistencyException e) {
                 Logger.error("ClusterStorageManager.delete() - writer " + thisWriter.getName() + " could not delete " + itemPath +
                     "/" + path + ": " + e.getMessage());
@@ -396,25 +413,44 @@ public class ClusterStorageManager {
     public void dumpCacheContents(int logLevel) {
         if (!Logger.doLog(logLevel)) return;
         synchronized(memoryCache) {
-    	for (ItemPath itemPath : memoryCache.keySet()) {
-			Logger.msg(logLevel, "Cached Objects of Item "+itemPath);
-			Map<String, C2KLocalObject> sysKeyMemCache = memoryCache.get(itemPath);
-            try {
-                synchronized(sysKeyMemCache) {
-             for (Object name : sysKeyMemCache.keySet()) {
-               String path = (String) name;
-               try {
-                 Logger.msg(logLevel, "    Path "+path+": "+sysKeyMemCache.get(path).getClass().getName());
-               } catch (NullPointerException e) {
-                 Logger.msg(logLevel, "    Path "+path+": reaped");
-               }
-             }
-                }
-            } catch (ConcurrentModificationException ex) {
-                Logger.msg(logLevel, "Cache modified - aborting");
-            }
-		}
+			for (ItemPath itemPath : memoryCache.keySet()) {
+				Logger.msg(logLevel, "Cached Objects of Item " + itemPath);
+				Map<String, C2KLocalObject> sysKeyMemCache = memoryCache
+						.get(itemPath);
+				try {
+					synchronized (sysKeyMemCache) {
+						for (Object name : sysKeyMemCache.keySet()) {
+							String path = (String) name;
+							try {
+								Logger.msg(logLevel, "    Path " + path + ": " + sysKeyMemCache.get(path).getClass().getName());
+							} catch (NullPointerException e) {
+								Logger.msg(logLevel, "    Path " + path + ": reaped");
+							}
+						}
+					}
+				} catch (ConcurrentModificationException ex) {
+					Logger.msg(logLevel, "Cache modified - aborting");
+				}
+			}
         Logger.msg(logLevel, "Total number of cached entities: "+memoryCache.size());
         }
     }
+
+	public void begin(Object locker) {
+		for (TransactionalClusterStorage thisStore : transactionalStores) {
+			thisStore.begin(locker);
+		}	
+	}
+	
+	public void commit(Object locker) {
+		for (TransactionalClusterStorage thisStore : transactionalStores) {
+			thisStore.commit(locker);
+		}	
+	}
+	
+	public void abort(Object locker) {
+		for (TransactionalClusterStorage thisStore : transactionalStores) {
+			thisStore.abort(locker);
+		}	
+	}
 }

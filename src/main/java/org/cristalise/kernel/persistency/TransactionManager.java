@@ -229,12 +229,13 @@ public class TransactionManager {
             HashMap<TransactionEntry, Exception> exceptions = new HashMap<TransactionEntry, Exception>();
             // quit if no transactions are present;
             if (lockerTransactions == null) return;
+            storage.begin(locker);
             for (TransactionEntry thisEntry : lockerTransactions) {
                 try {
                 	if (thisEntry.obj == null)
-                	    storage.remove(thisEntry.itemPath, thisEntry.path);
+                	    storage.remove(thisEntry.itemPath, thisEntry.path, locker);
                 	else
-	                    storage.put(thisEntry.itemPath, thisEntry.obj);
+	                    storage.put(thisEntry.itemPath, thisEntry.obj, locker);
 					locks.remove(thisEntry.itemPath);
                 } catch (Exception e) {
                 	exceptions.put(thisEntry, e);
@@ -242,6 +243,7 @@ public class TransactionManager {
             }
             pendingTransactions.remove(locker);
             if (exceptions.size() > 0) { // oh dear
+            	storage.abort(locker);
             	Logger.error("TransactionManager.commit() - Problems during transaction commit of locker "+locker.toString()+". Database may be in an inconsistent state.");
             	for (TransactionEntry entry : exceptions.keySet()) {
 					Exception ex = exceptions.get(entry);
@@ -251,7 +253,7 @@ public class TransactionManager {
                 dumpPendingTransactions(0);
 				Logger.die("Database failure");
             }
-
+            storage.commit(locker);
         }
     }
 
