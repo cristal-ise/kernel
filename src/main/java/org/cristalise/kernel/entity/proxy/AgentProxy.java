@@ -329,7 +329,7 @@ public class AgentProxy extends ItemProxy
     	return createItemProxyList(results);
     }
     
-    public List<ItemProxy> searchItems(Path start, Property... props) {
+    public List<ItemProxy> searchItems(Path start, Property[] props) {
     	Iterator<Path> results = Gateway.getLookup().search(start, props);
     	return createItemProxyList(results);
     }
