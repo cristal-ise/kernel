@@ -62,6 +62,13 @@ public class SetAgentRoles extends PredefinedStep {
 			} catch (ObjectNotFoundException e) {
 				throw new InvalidDataException("Role "+params[i]+" not found");
 			}
+		// if no roles given, place the agent in the base role
+		if (requestedRoles.isEmpty())
+			try {
+				requestedRoles.add(Gateway.getLookup().getRolePath(""));
+			} catch (ObjectNotFoundException e1) {
+				throw new InvalidDataException("No roles given for Agent, and base role does not exist");
+			}
 		
 		ArrayList<RolePath> rolesToRemove = new ArrayList<RolePath>();
 		for (RolePath existingRole : currentRoles) { //

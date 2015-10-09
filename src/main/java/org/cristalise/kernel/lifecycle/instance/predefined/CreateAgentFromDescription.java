@@ -32,6 +32,7 @@ import org.cristalise.kernel.entity.CorbaServer;
 import org.cristalise.kernel.entity.agent.ActiveEntity;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyArrayList;
@@ -68,45 +69,42 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 	protected String runActivityLogic(AgentPath agent, ItemPath item,
 			int transitionID, String requestData, Object locker) throws ObjectNotFoundException, InvalidDataException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated {
 		
-		String[] params = getDataList(requestData);
-		if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-		if (params.length < 4 || params.length > 5) 
-			throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(params));
+		String[] input = getDataList(requestData);
+		if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agent+" on "+item+" with parameters "+Arrays.toString(input));
+		if (input.length < 3 || input.length > 4) 
+			throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
 		
-		String newName = params[0];
-		String descVer = params[1];
-		if (descVer == null) descVer = "last";
-		String roles = params[2];
-		String passwd = params[3];
+		String newName = input[0];
+		String domPath = input[1];
+		String descVer = input.length > 2 ? input[2]:"last";
 		PropertyArrayList initProps = 
-				params.length > 4 ? getInitProperties(params[3]):new PropertyArrayList();
+				input.length > 3?getInitProperties(input[3]):new PropertyArrayList();
 				
 		Logger.msg(1, "CreateAgentFromDescription::request() - Starting.");
 
-    	// check if given roles exist
-    	String[] roleArr = roles.split(",");
-    	for(int i=0; i<roleArr.length; i++) {
-        	Gateway.getLookup().getRolePath(roleArr[i]);
-        }
-    	
         // check if the path is already taken
     	try {
     		Gateway.getLookup().getAgentPath(newName);
     		throw new ObjectAlreadyExistsException("The agent name " +newName+ " exists already.");
     	} catch (ObjectNotFoundException ex) { }
+    	
+		DomainPath context = new DomainPath(new DomainPath(domPath), newName);
+		if (context.exists())
+            throw new ObjectAlreadyExistsException("The path " +context+ " exists already.");
 
-        // generate new system key
+        // generate new agent path with new UUID
         Logger.msg(6, "CreateAgentFromDescription - Requesting new agent path");
         AgentPath newAgentPath = new AgentPath(new ItemPath(), newName);
-        newAgentPath.setPassword(passwd);
 
-        // create the Item object
+        // create the Agent object
         Logger.msg(3, "CreateAgentFromDescription - Creating Agent");
         CorbaServer factory = Gateway.getCorbaServer();
         if (factory == null) throw new CannotManageException("This process cannot create new Items");
         ActiveEntity newAgent = factory.createAgent(newAgentPath);
         Gateway.getLookupManager().add(newAgentPath);
-
+        // give it the base role
+        Gateway.getLookupManager().addRole(newAgentPath, Gateway.getLookup().getRolePath(""));
+        
         // initialise it with its properties and workflow
 
         Logger.msg(3, "CreateAgentFromDescription - Initializing Agent");
@@ -124,13 +122,9 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 		} catch (Exception e) {
 			throw new InvalidDataException("CreateAgentFromDescription: Problem initializing new Agent. See log: "+e.getMessage());
 		}
-        
-        // add roles if given
-        
-        for(int i=0; i<roleArr.length; i++) {
-        	newAgent.addRole(roleArr[i]);
-        }
-
+        // Create domain path
+        context.setItemPath(newAgentPath);
+        Gateway.getLookupManager().add(context);
         return requestData;
 	}
 }
