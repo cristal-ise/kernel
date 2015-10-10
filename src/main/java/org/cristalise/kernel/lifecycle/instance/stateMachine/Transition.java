@@ -42,8 +42,8 @@ public class Transition {
 	int id;
 	String name;
 	
-	int originStateId;
-	int targetStateId;
+	int originStateId = -1;
+	int targetStateId = -1;
 	State originState;
 	State targetState;
 	String reservation;
@@ -60,18 +60,19 @@ public class Transition {
 	TransitionOutcome outcome;
 	TransitionScript script;
 	
-	public Transition() {
+	public Transition() {}
+	
+	
+	public Transition(int id, String name) {
+	    this.id = id;
+	    this.name = name;
 	}
-	
-	
+
 	public Transition(int id, String name, int originStateId, int targetStateId) {
-		super();
-		this.id = id;
-		this.name = name;
+		this(id, name);
 		this.originStateId = originStateId;
 		this.targetStateId = targetStateId;
 	}
-
 
 	public String getName() {
 		return name;
@@ -162,10 +163,12 @@ public class Transition {
 		}
 		else
 			allFound = false;
+
 		if (states.keySet().contains(targetStateId))
 			setTargetState(states.get(targetStateId));
 		else
 			allFound = false;
+
 		return allFound;
 	}
 	

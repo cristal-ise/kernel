@@ -55,6 +55,29 @@ public class StateMachine implements DescriptionObject
 		transitionCodes = new HashMap<Integer, Transition>();
 	}
 	
+	public StateMachine(String name, int version) {
+	    this();
+	    this.name = name;
+	    this.version = version;
+	}
+
+    private int nextStateId = 0;
+    private int nextTransId = 0;
+
+	public State createState(String name) {
+	    State newState = new State(nextStateId++, name);
+	    states.add(newState);
+	    Logger.msg(5, "StateMachine.createState() - created:"+name+" id:"+newState.id);
+	    return newState;
+	}
+
+	public Transition createTransition(String name) {
+	    Transition newTrans = new Transition(nextTransId++, name);
+	    transitions.add(newTrans);
+	    Logger.msg(5, "StateMachine.createTransition() - created:"+name+" id:"+newTrans.id);
+	    return newTrans;
+	}
+
 	public void setStates(ArrayList<State> newStates) {
 		this.states = newStates;
 		validate();
@@ -65,7 +88,7 @@ public class StateMachine implements DescriptionObject
 		validate();
 	}
 	
-	public void validate() {
+	public boolean validate() {
 		stateCodes.clear();		
 		transitionCodes.clear();
 		isCoherent = true;
@@ -85,7 +108,7 @@ public class StateMachine implements DescriptionObject
 			transitionCodes.put(trans.getId(), trans);
 			isCoherent = isCoherent && trans.resolveStates(stateCodes);
 		}
-		
+		return isCoherent;
 	}
 	
 	public ArrayList<State> getStates() {

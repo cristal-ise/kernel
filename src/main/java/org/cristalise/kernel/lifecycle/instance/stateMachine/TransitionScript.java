@@ -26,9 +26,13 @@ public class TransitionScript extends TransitionResource {
 	// script properties
 	String scriptName, scriptVersion; // Name & version of the script to be run by the agent during this transition
 	
-	public TransitionScript() {
-	}
+	public TransitionScript() {}
 	
+    public TransitionScript(String script, String version) {
+        scriptName = script;
+        scriptVersion = version;
+    }
+
 	public String getScriptName() {
 		return scriptName;
 	}

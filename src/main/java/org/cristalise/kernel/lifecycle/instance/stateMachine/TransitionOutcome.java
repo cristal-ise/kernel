@@ -27,8 +27,13 @@ public class TransitionOutcome extends TransitionResource {
 	String schemaName, schemaVersion; // Name & version of the schema of the data required for this transition. 
 	boolean required = true; // If true, then the data must be supplied to perform the transition, otherwise it is optional
 	
-	public TransitionOutcome() {
-	}
+    public TransitionOutcome() {
+    }
+
+    public TransitionOutcome(String schema, String version) {
+        this.schemaName = schema;
+        this.schemaVersion = version;
+    }
 
 	public String getSchemaName() {
 		return schemaName;
