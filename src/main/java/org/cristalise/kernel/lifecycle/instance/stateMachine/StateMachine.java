@@ -61,18 +61,63 @@ public class StateMachine implements DescriptionObject
 	    this.version = version;
 	}
 
-    private int nextStateId = 0;
-    private int nextTransId = 0;
+	/**
+	 * Stores the next State id. -1 means that the value was not initialized yet (e.g. after unmarshall from xml)
+	 */
+    private int nextStateId = -1;
 
+    /**
+     * Stores the next Transition id. -1 means that the value was not initialized yet (e.g. after unmarshall from xml)
+     */
+    private int nextTransId = -1;
+
+    /**
+     * Computes the next State id. When loaded from XML, the next id calculated from the existing States
+     * 
+     * @return the next state id
+     */
+    private int getNextStateId() {
+        if(nextStateId == -1) {
+            for(State s: states) { if(s.id > nextStateId) nextStateId = s.id; }
+            nextStateId++;
+        }
+        return nextStateId++;
+    }
+
+    /**
+     * Computes the next Transition id. When loaded from XML, the next id calculated from the existing Transitions
+     * 
+     * @return the next state id
+     */
+    private int getNextTransId() {
+        if(nextTransId == -1) {
+            for(Transition t: transitions) { if(t.id > nextTransId) nextTransId = t.id; }
+            nextTransId++;
+        }
+        return nextTransId++;
+    }
+
+    /**
+     * Factory method to create a new State for the given name. It does NOT check whether the name exists or not
+     * 
+     * @param name the name of the State
+     * @return the new State
+     */
 	public State createState(String name) {
-	    State newState = new State(nextStateId++, name);
+	    State newState = new State(getNextStateId(), name);
 	    states.add(newState);
 	    Logger.msg(5, "StateMachine.createState() - created:"+name+" id:"+newState.id);
 	    return newState;
 	}
 
+    /**
+     * Factory method to create a new Transition for the given name. It does NOT check whether the name exists or not
+     * 
+     * @param name the name of the Transition
+     * @return the new Transition
+     */
 	public Transition createTransition(String name) {
-	    Transition newTrans = new Transition(nextTransId++, name);
+	    Transition newTrans = new Transition(getNextTransId(), name);
 	    transitions.add(newTrans);
 	    Logger.msg(5, "StateMachine.createTransition() - created:"+name+" id:"+newTrans.id);
 	    return newTrans;
