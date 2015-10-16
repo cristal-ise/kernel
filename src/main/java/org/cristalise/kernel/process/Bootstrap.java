@@ -324,23 +324,23 @@ public class Bootstrap
         
         if (itemPath == null) itemPath = path.getItemPath();
 	          	
-	            String moduleName = (ns==null?"kernel":ns);
-	            String itemModule;
-	            try{
-	            	itemModule = thisProxy.getProperty("Module");
-	                if (!itemModule.equals("") && !itemModule.equals("null") && !moduleName.equals(itemModule)) {
+        String moduleName = (ns==null?"kernel":ns);
+        String itemModule;
+        try {
+        	itemModule = thisProxy.getProperty("Module");
+            if (itemModule != null && !itemModule.equals("") && !itemModule.equals("null") && !moduleName.equals(itemModule)) {
                 String error = "Module clash! Resource '"+itemName+"' included in module "+moduleName+" but is assigned to '"+itemModule + "'.";
                 Logger.error(error);
                 throw new InvalidDataException(error);
             }
-	                }
+        }
         catch (ObjectNotFoundException ex) {
-	            	itemModule = "";
-	            }
+           	itemModule = "";
+        }
 	            
-	            if (!modDomPath.equals(path)) {	 // move item to module subtree
-	            	Logger.msg("Module item "+itemName+" found with path "+path.toString()+". Moving to "+modDomPath.toString());
-	            	modDomPath.setItemPath(itemPath);
+        if (!modDomPath.equals(path)) {	 // move item to module subtree
+           	Logger.msg("Module item "+itemName+" found with path "+path.toString()+". Moving to "+modDomPath.toString());
+           	modDomPath.setItemPath(itemPath);
             
             if (!modDomPath.exists()) lookupManager.add(modDomPath);
 	            	lookupManager.delete(path);
