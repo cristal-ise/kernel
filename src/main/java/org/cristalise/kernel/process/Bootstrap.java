@@ -128,7 +128,6 @@ public class Bootstrap
 	}
 	
 	public static void abort() {
-		Logger.msg("Bootstrap.abort() - Aborting shutdown");
 		shutdown = true;
 	}
 
