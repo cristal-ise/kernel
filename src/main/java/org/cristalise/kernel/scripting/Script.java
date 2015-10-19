@@ -423,26 +423,28 @@ public class Script
      * @param value - object to use for this parameter
      * @throws ParameterException - name not found or wrong type
      */
-    public void setInputParamValue(String name, Object value) throws ParameterException
+    public boolean setInputParamValue(String name, Object value) throws ParameterException
     {
         Parameter param = mInputParams.get(name);
-
+        boolean wasUsed = false;
         if (!mAllInputParams.containsKey(name))
-            throw new ParameterException("Parameter " + name + " not found in parameter list");
+            return false;
 
         if (param != null) { // param is in this script
             if (!param.getType().isInstance(value))
                 throw new ParameterException(
-                    "Parameter " + name + " is wrong type \n" + "Required: " + param.getType().toString() + "\n" + "Supplied: " + value.getClass().toString());
+                    "Parameter " + name + " in script "+mName+" v"+mVersion+" is wrong type \n" + "Required: " + param.getType().toString() + "\n" + "Supplied: " + value.getClass().toString());
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(name, value);
             Logger.msg(7, "Script.setInputParamValue() - " + name + ": " + value.toString());
             param.setInitialised(true);
+            wasUsed = true;
         }
 
         // pass param down to child scripts
         for (Script importScript : mIncludes) {
-            importScript.setInputParamValue(name, value);
+            wasUsed |= importScript.setInputParamValue(name, value);
         }
+        return wasUsed;
     }
 
     /**
