@@ -67,6 +67,8 @@ public class ImportAgent extends ModuleImport {
             Logger.error(ex);
             throw new CannotManageException("Error initialising new agent");
         }
+        
+        if (roles.isEmpty()) roles.add("");
         for (String role : roles) {
             RolePath thisRole;
             try {
