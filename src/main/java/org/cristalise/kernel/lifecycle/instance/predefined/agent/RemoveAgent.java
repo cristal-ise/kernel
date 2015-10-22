@@ -25,7 +25,7 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
+import org.cristalise.kernel.lifecycle.instance.predefined.item.Erase;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.ItemPath;
@@ -34,7 +34,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 
-public class RemoveAgent extends PredefinedStep {
+public class RemoveAgent extends Erase {
 
 	public RemoveAgent() {
         super();
@@ -43,7 +43,7 @@ public class RemoveAgent extends PredefinedStep {
 	
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData, Object locker) throws InvalidDataException {
+			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException {
 	
 		Logger.msg(1, "RemoveAgent::request() - Starting.");
 		
@@ -70,21 +70,7 @@ public class RemoveAgent extends PredefinedStep {
 			}
 		}
 		
-		//clear out all storages
-        try {
-			Gateway.getStorage().removeCluster(targetAgent, "", locker);
-		} catch (PersistencyException e) {
-			Logger.error(e);
-			throw new InvalidDataException("Error deleting storage for  "+agentName);
-		}
-        
-        //remove entity path
-        try {
-			Gateway.getLookupManager().delete(targetAgent);
-		} catch (Exception e) {
-			throw new InvalidDataException("Error deleting AgentPath for  "+agentName);
-		}
-        return requestData;
+		return super.runActivityLogic(agent, itemPath, transitionID, requestData, locker);
 
 	}
 
