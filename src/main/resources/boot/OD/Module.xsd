@@ -200,7 +200,7 @@
 							<xs:element name="Agent" minOccurs="0" maxOccurs="unbounded">
 								<xs:complexType>
 									<xs:sequence>
-										<xs:element name="Role" type="xs:string" maxOccurs="unbounded" />
+										<xs:element name="Role" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
 										<xs:element name="Property" type="property"
 											minOccurs="0" maxOccurs="unbounded" />
 									</xs:sequence>
