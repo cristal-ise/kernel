@@ -20,7 +20,7 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<ActivityDef ID="1" Name="CreateNewItem" Height="0" Width="0" IsLayoutable="false" IsComposite="false">
+<ActivityDef ID="1" Name="CreateNewRole" Height="0" Width="0" IsLayoutable="false" IsComposite="false">
 	<Properties>
 		<KeyValuePair Key="Repeatable" Boolean="false"/>
 		<KeyValuePair Key="Agent Name" String=""/>
