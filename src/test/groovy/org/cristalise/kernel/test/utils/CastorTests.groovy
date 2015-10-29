@@ -1,6 +1,6 @@
 /**
  * This file is part of the CRISTAL-iSE kernel.
- * Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
+ * Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
