@@ -29,6 +29,7 @@ import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
@@ -87,40 +88,40 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	@Override
 	public void setProperties(CastorHashMap props) {
 		super.setProperties(props);
-		
-		// try schema
-		String schemaName = (String)getProperties().get("SchemaType");
-		if (schemaName != null && schemaName.length() > 0)
-			try {
-				Integer schemaVersion = getVersionNumberProperty("SchemaVersion");
-				actSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-			} catch (Exception ex) {
-				Logger.error(ex);
-				Logger.error("Schema definition reference property invalid");
-			}
-
-		// try script
-		String scriptName = (String)getProperties().get("ScriptName");
-		if (scriptName != null && scriptName.length() > 0)
-			try {
-				Integer scriptVersion = getVersionNumberProperty("SchemaVersion");
-				actScript = new Script(scriptName, scriptVersion);
-			} catch (Exception ex) {
-				Logger.error(ex);
-				Logger.error("Script definition reference property invalid");
-			}
-		
-		// try script
-		String smName = (String)getProperties().get("StateMachineName");
-		if (smName != null && smName.length() > 0)
-			try {
-				Integer smVersion = getVersionNumberProperty("StateMachineVersion");
-				actStateMachine = LocalObjectLoader.getStateMachine(smName, smVersion);
-			} catch (Exception ex) {
-				Logger.error(ex);
-				Logger.error("State Machine definition reference property invalid");
-			}
-		
+		if (Gateway.getLookup() != null) { // resolve referenced desc items if we have a gateway
+			// try schema
+			String schemaName = (String)getProperties().get("SchemaType");
+			if (schemaName != null && schemaName.length() > 0)
+				try {
+					Integer schemaVersion = getVersionNumberProperty("SchemaVersion");
+					actSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+				} catch (Exception ex) {
+					Logger.error(ex);
+					Logger.error("Schema definition reference property invalid");
+				}
+	
+			// try script
+			String scriptName = (String)getProperties().get("ScriptName");
+			if (scriptName != null && scriptName.length() > 0)
+				try {
+					Integer scriptVersion = getVersionNumberProperty("SchemaVersion");
+					actScript = new Script(scriptName, scriptVersion);
+				} catch (Exception ex) {
+					Logger.error(ex);
+					Logger.error("Script definition reference property invalid");
+				}
+			
+			// try script
+			String smName = (String)getProperties().get("StateMachineName");
+			if (smName != null && smName.length() > 0)
+				try {
+					Integer smVersion = getVersionNumberProperty("StateMachineVersion");
+					actStateMachine = LocalObjectLoader.getStateMachine(smName, smVersion);
+				} catch (Exception ex) {
+					Logger.error(ex);
+					Logger.error("State Machine definition reference property invalid");
+				}
+		}			
 	}
 
 	/**
