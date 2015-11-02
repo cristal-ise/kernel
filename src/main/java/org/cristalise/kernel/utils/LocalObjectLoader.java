@@ -24,7 +24,6 @@ import java.util.Iterator;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
@@ -32,15 +31,16 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.scripting.Script;
 
 
 public class LocalObjectLoader {
 	private static ActDefCache actCache = new ActDefCache();
 	private static StateMachineCache smCache = new StateMachineCache();
+	private static SchemaCache schCache = new SchemaCache();
+	private static ScriptCache scrCache = new ScriptCache();
 
 	static public ItemProxy loadLocalObjectDef(String root, String name)
 		throws ObjectNotFoundException
@@ -72,54 +72,62 @@ public class LocalObjectLoader {
 
 	}
 
-	static public String getScript(String scriptName, int scriptVersion) throws ObjectNotFoundException {
-	    Logger.msg(5, "Loading script "+scriptName+" v"+scriptVersion);
-	    try {
-	    	ItemProxy script = loadLocalObjectDef("/desc/Script/", scriptName);
-   	        Viewpoint scriptView = (Viewpoint)script.getObject(ClusterStorage.VIEWPOINT + "/Script/" + scriptVersion);
-	    	return scriptView.getOutcome().getData();
-	    } catch (PersistencyException ex) {
-	    	Logger.error(ex);
-	        throw new ObjectNotFoundException("Error loading script " + scriptName + " version " + scriptVersion);
-	    }
 
+	/**
+	 * Retrieves a named version of a script from the database
+	 *
+	 * @param scriptName - script name
+	 * @param scriptVersion - integer script version
+	 * @return Script
+	 * @throws ObjectNotFoundException - When script or version does not exist
+	 * @throws InvalidDataException - When the stored script data was invalid
+	 * 
+	 */	
+	static public Script getScript(String scriptName, int scriptVersion) throws ObjectNotFoundException, InvalidDataException {
+		Logger.msg(5, "Loading script "+scriptName+" v"+scriptVersion);
+		return scrCache.get(scriptName, scriptVersion);
 	}
 
-	static public Schema getSchema(String schemaName, int schemaVersion) throws ObjectNotFoundException {
+	/**
+	 * Retrieves a named version of a schema from the database
+	 *
+	 * @param schemaName - schema name
+	 * @param schemaVersion - integer schema version
+	 * @return Schema
+	 * @throws ObjectNotFoundException - When schema or version does not exist
+	 * @throws InvalidDataException - When the stored schema data was invalid
+	 */
+	static public Schema getSchema(String schemaName, int schemaVersion) throws ObjectNotFoundException, InvalidDataException {
 		Logger.msg(5, "Loading schema "+schemaName+" v"+schemaVersion);
-	    
-	    String docType = schemaName;
-	    int docVersion = schemaVersion;
-	    String schemaData;
-
 	    // don't bother if this is the Schema schema - for bootstrap esp.
 	    if (schemaName.equals("Schema") && schemaVersion == 0)
-	        return new Schema(docType, docVersion, "");
-
-        ItemProxy schema = loadLocalObjectDef("/desc/OutcomeDesc/", schemaName);
-        Viewpoint schemaView = (Viewpoint)schema.getObject(ClusterStorage.VIEWPOINT + "/Schema/" + schemaVersion);
-        try {
-        	schemaData = schemaView.getOutcome().getData();
-        } catch (PersistencyException ex) {
-        	Logger.error(ex);
-        	throw new ObjectNotFoundException("Problem loading schema "+schemaName+" v"+schemaVersion+": "+ex.getMessage());
-        }
-	    return new Schema(docType, docVersion, schemaData);
+	        return new Schema(schemaName, schemaVersion, null, "");
+		return schCache.get(schemaName, schemaVersion);
 	}
 
 	/**
 	 * Retrieves a named version of activity def from the database
 	 *
 	 * @param actName - activity name
-	 * @param version - named version (String)
+	 * @param version - integer activity version
 	 * @return ActivityDef
 	 * @throws ObjectNotFoundException - When activity or version does not exist
+	 * @throws InvalidDataException - When the stored script data was invalid
 	 */
 	static public ActivityDef getActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
 		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
 		return actCache.get(actName, actVersion);
 	}
 	
+	/**
+	 * Retrieves a named version of a state machine from the database
+	 *
+	 * @param smName - state machine name
+	 * @param smVersion - integer state machine version
+	 * @return StateMachine
+	 * @throws ObjectNotFoundException - When state machine or version does not exist
+	 * @throws InvalidDataException - When the stored state machine data was invalid
+	 */	
 	static public StateMachine getStateMachine(String smName, int smVersion) throws ObjectNotFoundException, InvalidDataException {
 		Logger.msg(5, "Loading activity state machine "+smName+" v"+smVersion);
 		return smCache.get(smName, smVersion);

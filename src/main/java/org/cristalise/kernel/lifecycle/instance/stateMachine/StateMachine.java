@@ -30,6 +30,7 @@ import org.cristalise.kernel.common.InvalidTransitionException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.Logger;
 
@@ -38,6 +39,7 @@ public class StateMachine implements DescriptionObject
 {
 	public String name;
 	public int version;
+	public ItemPath itemPath;
 
 	private ArrayList<State> states;
 	private ArrayList<Transition> transitions;
@@ -201,6 +203,16 @@ public class StateMachine implements DescriptionObject
 	@Override
 	public void setVersion(int version) {
 		this.version = version;
+	}
+
+	@Override
+	public ItemPath getItemPath() {
+		return itemPath;
+	}
+
+	@Override
+	public void setItemPath(ItemPath path) {
+		itemPath = path;
 	}
 
 	public Transition getTransition(int transitionID) {

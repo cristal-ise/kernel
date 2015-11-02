@@ -20,12 +20,16 @@
  */
 package org.cristalise.kernel.utils;
 
+import org.cristalise.kernel.lookup.ItemPath;
+
 public interface DescriptionObject {
 	
 	public String getName();
 	public int getVersion();
+	public ItemPath getItemPath();
 	
 	public void setName(String name);
 	public void setVersion(int version);
+	public void setItemPath(ItemPath path);
 
 }

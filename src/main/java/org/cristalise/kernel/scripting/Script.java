@@ -40,10 +40,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
@@ -61,12 +66,13 @@ import org.xml.sax.InputSource;
  * Copyright (C) 2003 CERN - European Organization for Nuclear Research
  * All rights reserved.
  **************************************************************************/
-public class Script
+public class Script implements DescriptionObject
 {
     String mScript = "";
     CompiledScript mCompScript = null;
     String mName;
     Integer mVersion;
+    ItemPath mItemPath;
     HashMap<String, Parameter> mInputParams = new HashMap<String, Parameter>();
     HashMap<String, Parameter> mAllInputParams = new HashMap<String, Parameter>();
     HashMap<String, Parameter> mOutputParams = new HashMap<String, Parameter>();
@@ -79,8 +85,8 @@ public class Script
      * @throws ScriptParsingException
      * @throws ParameterException
      */
-    public Script(String name, int version, String xml) throws ScriptParsingException, ParameterException {
-    	mName = name; mVersion = version;
+    public Script(String name, int version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
+    	mName = name; mVersion = version; mItemPath = path;
     	parseScriptXML(xml);
     }
     /**
@@ -118,7 +124,7 @@ public class Script
         setScriptEngine(lang);
         mVersion = null;
         addOutput(null, returnType);
-        setScript(expr);
+        setScriptData(expr);
     }
     
     /**
@@ -214,7 +220,17 @@ public class Script
         {
             mName = scriptName;
             mVersion = scriptVersion;
-            parseScriptXML(LocalObjectLoader.getScript(scriptName, scriptVersion));
+            String scriptData;
+        	ItemProxy scriptItem = LocalObjectLoader.loadLocalObjectDef("/desc/Script/", scriptName);
+    	    try {
+       	        Viewpoint scriptView = (Viewpoint)scriptItem.getObject(ClusterStorage.VIEWPOINT + "/Script/" + scriptVersion);
+       	        scriptData = scriptView.getOutcome().getData();
+    	    } catch (PersistencyException ex) {
+    	    	Logger.error(ex);
+    	        throw new ObjectNotFoundException("Error loading script " + scriptName + " version " + scriptVersion);
+    	    }
+    	    mItemPath = scriptItem.getPath();
+            parseScriptXML(scriptData);
         }
         catch (ObjectNotFoundException e)
         {
@@ -318,7 +334,7 @@ public class Script
                 if (scriptChildNodes.getLength() != 1)
                     throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
                 if (scriptChildNodes.item(0) instanceof Text)
-                    setScript(((Text) scriptChildNodes.item(0)).getData());
+                	setScriptData(((Text) scriptChildNodes.item(0)).getData());
                 else
                     throw new ScriptParsingException("Child element of script tag was not text");
                 Logger.msg(6, "Script.parseScriptXML() - script:" + mScript);
@@ -547,7 +563,7 @@ public class Script
         return outputs;
     }
     
-    public void setScript(String script) throws ScriptParsingException {
+    public void setScriptData(String script) throws ScriptParsingException {
     	mScript = script;
         if (engine instanceof Compilable) {
 			try {
@@ -560,7 +576,41 @@ public class Script
         }
     }
     
-    static public void main(String[] args) {
+    public String getScriptData() {
+    	return mScript;
+    }
+    
+    @Override
+	public String getName() {
+		return mName;
+	}
+
+    @Override
+	public int getVersion() {
+		return mVersion;
+	}
+
+	@Override
+	public ItemPath getItemPath() {
+		return mItemPath;
+	}
+
+	@Override
+	public void setName(String name) {
+		mName = name;
+	}
+	
+	@Override
+	public void setVersion(int version) {
+		mVersion = version;
+	}
+	
+	@Override
+	public void setItemPath(ItemPath path) {
+		mItemPath = path;
+	}
+	
+	static public void main(String[] args) {
     	for(ScriptEngineFactory sef: new ScriptEngineManager().getEngineFactories()) {
     		System.out.println(sef.getEngineName()+" v"+sef.getEngineVersion()+" using "+sef.getLanguageName()+" v"+sef.getLanguageVersion()+" "+sef.getNames());
     	}

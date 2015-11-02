@@ -27,43 +27,37 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
-import org.cristalise.kernel.process.Gateway;
 
 
-public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
+public class SchemaCache extends DescriptionObjectCache<Schema> {
 
 	
 	@Override
 	public String getDefRoot() {
-		return "/desc/ActivityDesc";
+		return "/desc/OutcomeDesc";
 	}
 	
 	@Override
-	public ActivityDef loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		ActivityDef thisActDef;
-        String actType = proxy.getProperty("Complexity");
-        Viewpoint actView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/" + actType + "ActivityDef/" + version);
-        String marshalledAct;
+	public Schema loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
+		Schema thisSchema;
+        Viewpoint schView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/Schema/" + version);
+        String schemaData;
 		try {
-			marshalledAct = actView.getOutcome().getData();
+			schemaData = schView.getOutcome().getData();
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
-			throw new ObjectNotFoundException("Problem loading "+name+" v"+version+": "+ex.getMessage());
+			throw new ObjectNotFoundException("Problem loading Schema "+name+" v"+version+": "+ex.getMessage());
 		}
 		try {
-			thisActDef = (ActivityDef)Gateway.getMarshaller().unmarshall(marshalledAct);
-			thisActDef.getProperties().put("Version", version);
+			thisSchema =  new Schema(name, version, proxy.getPath(), schemaData);
+			thisSchema.validate();
 		} catch (Exception ex) {
 			Logger.error(ex);
-			throw new InvalidDataException("Could not unmarshall '"+name+"' v"+version+": "+ex.getMessage());
+			throw new InvalidDataException("Could not parse Schema '"+name+"' v"+version+": "+ex.getMessage());
 		}
-        thisActDef.setName(name);
-        thisActDef.setVersion(version);
-        thisActDef.setItemPath(proxy.getPath());
-        return thisActDef;
+        return thisSchema;
 	}
-
 }

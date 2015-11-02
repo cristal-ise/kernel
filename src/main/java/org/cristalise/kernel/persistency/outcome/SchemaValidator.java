@@ -42,14 +42,12 @@ public class SchemaValidator extends OutcomeValidator {
 
     @Override
 	public synchronized String validate(String outcome) {
-        errors = new StringBuffer();
         Schema schema = new Schema(outcome);
         try {
-            schema.parse(this);
-        } catch (IOException e) {
-            errors.append(e.getMessage());
-        }
-        return errors.toString();
+			return schema.validate();
+		} catch (IOException e) {
+			return "Error reading schema";
+		}
     }
 
 }

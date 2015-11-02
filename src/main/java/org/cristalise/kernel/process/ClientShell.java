@@ -44,7 +44,7 @@ public class ClientShell extends StandardClient {
 		while (scan.hasNextLine()) {
 			String command = scan.nextLine();
 			try {
-				console.setScript(command);
+				console.setScriptData(command);
 	        	Object response = console.execute();
 	        	if (response == null)
 	        		System.out.println("Ok");

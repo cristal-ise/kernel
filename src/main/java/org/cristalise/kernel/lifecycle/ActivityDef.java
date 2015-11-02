@@ -26,8 +26,15 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
+import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.LocalObjectLoader;
+import org.cristalise.kernel.utils.Logger;
 
 /**
  * @version $Revision: 1.45 $ $Date: 2005/10/05 07:39:36 $
@@ -39,6 +46,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	private String mName = "";
 	private int mVersion = -1;
 	public boolean changed = false;
+	Schema actSchema;
+	Script actScript;
+	StateMachine actStateMachine;
+	ItemPath itemPath;
+
 	/**
 	 * @see java.lang.Object#Object()
 	 */
@@ -72,6 +84,45 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	{
 		return mId;
 	}
+	@Override
+	public void setProperties(CastorHashMap props) {
+		super.setProperties(props);
+		
+		// try schema
+		String schemaName = (String)getProperties().get("SchemaType");
+		if (schemaName != null && schemaName.length() > 0)
+			try {
+				Integer schemaVersion = getVersionNumberProperty("SchemaVersion");
+				actSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+			} catch (Exception ex) {
+				Logger.error(ex);
+				Logger.error("Schema definition reference property invalid");
+			}
+
+		// try script
+		String scriptName = (String)getProperties().get("ScriptName");
+		if (scriptName != null && scriptName.length() > 0)
+			try {
+				Integer scriptVersion = getVersionNumberProperty("SchemaVersion");
+				actScript = new Script(scriptName, scriptVersion);
+			} catch (Exception ex) {
+				Logger.error(ex);
+				Logger.error("Script definition reference property invalid");
+			}
+		
+		// try script
+		String smName = (String)getProperties().get("StateMachineName");
+		if (smName != null && smName.length() > 0)
+			try {
+				Integer smVersion = getVersionNumberProperty("StateMachineVersion");
+				actStateMachine = LocalObjectLoader.getStateMachine(smName, smVersion);
+			} catch (Exception ex) {
+				Logger.error(ex);
+				Logger.error("State Machine definition reference property invalid");
+			}
+		
+	}
+
 	/**
 	 * @see org.cristalise.kernel.graph.model.Vertex#setName(java.lang.String)
 	 */
@@ -165,5 +216,15 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		act.setName(name);
 		act.setType(getName());
 		return act;
+	}
+	
+	@Override
+	public ItemPath getItemPath() {
+		return itemPath;
+	}
+
+	@Override
+	public void setItemPath(ItemPath path) {
+		itemPath = path;
 	}
 }

@@ -219,7 +219,7 @@ public class ScriptConsole implements SocketHandler {
                         	AbstractMain.shutdown(0);
                         }
                         else {
-                        	context.setScript(command);
+                        	context.setScriptData(command);
                         	Object response = context.execute();
                         	if (response == null)
                         		output.println("Ok");

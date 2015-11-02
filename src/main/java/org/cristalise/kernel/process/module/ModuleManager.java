@@ -52,7 +52,7 @@ public class ModuleManager {
 	public ModuleManager(Enumeration<URL> moduleEnum, boolean isServer) throws ModuleException {
 		this.isServer = isServer;
 		try {
-			Schema moduleSchema = new Schema("Module", 0,
+			Schema moduleSchema = new Schema("Module", 0, null,
 					FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Module.xsd")));
 			moduleValidator = new OutcomeValidator(moduleSchema);
 		} catch (InvalidDataException ex) {

@@ -91,7 +91,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 
 		@Override
 		public void remove(String oldId) {
-			parent.removeObject(oldId);
+			parent.removeObject(id);
 		}
 
 		@Override

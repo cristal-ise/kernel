@@ -61,6 +61,7 @@ public class StateMachineCache extends DescriptionObjectCache<StateMachine> {
 		}
 		thisStateMachine.setName(name);
 		thisStateMachine.setVersion(version);
+		thisStateMachine.setItemPath(proxy.getPath());
         return thisStateMachine;
 	}
 

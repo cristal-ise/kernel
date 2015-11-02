@@ -228,7 +228,7 @@ public class Outcome implements C2KLocalObject {
     	return mDOM;
     }
 
-    public Schema getSchema() throws ObjectNotFoundException {
+    public Schema getSchema() throws ObjectNotFoundException, InvalidDataException {
     	return LocalObjectLoader.getSchema(mSchemaType, mSchemaVersion);
     }
     

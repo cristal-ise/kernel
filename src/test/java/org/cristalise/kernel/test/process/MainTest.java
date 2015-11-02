@@ -95,13 +95,13 @@ public class MainTest {
 
             if (itemType.equals("SC")) {
                 Logger.msg(1, "Parsing script " + thisItem);
-                new Script(thisItem, 0, data);
+                new Script(thisItem, 0, null, data);
             }
         }
     }
 
     private static Schema getSchema(String name, int version, String resPath) throws ObjectNotFoundException {
-        return new Schema(name, version, Gateway.getResource().getTextResource(null, resPath));
+        return new Schema(name, version, null, Gateway.getResource().getTextResource(null, resPath));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class MainTest {
         String errors = valid.validate(testScriptString);
         assert errors.length() == 0 : "Test script not valid to schema: " + errors;
 
-        Script testScript = new Script("TestScript", 0, testScriptString);
+        Script testScript = new Script("TestScript", 0, null, testScriptString);
         assert testScript.getInputParams().size() == 1 : "Script input param count wrong";
         assert testScript.getInputParams().get("test") != null : "Could not retrieve script input param value";
         testScript.setInputParamValue("test", "Test");

@@ -42,7 +42,7 @@ public class ItemPath extends Path
     	setSysKey(UUID.randomUUID());
     }
 
-    protected ItemPath(UUID uuid) {
+    public ItemPath(UUID uuid) {
        	setSysKey(uuid);
     }
 
