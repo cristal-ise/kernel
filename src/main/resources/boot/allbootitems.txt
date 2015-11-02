@@ -17,6 +17,16 @@ OD/ItemInitialization
 EA/CreateNewItem
 EA/CreateNewAgent
 EA/CreateNewRole
+EA/AssignNewVersionFromLast
+EA/MoveLatestVersionToLast
+EA/EditDefinition
 CA/NoWorkflow
 CA/ServerItemWorkflow
+CA/ManageCompositeActDef
+CA/ManageElementaryActDef
+CA/ManageScript
+CA/ManageSchema
+CA/ManageStateMachine
 SC/ServerNewEntity
+SC/CreateNewNumberedVersionFromLast
+SC/SetLastNumberedVersionToLast

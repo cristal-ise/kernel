@@ -1,0 +1,14 @@
+<ActivityDef ID="23" Name="EditActivityDef" Height="0" Width="0" IsLayoutable="false" IsComposite="false">
+	<Properties>
+		<KeyValuePair Key="Description" String="Edit this Definition"/>
+		<KeyValuePair Key="Show time" Boolean="true"/>
+		<KeyValuePair Key="OutcomeInit" String="Dev"/>
+		<KeyValuePair Key="Viewpoint" String="last"/>
+		<KeyValuePair Key="Agent Name" String=""/>
+		<KeyValuePair Key="Agent Role" String="Admin"/>
+		<KeyValuePair Key="SchemaType" String=""/>
+		<KeyValuePair Key="SchemaVersion" String="0"/>
+		<KeyValuePair Key="ScriptName" String=""/>
+		<KeyValuePair Key="ScriptVersion" String=""/>
+	</Properties>
+</ActivityDef>

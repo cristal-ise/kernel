@@ -1,0 +1,20 @@
+<ActivityDef ID="10" Name="AssignNewVersionFromLast" Height="0" Width="0" IsLayoutable="false" IsComposite="false">
+	<Properties>
+		<KeyValuePair Key="Repeatable" Boolean="false"/>
+		<KeyValuePair Key="Agent Name" String=""/>
+		<KeyValuePair Key="Autostart" Boolean="true"/>
+		<KeyValuePair Key="Mail Message" String=""/>
+		<KeyValuePair Key="Mail event" String=""/>
+		<KeyValuePair Key="Description" String="Creates a new numbered viewpoint as a clone of the last for use in workflows. You can change the specific outcome referenced by this viewpoint in the Data Viewer."/>
+		<KeyValuePair Key="SchemaVersion" String=""/>
+		<KeyValuePair Key="Show time" Boolean="true"/>
+		<KeyValuePair Key="Viewpoint" String=""/>
+		<KeyValuePair Key="Agent Role" String="Admin"/>
+		<KeyValuePair Key="SchemaType" String=""/>
+		<KeyValuePair Key="ScriptName" String="CreateNewNumberedVersionFromLast"/>
+		<KeyValuePair Key="Ignorable" Boolean="false"/>
+		<KeyValuePair Key="ScriptVersion" String="0"/>
+		<KeyValuePair Key="Skippable" Boolean="false"/>
+		<KeyValuePair Key="ViewName" String="" isAbstract="true"/>
+	</Properties>
+</ActivityDef>

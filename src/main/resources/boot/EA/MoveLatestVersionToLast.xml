@@ -1,0 +1,20 @@
+<ActivityDef ID="-1" Name="MoveLatestVersionToLast" Height="0"
+	Width="0" IsLayoutable="false" IsComposite="false">
+	<Properties>
+		<KeyValuePair Key="OutcomeInit" String="" />
+		<KeyValuePair Key="ViewName" String="" isAbstract="true"/>
+		<KeyValuePair Key="Description" String="" />
+		<KeyValuePair Key="ScriptVersion" String="0" />
+		<KeyValuePair Key="Viewpoint" String="" />
+		<KeyValuePair Key="Agent Name" String="" />
+		<KeyValuePair Key="SchemaVersion" String="" />
+		<KeyValuePair Key="ScriptName" String="SetLastNumberedVersionToLast" />
+		<KeyValuePair Key="Breakpoint" Boolean="false" />
+		<KeyValuePair Key="StateMachineVersion" Integer="0" />
+		<KeyValuePair Key="Agent Role" String="" />
+		<KeyValuePair Key="Show time" Boolean="true" />
+		<KeyValuePair Key="StateMachineName" String="Default" />
+		<KeyValuePair Key="Version" Integer="0" />
+		<KeyValuePair Key="SchemaType" String="" />
+	</Properties>
+</ActivityDef>
