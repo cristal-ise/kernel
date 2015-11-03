@@ -39,6 +39,7 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class CompositeActivityDef extends ActivityDef
 {
+	public static final String ACTCOL = "activities";
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
 			new TypeNameAndConstructionInfo("Activity", "Atomic"),
@@ -228,7 +229,7 @@ public class CompositeActivityDef extends ActivityDef
 				Logger.error(ex);
 			}
 		}
-		retArr.put(makeDescCollection("activities", descs.toArray(new ActivityDef[descs.size()])));
+		retArr.put(makeDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()])));
 		return retArr;
 	}
 	/**

@@ -25,6 +25,7 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 
@@ -65,7 +66,24 @@ public class ActivitySlotDef extends WfVertexDef
 
 	public ActivityDef getTheActivityDef() throws ObjectNotFoundException, InvalidDataException
 	{
-		ActivityDef actDef = LocalObjectLoader.getActDef(getActivityDef(), getVersionNumberProperty("Version"));
+		ActivityDef actDef = null;
+		try {
+			DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent())
+					.getCollectionResource(CompositeActivityDef.ACTCOL); //, 
+			for (DescriptionObject thisActDef : parentActDefs) {
+				String childUUID = thisActDef.getItemPath().getUUID().toString();
+				if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
+					actDef = (ActivityDef)thisActDef;
+					Integer requiredVersion = deriveVersionNumber(getProperties().get("Version"));
+					if (actDef.getVersion() != requiredVersion) // collection indicated a different version - get the right one
+						actDef = LocalObjectLoader.getActDef(childUUID, requiredVersion);
+					break;
+				}
+			}
+		} catch (ObjectNotFoundException ex) { } // old def with no collection
+		
+		if (actDef == null)
+			actDef = LocalObjectLoader.getActDef(getActivityDef(), deriveVersionNumber(getProperties().get("Version")));
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;
 		return actDef;

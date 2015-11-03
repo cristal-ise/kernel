@@ -36,10 +36,10 @@ public class WfCastorHashMap extends CastorHashMap
 		put("Description", "");
         put("Agent Role", "");
         put("Agent Name", "");
-		put("SchemaType", "");
-		put("SchemaVersion", "");
-        put("ScriptName", "");
-        put("ScriptVersion", "");
+		//put("SchemaType", "");
+		//put("SchemaVersion", "");
+        //put("ScriptName", "");
+        //put("ScriptVersion", "");
         put("StateMachineName", "Default");
         put("StateMachineVersion", 0);
         put("Viewpoint", "");

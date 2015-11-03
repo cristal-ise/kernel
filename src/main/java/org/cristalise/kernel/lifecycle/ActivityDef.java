@@ -19,6 +19,7 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
@@ -26,14 +27,17 @@ import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyMember;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -58,7 +62,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	
 	private int mId = -1;
 	private String mName = "";
-	private int mVersion = -1;
+	private int mVersion = -1; // unnumbered 'last'
 	public boolean changed = false;
 	Schema actSchema;
 	Script actScript;
@@ -138,7 +142,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	 */
 	public void linkToSlot(ActivitySlotDef actSl, String name, String name2)
 	{
-		actSl.setActivityDef(FileStringUtility.convert(name));
+		actSl.setActivityDef(itemPath.getUUID().toString());
 		actSl.getProperties().put(NAME, name2.replace('/', '_'));
 		actSl.setName(name+" slot");
 		setName(FileStringUtility.convert(name));
@@ -174,6 +178,12 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return getName();
 	}
 
+	public void configureInstanceProp(CastorHashMap props, DescriptionObject desc, String nameProp, String verProp) {
+		if (desc != null) {
+			props.put(nameProp, desc.getItemPath().getUUID().toString());
+			props.put(verProp, desc.getVersion());
+		}
+	}
 	@Override
 	public WfVertex instantiate() throws ObjectNotFoundException, InvalidDataException{
 		return instantiate(getName());
@@ -185,6 +195,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         configureInstance(act);
 		act.setName(name);
 		act.setType(getName());
+		
+		configureInstanceProp(act.getProperties(), actSchema, SCHNAME, SCHVER);
+		configureInstanceProp(act.getProperties(), actScript, SCRNAME, SCRVER);
+		configureInstanceProp(act.getProperties(), actStateMachine, SMNAME, SMVER);
 		return act;
 	}
 	
@@ -201,32 +215,78 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	
 	public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
 		if (actSchema == null) {
-			actSchema = (Schema)getResource(SCHNAME, SCHVER);
+			try {
+				actSchema = (Schema)getCollectionResource(SCHCOL)[0];
+			} catch (ObjectNotFoundException ex) {			
+				actSchema = (Schema)getPropertyResource(SCHNAME, SCHVER);
+			}
 		}
 		return actSchema;
 	}
 	
 	public Script getScript() throws InvalidDataException, ObjectNotFoundException {
 		if (actScript == null) {
-			actScript = (Script)getResource(SCRNAME, SCRVER);
+			try {
+				actScript = (Script)getCollectionResource(SCRCOL)[0];
+			} catch (ObjectNotFoundException ex) {
+			actScript = (Script)getPropertyResource(SCRNAME, SCRVER);
+			}
 		}
 		return actScript;
 	}
 	
 	public StateMachine getStateMachine() throws InvalidDataException, ObjectNotFoundException {
 		if (actStateMachine == null) {
-			actStateMachine = (StateMachine)getResource(SMNAME, SMVER);
+			try {
+				actStateMachine = (StateMachine)getCollectionResource(SMCOL)[0];
+			} catch (ObjectNotFoundException ex) {
+				actStateMachine = (StateMachine)getPropertyResource(SMNAME, SMVER);
+			}
 		}
 		return actStateMachine;
 	}
 	
-	public DescriptionObject getResource(String nameProp, String verProp) throws InvalidDataException, ObjectNotFoundException {
+	protected DescriptionObject[] getCollectionResource(String collName) throws ObjectNotFoundException, InvalidDataException {
+		if (itemPath == null) throw new ObjectNotFoundException(); // not stored yet
+		Dependency resColl;
+		String verStr = mVersion==-1?"last":String.valueOf(mVersion);
+		try {
+			resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+collName+"/"+verStr, null);
+		} catch (PersistencyException e) {
+			throw new InvalidDataException("Error loading description collection "+collName);
+		}
+		ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
+		for (DependencyMember resMem : resColl.getMembers().list) {
+			String resUUID = resMem.getChildUUID();
+			Integer resVer = deriveVersionNumber(resMem.getProperties().get("Version"));
+			switch (collName) {
+			case SCHCOL:
+				retArr.add(LocalObjectLoader.getSchema(resUUID, resVer));
+				break;
+			case SCRCOL:
+				retArr.add(LocalObjectLoader.getScript(resUUID, resVer));
+				break;
+			case SMCOL:
+				retArr.add(LocalObjectLoader.getStateMachine(resUUID, resVer));
+				break;
+			case CompositeActivityDef.ACTCOL:
+				retArr.add(LocalObjectLoader.getActDef(resUUID, resVer));
+				break;
+			default:
+			}
+		}
+		if (retArr.size()==0) throw new ObjectNotFoundException();
+		return retArr.toArray(new DescriptionObject[retArr.size()]);
+	}
+	
+	protected DescriptionObject getPropertyResource(String nameProp, String verProp) throws InvalidDataException, ObjectNotFoundException {
 		if (Gateway.getLookup() == null) return null;
 		String resName = (String)getProperties().get(nameProp);
+		
 		if (!(getProperties().isAbstract(nameProp)) && resName != null && resName.length() > 0) {
-			Integer resVer = getVersionNumberProperty(verProp);
+			Integer resVer = deriveVersionNumber(getProperties().get(verProp));
 			if (resVer == null && !(getProperties().isAbstract(verProp))) 
-				throw new InvalidDataException("Invalid version property in "+nameProp+" for "+getName());
+				throw new InvalidDataException("Invalid version property '"+resVer+"' in "+nameProp+" for "+getName());
 			switch (nameProp) {
 			case SCHNAME:
 				return LocalObjectLoader.getSchema(resName, resVer);
