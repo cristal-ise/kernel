@@ -167,8 +167,6 @@ public class CreateItemFromDescription extends PredefinedStep
         // load workflow def
         if (wfDefName == null)
             throw new InvalidDataException("No workflow given or defined");
-        if (wfDefVer == null)
-        	throw new InvalidDataException("No workflow def version given");
 
         try {
         	CompositeActivityDef wfDef = (CompositeActivityDef)LocalObjectLoader.getActDef(wfDefName, wfDefVer);
