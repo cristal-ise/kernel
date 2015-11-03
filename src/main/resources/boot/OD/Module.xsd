@@ -29,7 +29,11 @@
 				<xs:element name="Info">
 					<xs:complexType>
 						<xs:sequence>
-							<xs:element name="Description" type="xs:string" />
+							<xs:element name="Description" type="xs:string">
+								<xs:annotation>
+									<xs:documentation>Detailed description of this module.</xs:documentation>
+								</xs:annotation>
+							</xs:element>
 							<xs:element name="Version" type="xs:string" />
 							<xs:element name="Dependency" type="xs:string"
 								minOccurs="0" maxOccurs="unbounded" />
@@ -84,6 +88,18 @@
 									</xs:simpleContent>
 								</xs:complexType>
 							</xs:element>
+							<xs:element name="Activity" type="activity" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="CompositeActivity" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:complexContent>
+										<xs:extension base="activity">
+											<xs:sequence>
+												<xs:element name="Activity" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
+											</xs:sequence>
+										</xs:extension>
+									</xs:complexContent>
+								</xs:complexType>
+							</xs:element>							
 							<xs:element name="Item" minOccurs="0" maxOccurs="unbounded">
 								<xs:complexType>
 									<xs:sequence>
@@ -261,4 +277,23 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="activity">
+		<xs:sequence>
+			<xs:element name="StateMachine" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
+			<xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
+			<xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
+		</xs:sequence>
+		<xs:attribute name="Resource" type="xs:string" use="required" />
+	</xs:complexType>
+	<xs:complexType name="itemref">
+		<xs:attribute name="uuid" type="uuid" use="optional"/>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="version" type="xs:int" use="required"/>
+	</xs:complexType>
+	<xs:simpleType name="uuid">
+        <xs:restriction base="xs:string">
+            <xs:length value="36" fixed="true" />
+            <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[8-9a-bA-B][0-9a-fA-F]{3}-[0-9a-fA-F]{12}" />
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

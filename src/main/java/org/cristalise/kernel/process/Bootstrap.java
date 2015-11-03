@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import org.cristalise.kernel.collection.Collection;
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -291,6 +293,10 @@ public class Bootstrap
 			}
 		}
 
+		CollectionArrayList cols = typeImpHandler.getCollections(itemType, ns, dataLocation);
+		for (Collection<?> col : cols.list) {
+			Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+		}
 		Gateway.getStorage().commit(thisProxy);
 		return modDomPath;
 	}

@@ -1,6 +1,9 @@
 SM/Default
 SM/PredefinedStep
 SM/CompositeActivity
+SC/ServerNewEntity
+SC/CreateNewNumberedVersionFromLast
+SC/SetLastNumberedVersionToLast
 OD/CompositeActivityDef
 OD/ElementaryActivityDef
 OD/Module
@@ -27,6 +30,3 @@ CA/ManageElementaryActDef
 CA/ManageScript
 CA/ManageSchema
 CA/ManageStateMachine
-SC/ServerNewEntity
-SC/CreateNewNumberedVersionFromLast
-SC/SetLastNumberedVersionToLast

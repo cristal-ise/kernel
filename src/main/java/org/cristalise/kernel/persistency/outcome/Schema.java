@@ -23,6 +23,7 @@ package org.cristalise.kernel.persistency.outcome;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.exolab.castor.xml.schema.reader.SchemaReader;
@@ -132,4 +133,9 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	public void warning(SAXParseException ex) throws SAXException {
         appendError("WARNING: ", ex);
     }
+
+	@Override
+	public CollectionArrayList makeDescCollections() {
+		return new CollectionArrayList();
+	}
 }

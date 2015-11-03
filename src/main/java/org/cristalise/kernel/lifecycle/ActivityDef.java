@@ -21,6 +21,9 @@
 package org.cristalise.kernel.lifecycle;
 import java.util.Vector;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.collection.Dependency;
+import org.cristalise.kernel.collection.DependencyMember;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
@@ -31,7 +34,6 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
-import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -43,6 +45,17 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject
 {
+	public static final String SCHNAME = "SchemaType";
+	public static final String SCHVER = "SchemaVersion";
+	public static final String SCRNAME = "ScriptName";
+	public static final String SCRVER = "ScriptVersion";
+	public static final String SMNAME = "StateMachineName";
+	public static final String SMVER = "StateMachineVersion";
+	
+	public static final String SCHCOL = "schema";
+	public static final String SCRCOL = "script";
+	public static final String SMCOL = "statemachine";
+	
 	private int mId = -1;
 	private String mName = "";
 	private int mVersion = -1;
@@ -52,14 +65,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	StateMachine actStateMachine;
 	ItemPath itemPath;
 
-	/**
-	 * @see java.lang.Object#Object()
-	 */
 	public ActivityDef()
 	{
 		mErrors = new Vector<String>(0, 1);
 		setProperties(new WfCastorHashMap());
-		getProperties().put("StateMachineName", getDefaultSMName());
+		getProperties().put(SMNAME, getDefaultSMName());
 		setIsLayoutable(false);
 	}
 	
@@ -67,9 +77,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return "Default";
 	}
 	
-	/**
-	 * @see org.cristalise.kernel.graph.model.Vertex#setID(int)
-	 */
 	@Override
 	public void setID(int id)
 	{
@@ -77,52 +84,13 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		if (mName.equals(""))
 			setName(String.valueOf(id));
 	}
-	/**
-	 * @see org.cristalise.kernel.graph.model.Vertex#getID()
-	 */
+	
 	@Override
 	public int getID()
 	{
 		return mId;
 	}
-	@Override
-	public void setProperties(CastorHashMap props) {
-		super.setProperties(props);
-		if (Gateway.getLookup() != null) { // resolve referenced desc items if we have a gateway
-			// try schema
-			String schemaName = (String)getProperties().get("SchemaType");
-			if (schemaName != null && schemaName.length() > 0)
-				try {
-					Integer schemaVersion = getVersionNumberProperty("SchemaVersion");
-					actSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-				} catch (Exception ex) {
-					Logger.error(ex);
-					Logger.error("Schema definition reference property invalid");
-				}
-	
-			// try script
-			String scriptName = (String)getProperties().get("ScriptName");
-			if (scriptName != null && scriptName.length() > 0)
-				try {
-					Integer scriptVersion = getVersionNumberProperty("SchemaVersion");
-					actScript = new Script(scriptName, scriptVersion);
-				} catch (Exception ex) {
-					Logger.error(ex);
-					Logger.error("Script definition reference property invalid");
-				}
-			
-			// try script
-			String smName = (String)getProperties().get("StateMachineName");
-			if (smName != null && smName.length() > 0)
-				try {
-					Integer smVersion = getVersionNumberProperty("StateMachineVersion");
-					actStateMachine = LocalObjectLoader.getStateMachine(smName, smVersion);
-				} catch (Exception ex) {
-					Logger.error(ex);
-					Logger.error("State Machine definition reference property invalid");
-				}
-		}			
-	}
+
 
 	/**
 	 * @see org.cristalise.kernel.graph.model.Vertex#setName(java.lang.String)
@@ -171,7 +139,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	public void linkToSlot(ActivitySlotDef actSl, String name, String name2)
 	{
 		actSl.setActivityDef(FileStringUtility.convert(name));
-		actSl.getProperties().put("Name", name2.replace('/', '_'));
+		actSl.getProperties().put(NAME, name2.replace('/', '_'));
 		actSl.setName(name+" slot");
 		setName(FileStringUtility.convert(name));
 	}
@@ -210,6 +178,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	public WfVertex instantiate() throws ObjectNotFoundException, InvalidDataException{
 		return instantiate(getName());
 	}
+	
 	public WfVertex instantiate(String name) throws ObjectNotFoundException, InvalidDataException
 	{
         Activity act = new Activity();
@@ -227,5 +196,89 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	@Override
 	public void setItemPath(ItemPath path) {
 		itemPath = path;
+	}
+	
+	
+	public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
+		if (actSchema == null) {
+			actSchema = (Schema)getResource(SCHNAME, SCHVER);
+		}
+		return actSchema;
+	}
+	
+	public Script getScript() throws InvalidDataException, ObjectNotFoundException {
+		if (actScript == null) {
+			actScript = (Script)getResource(SCRNAME, SCRVER);
+		}
+		return actScript;
+	}
+	
+	public StateMachine getStateMachine() throws InvalidDataException, ObjectNotFoundException {
+		if (actStateMachine == null) {
+			actStateMachine = (StateMachine)getResource(SMNAME, SMVER);
+		}
+		return actStateMachine;
+	}
+	
+	public DescriptionObject getResource(String nameProp, String verProp) throws InvalidDataException, ObjectNotFoundException {
+		if (Gateway.getLookup() == null) return null;
+		String resName = (String)getProperties().get(nameProp);
+		if (!(getProperties().isAbstract(nameProp)) && resName != null && resName.length() > 0) {
+			Integer resVer = getVersionNumberProperty(verProp);
+			if (resVer == null && !(getProperties().isAbstract(verProp))) 
+				throw new InvalidDataException("Invalid version property in "+nameProp+" for "+getName());
+			switch (nameProp) {
+			case SCHNAME:
+				return LocalObjectLoader.getSchema(resName, resVer);
+			case SCRNAME:
+				return LocalObjectLoader.getScript(resName, resVer);
+			case SMNAME:
+				return LocalObjectLoader.getStateMachine(resName, resVer);
+			default:
+			}
+		}
+		return null;
+	}
+
+	public void setSchema(Schema actSchema) {
+		this.actSchema = actSchema;
+	}
+
+	public void setScript(Script actScript) {
+		this.actScript = actScript;
+	}
+
+	public void setStateMachine(StateMachine actStateMachine) {
+		this.actStateMachine = actStateMachine;
+	}
+	
+	protected Dependency makeDescCollection(String colName, DescriptionObject... descs) throws InvalidDataException {
+		Dependency descDep = new Dependency(colName);
+		for (DescriptionObject thisDesc : descs) {
+			try {
+				DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
+				descMem.getProperties().put("Version", thisDesc.getVersion());
+			} catch (Exception e) { 
+				Logger.error(e);
+				throw new InvalidDataException("Problem creating description collection for "+thisDesc+ " in "+getName());
+			}
+		}
+		return descDep;
+
+	}
+	@Override
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+		CollectionArrayList retArr = new CollectionArrayList();
+		
+		if (getSchema() != null)
+			retArr.put(makeDescCollection("Schema", actSchema));
+		
+		if (getScript() != null)
+			retArr.put(makeDescCollection("Script", actScript));
+		
+		if (getStateMachine() != null)
+			retArr.put(makeDescCollection("StateMachine", actStateMachine));
+		
+		return retArr;
 	}
 }

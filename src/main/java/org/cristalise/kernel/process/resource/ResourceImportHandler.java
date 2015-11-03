@@ -22,6 +22,7 @@ package org.cristalise.kernel.process.resource;
 
 import java.util.Set;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.property.PropertyDescriptionList;
@@ -62,6 +63,15 @@ public interface ResourceImportHandler {
 	 * @return Root path
 	 */
 	public DomainPath getTypeRoot();
+	
+	
+	/** Returns any collections that this Resource Item should contain.
+	 * 
+	 * @return CollectionArrayList
+	 * @throws Exception
+	 */
+	public CollectionArrayList getCollections(String resType, String ns, String location) throws Exception;
+	
 	
 	public String getName();
 	

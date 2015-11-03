@@ -31,6 +31,7 @@ import org.cristalise.kernel.utils.KeyValuePair;
 
 public abstract class GraphableVertex extends Vertex
 {
+	public static final String NAME = "Name";
 	private CastorHashMap mProperties = null;
 	private boolean mIsLayoutable;
 	protected boolean mIsComposite;

@@ -23,6 +23,8 @@ package org.cristalise.kernel.process.resource;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
@@ -64,6 +66,18 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 		props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
 	}
 	
+	@Override
+	public CollectionArrayList getCollections(String resType, String ns, String location) throws Exception {
+		
+		if (resType.equals("CA") || resType.equals("EA")) {
+			String actData = Gateway.getResource().getTextResource(ns, location);
+			ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
+			return actDef.makeDescCollections();
+		}
+		else
+			return new CollectionArrayList();
+	}
+
 	@Override
 	public DomainPath getTypeRoot() {
 		return typeRootPath;

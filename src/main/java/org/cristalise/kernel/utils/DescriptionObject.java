@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.utils;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.ItemPath;
 
 public interface DescriptionObject {
@@ -31,5 +34,7 @@ public interface DescriptionObject {
 	public void setName(String name);
 	public void setVersion(int version);
 	public void setItemPath(ItemPath path);
+	
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException;
 
 }

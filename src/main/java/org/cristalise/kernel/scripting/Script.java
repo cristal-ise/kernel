@@ -38,6 +38,7 @@ import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -608,6 +609,11 @@ public class Script implements DescriptionObject
 	@Override
 	public void setItemPath(ItemPath path) {
 		mItemPath = path;
+	}
+	
+	@Override
+	public CollectionArrayList makeDescCollections() {
+		return new CollectionArrayList();
 	}
 	
 	static public void main(String[] args) {

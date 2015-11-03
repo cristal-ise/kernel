@@ -19,6 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+import java.util.ArrayList;
+
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.GraphModel;
@@ -211,6 +214,23 @@ public class CompositeActivityDef extends ActivityDef
 		return cAct;
 	}
 
+	@Override
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+		CollectionArrayList retArr = super.makeDescCollections();
+		ArrayList<ActivityDef> descs = new ArrayList<ActivityDef>();
+		for (GraphableVertex elem : getChildren()) {
+			try {
+				if (elem instanceof ActivitySlotDef) {
+					ActivityDef actDef = ((ActivitySlotDef)elem).getTheActivityDef();
+					if (!descs.contains(actDef)) descs.add(actDef);
+				}
+			} catch (Exception ex) {
+				Logger.error(ex);
+			}
+		}
+		retArr.put(makeDescCollection("activities", descs.toArray(new ActivityDef[descs.size()])));
+		return retArr;
+	}
 	/**
 	 * Method hasGoodNumberOfActivity.
 	 *

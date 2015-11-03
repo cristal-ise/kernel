@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.InvalidTransitionException;
@@ -221,6 +222,11 @@ public class StateMachine implements DescriptionObject
 	
 	public State getState(int stateID) {
 		return stateCodes.get(stateID);
+	}
+	
+	@Override
+	public CollectionArrayList makeDescCollections() {
+		return new CollectionArrayList();
 	}
 	
 	public Map<Transition, String> getPossibleTransitions(Activity act, AgentPath agent) throws ObjectNotFoundException, InvalidDataException {

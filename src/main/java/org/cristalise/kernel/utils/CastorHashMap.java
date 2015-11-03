@@ -88,6 +88,10 @@ public class CastorHashMap extends HashMap<String,Object>
 	public ArrayList<String> getAbstract() {
 		return abstractPropNames;
 	}
+	
+	public boolean isAbstract(String propName) {
+		return abstractPropNames.contains(propName);
+	}
 
 
 	public void put(String key, Object value, boolean isAbstract) {
