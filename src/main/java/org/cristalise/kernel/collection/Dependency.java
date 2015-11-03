@@ -87,6 +87,7 @@ public class Dependency extends Collection<DependencyMember>
 
 	public DependencyMember addMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
     	if (contains(itemPath)) throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
+    	if (itemPath == null) throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
         // create member object
         DependencyMember depMember = new DependencyMember();
         depMember.setID(getCounter());
