@@ -46,7 +46,7 @@ public class OrSplit extends Split
 	{
 		String nexts;
 		String scriptName = (String) getProperties().get("RoutingScriptName");
-		Integer scriptVersion = getVersionNumberProperty("RoutingScriptVersion");
+		Integer scriptVersion = deriveVersionNumber(getProperties().get("RoutingScriptVersion"));
         try {
 			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
 		} catch (ScriptingEngineException e) {

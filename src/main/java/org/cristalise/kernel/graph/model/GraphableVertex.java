@@ -48,13 +48,13 @@ public abstract class GraphableVertex extends Vertex
 	{
 		return mProperties;
 	}
-	protected Integer getVersionNumberProperty(String propName) throws InvalidDataException {
-		Object val = getProperties().get(propName);
+	
+	protected Integer deriveVersionNumber(Object val) throws InvalidDataException {
 		if (val == null || val.equals("") || val.toString().equals("-1")) return null;
 		try {
 			return Integer.valueOf(val.toString());
 		} catch (NumberFormatException ex) {
-			throw new InvalidDataException("Invalid version number for property '"+propName+"': "+val.toString());
+			throw new InvalidDataException("Invalid version number : "+val.toString());
 		}
 	}
 	public KeyValuePair[] getKeyValuePairs()

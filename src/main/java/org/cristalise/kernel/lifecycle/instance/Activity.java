@@ -107,7 +107,7 @@ public class Activity extends WfVertex
 	public StateMachine getStateMachine() throws InvalidDataException {
 		if (machine == null) {
 			String name = (String)getProperties().get("StateMachineName");
-			int version = getVersionNumberProperty("StateMachineVersion");
+			int version = deriveVersionNumber(getProperties().get("StateMachineVersion"));
 			try {
 				machine = LocalObjectLoader.getStateMachine(name, version);
 			} catch (ObjectNotFoundException ex) {
