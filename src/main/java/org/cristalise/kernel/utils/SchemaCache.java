@@ -34,10 +34,9 @@ import org.cristalise.kernel.persistency.outcome.Viewpoint;
 
 public class SchemaCache extends DescriptionObjectCache<Schema> {
 
-	
 	@Override
-	public String getDefRoot() {
-		return "/desc/OutcomeDesc";
+	public String getTypeCode() {
+		return "OD";
 	}
 	
 	@Override

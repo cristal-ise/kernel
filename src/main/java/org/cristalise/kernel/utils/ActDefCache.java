@@ -35,16 +35,26 @@ import org.cristalise.kernel.process.Gateway;
 
 public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 
-	
+	Boolean isComposite;
+	public ActDefCache(Boolean isComposite) {
+		super();
+		this.isComposite = isComposite;
+	}
+
 	@Override
-	public String getDefRoot() {
-		return "/desc/ActivityDesc";
+	public String getTypeCode() {
+		if (isComposite == null) return "AC";
+		return isComposite?"CA":"EA";
 	}
 	
 	@Override
 	public ActivityDef loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
 		ActivityDef thisActDef;
-        String actType = proxy.getProperty("Complexity");
+		String actType;
+		if (isComposite == null)
+			actType = proxy.getProperty("Complexity");
+		else 
+			actType= isComposite?"Composite":"Elementary";
         Viewpoint actView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/" + actType + "ActivityDef/" + version);
         String marshalledAct;
 		try {

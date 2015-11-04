@@ -20,59 +20,23 @@
  */
 package org.cristalise.kernel.utils;
 
-import java.util.Iterator;
-
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
+import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
-import org.cristalise.kernel.lookup.DomainPath;
-import org.cristalise.kernel.lookup.InvalidItemPathException;
-import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.outcome.Schema;
-import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 
 
 public class LocalObjectLoader {
-	private static ActDefCache actCache = new ActDefCache();
+	private static ActDefCache actCache = new ActDefCache(null);
+	private static ActDefCache compActCache = new ActDefCache(true);
+	private static ActDefCache elemActCache = new ActDefCache(false);
 	private static StateMachineCache smCache = new StateMachineCache();
 	private static SchemaCache schCache = new SchemaCache();
 	private static ScriptCache scrCache = new ScriptCache();
-
-	static public ItemProxy loadLocalObjectDef(String root, String name)
-		throws ObjectNotFoundException
-	{
-		// first check for a UUID name
-		try {
-			ItemPath resItem = new ItemPath(name);
-			if (resItem.exists())
-				return Gateway.getProxyManager().getProxy(resItem);
-		} catch (InvalidItemPathException ex) { }
-			
-		// then check for a direct path
-		DomainPath directPath = new DomainPath(root+"/"+name);
-		if (directPath.exists() && directPath.getItemPath() != null) {
-			return Gateway.getProxyManager().getProxy(directPath);
-		}
-		
-		// else search for it below
-		DomainPath defRoot = new DomainPath(root);
-	    Iterator<Path> e = Gateway.getLookup().search(defRoot, name);
-	    if (e.hasNext()) {
-	    	DomainPath defPath = (DomainPath)e.next();
-		    if (e.hasNext()) throw new ObjectNotFoundException("Too many matches for "+name+" in "+root);
-		    return Gateway.getProxyManager().getProxy(defPath);
-	    }
-	    else {
-	    	throw new ObjectNotFoundException("No match for "+name+" in "+root);
-	    }
-
-	}
-
-
+	
 	/**
 	 * Retrieves a named version of a script from the database
 	 *
@@ -117,6 +81,16 @@ public class LocalObjectLoader {
 	static public ActivityDef getActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
 		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
 		return actCache.get(actName, actVersion);
+	}
+	
+	static public CompositeActivityDef getCompActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
+		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
+		return (CompositeActivityDef)compActCache.get(actName, actVersion);
+	}
+	
+	static public ActivityDef getElemActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
+		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
+		return elemActCache.get(actName, actVersion);
 	}
 	
 	/**

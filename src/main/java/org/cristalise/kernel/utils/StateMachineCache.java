@@ -37,8 +37,8 @@ public class StateMachineCache extends DescriptionObjectCache<StateMachine> {
 
 	
 	@Override
-	public String getDefRoot() {
-		return "/desc/StateMachine";
+	public String getTypeCode() {
+		return "SM";
 	}
 	
 	@Override

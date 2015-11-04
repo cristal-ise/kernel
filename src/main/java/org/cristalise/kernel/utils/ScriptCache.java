@@ -36,8 +36,8 @@ public class ScriptCache extends DescriptionObjectCache<Script> {
 
 	
 	@Override
-	public String getDefRoot() {
-		return "/desc/Script";
+	public String getTypeCode() {
+		return "SC";
 	}
 	
 	@Override
