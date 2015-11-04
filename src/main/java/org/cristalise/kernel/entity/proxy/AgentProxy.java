@@ -200,8 +200,9 @@ public class AgentProxy extends ItemProxy
         return result;
     }
 
-    private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException {
-    	Script script = new Script(item, this, job);
+    private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
+    	Script script = LocalObjectLoader.getScript(job.getScriptName(), job.getScriptVersion());
+    	script.setActExecEnvironment(item, this, job);
     	return script.execute();
     }
 

@@ -41,13 +41,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -90,30 +87,6 @@ public class Script implements DescriptionObject
     	mName = name; mVersion = version; mItemPath = path;
     	parseScriptXML(xml);
     }
-    /**
-     * Loads script xml and parses it for script source, parameters and output specifications.
-     * First tries to load the script from resource path /scriptFiles/scriptName_scriptVersion.xml
-     * If not found tries to find item at /desc/ScriptDesc/scriptName and load Viewpoint scriptVersion from it.
-     *
-     * For the specification of script xml, see the Script schema from resources.
-     *
-     * @param scriptName - name of the script
-     * @param scriptVersion - named version of the script (must be numbered viewpoint)
-     * @throws ScriptParsingException - when script not found (ScriptLoadingException) or xml is invalid (ScriptParsingException)
-     */
-    public Script(String scriptName, int scriptVersion, ScriptContext context) throws ScriptingEngineException
-    {
-    	this(scriptName, scriptVersion);
-        this.context = context;
-    }
-    
-    public Script(String scriptName, int scriptVersion) throws ScriptingEngineException
-    {
-        mName = scriptName;
-        mVersion = scriptVersion;
-        if (!scriptName.equals("")) 
-        	loadScript(mName, mVersion);
-    }
 
     /**
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
@@ -149,26 +122,6 @@ public class Script implements DescriptionObject
     {
         this(lang, expr, Object.class);
     }
-
-    public Script(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException, InvalidDataException
-    {
-        this(job.getScriptName(), job.getScriptVersion());
-        // set environment - this needs to be well documented for script developers
-        if (!mInputParams.containsKey("item"))
-        	addInputParam("item", ItemProxy.class);
-        setInputParamValue("item", object);
-
-        if (!mInputParams.containsKey("agent"))
-        	addInputParam("agent", AgentProxy.class);
-        setInputParamValue("agent", subject);
-
-        if (!mInputParams.containsKey("job"))
-        	addInputParam("job", Job.class);
-        setInputParamValue("job", job);
-
-        if (!mOutputParams.containsKey("errors"))
-        	addOutput("errors", ErrorInfo.class);
-    }
     
     /**
      * For consoles
@@ -203,7 +156,26 @@ public class Script implements DescriptionObject
 		addOutput(null, Object.class);
 
     }
+   
+    public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException, InvalidDataException
+    {
+        // set environment - this needs to be well documented for script developers
+        if (!mInputParams.containsKey("item"))
+        	addInputParam("item", ItemProxy.class);
+        setInputParamValue("item", object);
 
+        if (!mInputParams.containsKey("agent"))
+        	addInputParam("agent", AgentProxy.class);
+        setInputParamValue("agent", subject);
+
+        if (!mInputParams.containsKey("job"))
+        	addInputParam("job", Job.class);
+        setInputParamValue("job", job);
+
+        if (!mOutputParams.containsKey("errors"))
+        	addOutput("errors", ErrorInfo.class);
+    }
+    
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
     	String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
     	engine = new ScriptEngineManager(getClass().getClassLoader()).getEngineByName(lang);
@@ -215,30 +187,14 @@ public class Script implements DescriptionObject
     	engine.setContext(context);
     }
     
-    private void loadScript(String scriptName, int scriptVersion) throws ScriptingEngineException
-    {
-        try
-        {
-            mName = scriptName;
-            mVersion = scriptVersion;
-            String scriptData;
-        	ItemProxy scriptItem = LocalObjectLoader.loadLocalObjectDef("/desc/Script/", scriptName);
-    	    try {
-       	        Viewpoint scriptView = (Viewpoint)scriptItem.getObject(ClusterStorage.VIEWPOINT + "/Script/" + scriptVersion);
-       	        scriptData = scriptView.getOutcome().getData();
-    	    } catch (PersistencyException ex) {
-    	    	Logger.error(ex);
-    	        throw new ObjectNotFoundException("Error loading script " + scriptName + " version " + scriptVersion);
-    	    }
-    	    mItemPath = scriptItem.getPath();
-            parseScriptXML(scriptData);
-        }
-        catch (ObjectNotFoundException e)
-        {
-            throw new ScriptingEngineException("Script '"+scriptName+"' not found");
-        }
+    public void setContext(ScriptContext context) {
+    	this.context = context;
     }
-
+    
+    public ScriptContext getContext() {
+    	return context;
+    }
+    
     /**
      * Extracts script data from script xml.
      *
@@ -306,16 +262,24 @@ public class Script implements DescriptionObject
                 String includeName = currentParam.getAttribute("name");
                 String includeVersion =  currentParam.getAttribute("version");
                 try {
-                    Script includedScript = new Script(includeName, Integer.parseInt(includeVersion), context);
+                    Script includedScript = LocalObjectLoader.getScript(includeName, Integer.parseInt(includeVersion));
+                    includedScript.setContext(context);
                     mIncludes.add(includedScript);
                     for (Parameter includeParam : includedScript.getInputParams().values()) {
                         addIncludedInputParam(includeParam.getName(), includeParam.getType());
                     }
                 } catch (NumberFormatException e) {
-                    throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
+                	throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
                 } catch (ScriptingEngineException e) {
-                    throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+"': "+e.getMessage());
-                }
+                	Logger.error(e);
+					throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+"': "+e.getMessage());
+                } catch (ObjectNotFoundException e) {
+                	Logger.error(e);
+                	throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+" not found.");
+				} catch (InvalidDataException e) {
+					Logger.error(e);
+					throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+" was invalid.");
+				}
 
             }
             //load Script

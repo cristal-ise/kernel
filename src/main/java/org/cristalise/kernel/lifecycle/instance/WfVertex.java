@@ -42,6 +42,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.KeyValuePair;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -212,14 +213,14 @@ public abstract class WfVertex extends GraphableVertex
         }
     }
 
-    private static Script getScript(String name, Integer version) throws ScriptingEngineException
+    private static Script getScript(String name, Integer version) throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
     {
         if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
         
         Script script;
 
         if (version!=null) {
-            script = new Script(name, version);
+            script = LocalObjectLoader.getScript(name, version);
         }
         else { // empty version: try expression
             int split = name.indexOf(":");
