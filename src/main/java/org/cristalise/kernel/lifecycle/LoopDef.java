@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.Loop;
@@ -89,7 +91,7 @@ public class LoopDef extends XOrSplitDef
     }
 
 	@Override
-	public WfVertex instantiate() {
+	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
 		Loop newLoop = new Loop();
 		configureInstance(newLoop);
 		return newLoop;

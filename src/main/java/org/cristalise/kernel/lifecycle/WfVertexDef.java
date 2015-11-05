@@ -51,7 +51,7 @@ public abstract class WfVertexDef extends GraphableVertex
 
     public abstract WfVertex instantiate() throws ObjectNotFoundException, InvalidDataException;
 
-    public void configureInstance(WfVertex newVertex) {
+    public void configureInstance(WfVertex newVertex) throws InvalidDataException, ObjectNotFoundException {
 		KeyValuePair[] k = getProperties().getKeyValuePairs();
 		for (KeyValuePair element : k)
 			newVertex.getProperties().put(element.getKey(), element.getValue(), element.isAbstract());
@@ -85,7 +85,7 @@ public abstract class WfVertexDef extends GraphableVertex
         else {
         	StringBuffer errorBuffer = new StringBuffer();
         	for (String error : mErrors) {
-        		if (errorBuffer.length() > 0) errorBuffer.append("\n");
+        		if (errorBuffer.length() > 0) errorBuffer.append(", ");
 				errorBuffer.append(error);
 			}
             return errorBuffer.toString();

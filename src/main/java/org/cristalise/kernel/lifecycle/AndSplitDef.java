@@ -22,6 +22,8 @@ package org.cristalise.kernel.lifecycle;
 
 import java.util.Vector;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.AndSplit;
@@ -126,7 +128,7 @@ public class AndSplitDef extends WfVertexDef
     }
 
 	@Override
-	public WfVertex instantiate() {
+	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
 		AndSplit newSplit = new AndSplit();
 		configureInstance(newSplit);
 		return newSplit;

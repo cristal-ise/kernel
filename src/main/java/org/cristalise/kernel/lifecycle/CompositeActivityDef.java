@@ -31,6 +31,7 @@ import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -66,7 +67,6 @@ public class CompositeActivityDef extends ActivityDef
 	public CompositeActivityDef()
 	{
 		super();
-		getProperties().put("StateMachineName", getDefaultSMName());
 		getProperties().put("Abortable", false);
 		setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
 		setIsComposite(true);
@@ -99,9 +99,8 @@ public class CompositeActivityDef extends ActivityDef
 	public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point)
 	{
 		changed = true;
-		ActivitySlotDef child = new ActivitySlotDef();
+		ActivitySlotDef child = new ActivitySlotDef(name, actDef);
 		addChild(child, point);
-		actDef.linkToSlot(child, actDef.getName(), name);
         return child;
 	}
 	/**
@@ -111,8 +110,10 @@ public class CompositeActivityDef extends ActivityDef
 	 * @param Type
 	 * @param location
 	 * @return WfVertexDef
+	 * @throws InvalidDataException 
+	 * @throws ObjectNotFoundException 
 	 */
-	public WfVertexDef newChild(String Name, String Type, GraphPoint location)
+	public WfVertexDef newChild(String Name, String Type, Integer version, GraphPoint location) throws ObjectNotFoundException, InvalidDataException
 	{
 		changed = true;
 		WfVertexDef child;
@@ -142,12 +143,9 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		else if (Type.equals("Atomic"))
 		{
-			child = new ActivitySlotDef();
-			ActivityDef act = new ActivityDef();
-			act.changed = true;
+			ActivityDef act = LocalObjectLoader.getElemActDef(Name, version);
+			child = new ActivitySlotDef(Name, act);
 			addChild(child, location);
-			act.linkToSlot((ActivitySlotDef) child, Name, Name);
-			act.getProperties().put("Description", Name);
 			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
 		}
 		else if (Type.equals("Join"))
@@ -166,11 +164,9 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		else
 		{
-			child = new ActivitySlotDef();
-			CompositeActivityDef act = new CompositeActivityDef();
-			act.changed = true;
+			CompositeActivityDef act = LocalObjectLoader.getCompActDef(Name, version);
+			child = new ActivitySlotDef(Name, act);
 			addChild(child, location);
-			act.linkToSlot((ActivitySlotDef) child, Name, Name);
 			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
 		}
 		return child;

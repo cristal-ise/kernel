@@ -80,7 +80,6 @@ public class Activity extends WfVertex
 	{
 		super();
 		setProperties(new WfCastorHashMap());
-		getProperties().put("StateMachineName", getDefaultSMName());
 		mErrors = new Vector<String>(0, 1);
 		mStateDate = new GTimeStamp();
 		DateUtility.setToNow(mStateDate);
@@ -107,7 +106,14 @@ public class Activity extends WfVertex
 	public StateMachine getStateMachine() throws InvalidDataException {
 		if (machine == null) {
 			String name = (String)getProperties().get("StateMachineName");
-			int version = deriveVersionNumber(getProperties().get("StateMachineVersion"));
+			Integer version = deriveVersionNumber(getProperties().get("StateMachineVersion"));
+			// Use default if not defined
+			if (name == null || name.length() == 0) {
+				name = getDefaultSMName();
+				if (version == null) version = 0;
+			}
+			
+			// Try to load the state machine
 			try {
 				machine = LocalObjectLoader.getStateMachine(name, version);
 			} catch (ObjectNotFoundException ex) {
@@ -116,7 +122,6 @@ public class Activity extends WfVertex
 						String marshalledSM = Gateway.getResource().getTextResource(null, "boot/SM/"+getDefaultSMName()+".xml");
 						StateMachine bootstrap = (StateMachine)Gateway.getMarshaller().unmarshall(marshalledSM);
 						bootstrap.validate();
-						machine = bootstrap;
 						return bootstrap;
 					} catch (Exception ex2) {
 						Logger.error(ex2);
@@ -124,7 +129,7 @@ public class Activity extends WfVertex
 					}
 				}
 				Logger.error(ex);
-				throw new InvalidDataException("Error loading state machine '"+name+"' v"+version);
+				throw new InvalidDataException("Could not load state machine '"+name+"' v"+version);
 			}
 		} 
 		return machine;

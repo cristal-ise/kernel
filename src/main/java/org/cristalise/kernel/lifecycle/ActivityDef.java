@@ -39,7 +39,6 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
-import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
@@ -73,7 +72,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	{
 		mErrors = new Vector<String>(0, 1);
 		setProperties(new WfCastorHashMap());
-		getProperties().put(SMNAME, getDefaultSMName());
 		setIsLayoutable(false);
 	}
 	
@@ -135,19 +133,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return super.getErrors();
 	}
 	/**
-	 * Method linkToSlot.
-	 *
-	 * @param actSl
-	 * @param name
-	 */
-	public void linkToSlot(ActivitySlotDef actSl, String name, String name2)
-	{
-		actSl.setActivityDef(itemPath.getUUID().toString());
-		actSl.getProperties().put(NAME, name2.replace('/', '_'));
-		actSl.setName(name+" slot");
-		setName(FileStringUtility.convert(name));
-	}
-	/**
 	 * @see org.cristalise.kernel.lifecycle.WfVertexDef#verify()
 	 */
 	@Override
@@ -192,16 +177,24 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	public WfVertex instantiate(String name) throws ObjectNotFoundException, InvalidDataException
 	{
         Activity act = new Activity();
-        configureInstance(act);
-		act.setName(name);
-		act.setType(getName());
-		
-		configureInstanceProp(act.getProperties(), actSchema, SCHNAME, SCHVER);
-		configureInstanceProp(act.getProperties(), actScript, SCRNAME, SCRVER);
-		configureInstanceProp(act.getProperties(), actStateMachine, SMNAME, SMVER);
+        configureInstance(act);		
+        
+        act.setName(name);
+        act.setType(getName());
+
 		return act;
 	}
 	
+	
+	@Override
+	public void configureInstance(WfVertex act) throws InvalidDataException, ObjectNotFoundException {
+		super.configureInstance(act);
+
+		configureInstanceProp(act.getProperties(), getSchema(), SCHNAME, SCHVER);
+		configureInstanceProp(act.getProperties(), getScript(), SCRNAME, SCRVER);
+		configureInstanceProp(act.getProperties(), getStateMachine(), SMNAME, SMVER);
+	}
+
 	@Override
 	public ItemPath getItemPath() {
 		return itemPath;
@@ -240,7 +233,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			try {
 				actStateMachine = (StateMachine)getCollectionResource(SMCOL)[0];
 			} catch (ObjectNotFoundException ex) {
-				actStateMachine = (StateMachine)getPropertyResource(SMNAME, SMVER);
+				String smNameProp = (String)getProperties().get(SMNAME);
+				if (smNameProp == null || smNameProp.length()>0)
+					actStateMachine = LocalObjectLoader.getStateMachine(getDefaultSMName(), 0);
+				else
+					actStateMachine = (StateMachine)getPropertyResource(SMNAME, SMVER);
 			}
 		}
 		return actStateMachine;
@@ -286,7 +283,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		if (!(getProperties().isAbstract(nameProp)) && resName != null && resName.length() > 0) {
 			Integer resVer = deriveVersionNumber(getProperties().get(verProp));
 			if (resVer == null && !(getProperties().isAbstract(verProp))) 
-				throw new InvalidDataException("Invalid version property '"+resVer+"' in "+nameProp+" for "+getName());
+				throw new InvalidDataException("Invalid version property '"+resVer+"' in "+verProp+" for "+getName());
 			switch (nameProp) {
 			case SCHNAME:
 				return LocalObjectLoader.getSchema(resName, resVer);

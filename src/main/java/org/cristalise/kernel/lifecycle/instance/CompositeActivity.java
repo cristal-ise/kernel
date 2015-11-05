@@ -55,7 +55,6 @@ public class CompositeActivity extends Activity
     public CompositeActivity()
     {
         super();
-        getProperties().put("StateMachineName", getDefaultSMName());
         getProperties().put("Abortable", false);
         setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
         setIsComposite(true);

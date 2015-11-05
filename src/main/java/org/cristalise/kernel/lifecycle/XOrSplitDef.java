@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lifecycle.instance.XOrSplit;
 
@@ -40,7 +42,7 @@ public class XOrSplitDef extends AndSplitDef
 	}
 
 	@Override
-	public WfVertex instantiate() {
+	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
 		XOrSplit newSplit = new XOrSplit();
 		configureInstance(newSplit);
 		return newSplit;

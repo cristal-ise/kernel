@@ -31,18 +31,21 @@ public class WfCastorHashMap extends CastorHashMap
 	 */
 	public WfCastorHashMap()
 	{
-		put("Show time", true);
-		put("Breakpoint", false);
 		put("Description", "");
-        put("Agent Role", "");
         put("Agent Name", "");
-		//put("SchemaType", "");
-		//put("SchemaVersion", "");
-        //put("ScriptName", "");
-        //put("ScriptVersion", "");
-        put("StateMachineName", "Default");
-        put("StateMachineVersion", 0);
+        put("Agent Role", "");
+		put("Breakpoint", false);
         put("Viewpoint", "");
         put("OutcomeInit", "");
+
+     /* Deprecated description references
+        put("SchemaType", "");
+	    put("SchemaVersion", "");
+        put("ScriptName", "");
+        put("ScriptVersion", "");
+        put("StateMachineName", "Default");
+        put("StateMachineVersion", 0);
+      */
+        
 	}
 }

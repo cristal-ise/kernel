@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.instance.Join;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 
@@ -80,7 +82,7 @@ public class JoinDef extends WfVertexDef
 	}
 
 	@Override
-	public WfVertex instantiate() {
+	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
 		Join newJoin = new Join();
 		configureInstance(newJoin);
 		return newJoin;

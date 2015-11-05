@@ -19,6 +19,8 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.instance.OrSplit;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 /**
@@ -36,7 +38,7 @@ public class OrSplitDef extends AndSplitDef
 	}
 
 	@Override
-	public WfVertex instantiate() {
+	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
 		OrSplit newSplit = new OrSplit();
 		configureInstance(newSplit);
 		return newSplit;

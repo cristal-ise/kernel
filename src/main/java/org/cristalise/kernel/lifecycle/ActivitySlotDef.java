@@ -36,6 +36,21 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 public class ActivitySlotDef extends WfVertexDef
 {
 	private String activityDef;
+	private ActivityDef theActivityDef;
+
+
+	public ActivitySlotDef() {
+		
+	}
+	/**
+	 * @see java.lang.Object#Object()
+	 */
+	public ActivitySlotDef(String name, ActivityDef actDef)
+	{
+		setName(name);
+		getProperties().put("Name", name);
+		setTheActivityDef(actDef);
+	}
 
 	/**
 	 * Method setActivityDef.
@@ -45,6 +60,7 @@ public class ActivitySlotDef extends WfVertexDef
 	public void setActivityDef(String oActivityDef)
 	{
 		activityDef = oActivityDef;
+		theActivityDef = null;
 	}
 	/**
 	 * Method getActivityDef.
@@ -55,38 +71,43 @@ public class ActivitySlotDef extends WfVertexDef
 	{
 		return activityDef;
 	}
-	/**
-	 * @see java.lang.Object#Object()
-	 */
-	public ActivitySlotDef()
-	{
-		getProperties().put("Name", "");
-		getProperties().put("Version", 0);
-	}
 
 	public ActivityDef getTheActivityDef() throws ObjectNotFoundException, InvalidDataException
 	{
-		ActivityDef actDef = null;
-		try {
-			DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent())
-					.getCollectionResource(CompositeActivityDef.ACTCOL); //, 
-			for (DescriptionObject thisActDef : parentActDefs) {
-				String childUUID = thisActDef.getItemPath().getUUID().toString();
-				if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
-					actDef = (ActivityDef)thisActDef;
-					Integer requiredVersion = deriveVersionNumber(getProperties().get("Version"));
-					if (actDef.getVersion() != requiredVersion) // collection indicated a different version - get the right one
-						actDef = LocalObjectLoader.getActDef(childUUID, requiredVersion);
-					break;
+		if (theActivityDef == null) { // try to load from item desc collection
+			try {
+				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent())
+						.getCollectionResource(CompositeActivityDef.ACTCOL); 
+				for (DescriptionObject thisActDef : parentActDefs) {
+					String childUUID = thisActDef.getItemPath().getUUID().toString();
+					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
+						ActivityDef currentActDef = (ActivityDef)thisActDef;
+						Integer requiredVersion = deriveVersionNumber(getProperties().get("Version"));
+						if (currentActDef.getVersion() != requiredVersion) // collection indicated a different version - get the right one
+							setTheActivityDef(LocalObjectLoader.getActDef(childUUID, requiredVersion));
+						else // use the existing one
+							setTheActivityDef(currentActDef);
+						break;
+					}
 				}
-			}
-		} catch (ObjectNotFoundException ex) { } // old def with no collection
+			} catch (ObjectNotFoundException ex) { } // old def with no collection
 		
-		if (actDef == null)
-			actDef = LocalObjectLoader.getActDef(getActivityDef(), deriveVersionNumber(getProperties().get("Version")));
+			if (theActivityDef == null) { // try to load from property
+				Integer version = deriveVersionNumber(getProperties().get("Version"));
+				if (version == null) throw new InvalidDataException("No version defined in ActivityDefSlot "+getName());
+				setTheActivityDef(LocalObjectLoader.getActDef(getActivityDef(), version));
+			}
+		}
+		
+		return theActivityDef;
+	}
+		
+	public void setTheActivityDef(ActivityDef actDef) {
+		theActivityDef = actDef;
+		activityDef = actDef.getItemPath().getUUID().toString();
+		getProperties().put("Version", actDef.getVersion());
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;
-		return actDef;
 	}
 	/**
 	 * @see org.cristalise.kernel.lifecycle.WfVertexDef#verify()
