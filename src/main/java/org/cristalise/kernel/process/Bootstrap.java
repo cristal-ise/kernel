@@ -241,8 +241,7 @@ public class Bootstrap
                     throws Exception {
 		ResourceImportHandler typeImpHandler = getHandler(itemType);
 
-		Logger.msg(1, "Bootstrap.verifyResource() - Verifying version:'"
-				+ version + "' type:'" + typeImpHandler.getName() + "' name:'" + itemName + "'");
+		Logger.msg(1, "Bootstrap.verifyResource() - Verifying "+ typeImpHandler.getName() +" "+ itemName + " v"+version);
 
 		// Find or create Item for Resource
 		ItemProxy thisProxy;
