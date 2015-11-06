@@ -39,7 +39,7 @@ class OutcomeSpecs extends Specification {
         o.getClusterType() == "Outcome"
         o.getName() == "7";
         o.getID() == 7;
-        o.getSchemaType() == "TestSchema";
+        o.getSchemaType() == "Script";
         o.getSchemaVersion() == 0;
     }
 
@@ -51,7 +51,7 @@ class OutcomeSpecs extends Specification {
         o.getClusterType() == "Outcome"
         o.getName() == "7";
         o.getID() == 7;
-        o.getSchemaType() == "TestSchema";
+        o.getSchemaType() == "Script";
         o.getSchemaVersion() == 0;
     }
 }
