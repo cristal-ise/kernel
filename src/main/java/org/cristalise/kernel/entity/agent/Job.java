@@ -284,7 +284,7 @@ public class Job implements C2KLocalObject
     }
 
     @Deprecated
-    public String getSchemaName() {
+    public String getSchemaName() throws InvalidDataException, ObjectNotFoundException {
    		try {
 			return getSchema().getName();
 		} catch (Exception e) {
@@ -293,7 +293,7 @@ public class Job implements C2KLocalObject
 	}
 
     @Deprecated
-	public int getSchemaVersion() throws InvalidDataException {
+	public int getSchemaVersion() throws InvalidDataException, ObjectNotFoundException {
    		try {
 			return getSchema().getVersion();
 		} catch (Exception e) {
