@@ -62,27 +62,27 @@ public class MainTest {
         StringTokenizer str = new StringTokenizer(bootItems, "\n\r");
         while (str.hasMoreTokens()) {
             String thisItem = str.nextToken();
-            Logger.msg(1, "Validating " + thisItem);
-            int delim = thisItem.indexOf('/');
-            String itemType = thisItem.substring(0, delim);
+            StringTokenizer str2 = new StringTokenizer(thisItem, "/,");
+            String id = str2.nextToken(), itemType = str2.nextToken(), resName = str2.nextToken();
+            Logger.msg(1, "Validating " + itemType+" "+resName);
             OutcomeValidator validator = validators.get(itemType);
             String data = Gateway.getResource().getTextResource(
-                    null, "boot/" + thisItem + (itemType.equals("OD") ? ".xsd" : ".xml"));
+                    null, "boot/" + itemType + "/"+ resName + (itemType.equals("OD") ? ".xsd" : ".xml"));
             assert data != null : "Boot " + itemType + " data item " + thisItem + " not found";
             String errors = validator.validate(data);
 
-            assert errors.length() == 0 : "Kernel resource " + thisItem + " has errors :" + errors;
+            assert errors.length() == 0 : "Kernel resource " + itemType + " "+ resName + " has errors :" + errors;
 
             if (itemType.equals("CA") || itemType.equals("EA") || itemType.equals("SM")) {
-                Logger.msg(1, "Remarshalling " + thisItem);
+                Logger.msg(1, "Remarshalling " + itemType + " "+ resName);
                 long then = System.currentTimeMillis();
                 Object unmarshalled = Gateway.getMarshaller().unmarshall(data);
                 assert unmarshalled != null;
                 String remarshalled = Gateway.getMarshaller().marshall(unmarshalled);
                 long now = System.currentTimeMillis();
-                Logger.msg("Marshall/remarshall of " + thisItem + " took " + (now - then) + "ms");
+                Logger.msg("Marshall/remarshall of " + itemType + " "+ resName + " took " + (now - then) + "ms");
                 errors = validator.validate(remarshalled);
-                assert errors.length() == 0 : "Remarshalled resource " + thisItem + " has errors :" + errors + "\nRemarshalled form:\n" + remarshalled;
+                assert errors.length() == 0 : "Remarshalled resource " + itemType + " "+ resName + " has errors :" + errors + "\nRemarshalled form:\n" + remarshalled;
 
                 // Diff xmlDiff = new Diff(data, remarshalled);
                 // if (!xmlDiff.identical()) {
@@ -94,8 +94,8 @@ public class MainTest {
             }
 
             if (itemType.equals("SC")) {
-                Logger.msg(1, "Parsing script " + thisItem);
-                new Script(thisItem, 0, null, data);
+                Logger.msg(1, "Parsing script " + resName);
+                new Script(resName, 0, null, data);
             }
         }
     }

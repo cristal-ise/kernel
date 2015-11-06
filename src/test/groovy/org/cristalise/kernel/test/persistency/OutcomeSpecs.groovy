@@ -31,9 +31,9 @@ import spock.lang.Specification
  */
 class OutcomeSpecs extends Specification {
 
-    def 'Outcome C2KLocalObject can be constructed from path - /TestSchema/0/7'() {
+    def 'Outcome C2KLocalObject can be constructed from path - /Script/0/7'() {
         when:
-        Outcome o = new Outcome("/TestSchema/0/7", (Document)null)
+        Outcome o = new Outcome("/Script/0/7", (Document)null)
 
         then:
         o.getClusterType() == "Outcome"
@@ -43,9 +43,9 @@ class OutcomeSpecs extends Specification {
         o.getSchemaVersion() == 0;
     }
 
-    def 'Outcome C2KLocalObject can be constructed from path - /Outcome/TestSchema/0/7'() {
+    def 'Outcome C2KLocalObject can be constructed from path - /Outcome/Script/0/7'() {
         when:
-        Outcome o = new Outcome("/Outcome/TestSchema/0/7", (Document)null)
+        Outcome o = new Outcome("/Outcome/Script/0/7", (Document)null)
 
         then:
         o.getClusterType() == "Outcome"
