@@ -93,7 +93,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return mId;
 	}
 
-
+	@Override
+	public String getItemID() {
+		return itemPath.getUUID().toString();
+	}
+	
 	/**
 	 * @see org.cristalise.kernel.graph.model.Vertex#setName(java.lang.String)
 	 */
@@ -111,7 +115,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return mName;
 	}
 
-	@Override
 	public void setVersion(int v)
 	{
 		mVersion = v;

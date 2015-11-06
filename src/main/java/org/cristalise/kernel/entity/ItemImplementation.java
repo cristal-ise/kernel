@@ -37,19 +37,22 @@ import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
+import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.ItemPredefinedStepContainer;
-import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.TransactionManager;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
+import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -108,12 +111,13 @@ public class ItemImplementation implements ItemOperations {
 
 		// Store an event and the initial properties
 		try {
-			Outcome initOutcome = new Outcome(0, propString, "ItemInitialization", 0);
+			Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
+			Outcome initOutcome = new Outcome(0, propString, initSchema);
 	        History hist = new History(mItemPath, locker);
-	        Transition predefDone = new Transition(0, "Done", 0, 0);
-	        Event newEvent = hist.addEvent(new AgentPath(agentId), "", "Initialize", "", "", initOutcome.getSchemaType(), 0, "PredefinedStep", 0, predefDone, "last");
+	        Event newEvent = hist.addEvent(new AgentPath(agentId), "", "Initialize", "", "", initSchema, 
+	        		Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
 	        initOutcome.setID(newEvent.getID());
-	        Viewpoint newLastView = new Viewpoint(mItemPath, initOutcome.getSchemaType(), "last", 0, newEvent.getID());
+	        Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
 	        Gateway.getStorage().put(mItemPath, initOutcome, locker);
 	        Gateway.getStorage().put(mItemPath, newLastView, locker);
 		} catch (Throwable ex) {

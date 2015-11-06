@@ -20,8 +20,13 @@
  */
 package org.cristalise.kernel.test.persistency;
 
+import java.util.Properties;
+
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -33,8 +38,11 @@ public class OutcomeTest {
 
     @Before
     public void setup() throws Exception {
+        Logger.addLogStream(System.out, 1);
+        Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
+        Gateway.init(props);
         String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
-        testOc = new Outcome("/Outcome/Test/0/0", ocData);
+        testOc = new Outcome("/Outcome/Script/0/0", ocData);
     }
 
     @Test
@@ -57,5 +65,11 @@ public class OutcomeTest {
         assert field2attr.getNodeValue().equals("attribute") : "Failed to retrieve attribute value via XPath";
         NodeList field3nodes = testOc.getNodesByXPath("//Field3");
         assert field3nodes.getLength() == 2 : "getNodesByXPath returned wrong number of nodes";
+    }
+    
+    @Test
+    public void testValidation() throws Exception {
+    	String errors = testOc.validate();
+    	assert errors.equals("ERROR: cvc-elt.1: Cannot find the declaration of element 'TestOutcome'.");
     }
 }

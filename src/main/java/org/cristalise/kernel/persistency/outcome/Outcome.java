@@ -58,8 +58,7 @@ import org.xml.sax.SAXException;
 
 public class Outcome implements C2KLocalObject {
     Integer mID;
-    String mSchemaType;
-    int mSchemaVersion;
+    Schema mSchema;
     Document mDOM;
     static DocumentBuilder parser;
     static XPath xpath;
@@ -71,7 +70,7 @@ public class Outcome implements C2KLocalObject {
         dbf.setNamespaceAware(false);
         try {
             parser = dbf.newDocumentBuilder();
-            Logger.msg(1, "DocumentBuilder: "+parser.getClass().getName());
+            Logger.msg(7, "DocumentBuilder: "+parser.getClass().getName());
         } catch (ParserConfigurationException e) {
             Logger.error(e);
             Logger.die("Cannot function without XML parser");
@@ -81,8 +80,8 @@ public class Outcome implements C2KLocalObject {
         xpath = xPathFactory.newXPath();
     }
     
-    public Outcome(int id, String xml, String schemaType, int schemaVersion) throws InvalidDataException {
-    	this(id, (Document)null, schemaType, schemaVersion);
+    public Outcome(int id, String xml, Schema schema) throws InvalidDataException {
+    	this(id, (Document)null, schema);
     	try {
     		mDOM = parse(xml);
     	} catch (IOException | SAXException ex) {
@@ -90,13 +89,17 @@ public class Outcome implements C2KLocalObject {
     		throw new InvalidDataException("XML not valid: "+ex.getMessage());
     	}
     }
+    
+    public String validate() throws InvalidDataException {
+    	OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
+    	return validator.validate(mDOM);
+    }
 
     //id is the eventID
-    public Outcome(int id, Document dom, String schemaType, int schemaVersion) {
+    public Outcome(int id, Document dom, Schema schema) {
         mID = id;
         mDOM = dom;
-        mSchemaType = schemaType;
-        mSchemaVersion = schemaVersion;
+        mSchema = schema;
     }
     
     public Outcome(String path, String xml) throws PersistencyException, InvalidDataException {
@@ -109,19 +112,26 @@ public class Outcome implements C2KLocalObject {
     	}
     }
 
-    public Outcome(String path, Document data) throws PersistencyException {
+    public Outcome(String path, Document data) throws PersistencyException, InvalidDataException {
     // derive all the meta data from the path
         StringTokenizer tok = new StringTokenizer(path,"/");
         if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
             throw new PersistencyException("Outcome() - Outcome path must have three components: "+path);
-        mSchemaType = tok.nextToken();
+        String schemaName = tok.nextToken();
+        Integer schemaVersion;
         String verstring = tok.nextToken();
         String objId = tok.nextToken();
         try {
-            mSchemaVersion = Integer.parseInt(verstring);
+        	schemaVersion = Integer.valueOf(verstring);
         } catch (NumberFormatException ex) {
             throw new PersistencyException("Outcome() - Outcome version was an invalid number: "+verstring);
         }
+        try {
+			mSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+		} catch (ObjectNotFoundException e) {
+			Logger.error(e);
+			throw new PersistencyException("Outcome() - problem loading schema "+schemaName+" v"+schemaVersion);
+		}
         try {
             mID = Integer.valueOf(objId);
         } catch (NumberFormatException ex) {
@@ -228,24 +238,22 @@ public class Outcome implements C2KLocalObject {
     	return mDOM;
     }
 
-    public Schema getSchema() throws ObjectNotFoundException, InvalidDataException {
-    	return LocalObjectLoader.getSchema(mSchemaType, mSchemaVersion);
+    public Schema getSchema() {
+    	return mSchema;
     }
     
-    public void setSchemaType(String schemaType) {
-        mSchemaType = schemaType;
-    }
+    public void setSchema(Schema schema) {
+        mSchema = schema;
+    }    
 
+    @Deprecated
     public String getSchemaType() {
-        return mSchemaType;
+        return mSchema.getName();
     }
 
+    @Deprecated
     public int getSchemaVersion() {
-        return mSchemaVersion;
-    }
-
-    public void setSchemaVersion(int schVer) {
-        mSchemaVersion = schVer;
+        return mSchema.getVersion();
     }
 
 	@Override

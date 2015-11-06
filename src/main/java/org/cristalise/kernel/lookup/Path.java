@@ -181,6 +181,7 @@ public abstract class Path
     }
 
     public boolean exists() {
+    	if (Gateway.getLookup() == null) return false;
         return Gateway.getLookup().exists(this);
     }
 

@@ -215,6 +215,11 @@ public class StateMachine implements DescriptionObject
 	public void setItemPath(ItemPath path) {
 		itemPath = path;
 	}
+	
+	@Override
+	public String getItemID() {
+		return itemPath.getUUID().toString();
+	}
 
 	public Transition getTransition(int transitionID) {
 		return transitionCodes.get(transitionID);

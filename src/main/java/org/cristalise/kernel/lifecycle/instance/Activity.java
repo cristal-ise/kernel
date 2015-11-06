@@ -117,17 +117,6 @@ public class Activity extends WfVertex
 			try {
 				machine = LocalObjectLoader.getStateMachine(name, version);
 			} catch (ObjectNotFoundException ex) {
-				if (name.equals(getDefaultSMName()) && version == 0) { // default state machine not imported yet. Fake it.
-					try {
-						String marshalledSM = Gateway.getResource().getTextResource(null, "boot/SM/"+getDefaultSMName()+".xml");
-						StateMachine bootstrap = (StateMachine)Gateway.getMarshaller().unmarshall(marshalledSM);
-						bootstrap.validate();
-						return bootstrap;
-					} catch (Exception ex2) {
-						Logger.error(ex2);
-						throw new InvalidDataException("Could not bootstrap default state machine from resources.");
-					}
-				}
 				Logger.error(ex);
 				throw new InvalidDataException("Could not load state machine '"+name+"' v"+version);
 			}
@@ -203,25 +192,28 @@ public class Activity extends WfVertex
 		try {
 			History hist = getWf().getHistory(locker);
 			if (storeOutcome)
-				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), schema.docType, schema.docVersion, 
-						getStateMachine().getName(), getStateMachine().getVersion(), transition, viewName);
+				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), schema, 
+						getStateMachine(), transitionID, viewName);
 			else 
 				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), 
-						getStateMachine().getName(), getStateMachine().getVersion(), transition);
+						getStateMachine(), transitionID);
 			
 			Logger.msg(7, "Activity::auditEvent() - Event:" + newEvent.getName() + " was added to the AuditTrail");
 	
 			if (storeOutcome) {
-				Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema.docType, schema.docVersion);
+				Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema);
+				//REVISIT: if we were ever going to validate outcomes on storage, it would be here.
+				//String errors = newOutcome.validate();
+				//if (errors.length() > 0) throw new InvalidDataException("Outcome was invalid: "+errors);
 				Gateway.getStorage().put(itemPath, newOutcome, locker);
 				
 				// update specific view if defined
 				if (viewName != null && !viewName.equals("") && !viewName.equals("last")) {
-					Viewpoint currentView = new Viewpoint(itemPath, schema.docType, viewName, schema.docVersion, newEvent.getID());
+					Viewpoint currentView = new Viewpoint(itemPath, schema, viewName, newEvent.getID());
 					Gateway.getStorage().put(itemPath, currentView, locker);
 				} 
 				// update last view
-				Viewpoint currentView = new Viewpoint(itemPath, schema.docType, "last", schema.docVersion, newEvent.getID());
+				Viewpoint currentView = new Viewpoint(itemPath, schema, "last", newEvent.getID());
 				Gateway.getStorage().put(itemPath, currentView, locker);
 			}
 			Gateway.getStorage().commit(locker);

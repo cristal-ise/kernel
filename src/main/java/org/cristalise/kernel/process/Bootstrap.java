@@ -41,8 +41,9 @@ import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
+import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lifecycle.instance.predefined.server.ServerPredefinedStepContainer;
-import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
@@ -52,7 +53,7 @@ import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
-import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.resource.DefaultResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
@@ -79,11 +80,13 @@ public class Bootstrap
     static HashMap<String, ResourceImportHandler> resHandlerCache = new HashMap<String, ResourceImportHandler>();
     static HashMap<String, AgentProxy> systemAgents = new HashMap<String, AgentProxy>();
     public static boolean shutdown = false;
+    static StateMachine predefSM;
 
 	/**
 	 * Run everything without timing-out the service wrapper
 	 */
 	public static void run() throws Exception {
+		predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
 		// check for system agents
 		checkAdminAgents();
 
@@ -148,15 +151,13 @@ public class Bootstrap
         StringTokenizer str = new StringTokenizer(bootList, "\n\r");
         while (str.hasMoreTokens() && !shutdown) {
             String thisItem = str.nextToken();
-            ItemPath itemPath = null;
-            String[] itemParts = thisItem.split("/");
-            if (itemParts.length == 3) { // includes UUID
-            	itemPath = new ItemPath(itemParts[2]);
-            }
-            String itemType = itemParts[0];
-            String itemName = itemParts[1];
+            String[] idFilename = thisItem.split(",");
+            String id = idFilename[0], filename = idFilename[1];
+            ItemPath itemPath = new ItemPath(id);
+            String[] fileParts = filename.split("/");
+            String itemType = fileParts[0], itemName = fileParts[1];
             try {
-                String location = "boot/"+thisItem+(itemType.equals("OD")?".xsd":".xml");
+                String location = "boot/"+filename+(itemType.equals("OD")?".xsd":".xml");
                 verifyResource(ns, itemName, 0, itemType, itemPath, location, reset);
             } catch (Exception e) {
                 Logger.error(e);
@@ -281,8 +282,8 @@ public class Bootstrap
 				// validate it (but not for kernel objects because we need those
 				// to validate the rest)
 				if (ns != null) {
-					String error = OutcomeValidator.getValidator(newOutcome).validate(newOutcome.getData());
-					if (error.length() > 0) {
+					String error = newOutcome.validate();
+					if (error != null && error.length() > 0) {
 						Logger.error("Outcome not valid: \n " + error);
 						throw new InvalidDataException(error);
 					}
@@ -360,23 +361,24 @@ public class Bootstrap
      * @param thisProxy
      * @param newOutcome
      * @throws PersistencyException
+     * @throws InvalidDataException 
+     * @throws ObjectNotFoundException 
      */
     private static void storeOutcomeEventAndViews(ItemProxy item, Outcome newOutcome, int version)
-            throws PersistencyException
+            throws PersistencyException, ObjectNotFoundException, InvalidDataException
     {
-        Logger.msg("Bootstrap.storeOutcomeEventAndViews() - Writing new " + newOutcome.getSchemaType() + " v" + version /*+ " to " + "typeImpHandler.getName()" + " " + "itemName"*/);
+        Logger.msg("Bootstrap.storeOutcomeEventAndViews() - Writing new " + newOutcome.getSchema().getName() + " v" + version);
 
         History hist = new History( item.getPath(), item);
-        Transition transDone = new Transition(0, "Done", 0, 0);
         String viewName = String.valueOf(version);
 
         int eventID = hist.addEvent( systemAgents.get("system").getPath(), "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
-                newOutcome.getSchemaType(), 0, "PredefinedStep", 0, transDone, viewName).getID();
+                newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName).getID();
 
         newOutcome.setID(eventID);
 
-        Viewpoint newLastView   = new Viewpoint(item.getPath(), newOutcome.getSchemaType(), "last",   0, eventID);
-        Viewpoint newNumberView = new Viewpoint(item.getPath(), newOutcome.getSchemaType(), viewName, 0, eventID);
+        Viewpoint newLastView   = new Viewpoint(item.getPath(), newOutcome.getSchema(), "last",   eventID);
+        Viewpoint newNumberView = new Viewpoint(item.getPath(), newOutcome.getSchema(), viewName, eventID);
 
         Gateway.getStorage().put(item.getPath(), newOutcome,    item);
         Gateway.getStorage().put(item.getPath(), newLastView,   item);
@@ -392,13 +394,15 @@ public class Bootstrap
      * @return
      * @throws PersistencyException
      * @throws InvalidDataException
+     * @throws ObjectNotFoundException 
      */
     private static boolean checkToStoreOutcomeVersion(ItemProxy item, Outcome newOutcome, int version, boolean reset)
-            throws PersistencyException, InvalidDataException
+            throws PersistencyException, InvalidDataException, ObjectNotFoundException
  {
+    	Schema schema = newOutcome.getSchema();
 		try {
 			Viewpoint currentData = (Viewpoint) item.getObject(ClusterStorage.VIEWPOINT + "/"
-							+ newOutcome.getSchemaType() + "/" + version);
+							+ newOutcome.getSchema().getName() + "/" + version);
 			Outcome oldData = currentData.getOutcome();
 			
 			XMLUnit.setIgnoreWhitespace(true);
@@ -409,18 +413,22 @@ public class Bootstrap
 						"Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
 				return false;
 			} else {
-				Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:"	+ item.getPath() + newOutcome.getSchemaType() + ": " + xmlDiff.toString());
+				Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:"	+ item.getPath() + schema.getName() + ": " + xmlDiff.toString());
 				if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
 					Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
 					return false;
 				}
 			}
 		} catch (ObjectNotFoundException ex) {
-			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - " +item.getName() + " " + newOutcome.getSchemaType()
+			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - " + schema.getName() + " " + item.getName()
 					+ " v" + version + " not found! Attempting to insert new.");
 		}
 		return true;
 	}
+    
+    public static StateMachine getPredefSM() {
+    	return predefSM;
+    }
     
     private static ResourceImportHandler getHandler(String resType) throws Exception {
     	if (resHandlerCache.containsKey(resType))
@@ -461,13 +469,12 @@ public class Bootstrap
         }
         
         CompositeActivity ca = new CompositeActivity();
-        if (ns!=null && Gateway.getProperties().getBoolean("Module.debug", false)) {
-        	try {
-        		ca = (CompositeActivity) ((CompositeActivityDef)LocalObjectLoader.getActDef(impHandler.getWorkflowName(), 0)).instantiate();
-        	} catch (ObjectNotFoundException ex) {
-        		Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
-        	}
-        }
+       	try {
+       		ca = (CompositeActivity) ((CompositeActivityDef)LocalObjectLoader.getActDef(impHandler.getWorkflowName(), 0)).instantiate();
+       	} catch (ObjectNotFoundException ex) {
+       		Logger.error(ex);
+       		Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
+       	}
 
 
         Gateway.getCorbaServer().createItem(itemPath);

@@ -32,6 +32,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -304,21 +305,39 @@ public class Transition {
 			return null;
 	}
 	
-	public String getScriptName(CastorHashMap actProps) {
-		return resolveValue(script.scriptName, actProps);
+	public Script getScript(CastorHashMap actProps) throws ObjectNotFoundException, InvalidDataException {
+		if (hasScript(actProps))
+			try {
+				return LocalObjectLoader.getScript(resolveValue(script.scriptName, actProps), 
+						Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
+				} catch (NumberFormatException ex) {
+					throw new InvalidDataException("Bad schema version number: "+outcome.schemaVersion+" ("+resolveValue(outcome.schemaVersion, actProps)+")");
+				}
+		else
+		return null;
 	}
 	
+    @Deprecated
+    public String getScriptName(CastorHashMap actProps) {
+   		try {
+			return getScript(actProps).getName();
+		} catch (Exception e) {
+	   		return null;
+		}
+	}
+
+    @Deprecated
 	public int getScriptVersion(CastorHashMap actProps) throws InvalidDataException {
-		try {
-			return Integer.parseInt(resolveValue(script.scriptVersion, actProps));
-		} catch (NumberFormatException ex) {
-			throw new InvalidDataException("Bad Script version number: "+script.scriptVersion+" ("+resolveValue(script.scriptVersion, actProps)+")");
+   		try {
+			return getScript(actProps).getVersion();
+		} catch (Exception e) {
+	   		return -1;
 		}
 	}
 	
 	public boolean hasScript(CastorHashMap actProps) {
 		if (script == null || actProps == null) return false;
-		String scriptName = getScriptName(actProps);
+		String scriptName = resolveValue(script.scriptName, actProps);
 		if (scriptName == null || scriptName.length() == 0)
 			return false;
 		String scriptVersion = resolveValue(script.scriptVersion, actProps);

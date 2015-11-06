@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.castor.xml.XMLProperties;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.resource.ResourceLoader;

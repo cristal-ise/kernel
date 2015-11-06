@@ -24,12 +24,8 @@
 package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
 
 
 public class SchemaCache extends DescriptionObjectCache<Schema> {
@@ -40,23 +36,19 @@ public class SchemaCache extends DescriptionObjectCache<Schema> {
 	}
 	
 	@Override
-	public Schema loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		Schema thisSchema;
-        Viewpoint schView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/Schema/" + version);
-        String schemaData;
+	public String getSchemaName() {
+		return "Schema";
+	}
+	
+	@Override
+	public Schema buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
 		try {
-			schemaData = schView.getOutcome().getData();
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new ObjectNotFoundException("Problem loading Schema "+name+" v"+version+": "+ex.getMessage());
-		}
-		try {
-			thisSchema =  new Schema(name, version, proxy.getPath(), schemaData);
+			Schema thisSchema =  new Schema(name, version, path, data);
 			thisSchema.validate();
+			return thisSchema;
 		} catch (Exception ex) {
 			Logger.error(ex);
 			throw new InvalidDataException("Could not parse Schema '"+name+"' v"+version+": "+ex.getMessage());
 		}
-        return thisSchema;
 	}
 }

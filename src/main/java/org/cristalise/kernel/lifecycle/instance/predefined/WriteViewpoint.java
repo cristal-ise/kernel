@@ -29,8 +29,10 @@ import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -75,10 +77,13 @@ public class WriteViewpoint extends PredefinedStep {
 		}
         if (ev.getSchemaName() == null || ev.getSchemaName().length() == 0)
         	throw new InvalidDataException("Event "+evId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
-       	if (!ev.getSchemaName().equals(schemaName))
-       		throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
         // Write new viewpoint
-        Viewpoint newView = new Viewpoint(item, schemaName, viewName, ev.getSchemaVersion(), evId);
+       	Schema thisSchema = LocalObjectLoader.getSchema(schemaName, ev.getSchemaVersion());
+
+       	if (!ev.getSchemaName().equals(thisSchema.getItemID()))
+       		throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
+
+       	Viewpoint newView = new Viewpoint(item, thisSchema, viewName, evId);
         try {
 			Gateway.getStorage().put(item, newView, locker);
 		} catch (PersistencyException e) {

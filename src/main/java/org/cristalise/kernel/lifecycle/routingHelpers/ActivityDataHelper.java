@@ -30,8 +30,10 @@ import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 
 /**
  * Implements the Routing DataHelper to get Outcome data using Activity path and XPath. 
@@ -79,13 +81,15 @@ public class ActivityDataHelper implements DataHelper {
 
         // Get the schema and viewpoint names
         String schemaName = act.getProperties().get("SchemaType").toString();
+        Integer schemaVersion = Integer.valueOf(act.getProperties().get("SchemaVersion").toString());
+        Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
         String viewName   = act.getProperties().get("Viewpoint").toString();
         
         if (viewName == null || viewName.equals("")) viewName = "last";
 
         // get the viewpoint and outcome
-        Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName, locker);
-        Outcome oc = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+schemaName+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
+        Outcome oc = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
 
         // apply the XPath to its outcome
         try {

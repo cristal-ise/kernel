@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.process.module;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -38,6 +37,7 @@ import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -52,13 +52,13 @@ public class ModuleManager {
 	public ModuleManager(Enumeration<URL> moduleEnum, boolean isServer) throws ModuleException {
 		this.isServer = isServer;
 		try {
-			Schema moduleSchema = new Schema("Module", 0, null,
-					FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Module.xsd")));
+			Schema moduleSchema = LocalObjectLoader.getSchema("Module", 0);//new Schema("Module", 0, null,
+					//FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Module.xsd")));
 			moduleValidator = new OutcomeValidator(moduleSchema);
 		} catch (InvalidDataException ex) {
 			Logger.error(ex);
 			throw new ModuleException("Module Schema is not valid");
-		} catch (IOException ex) {
+		} catch (ObjectNotFoundException ex) {
 			throw new ModuleException("Could not load Module Schema from kernel resources");
 		}
 		ArrayList<String> loadedModules = new ArrayList<String>();

@@ -57,6 +57,7 @@ public class ClientShell extends StandardClient {
 			}
 			System.out.print("> ");
 		}
+		scan.close();
 		shutdown(0);
 	}
 

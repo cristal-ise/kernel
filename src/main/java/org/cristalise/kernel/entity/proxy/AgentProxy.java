@@ -42,8 +42,6 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
-import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
@@ -52,7 +50,6 @@ import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
-import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -129,37 +126,17 @@ public class AgentProxy extends ItemProxy
                ScriptErrorException, InvalidCollectionModification
     {
         ItemProxy item = Gateway.getProxyManager().getProxy(job.getItemPath());
-        OutcomeValidator validator = null;
         Date startTime = new Date();
         Logger.msg(3, "AgentProxy - executing "+job.getStepPath()+" for "+mAgentPath.getAgentName());
         // get the outcome validator if present
-        if (job.hasOutcome())
-        {
-        	String schemaName = job.getSchemaName();
-        	int schemaVersion = job.getSchemaVersion();
-
-            Logger.msg(5, "AgentProxy - fetching schema "+schemaName+"_"+schemaVersion+" for validation");
-            // retrieve schema
-            Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-
-            if (schema == null)
-                throw new InvalidDataException("Job references outcome type "+schemaName+" version "+schemaVersion+" that does not exist in this centre.");
-
-            try {
-                validator = OutcomeValidator.getValidator(schema);
-            } catch (Exception e) {
-                throw new InvalidDataException("Could not create validator: "+e.getMessage());
-            }
-        }
 
         if(job.hasScript()) {
-            Logger.msg(3, "AgentProxy - executing script "+job.getScriptName()+" v"+job.getScriptVersion());
+            Logger.msg(3, "AgentProxy - executing script");
             try {
-
                 // pre-validate outcome from script if there is one
-                if (job.getOutcomeString()!= null && validator != null) {
+                if (job.hasOutcome() || job.isOutcomeSet()) {
                     Logger.msg(5, "AgentProxy - validating outcome before script execution");
-                    String error = validator.validate(job.getOutcomeString());
+                    String error = job.getOutcome().validate();
                     if (error.length() > 0) {
                         Logger.error("Outcome not valid: \n " + error);
                         throw new InvalidDataException(error);
@@ -183,7 +160,7 @@ public class AgentProxy extends ItemProxy
 
         if (job.isOutcomeSet()) {
             Logger.msg(3, "AgentProxy - validating outcome");
-            String error = validator.validate(job.getOutcomeString());
+            String error = job.getOutcome().validate();
             if (error.length() > 0)
                 throw new InvalidDataException(error);
         }
@@ -201,7 +178,7 @@ public class AgentProxy extends ItemProxy
     }
 
     private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
-    	Script script = LocalObjectLoader.getScript(job.getScriptName(), job.getScriptVersion());
+    	Script script = job.getScript();
     	script.setActExecEnvironment(item, this, job);
     	return script.execute();
     }

@@ -25,10 +25,14 @@ import java.util.Calendar;
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.entity.C2KLocalObject;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.utils.Logger;
 
 
 
@@ -47,7 +51,30 @@ public class Event implements C2KLocalObject
 	Integer mID, mSchemaVersion, mStateMachineVersion;
     String mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
     GTimeStamp mTimeStamp;
-
+    
+    public Event(ItemPath itemPath, 
+    		AgentPath agentPath, String agentRole,
+    		String stepName, String stepPath, String stepType,
+            StateMachine stateMachine, int transitionId) {
+    	
+    	Transition transition = stateMachine.getTransition(transitionId);
+		Logger.msg(7, "History.addEvent() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
+		setItemPath(itemPath);
+		setAgentPath(agentPath);
+		setAgentRole(agentRole);
+		setStepName(stepName);
+		setStepPath(stepPath);
+		setStepType(stepType);
+		setTransition(transitionId);
+		setOriginState(transition.getOriginStateId());
+		setTargetState(transition.getTargetStateId());
+		setStateMachineName(stateMachine.getItemID());
+		setStateMachineVersion(stateMachine.getVersion());
+		setTimeStamp(Event.getGMT());
+    }
+    
+    public Event() { }
+    
     public int getOriginState() {
 		return mOriginState;
 	}
@@ -365,5 +392,15 @@ public class Event implements C2KLocalObject
 	public void setSchemaName(String schemaName) {
 		this.mSchemaName = schemaName;
 	}
-
+    
+    public void addOutcomeDetails(Schema schema,
+            String viewName) {
+    	
+		setSchemaName(schema.getItemID());
+		setSchemaVersion(schema.getVersion());
+	    if (viewName == null || viewName.equals(""))
+	    	setViewName("last");
+	    else
+	    	setViewName(viewName);
+    }
 }

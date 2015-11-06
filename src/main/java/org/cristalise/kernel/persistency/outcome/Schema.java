@@ -43,10 +43,10 @@ import org.xml.sax.SAXParseException;
  */
 
 public class Schema implements DescriptionObject, ErrorHandler {
-    public String docType;
-	public int docVersion;
-	public String schema;
-	public ItemPath itemPath;
+    private String name;
+    private int version;
+    private final String schemaData;
+    private ItemPath itemPath;
 	protected StringBuffer errors = null;
 	
 	public org.exolab.castor.xml.schema.Schema som;
@@ -56,21 +56,23 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	 * @param docVersion
 	 * @param schema
 	 */
-	public Schema(String docType, int docVersion, ItemPath itemPath, String schema) {
+	public Schema(String name, int version, ItemPath itemPath, String schema) {
 		super();
-		this.docType = docType;
-		this.docVersion = docVersion;
+		this.name = name;
+		this.version = version;
 		this.itemPath = itemPath;
-		this.schema = schema;
+		this.schemaData = schema;
 	}
 	
 	protected Schema(String schema) {
-		this.schema = schema;
+		this.schemaData = schema;
+		name = "Schema";
+		version = 0;
 	}
 	
 	public synchronized String validate() throws IOException {
 		errors = new StringBuffer();
-		InputSource schemaSource = new InputSource(new StringReader(schema));
+		InputSource schemaSource = new InputSource(new StringReader(schemaData));
         SchemaReader mySchemaReader = new SchemaReader(schemaSource);
 
         mySchemaReader.setErrorHandler(this);
@@ -81,13 +83,22 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	}
 	
 	@Override
+	public String getItemID() {
+		return itemPath.getUUID().toString();
+	}
+	
+	@Override
 	public String getName() {
-		return docType;
+		return name;
 	}
 
 	@Override
 	public int getVersion() {
-		return docVersion;
+		return version;
+	}
+	
+	public String getSchemaData() {
+		return schemaData;
 	}
 
 	@Override
@@ -97,12 +108,12 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
 	@Override
 	public void setName(String name) {
-		docType = name;
+		this.name = name;
 	}
 
 	@Override
 	public void setVersion(int version) {
-		docVersion = version;
+		this.version = version;
 	}
 
 	@Override

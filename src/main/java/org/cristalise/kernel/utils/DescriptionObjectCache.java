@@ -25,9 +25,11 @@ package org.cristalise.kernel.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.entity.proxy.MemberSubscription;
 import org.cristalise.kernel.entity.proxy.ProxyObserver;
@@ -49,10 +51,9 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 	Property[] classIdProps;
 	
 	public DescriptionObjectCache() {
-		String propDescXML = Gateway.getResource().findTextResource("boot/property/"+getTypeCode()+"Prop.xml");
-		PropertyDescriptionList propDescs;
 		try {
-			propDescs = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(propDescXML);
+			String propDescXML = Gateway.getResource().findTextResource("boot/property/"+getTypeCode()+"Prop.xml");
+			PropertyDescriptionList propDescs = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(propDescXML);
 			ArrayList<Property> classIdPropList = new ArrayList<Property>();
 			for (PropertyDescription propDesc : propDescs.list) {
 				if (propDesc.getIsClassIdentifier())
@@ -66,9 +67,35 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		}
 	}
 	
+	public D loadObjectFromBootstrap(String name) throws InvalidDataException, ObjectNotFoundException {
+		try {
+			String bootItems = FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/allbootitems.txt"));
+	        StringTokenizer str = new StringTokenizer(bootItems, "\n\r");
+	        while (str.hasMoreTokens()) {
+	        	String resLine = str.nextToken();
+	        	String[] resElem = resLine.split(",");
+	        	if (resElem[0].equals(name) || isBootResource(resElem[1], name)) {
+	        		Logger.msg(3, "Shimming "+getTypeCode()+" "+name+" from bootstrap");
+	        		String resData = Gateway.getResource().getTextResource(null, "boot/"+resElem[1]+(resElem[1].startsWith("OD")?".xsd":".xml"));
+	        		return buildObject(name, 0, new ItemPath(resElem[0]), resData);
+	        	}
+	        }
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Error finding bootstrap resources");
+		}
+		throw new ObjectNotFoundException("Resource "+getSchemaName()+" "+name+" not found in bootstrap resources");
+	}
+	
+	protected boolean isBootResource(String filename, String resName) {
+		return filename.equals(getTypeCode()+"/"+resName);
+	}
+
 	public ItemPath findItem(String name)
 			throws ObjectNotFoundException, InvalidDataException
 		{
+			if (Gateway.getLookup() == null)
+				throw new ObjectNotFoundException("Cannot find Items without a Lookup");
 			// first check for a UUID name
 			try {
 				ItemPath resItem = new ItemPath(name);
@@ -102,17 +129,35 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		}
 	
 	public D get(String name, int version) throws ObjectNotFoundException, InvalidDataException {
-		D thisDef;
+		D thisDef = null;
 		synchronized(cache) {
 			CacheEntry<D> thisDefEntry = cache.get(name+"_"+version);
 			if (thisDefEntry == null) {
-				Logger.msg(6, name+" v"+version+" not found in cache. Retrieving.");
-		        ItemPath defItemPath = findItem(name);
-		        ItemProxy defItemProxy = Gateway.getProxyManager().getProxy(defItemPath);
-		        thisDef = loadObject(name, version, defItemProxy);
-		        cache.put(name+"_"+version, new CacheEntry<D>(thisDef, defItemProxy, this));
+				Logger.msg(6, name+" v"+version+" not found in cache. Checking id.");
+				try {
+					ItemPath defItemPath = findItem(name);
+					String defId = defItemPath.getUUID().toString();
+					thisDefEntry = cache.get(defId+"_"+version);
+					if (thisDefEntry == null) {
+						Logger.msg(6, name+" v"+version+" not found in cache. Loading from database.");
+						ItemProxy defItemProxy = Gateway.getProxyManager().getProxy(defItemPath);
+						if (name.equals(defId)) {
+							String itemName = defItemProxy.getName();
+							if (itemName != null) name = itemName;
+						}
+						thisDef = loadObject(name, version, defItemProxy);
+						cache.put(defId+"_"+version, new CacheEntry<D>(thisDef, defItemProxy, this));
+					}
+				} catch (ObjectNotFoundException ex) {
+					if (version == 0) { // for bootstrap and testing, try to load built-in kernel objects from resources
+						try {
+							return loadObjectFromBootstrap(name);
+						} catch (ObjectNotFoundException ex2) { }
+					}
+					throw ex;
+				}
 			}
-			else {
+			if (thisDefEntry != null && thisDef == null) {
 				Logger.msg(6, name+" v"+version+" found in cache.");
 				thisDef = thisDefEntry.def;
 			}
@@ -122,7 +167,22 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 	
 	public abstract String getTypeCode();
 	
-	public abstract D loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException;
+	public abstract String getSchemaName();
+	
+	public abstract D buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException;
+
+	public D loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
+		
+        Viewpoint smView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/" +getSchemaName() +"/" + version);
+        String rawRes;
+		try {
+			rawRes = smView.getOutcome().getData();
+		} catch (PersistencyException ex) {
+			Logger.error(ex);
+			throw new ObjectNotFoundException("Problem loading " +getSchemaName() +" "+name+" v"+version+": "+ex.getMessage());
+		}
+		return buildObject(name, version, proxy.getPath(), rawRes);
+	}
 
 	public void removeObject(String id) {
 		synchronized(cache) {

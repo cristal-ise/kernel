@@ -22,11 +22,13 @@ package org.cristalise.kernel.events;
 
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.RemoteMap;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -47,6 +49,98 @@ public class History extends RemoteMap<Event> {
     public History(ItemPath itemPath, Object locker) {
         super(itemPath, ClusterStorage.HISTORY, locker);
     }
+    
+    public Event getEvent(int id) {
+    	return get(String.valueOf(id));
+    }
+
+	@Override
+	public Event remove(Object key) {
+		throw new UnsupportedOperationException();
+	}
+    
+    private Event storeNewEvent(Event newEvent) {
+        synchronized (this) {
+            int newEventID = getLastId()+1;
+            newEvent.setID(newEventID);
+            put(newEvent.getName(), newEvent);
+            lastID = newEventID;
+            return newEvent;
+        }
+    }
+	
+    public Event addEvent(AgentPath agentPath, String agentRole,
+            String stepName,
+            String stepPath,
+            String stepType,
+            StateMachine stateMachine,
+            int transitionId) {
+    	return storeNewEvent(new Event(mItemPath, 
+    			agentPath, agentRole, 
+    			stepName, stepPath, stepType, 
+    			stateMachine, transitionId));
+    }
+
+    
+	public Event addEvent(AgentPath agentPath, 
+			String agentRole,
+			String stepName, 
+			String stepPath, 
+			String stepType,
+			Schema schema, 
+			StateMachine stateMachine, 
+			int transitionId,
+			String viewName) {
+    	Event newEvent = new Event(mItemPath, 
+    			agentPath, agentRole, 
+    			stepName, stepPath,	stepType, 
+    			stateMachine, transitionId);
+    	newEvent.addOutcomeDetails(schema, viewName);
+    	return storeNewEvent(newEvent);
+	}
+
+    
+    public Event addEvent(AgentPath agentPath, String agentRole,
+            String stepName,
+            String stepPath,
+            String stepType,
+            StateMachine stateMachine,
+            int transitionId,
+            String timeString) throws InvalidDataException {
+    	Event newEvent = new Event(mItemPath, 
+    			agentPath, agentRole, 
+    			stepName, stepPath,	stepType, 
+    			stateMachine, transitionId);
+    	newEvent.setTimeString(timeString);
+    	return storeNewEvent(newEvent);
+    }
+
+    public Event addEvent(AgentPath agentPath, String agentRole,
+            String stepName,
+            String stepPath,
+            String stepType,
+            Schema schema,
+            StateMachine stateMachine,
+            int transitionId,
+            String viewName,
+            String timeString) throws InvalidDataException {
+    	
+    	Event newEvent = new Event(mItemPath, 
+    			agentPath, agentRole, 
+    			stepName, stepPath, stepType, 
+    			stateMachine, transitionId);
+    	newEvent.addOutcomeDetails(schema, viewName);
+    	newEvent.setTimeString(timeString);
+    	return storeNewEvent(newEvent);
+    }
+    
+
+	
+	/*
+	 * Deprecated event management methods
+	 */
+	
+    @Deprecated
     public Event addEvent(AgentPath agentPath, String agentRole,
             String stepName,
             String stepPath,
@@ -56,7 +150,8 @@ public class History extends RemoteMap<Event> {
             Transition transition) {
     	return addEvent(agentPath, agentRole, stepName, stepPath, stepType, null, null, stateMachineName, stateMachineVersion, transition, null);
     }
-
+    
+    @Deprecated
     public Event addEvent(AgentPath agentPath, String agentRole,
                     String stepName,
                     String stepPath,
@@ -92,6 +187,7 @@ public class History extends RemoteMap<Event> {
         return storeNewEvent(newEvent);
     }
 
+    @Deprecated
     public Event addEvent(AgentPath agentPath, String agentRole,
             String stepName,
             String stepPath,
@@ -102,7 +198,8 @@ public class History extends RemoteMap<Event> {
             String timeString) throws InvalidDataException {
     	return addEvent(agentPath, agentRole, stepName, stepPath, stepType, null, null, stateMachineName, stateMachineVersion, transition, null, timeString);
     }
-    	
+    
+    @Deprecated
     public Event addEvent(AgentPath agentPath, String agentRole,
                     String stepName,
                     String stepPath,
@@ -138,24 +235,4 @@ public class History extends RemoteMap<Event> {
         newEvent.setTimeString(timeString);
         return storeNewEvent(newEvent);
     }
-
-    private Event storeNewEvent(Event newEvent) {
-        synchronized (this) {
-            int newEventID = getLastId()+1;
-            newEvent.setID(newEventID);
-            put(newEvent.getName(), newEvent);
-            lastID = newEventID;
-            return newEvent;
-        }
-    }
-
-    public Event getEvent(int id) {
-    	return get(String.valueOf(id));
-    }
-
-	@Override
-	public Event remove(Object key) {
-		throw new UnsupportedOperationException();
-	}
-
 }

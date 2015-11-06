@@ -31,8 +31,10 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.TransactionManager;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -68,17 +70,22 @@ public class Import extends PredefinedStep
         	throw new InvalidDataException("Import: Invalid parameters "+Arrays.toString(params));
         
         requestData = params[1];
-
-        String schemaName = params[0].substring(0, split1);
+        Schema schema;
         String viewpoint = null;
-        int schemaVersion;
-        if (split2 > -1) {
-            schemaVersion = Integer.parseInt(params[0].substring(split1+1, split2));
-            viewpoint = params[0].substring(split2+1);
-        }
-        else
-            schemaVersion = Integer.parseInt(params[0].substring(split1+1));
 
+        {
+        	String schemaName = params[0].substring(0, split1);
+        	int schemaVersion;
+        	if (split2 > -1) {
+        		schemaVersion = Integer.parseInt(params[0].substring(split1+1, split2));
+        		viewpoint = params[0].substring(split2+1);
+        	}
+        	else
+        		schemaVersion = Integer.parseInt(params[0].substring(split1+1));
+
+        	schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+        }
+        
         String timestamp;
         if (params.length == 3)
         	timestamp = params[2];
@@ -89,13 +96,13 @@ public class Import extends PredefinedStep
 
         TransactionManager storage = Gateway.getStorage();
         History hist = getWf().getHistory();
-		Event event = hist.addEvent(agent, getCurrentAgentRole(), getName(), getPath(), getType(), schemaName, schemaVersion, getStateMachine().getName(), getStateMachine().getVersion(), getStateMachine().getTransition(transitionID), viewpoint, timestamp);
+		Event event = hist.addEvent(agent, getCurrentAgentRole(), getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint, timestamp);
 
 		try {
-			storage.put(item, new Outcome(event.getID(), requestData, schemaName, schemaVersion), locker);
-			storage.put(item, new Viewpoint(item, schemaName, viewpoint, schemaVersion, event.getID()), locker);
+			storage.put(item, new Outcome(event.getID(), requestData, schema), locker);
+			storage.put(item, new Viewpoint(item, schema, viewpoint, event.getID()), locker);
 			if (!"last".equals(viewpoint))
-				storage.put(item, new Viewpoint(item, schemaName, "last", schemaVersion, event.getID()), locker);
+				storage.put(item, new Viewpoint(item, schema, "last", event.getID()), locker);
 		} catch (PersistencyException e) {
 			storage.abort(locker);
 			throw e;

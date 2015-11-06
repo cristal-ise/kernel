@@ -28,6 +28,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
@@ -48,8 +49,21 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 	}
 	
 	@Override
+	public String getSchemaName() {
+		if (isComposite == null) return "ActivityDef"; // this won't work for resource loads, but loadObject is overridden below 
+		return isComposite?"CompositeActivityDef":"ActivityDef";
+	}
+	
+	@Override
+	protected boolean isBootResource(String filename, String resName) {
+		if (isComposite==null)
+			return filename.endsWith("/"+resName) && (filename.startsWith("CA") || filename.startsWith("EA"));
+		else
+			return super.isBootResource(filename, resName);
+	}
+
+	@Override
 	public ActivityDef loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		ActivityDef thisActDef;
 		String actType;
 		if (isComposite == null)
 			actType = proxy.getProperty("Complexity");
@@ -63,17 +77,21 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 			Logger.error(ex);
 			throw new ObjectNotFoundException("Problem loading "+name+" v"+version+": "+ex.getMessage());
 		}
+		return buildObject(name, version, proxy.getPath(), marshalledAct);
+	}
+
+	@Override
+	public ActivityDef buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
 		try {
-			thisActDef = (ActivityDef)Gateway.getMarshaller().unmarshall(marshalledAct);
+			ActivityDef thisActDef = (ActivityDef)Gateway.getMarshaller().unmarshall(data);
 			thisActDef.getProperties().put("Version", version);
+	        thisActDef.setName(name);
+	        thisActDef.setVersion(version);
+	        thisActDef.setItemPath(path);
+	        return thisActDef;
 		} catch (Exception ex) {
 			Logger.error(ex);
 			throw new InvalidDataException("Could not unmarshall '"+name+"' v"+version+": "+ex.getMessage());
 		}
-        thisActDef.setName(name);
-        thisActDef.setVersion(version);
-        thisActDef.setItemPath(proxy.getPath());
-        return thisActDef;
 	}
-
 }

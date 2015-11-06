@@ -29,6 +29,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyDescriptionList;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 
 
 public class DefaultResourceImportHandler implements ResourceImportHandler {
@@ -40,26 +41,30 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 	PropertyDescriptionList props;
 	
 	public DefaultResourceImportHandler(String resType) throws Exception {
-		wfDef = "NoWorkflow";
     	if (resType.equals("CA")) {
     		schemaName = "CompositeActivityDef";
     		typeRoot = "/desc/ActivityDesc";
+    		wfDef = "ManageCompositeActDef";
     	}
     	else if (resType.equals("EA")) {
     		schemaName = "ElementaryActivityDef";
     		typeRoot = "/desc/ActivityDesc";
+    		wfDef = "ManageElementaryActDef";
     	}
     	else if (resType.equals("OD")) {
     		schemaName = "Schema";
     		typeRoot = "/desc/OutcomeDesc";
+    		wfDef = "ManageSchema";
     	}
     	else if (resType.equals("SC")) {
     		schemaName = "Script";
     		typeRoot = "/desc/Script";
+    		wfDef = "ManageScript";
     	}
     	else if (resType.equals("SM")) {
     		schemaName = "StateMachine";
     		typeRoot = "/desc/StateMachine";
+    		wfDef = "ManageStateMachine";
     	}
     	else throw new Exception("Unknown bootstrap item type: "+resType);
     	typeRootPath = new DomainPath(typeRoot);
@@ -99,7 +104,7 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 		String data = Gateway.getResource().getTextResource(ns, location);
         if (data == null)
             throw new Exception("No data found for "+schemaName+" "+name);
-		Outcome resOutcome = new Outcome(0, data, schemaName, 0);
+		Outcome resOutcome = new Outcome(0, data, LocalObjectLoader.getSchema(schemaName, 0));
 		retArr.add(resOutcome);
 		return retArr;
 	}

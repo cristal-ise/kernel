@@ -24,12 +24,8 @@
 package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
-import org.cristalise.kernel.persistency.ClusterStorage;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 
 
@@ -40,29 +36,24 @@ public class StateMachineCache extends DescriptionObjectCache<StateMachine> {
 	public String getTypeCode() {
 		return "SM";
 	}
+	@Override
+	public String getSchemaName() {
+		return "StateMachine";
+	}
 	
 	@Override
-	public StateMachine loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		StateMachine thisStateMachine;
-        Viewpoint smView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/StateMachine/" + version);
-        String marshalledSM;
+	public StateMachine buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
 		try {
-			marshalledSM = smView.getOutcome().getData();
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new ObjectNotFoundException("Problem loading State Machine "+name+" v"+version+": "+ex.getMessage());
-		}
-		try {
-			thisStateMachine = (StateMachine)Gateway.getMarshaller().unmarshall(marshalledSM);
+			StateMachine thisStateMachine = (StateMachine)Gateway.getMarshaller().unmarshall(data);
 			thisStateMachine.validate();
+			thisStateMachine.setName(name);
+			thisStateMachine.setVersion(version);
+			thisStateMachine.setItemPath(path);
+	        return thisStateMachine;
 		} catch (Exception ex) {
 			Logger.error(ex);
 			throw new InvalidDataException("Could not unmarshall State Machine '"+name+"' v"+version+": "+ex.getMessage());
 		}
-		thisStateMachine.setName(name);
-		thisStateMachine.setVersion(version);
-		thisStateMachine.setItemPath(proxy.getPath());
-        return thisStateMachine;
 	}
 
 }

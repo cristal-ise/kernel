@@ -24,11 +24,7 @@
 package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.persistency.ClusterStorage;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.scripting.Script;
 
 
@@ -41,23 +37,17 @@ public class ScriptCache extends DescriptionObjectCache<Script> {
 	}
 	
 	@Override
-	public Script loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		Script thisScript;
-        Viewpoint scrView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/Script/" + version);
-        String scriptData;
+	public String getSchemaName() {
+		return "Script";
+	}
+	
+	@Override
+	public Script buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
 		try {
-			scriptData = scrView.getOutcome().getData();
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new ObjectNotFoundException("Problem loading Script "+name+" v"+version+": "+ex.getMessage());
-		}
-		try {
-			thisScript = new Script(name, version, proxy.getPath(), scriptData);
+			return new Script(name, version, path, data);
 		} catch (Exception ex) {
 			Logger.error(ex);
 			throw new InvalidDataException("Error parsing script '"+name+"' v"+version+": "+ex.getMessage());
 		}
-        return thisScript;
 	}
-
 }

@@ -29,7 +29,6 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.imports.ImportItem;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;

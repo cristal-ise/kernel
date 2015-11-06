@@ -43,6 +43,7 @@ import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ErrorInfo;
+import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -274,41 +275,61 @@ public class Job implements C2KLocalObject
         agentRole = role;
     }
     
-    public String getSchemaName() throws InvalidDataException, ObjectNotFoundException {
-    	if (transition.hasOutcome(actProps)) {
-			Schema schema = transition.getSchema(actProps);
-			return schema.docType;
+    public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
+    	if (getTransition().hasOutcome(actProps)) {
+			Schema schema = getTransition().getSchema(actProps);
+			return schema;
     	}
    		return null;
     }
-    
-    public int getSchemaVersion() throws InvalidDataException, ObjectNotFoundException {
-    	if (transition.hasOutcome(actProps)) {
-			Schema schema = transition.getSchema(actProps);
-       		return schema.docVersion;
-    	}
-   		return -1;
-    }
 
+    @Deprecated
+    public String getSchemaName() {
+   		try {
+			return getSchema().getName();
+		} catch (Exception e) {
+	   		return null;
+		}
+	}
+
+    @Deprecated
+	public int getSchemaVersion() throws InvalidDataException {
+   		try {
+			return getSchema().getVersion();
+		} catch (Exception e) {
+	   		return -1;
+		}
+	}
     public boolean isOutcomeRequired()
     {
-        return transition.hasOutcome(actProps) && transition.getOutcome().isRequired();
+        return getTransition().hasOutcome(actProps) && getTransition().getOutcome().isRequired();
     }
     
-    public String getScriptName() {
-    	if (transition.hasScript(actProps)) {
-			return transition.getScriptName(actProps);
+    public Script getScript() throws ObjectNotFoundException, InvalidDataException {
+    	if (getTransition().hasScript(actProps)) {
+			return getTransition().getScript(actProps);
     	}
    		return null;
 	}
-
-	public int getScriptVersion() throws InvalidDataException {
-    	if (transition.hasScript(actProps)) {
-			return transition.getScriptVersion(actProps);
-    	}
-   		return -1;
-	}
     
+    @Deprecated
+    public String getScriptName() {
+   		try {
+			return getScript().getName();
+		} catch (Exception e) {
+	   		return null;
+		}
+	}
+
+    @Deprecated
+	public int getScriptVersion() throws InvalidDataException {
+   		try {
+			return getScript().getVersion();
+		} catch (Exception e) {
+	   		return -1;
+		}
+	}
+	
     public KeyValuePair[] getKeyValuePairs() {
         return actProps.getKeyValuePairs();
     }
@@ -371,23 +392,16 @@ public class Job implements C2KLocalObject
 		} 
     }
     
-    public String getLastView() throws InvalidDataException {
+    public String getLastView() throws InvalidDataException, ObjectNotFoundException {
 		String viewName = (String) getActProp("Viewpoint");
 		if (viewName.length() > 0) {
 			// find schema
-			String schemaName;
-			try {
-				schemaName = getSchemaName();
-			} catch (ObjectNotFoundException e1) {
-				throw new InvalidDataException("Schema "+getActProp("SchemaType")+" v"+getActProp("SchemaVersion")+" not found");
-			}
+			String schemaName = getSchema().getName();
 			
 			try	{
 				Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, 
 						ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName, null);
 				return view.getOutcome().getData();
-        	} catch (ObjectNotFoundException ex) { // viewpoint doesn't exist yet
-        		return null;
 			} catch (PersistencyException e) {
 				Logger.error(e);
 				throw new InvalidDataException("ViewpointOutcomeInitiator: PersistencyException loading viewpoint " 
@@ -395,7 +409,7 @@ public class Job implements C2KLocalObject
 			}
 		}
 		else
-			return null;
+			throw new ObjectNotFoundException();
 	}
     
     public OutcomeInitiator getOutcomeInitiator() throws InvalidDataException {
@@ -429,8 +443,9 @@ public class Job implements C2KLocalObject
     public String getOutcomeString() throws InvalidDataException
     {
         if (outcomeData == null && transition.hasOutcome(actProps)) {
-        	outcomeData = getLastView();
-        	if (outcomeData == null) {
+        	try {
+        		outcomeData = getLastView();
+        	} catch (ObjectNotFoundException ex) { // if no last view found, try to find an OutcomeInitiator
         		OutcomeInitiator ocInit = getOutcomeInitiator();
         		if (ocInit != null)
         			outcomeData = ocInit.initOutcome(this);
@@ -442,7 +457,7 @@ public class Job implements C2KLocalObject
 
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException
     {
-        return new Outcome(-1, getOutcomeString(), getSchemaName(), getSchemaVersion());
+        return new Outcome(-1, getOutcomeString(), transition.getSchema(actProps));
     }
     
     public boolean hasOutcome() {

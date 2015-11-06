@@ -37,14 +37,16 @@ import org.cristalise.kernel.entity.TraceableEntity;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
-import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
+import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
+import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.ModuleImport;
 import org.cristalise.kernel.property.Property;
@@ -120,7 +122,7 @@ public class ImportItem extends ModuleImport {
         
         TraceableEntity newItem;
         if (getItemPath().exists()) {
-        	Logger.msg(1, "ImportItem.create() - Verifying module item "+getItemPath()+" at "+domPath);
+        	Logger.msg(1, "ImportItem.create() - Verifying module item "+domPath+" at "+getItemPath());
         	newItem = Gateway.getCorbaServer().getItem(getItemPath());
         } 
         else {
@@ -176,12 +178,28 @@ public class ImportItem extends ModuleImport {
         XMLUnit.setIgnoreComments(true);
         History hist = new History(getItemPath(), null);
         for (ImportOutcome thisOutcome : outcomes) {
-            Outcome newOutcome;
-			try {
-				newOutcome = new Outcome(-1, thisOutcome.getData(ns), thisOutcome.schema, thisOutcome.version);
-			} catch (InvalidDataException e1) {
-				throw new ObjectCannotBeUpdated("XML is not valid in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
-			}
+	        String outcomeData = thisOutcome.getData(ns);
+	        
+	        //load schema and state machine
+	        Schema schema;
+	        try { 
+	        	schema = LocalObjectLoader.getSchema(thisOutcome.schema, thisOutcome.version);
+	        } catch (InvalidDataException ex) {
+	        	throw new ObjectCannotBeUpdated("Could not load schema "+thisOutcome.schema+" v"+thisOutcome.version);
+	        }
+	        
+	        //parse new outcome and validate
+        	Outcome newOutcome;
+        	try {
+        		newOutcome = new Outcome(-1, outcomeData, schema);
+            	String errors = newOutcome.validate();
+            	if (errors != null && errors.length() > 0) 
+            		throw new ObjectCannotBeUpdated("Invalid XML in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
+        	} catch (InvalidDataException ex) {
+        		throw new ObjectCannotBeUpdated("XML is not valid in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
+        	}
+        	
+        	
         	Viewpoint impView;
         	try {
         		impView = (Viewpoint)Gateway.getStorage().get(getItemPath(), ClusterStorage.VIEWPOINT+"/"+thisOutcome.schema+"/"+thisOutcome.viewname, null);
@@ -200,7 +218,7 @@ public class ImportItem extends ModuleImport {
                 }
         	} catch (ObjectNotFoundException ex) { 
         		Logger.msg("View "+thisOutcome.schema+"/"+thisOutcome.viewname+" not found in "+ns+"/"+name+". Creating.");
-        		impView = new Viewpoint(getItemPath(), thisOutcome.schema, thisOutcome.viewname, thisOutcome.version, -1);
+        		impView = new Viewpoint(getItemPath(), schema, thisOutcome.viewname, -1);
         	} catch (PersistencyException e) {
         		throw new ObjectCannotBeUpdated("Could not check data for view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
 			} catch (InvalidDataException e) {
@@ -208,8 +226,7 @@ public class ImportItem extends ModuleImport {
 			}
         	
         	// write new view/outcome/event
-        	Transition predefDone = new Transition(0, "Done", 0, 0);
-            Event newEvent = hist.addEvent(agentPath, "Admin", "Import", "Import", "Import", thisOutcome.schema, thisOutcome.version, "PredefinedStep", 0, predefDone, thisOutcome.viewname);
+            Event newEvent = hist.addEvent(agentPath, "Admin", "Import", "Import", "Import", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, thisOutcome.viewname);
             newOutcome.setID(newEvent.getID());
             impView.setEventId(newEvent.getID());
             try {

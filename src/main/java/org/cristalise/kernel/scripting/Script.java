@@ -559,6 +559,11 @@ public class Script implements DescriptionObject
 	public ItemPath getItemPath() {
 		return mItemPath;
 	}
+	
+	@Override
+	public String getItemID() {
+		return mItemPath.getUUID().toString();
+	}
 
 	@Override
 	public void setName(String name) {

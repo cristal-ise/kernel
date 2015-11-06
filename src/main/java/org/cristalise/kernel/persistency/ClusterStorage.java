@@ -219,8 +219,8 @@ public abstract class ClusterStorage {
 			return null; // no storage allowed
 		if (obj instanceof Outcome) {
 			Outcome oc = (Outcome) obj;
-			return root + "/" + oc.getSchemaType() + "/"
-					+ oc.getSchemaVersion() + "/" + oc.getName();
+			return root + "/" + oc.getSchema().getName() + "/"
+					+ oc.getSchema().getVersion() + "/" + oc.getName();
 		} else if (obj instanceof Viewpoint) {
 			Viewpoint vp = (Viewpoint) obj;
 			return root + "/" + vp.getSchemaName() + "/" + vp.getName();

@@ -35,6 +35,8 @@ public interface DescriptionObject {
 	public void setVersion(int version);
 	public void setItemPath(ItemPath path);
 	
+	public String getItemID();
+	
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException;
 
 }

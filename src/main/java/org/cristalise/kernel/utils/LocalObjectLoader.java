@@ -22,9 +22,11 @@ package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.scripting.Script;
 
@@ -65,7 +67,7 @@ public class LocalObjectLoader {
 		Logger.msg(5, "Loading schema "+schemaName+" v"+schemaVersion);
 	    // don't bother if this is the Schema schema - for bootstrap esp.
 	    if (schemaName.equals("Schema") && schemaVersion == 0)
-	        return new Schema(schemaName, schemaVersion, null, "");
+	        return new Schema(schemaName, schemaVersion, new ItemPath(new SystemKey(0, 5)), "");
 		return schCache.get(schemaName, schemaVersion);
 	}
 
