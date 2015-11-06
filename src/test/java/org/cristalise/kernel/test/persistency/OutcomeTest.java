@@ -70,6 +70,7 @@ public class OutcomeTest {
     @Test
     public void testValidation() throws Exception {
     	String errors = testOc.validate();
+    	Logger.debug(errors.toString());
     	assert errors.equals("ERROR: cvc-elt.1: Cannot find the declaration of element 'TestOutcome'.");
     }
 }
