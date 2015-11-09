@@ -79,7 +79,7 @@ public class ActivitySlotDef extends WfVertexDef
 				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent())
 						.getCollectionResource(CompositeActivityDef.ACTCOL); 
 				for (DescriptionObject thisActDef : parentActDefs) {
-					String childUUID = thisActDef.getItemPath().getUUID().toString();
+					String childUUID = thisActDef.getItemID();
 					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
 						ActivityDef currentActDef = (ActivityDef)thisActDef;
 						Integer requiredVersion = deriveVersionNumber(getProperties().get("Version"));
@@ -104,7 +104,7 @@ public class ActivitySlotDef extends WfVertexDef
 		
 	public void setTheActivityDef(ActivityDef actDef) {
 		theActivityDef = actDef;
-		activityDef = actDef.getItemPath().getUUID().toString();
+		activityDef = actDef.getItemID();
 		getProperties().put("Version", actDef.getVersion());
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;

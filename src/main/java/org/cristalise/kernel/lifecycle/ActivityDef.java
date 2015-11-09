@@ -168,7 +168,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
 	public void configureInstanceProp(CastorHashMap props, DescriptionObject desc, String nameProp, String verProp) {
 		if (desc != null) {
-			props.put(nameProp, desc.getItemPath().getUUID().toString());
+			props.put(nameProp, desc.getItemID());
 			props.put(verProp, desc.getVersion());
 		}
 	}
