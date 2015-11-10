@@ -22,6 +22,8 @@ package org.cristalise.kernel.persistency.outcome;
 
 import java.io.IOException;
 
+import org.w3c.dom.Document;
+
 
 /**************************************************************************
  *
@@ -49,5 +51,9 @@ public class SchemaValidator extends OutcomeValidator {
 			return "Error reading schema";
 		}
     }
-
+    
+    @Override
+    public synchronized String validate(Document outcome) {
+    	return validate(Outcome.serialize(outcome, false));
+    }
 }

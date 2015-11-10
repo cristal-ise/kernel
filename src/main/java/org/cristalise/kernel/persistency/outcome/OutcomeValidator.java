@@ -120,7 +120,7 @@ public class OutcomeValidator implements ErrorHandler {
 
             parser.validate(new DOMSource(outcome));
         } catch (Exception e) {
-            return e.getMessage();
+            return "Couldn't create outcome validator:" +e.getMessage();
         }
         return errors.toString();
     }
