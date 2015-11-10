@@ -21,6 +21,10 @@
 package org.cristalise.kernel.test.persistency
 
 import org.cristalise.kernel.persistency.outcome.Outcome
+import org.cristalise.kernel.process.Gateway
+import org.cristalise.kernel.test.process.MainTest
+import org.cristalise.kernel.utils.FileStringUtility
+import org.cristalise.kernel.utils.Logger
 import org.w3c.dom.Document
 
 import spock.lang.Specification
@@ -30,6 +34,12 @@ import spock.lang.Specification
  *
  */
 class OutcomeSpecs extends Specification {
+
+    def setup() {
+        Logger.addLogStream(System.out, 1);
+        Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
+        Gateway.init(props);
+    }
 
     def 'Outcome C2KLocalObject can be constructed from path - /Script/0/7'() {
         when:
