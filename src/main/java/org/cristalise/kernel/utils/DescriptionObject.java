@@ -20,6 +20,10 @@
  */
 package org.cristalise.kernel.utils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -28,15 +32,16 @@ import org.cristalise.kernel.lookup.ItemPath;
 public interface DescriptionObject {
 	
 	public String getName();
-	public int getVersion();
+	public Integer getVersion();
 	public ItemPath getItemPath();
 	
 	public void setName(String name);
-	public void setVersion(int version);
+	public void setVersion(Integer version);
 	public void setItemPath(ItemPath path);
 	
 	public String getItemID();
 	
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException;
+	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException;
 
 }

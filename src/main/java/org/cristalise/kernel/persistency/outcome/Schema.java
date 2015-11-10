@@ -20,12 +20,15 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.exolab.castor.xml.schema.reader.SchemaReader;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -44,7 +47,7 @@ import org.xml.sax.SAXParseException;
 
 public class Schema implements DescriptionObject, ErrorHandler {
     private String name;
-    private int version;
+    private Integer version;
     private final String schemaData;
     private ItemPath itemPath;
 	protected StringBuffer errors = null;
@@ -93,7 +96,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	}
 
 	@Override
-	public int getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 	
@@ -112,7 +115,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public void setVersion(Integer version) {
 		this.version = version;
 	}
 
@@ -148,5 +151,11 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	@Override
 	public CollectionArrayList makeDescCollections() {
 		return new CollectionArrayList();
+	}
+	
+	@Override
+	public void export(BufferedWriter imports, File dir) throws IOException {
+		FileStringUtility.string2File(new File(new File(dir, "OD"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), schemaData);
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"OD\">boot/OD/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xsd</Resource>\n");
 	}
 }

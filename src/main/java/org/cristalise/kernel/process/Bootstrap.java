@@ -293,8 +293,11 @@ public class Bootstrap
 			}
 		}
 
-		CollectionArrayList cols = typeImpHandler.getCollections(itemType, ns, dataLocation);
+		CollectionArrayList cols = typeImpHandler.getCollections(itemType, ns, dataLocation, version);
 		for (Collection<?> col : cols.list) {
+			Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+			Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
+			col.setVersion(null);
 			Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
 		}
 		Gateway.getStorage().commit(thisProxy);

@@ -28,6 +28,8 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.AndSplit;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 
 /**
  * @version $Revision: 1.19 $ $Date: 2005/09/29 10:18:31 $
@@ -132,6 +134,18 @@ public class AndSplitDef extends WfVertexDef
 		AndSplit newSplit = new AndSplit();
 		configureInstance(newSplit);
 		return newSplit;
+	}
+	
+	public Script getRoutingScript() throws ObjectNotFoundException, InvalidDataException {
+		String scriptName = (String) getProperties().get("RoutingScriptName");
+		Integer scriptVersion;
+		try {
+			String scriptVerStr = (String) getProperties().get("RoutingScriptVersion");
+			if (scriptVerStr!=null && !scriptVerStr.isEmpty()) 
+				scriptVersion = Integer.valueOf(scriptVerStr.toString());
+			else throw new ObjectNotFoundException();
+		} catch (NumberFormatException e) { throw new InvalidDataException(); }
+		return LocalObjectLoader.getScript(scriptName, scriptVersion);
 	}
 
 }

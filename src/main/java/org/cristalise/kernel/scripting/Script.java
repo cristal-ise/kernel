@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.scripting;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -47,6 +50,7 @@ import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.DescriptionObject;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
@@ -83,7 +87,7 @@ public class Script implements DescriptionObject
      * @throws ScriptParsingException
      * @throws ParameterException
      */
-    public Script(String name, int version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
+    public Script(String name, Integer version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
     	mName = name; mVersion = version; mItemPath = path;
     	parseScriptXML(xml);
     }
@@ -551,7 +555,7 @@ public class Script implements DescriptionObject
 	}
 
     @Override
-	public int getVersion() {
+	public Integer getVersion() {
 		return mVersion;
 	}
 
@@ -571,7 +575,7 @@ public class Script implements DescriptionObject
 	}
 	
 	@Override
-	public void setVersion(int version) {
+	public void setVersion(Integer version) {
 		mVersion = version;
 	}
 	
@@ -583,6 +587,12 @@ public class Script implements DescriptionObject
 	@Override
 	public CollectionArrayList makeDescCollections() {
 		return new CollectionArrayList();
+	}
+	
+	@Override
+	public void export(BufferedWriter imports, File dir) throws IOException {
+		FileStringUtility.string2File(new File(new File(dir, "SC"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"SC\">boot/SC/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 	
 	static public void main(String[] args) {

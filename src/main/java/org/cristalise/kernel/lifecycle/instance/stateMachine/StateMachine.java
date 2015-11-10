@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,14 +35,16 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.DescriptionObject;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 
 
 public class StateMachine implements DescriptionObject
 {
 	public String name;
-	public int version;
+	public Integer version;
 	public ItemPath itemPath;
 
 	private ArrayList<State> states;
@@ -58,7 +63,7 @@ public class StateMachine implements DescriptionObject
 		transitionCodes = new HashMap<Integer, Transition>();
 	}
 	
-	public StateMachine(String name, int version) {
+	public StateMachine(String name, Integer version) {
 	    this();
 	    this.name = name;
 	    this.version = version;
@@ -192,7 +197,7 @@ public class StateMachine implements DescriptionObject
 	}
 
 	@Override
-	public int getVersion() {
+	public Integer getVersion() {
 		return version;
 	}
 	
@@ -202,7 +207,7 @@ public class StateMachine implements DescriptionObject
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public void setVersion(Integer version) {
 		this.version = version;
 	}
 
@@ -265,5 +270,17 @@ public class StateMachine implements DescriptionObject
 		return isCoherent;
 	}
 	
+	@Override
+	public void export(BufferedWriter imports, File dir) throws IOException, InvalidDataException {
+		String smXML;
+		try {
+			smXML = Gateway.getMarshaller().marshall(this);
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Couldn't marshall state machine "+getName());
+		}		
+		FileStringUtility.string2File(new File(new File(dir, "SM"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), smXML);
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"SM\">boot/SM/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+	}
 	
 }

@@ -19,6 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
@@ -31,6 +34,8 @@ import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
@@ -285,5 +290,39 @@ public class CompositeActivityDef extends ActivityDef
             }
         }
         return err;
+	}
+	
+	@Override
+	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+		if (getSchema() != null) 
+			actSchema.export(imports, dir);
+		if (getScript() != null)
+			actScript.export(imports, dir);
+		if (getStateMachine() != null)
+			actStateMachine.export(imports, dir);
+		
+		for (int i=0; i<getChildren().length; i++) { // export routing scripts and schemas
+			GraphableVertex vert = getChildren()[i];
+			if (vert instanceof AndSplitDef)
+				try {
+					((AndSplitDef)vert).getRoutingScript().export(imports, dir);
+				} catch (ObjectNotFoundException ex) {}
+			if (vert instanceof ActivitySlotDef) 
+				((ActivitySlotDef)vert).getTheActivityDef().export(imports, dir);
+			
+		}
+		
+		// export marshalled compAct
+		String compactXML;
+		try {
+			compactXML = Gateway.getMarshaller().marshall(this);
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Couldn't marshall composite activity def "+getActName());
+		}
+		FileStringUtility.string2File(new File(new File(dir, "CA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), compactXML);
+		if (imports!=null) {
+			imports.write("<Resource name=\""+getActName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"CA\">boot/CA/"+getActName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+		}
 	}
 }

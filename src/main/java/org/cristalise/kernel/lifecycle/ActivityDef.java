@@ -19,6 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -39,6 +42,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
@@ -61,7 +65,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	
 	private int mId = -1;
 	private String mName = "";
-	private int mVersion = -1; // unnumbered 'last'
+	private Integer mVersion = null; // null is 'last', previously was -1
 	public boolean changed = false;
 	Schema actSchema;
 	Script actScript;
@@ -115,7 +119,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return mName;
 	}
 
-	public void setVersion(int v)
+	@Override
+	public void setVersion(Integer v)
 	{
 		mVersion = v;
 	}
@@ -123,7 +128,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	 * @see org.cristalise.kernel.graph.model.Vertex#getName()
 	 */
 	@Override
-	public int getVersion()
+	public Integer getVersion()
 	{
 		return mVersion;
 	}
@@ -249,7 +254,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	protected DescriptionObject[] getCollectionResource(String collName) throws ObjectNotFoundException, InvalidDataException {
 		if (itemPath == null) throw new ObjectNotFoundException(); // not stored yet
 		Dependency resColl;
-		String verStr = mVersion==-1?"last":String.valueOf(mVersion);
+		String verStr = (mVersion==null || mVersion == -1)?"last":String.valueOf(mVersion);
 		try {
 			resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+collName+"/"+verStr, null);
 		} catch (PersistencyException e) {
@@ -313,7 +318,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	}
 	
 	protected Dependency makeDescCollection(String colName, DescriptionObject... descs) throws InvalidDataException {
-		Dependency descDep = new Dependency(colName);
+		Dependency descDep = new Dependency(colName); //TODO: restrict membership based on kernel propdef
+		if (mVersion != null && mVersion > -1) {
+			descDep.setVersion(mVersion);
+		}
 		for (DescriptionObject thisDesc : descs) {
 			try {
 				DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
@@ -326,6 +334,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return descDep;
 
 	}
+	
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
@@ -340,5 +349,28 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			retArr.put(makeDescCollection("StateMachine", actStateMachine));
 		
 		return retArr;
+	}
+	
+	@Override
+	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+		
+		if (getSchema() != null)  {
+			Logger.debug("Exporting schema "+actSchema.getName());
+			actSchema.export(imports, dir);
+		}
+		if (getScript() != null)
+			actScript.export(imports, dir);
+		if (getStateMachine() != null)
+			actStateMachine.export(imports, dir);
+		
+		String actXML;
+		try {
+			actXML = Gateway.getMarshaller().marshall(this);
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new InvalidDataException("Couldn't marshall activity def "+getActName());
+		}
+		FileStringUtility.string2File(new File(new File(dir, "EA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), actXML);
+		if (imports!=null) imports.write("<Resource name=\""+getActName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"EA\">boot/EA/"+getActName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 }

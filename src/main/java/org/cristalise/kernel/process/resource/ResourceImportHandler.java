@@ -43,7 +43,7 @@ public interface ResourceImportHandler {
 	 * @return a set of outcomes to be synced with the resource item.
 	 * @throws Exception - if the supplied resources are not valid
 	 */
-	public Set<Outcome> getResourceOutcomes(String name, String ns, String location, int version) throws Exception;
+	public Set<Outcome> getResourceOutcomes(String name, String ns, String location, Integer version) throws Exception;
 	
 	/** Gives the CompActDef name to instantiate to provide the workflow for this type of resource. 
 	 * Should be found in the CA typeroot (/desc/ActivityDesc/)
@@ -70,9 +70,9 @@ public interface ResourceImportHandler {
 	 * @return CollectionArrayList
 	 * @throws Exception
 	 */
-	public CollectionArrayList getCollections(String resType, String ns, String location) throws Exception;
+	public CollectionArrayList getCollections(String resType, String ns, String location, Integer version) throws Exception;
 	
 	
 	public String getName();
-	
+
 }
