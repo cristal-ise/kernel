@@ -323,6 +323,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			descDep.setVersion(mVersion);
 		}
 		for (DescriptionObject thisDesc : descs) {
+			if (thisDesc == null) continue;
 			try {
 				DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
 				descMem.getProperties().put("Version", thisDesc.getVersion());
@@ -339,14 +340,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
 		
-		if (getSchema() != null)
-			retArr.put(makeDescCollection("Schema", actSchema));
+		retArr.put(makeDescCollection("Schema", getSchema()));
 		
-		if (getScript() != null)
-			retArr.put(makeDescCollection("Script", actScript));
+		retArr.put(makeDescCollection("Script", getScript()));
 		
-		if (getStateMachine() != null)
-			retArr.put(makeDescCollection("StateMachine", actStateMachine));
+		retArr.put(makeDescCollection("StateMachine", getStateMachine()));
 		
 		return retArr;
 	}
@@ -354,10 +352,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	@Override
 	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
 		
-		if (getSchema() != null)  {
-			Logger.debug("Exporting schema "+actSchema.getName());
+		if (getSchema() != null)
 			actSchema.export(imports, dir);
-		}
 		if (getScript() != null)
 			actScript.export(imports, dir);
 		if (getStateMachine() != null)
