@@ -22,9 +22,12 @@
 
 -->
 <cristalscript>
-	<output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
+    <include name="DescriptionCollVersionLib" version="0"/>
+	<param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy" />
+	<param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy" />
+	<param name="job" type="org.cristalise.kernel.entity.agent.Job" />
+	<output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo" />
 	<script language="javascript" name="CreateNewNumberedVersionFromLast"><![CDATA[
-
 		var viewName = job.getActPropString("ViewName");
 		
 		if (viewName.equals("")) 
@@ -48,6 +51,8 @@
 		params[1] = lastView;
 		params[2] = existingLast.getEventId();
 		agent.execute(item, "WriteViewpoint", params);
+		
+		updateDescColls(viewName, lastView);
 
 		]]></script>
 </cristalscript>

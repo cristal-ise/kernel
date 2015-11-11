@@ -1,0 +1,20 @@
+<ActivityDef ID="-1" Name="SetDescriptionObject" Height="0"
+	Width="0" IsLayoutable="false" IsComposite="false">
+	<Properties>
+		<KeyValuePair Key="Breakpoint" isAbstract="false"
+			Boolean="false" />
+		<KeyValuePair Key="ObjectType" isAbstract="true" String="" />
+		<KeyValuePair Key="OutcomeInit" isAbstract="false"
+			String="" />
+		<KeyValuePair Key="Description" isAbstract="false"
+			String="" />
+		<KeyValuePair Key="Version" isAbstract="false" Integer="0" />
+		<KeyValuePair Key="Viewpoint" isAbstract="false" String="" />
+		<KeyValuePair Key="Agent Name" isAbstract="false" String="" />
+		<KeyValuePair Key="Agent Role" isAbstract="false" String="" />
+		<KeyValuePair Key="SchemaType" String="DescObjectDetails"/>
+		<KeyValuePair Key="SchemaVersion" String="0"/>		
+		<KeyValuePair Key="ScriptName" String="DescriptionCollectionSetter"/>
+		<KeyValuePair Key="ScriptVersion" String="0"/>	
+	</Properties>
+</ActivityDef>

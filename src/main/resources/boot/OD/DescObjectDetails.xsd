@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+	<xs:element name="DescObjectDetails">
+		<xs:complexType>
+            <xs:sequence>
+                <xs:element name="ObjectID" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Please specify the UUID, path or name of the description object to assign.
+					</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="Version" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>Give the version number to use</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+	</xs:element>
+</xs:schema>
