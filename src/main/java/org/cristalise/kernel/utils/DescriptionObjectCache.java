@@ -199,7 +199,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		public E def;
 		public DescriptionObjectCache<E> parent;
 		public CacheEntry(E def, ItemProxy proxy, DescriptionObjectCache<E> parent) {
-			this.id = def.getName()+"_"+def.getVersion();
+			this.id = def.getItemID()+"_"+def.getVersion();
 			this.def = def;
 			this.parent = parent;
 			this.proxy = proxy;
@@ -212,6 +212,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		}
 		@Override
 		public void add(Viewpoint contents) {
+			Logger.msg("Removing "+id+" from cache");
 			parent.removeObject(id);
 		}
 
