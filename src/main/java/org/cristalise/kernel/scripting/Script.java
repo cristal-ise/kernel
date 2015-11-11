@@ -42,7 +42,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.collection.Dependency;
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
@@ -164,20 +167,28 @@ public class Script implements DescriptionObject
     public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException, InvalidDataException
     {
         // set environment - this needs to be well documented for script developers
-        if (!mInputParams.containsKey("item"))
+        if (!mInputParams.containsKey("item")) {
+        	Logger.warning("Item param not declared in Script "+getName()+" v"+getVersion());
         	addInputParam("item", ItemProxy.class);
+        }
         setInputParamValue("item", object);
 
-        if (!mInputParams.containsKey("agent"))
+        if (!mInputParams.containsKey("agent")) {
+        	Logger.warning("Agent param not declared in Script "+getName()+" v"+getVersion());
         	addInputParam("agent", AgentProxy.class);
+        }
         setInputParamValue("agent", subject);
 
-        if (!mInputParams.containsKey("job"))
+        if (!mInputParams.containsKey("job")) {
+        	Logger.warning("Job param not declared in Script "+getName()+" v"+getVersion());
         	addInputParam("job", Job.class);
+        }
         setInputParamValue("job", job);
 
-        if (!mOutputParams.containsKey("errors"))
+        if (!mOutputParams.containsKey("errors")) {
+        	Logger.warning("Errors output not declared in Script "+getName()+" v"+getVersion());
         	addOutput("errors", ErrorInfo.class);
+        }
     }
     
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
@@ -193,6 +204,7 @@ public class Script implements DescriptionObject
     
     public void setContext(ScriptContext context) {
     	this.context = context;
+    	if (engine != null) engine.setContext(context);
     }
     
     public ScriptContext getContext() {
@@ -222,92 +234,72 @@ public class Script implements DescriptionObject
         }
 
         Element root = scriptDoc.getDocumentElement();
-        NodeList scriptNodes = root.getChildNodes();
-        for (int i = 0; i < scriptNodes.getLength(); i++)
+        
+        // parse script first
+        Element scriptElem = (Element)scriptDoc.getElementsByTagName("script").item(0);
         {
-            Element currentParam;
-            String paramName;
-
-            try
-            {
-                currentParam = (Element) scriptNodes.item(i);
-            }
-            catch (ClassCastException ex)
-            {
-                // not an element, skip
-                continue;
-            }
-            paramName = currentParam.getTagName();
-            Logger.msg(9, "Script.parseScriptXML() - Found element " + paramName);
-
-            // Process script parameters
-
-            // input parameter
-            if (paramName.equals("param"))
-            {
-                if (!(currentParam.hasAttribute("name") && currentParam.hasAttribute("type")))
-                    throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
-                addInputParam(currentParam.getAttribute("name"), currentParam.getAttribute("type"));
+            if (!scriptElem.hasAttribute("language"))
+                throw new ScriptParsingException("Script data incomplete, must specify scripting language");
+            Logger.msg(6, "Script.parseScriptXML() - Script Language: " + scriptElem.getAttribute("language"));
+            try {
+            	setScriptEngine(scriptElem.getAttribute("language"));
+            } catch (ScriptingEngineException ex) {
+            	throw new ScriptParsingException(ex.getMessage());
             }
 
-            //load output type
-            else if (paramName.equals("output"))
-            {
-                if (!currentParam.hasAttribute("type"))
-                    throw new ScriptParsingException("Script Output declaration incomplete, must have type");
-                addOutput(currentParam.getAttribute("name"), currentParam.getAttribute("type"));
-            }
+            // get script source
+            NodeList scriptChildNodes = scriptElem.getChildNodes();
+            if (scriptChildNodes.getLength() != 1)
+                throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
+            if (scriptChildNodes.item(0) instanceof Text)
+            	setScriptData(((Text) scriptChildNodes.item(0)).getData());
+            else
+                throw new ScriptParsingException("Child element of script tag was not text");
+            Logger.msg(6, "Script.parseScriptXML() - script:" + mScript);
+        }
 
-            //load any included scripts
-            else if (paramName.equals("include"))
-            {
-                if (!(currentParam.hasAttribute("name") && currentParam.hasAttribute("version")))
-                    throw new ScriptParsingException("Script include declaration incomplete, must have name and version");
-                String includeName = currentParam.getAttribute("name");
-                String includeVersion =  currentParam.getAttribute("version");
-                try {
-                    Script includedScript = LocalObjectLoader.getScript(includeName, Integer.parseInt(includeVersion));
-                    includedScript.setContext(context);
-                    mIncludes.add(includedScript);
-                    for (Parameter includeParam : includedScript.getInputParams().values()) {
-                        addIncludedInputParam(includeParam.getName(), includeParam.getType());
-                    }
-                } catch (NumberFormatException e) {
-                	throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
-                } catch (ScriptingEngineException e) {
-                	Logger.error(e);
-					throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+"': "+e.getMessage());
-                } catch (ObjectNotFoundException e) {
-                	Logger.error(e);
-                	throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+" not found.");
-				} catch (InvalidDataException e) {
-					Logger.error(e);
-					throw new ScriptParsingException("Error parsing imported script '"+includeName+"', version '"+includeVersion+" was invalid.");
-				}
-
-            }
-            //load Script
-            else if (paramName.equals("script"))
-            {
-                if (!currentParam.hasAttribute("language"))
-                    throw new ScriptParsingException("Script data incomplete, must specify scripting language");
-                Logger.msg(6, "Script.parseScriptXML() - Script Language: " + currentParam.getAttribute("language"));
-                try {
-                	setScriptEngine(currentParam.getAttribute("language"));
-                } catch (ScriptingEngineException ex) {
-                	throw new ScriptParsingException(ex.getMessage());
+        NodeList includeList = scriptDoc.getElementsByTagName("include");
+        for (int i=0; i<includeList.getLength(); i++) {
+        	Element include = (Element)includeList.item(i);
+            if (!(include.hasAttribute("name") && include.hasAttribute("version")))
+                throw new ScriptParsingException("Script include declaration incomplete, must have name and version");
+            String includeName = include.getAttribute("name");
+            String includeVersion =  include.getAttribute("version");
+            try {
+                Script includedScript = LocalObjectLoader.getScript(includeName, Integer.parseInt(includeVersion));
+                includedScript.setContext(context);
+                mIncludes.add(includedScript);
+                for (Parameter includeParam : includedScript.getInputParams().values()) {
+                    addIncludedInputParam(includeParam.getName(), includeParam.getType());
                 }
-
-                // get script source
-                NodeList scriptChildNodes = currentParam.getChildNodes();
-                if (scriptChildNodes.getLength() != 1)
-                    throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
-                if (scriptChildNodes.item(0) instanceof Text)
-                	setScriptData(((Text) scriptChildNodes.item(0)).getData());
-                else
-                    throw new ScriptParsingException("Child element of script tag was not text");
-                Logger.msg(6, "Script.parseScriptXML() - script:" + mScript);
-            }
+            } catch (NumberFormatException e) {
+            	throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
+            } catch (ScriptingEngineException e) {
+            	Logger.error(e);
+				throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+": "+e.getMessage());
+            } catch (ObjectNotFoundException e) {
+            	Logger.error(e);
+            	throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" not found.");
+			} catch (InvalidDataException e) {
+				Logger.error(e);
+				throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" was invalid: "+e.getMessage());
+			}
+        }
+        
+        NodeList paramList = scriptDoc.getElementsByTagName("param");
+        for (int i=0; i<paramList.getLength(); i++) {
+        	Element param = (Element)paramList.item(i);        
+            if (!(param.hasAttribute("name") && param.hasAttribute("type")))
+            	throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
+            addInputParam(param.getAttribute("name"), param.getAttribute("type"));
+        }
+        
+        NodeList outputList = scriptDoc.getElementsByTagName("output");
+        for (int i=0; i<outputList.getLength(); i++) {
+        	Element output = (Element)outputList.item(i);
+            if (!output.hasAttribute("type"))
+            	throw new ScriptParsingException("Script Output declaration incomplete, must have type");
+            addOutput(output.getAttribute("name"), output.getAttribute("type"));
         }
     }
 
@@ -446,7 +438,6 @@ public class Script implements DescriptionObject
      */
     public Object execute() throws ScriptingEngineException
     {
-
         // check input params
         StringBuffer missingParams = new StringBuffer();
         for (Parameter thisParam : mInputParams.values()) {
@@ -474,6 +465,8 @@ public class Script implements DescriptionObject
         for (Script importScript : mIncludes) {
         	if (Logger.doLog(8))
         		Logger.msg(8, "Import script:\n"+importScript.mScript);
+        	else
+        		Logger.msg(5, "Executing imported script "+importScript.getName()+" v"+importScript.getVersion());
             importScript.execute();
         }
 
@@ -496,7 +489,7 @@ public class Script implements DescriptionObject
         }
         catch (Throwable ex)
         {
-            throw new ScriptingEngineException("Error executing script: " + ex.getMessage());
+            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getMessage());
         }
         
         // if no outputs are defined, return null
@@ -585,8 +578,20 @@ public class Script implements DescriptionObject
 	}
 	
 	@Override
-	public CollectionArrayList makeDescCollections() {
-		return new CollectionArrayList();
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+		CollectionArrayList retArr = new CollectionArrayList();
+		Dependency includeColl = new Dependency("Includes");
+		for (Script script : mIncludes) {
+			try {
+				includeColl.addMember(script.getItemPath());
+			} catch (InvalidCollectionModification e) {
+				throw new InvalidDataException("Could not add "+script.getName()+" to description collection. "+e.getMessage());
+			} catch (ObjectAlreadyExistsException e) {	
+				throw new InvalidDataException("Script "+script.getName()+" included more than once.");
+			} // 
+		}
+		retArr.put(includeColl);
+		return retArr;
 	}
 	
 	@Override
