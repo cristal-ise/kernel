@@ -72,26 +72,33 @@ public class CreateNewCollectionVersion extends PredefinedStep
         // extract parameters
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "CreateNewCollectionVersion: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1)
+        if (params.length == 0 || params.length > 2)
         	throw new InvalidDataException("CreateNewCollectionVersion: Invalid parameters "+Arrays.toString(params));
 
         collName = params[0];
         Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+        int newVersion;
         
-        // find last numbered version
-        int lastVer = -1;
-        String[] versions = Gateway.getStorage().getClusterContents(item, ClusterStorage.COLLECTION+"/"+collName);
-        for (String thisVerStr : versions) {
-			try {
-				int thisVer = Integer.parseInt(thisVerStr);
-				if (thisVer > lastVer) lastVer = thisVer;
-			} catch (NumberFormatException ex) { } // ignore non-integer versions
-		}
+        if (params.length > 1) {
+        	newVersion = Integer.valueOf(params[1]);
+        }
+        else {
+	        // find last numbered version
+	        String[] versions = Gateway.getStorage().getClusterContents(item, ClusterStorage.COLLECTION+"/"+collName);
+	        int lastVer = -1;
+	        for (String thisVerStr : versions) {
+				try {
+					int thisVer = Integer.parseInt(thisVerStr);
+					if (thisVer > lastVer) lastVer = thisVer;
+				} catch (NumberFormatException ex) { } // ignore non-integer versions
+			}
+	        newVersion = lastVer + 1;
+        }
         
         // Remove it from the cache before we change it
         Gateway.getStorage().clearCache(item, ClusterStorage.COLLECTION+"/"+collName+"/last");
         // Set the version
-        coll.setVersion(lastVer+1);
+        coll.setVersion(newVersion);
         
         // store it
 		try {
