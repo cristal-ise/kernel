@@ -29,6 +29,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyDescriptionList;
+import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 
 
@@ -80,7 +81,10 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 			actDef.setVersion(version);
 			return actDef.makeDescCollections();
 		}
-		else
+		else if (resType.equals("SC")) {
+			Script thisScript = new Script("Import", version, null, Gateway.getResource().getTextResource(ns, location));
+			return thisScript.makeDescCollections();
+		}
 			return new CollectionArrayList();
 	}
 
