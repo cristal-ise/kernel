@@ -70,7 +70,7 @@ public interface ResourceImportHandler {
 	 * @return CollectionArrayList
 	 * @throws Exception
 	 */
-	public CollectionArrayList getCollections(String resType, String ns, String location, Integer version) throws Exception;
+	public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception;
 	
 	
 	public String getName();

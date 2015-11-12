@@ -73,16 +73,16 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 	}
 	
 	@Override
-	public CollectionArrayList getCollections(String resType, String ns, String location, Integer version) throws Exception {
+	public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception {
 		
-		if (resType.equals("CA") || resType.equals("EA")) {
+		if (schemaName.endsWith("ActivityDef")) {
 			String actData = Gateway.getResource().getTextResource(ns, location);
 			ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
 			actDef.setVersion(version);
 			return actDef.makeDescCollections();
 		}
-		else if (resType.equals("SC")) {
-			Script thisScript = new Script("Import", version, null, Gateway.getResource().getTextResource(ns, location));
+		else if (schemaName.equals("Script")) {
+			Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
 			return thisScript.makeDescCollections();
 		}
 			return new CollectionArrayList();
