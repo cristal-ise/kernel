@@ -83,6 +83,8 @@
 					<KeyValuePair Key="Name" String="EditDefinition" />
 					<KeyValuePair Key="Version" Integer="0" />
 					<KeyValuePair Key="SchemaType" String="CompositeActivityDef" />
+					<KeyValuePair Key="ScriptName" String="CompositeActivityDefCollSetter" />
+					<KeyValuePair Key="ScriptVersion" String="0" />
 				</Properties>
 				<activityDef>EditDefinition</activityDef>
 			</ActivitySlotDef>

@@ -41,11 +41,11 @@
 			}			
 			
 			if (viewName.equals("CompositeActivityDef")) {
-				createDescCollVersion("Activities", lastView);
+				createDescCollVersion("Activity", lastView);
 			}
 			
 			if (viewName.equals("Script")) {
-				createDescCollVersion("Includes", lastView);
+				createDescCollVersion("Include", lastView);
 			}
 		}
 		]]></script>
