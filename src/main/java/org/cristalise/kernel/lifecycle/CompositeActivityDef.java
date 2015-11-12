@@ -19,9 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
@@ -298,7 +298,7 @@ public class CompositeActivityDef extends ActivityDef
 	}
 	
 	@Override
-	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
 		if (getSchema() != null) 
 			actSchema.export(imports, dir);
 		if (getScript() != null)
@@ -327,7 +327,11 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		FileStringUtility.string2File(new File(new File(dir, "CA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), compactXML);
 		if (imports!=null) {
-			imports.write("<Resource name=\""+getActName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"CA\">boot/CA/"+getActName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+			imports.write("<Resource name=\""+getActName()+"\" "
+					+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
+					+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+					+"type=\"CA\">boot/CA/"+getActName()
+					+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 		}
 	}
 }

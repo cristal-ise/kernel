@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -271,7 +271,7 @@ public class StateMachine implements DescriptionObject
 	}
 	
 	@Override
-	public void export(BufferedWriter imports, File dir) throws IOException, InvalidDataException {
+	public void export(Writer imports, File dir) throws IOException, InvalidDataException {
 		String smXML;
 		try {
 			smXML = Gateway.getMarshaller().marshall(this);
@@ -280,7 +280,11 @@ public class StateMachine implements DescriptionObject
 			throw new InvalidDataException("Couldn't marshall state machine "+getName());
 		}		
 		FileStringUtility.string2File(new File(new File(dir, "SM"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), smXML);
-		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"SM\">boot/SM/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
+				+(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
+				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+				+"type=\"SM\">boot/SM/"+getName()
+				+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 	
 }

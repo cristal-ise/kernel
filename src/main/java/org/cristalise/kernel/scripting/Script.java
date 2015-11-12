@@ -20,12 +20,12 @@
  */
 package org.cristalise.kernel.scripting;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -595,9 +595,13 @@ public class Script implements DescriptionObject
 	}
 	
 	@Override
-	public void export(BufferedWriter imports, File dir) throws IOException {
+	public void export(Writer imports, File dir) throws IOException {
 		FileStringUtility.string2File(new File(new File(dir, "SC"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
-		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"SC\">boot/SC/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
+				+(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
+				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+				+"type=\"SC\">boot/SC/"+getName()
+				+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 	
 	static public void main(String[] args) {

@@ -20,10 +20,10 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.Writer;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
@@ -154,8 +154,13 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	}
 	
 	@Override
-	public void export(BufferedWriter imports, File dir) throws IOException {
+	public void export(Writer imports, File dir) throws IOException {
 		FileStringUtility.string2File(new File(new File(dir, "OD"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), schemaData);
-		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"OD\">boot/OD/"+getName()+(getVersion()==null?"":"_"+getVersion())+".xsd</Resource>\n");
+		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
+				+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
+				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+				+"type=\"OD\">boot/OD/"+getName()
+				+(getVersion()==null?"":"_"+getVersion())
+				+".xsd</Resource>\n");
 	}
 }

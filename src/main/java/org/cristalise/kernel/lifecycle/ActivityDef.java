@@ -19,9 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -350,7 +350,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	}
 	
 	@Override
-	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
 		
 		if (getSchema() != null)
 			actSchema.export(imports, dir);
@@ -367,6 +367,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			throw new InvalidDataException("Couldn't marshall activity def "+getActName());
 		}
 		FileStringUtility.string2File(new File(new File(dir, "EA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), actXML);
-		if (imports!=null) imports.write("<Resource name=\""+getActName()+"\" "+(getVersion()==null?"":"version=\""+getVersion()+"\" ")+"type=\"EA\">boot/EA/"+getActName()+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+		if (imports!=null) imports.write("<Resource name=\""+getActName()+"\" "
+				+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
+				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+				+"type=\"EA\">boot/EA/"+getActName()
+				+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 }

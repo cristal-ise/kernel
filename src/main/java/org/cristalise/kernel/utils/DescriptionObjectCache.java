@@ -212,7 +212,6 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		}
 		@Override
 		public void add(Viewpoint contents) {
-			Logger.msg("Removing "+id+" from cache");
 			parent.removeObject(id);
 		}
 

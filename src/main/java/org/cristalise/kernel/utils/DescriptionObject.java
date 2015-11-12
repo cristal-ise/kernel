@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.utils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -42,6 +42,6 @@ public interface DescriptionObject {
 	public String getItemID();
 	
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException;
-	public void export(BufferedWriter imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException;
+	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException;
 
 }
