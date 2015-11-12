@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.GraphModel;
@@ -45,7 +46,7 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class CompositeActivityDef extends ActivityDef
 {
-	public static final String ACTCOL = "activities";
+	public static final String ACTCOL = "Activity";
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
 			new TypeNameAndConstructionInfo("Activity", "Atomic"),
@@ -219,6 +220,11 @@ public class CompositeActivityDef extends ActivityDef
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = super.makeDescCollections();
+		retArr.put(makeActDefCollection());
+		return retArr;
+	}
+	
+	public Dependency makeActDefCollection() throws InvalidDataException {
 		ArrayList<ActivityDef> descs = new ArrayList<ActivityDef>();
 		for (GraphableVertex elem : getChildren()) {
 			try {
@@ -230,8 +236,7 @@ public class CompositeActivityDef extends ActivityDef
 				Logger.error(ex);
 			}
 		}
-		retArr.put(makeDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()])));
-		return retArr;
+		return makeDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()]));
 	}
 	/**
 	 * Method hasGoodNumberOfActivity.

@@ -481,8 +481,8 @@ public class Script implements DescriptionObject
             if (engine == null)
             	throw new ScriptingEngineException("Script engine not set. Cannot execute scripts.");
             engine.put(ScriptEngine.FILENAME, mName);
-            if (mCompScript != null)
-            	returnValue = mCompScript.eval();
+            if (mCompScript != null) 
+            	returnValue = mCompScript.eval(context);
             else
             	returnValue = engine.eval(mScript);
             Logger.msg(7, "Script.execute() - script returned \"" + returnValue + "\"");
@@ -580,7 +580,7 @@ public class Script implements DescriptionObject
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
-		Dependency includeColl = new Dependency("Includes");
+		Dependency includeColl = new Dependency("Include");
 		for (Script script : mIncludes) {
 			try {
 				includeColl.addMember(script.getItemPath());
