@@ -21,6 +21,9 @@
 package org.cristalise.kernel.collection;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -100,6 +103,23 @@ public class Dependency extends Collection<DependencyMember>
         Logger.msg(8, "Dependency::addMember(" + itemPath + ") added to children.");
         return depMember;
     }
+	
+	/**
+	 * Returns all ItemPaths that are members of the other collection but not members of this one.
+	 * 
+	 * @param other - The collection to compare
+	 * @return List of ItemPaths
+	 */
+	public List<ItemPath> compare(Dependency other) {
+		ArrayList<ItemPath> newMembers = new ArrayList<ItemPath>();
+		for (DependencyMember thisMember : other.getMembers().list) {
+			ItemPath thisPath = thisMember.getItemPath();
+			if (!contains(thisPath)) {
+				newMembers.add(thisPath);
+			}
+		}
+		return newMembers;
+	}
 
     @Override
 	public DependencyMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
