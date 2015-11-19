@@ -46,7 +46,7 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class Event implements C2KLocalObject
 {
-	ItemPath mItemPath; AgentPath mAgentPath;
+	ItemPath mItemPath; AgentPath mAgentPath, mDelegatorPath;
 	int mOriginState, mTransition, mTargetState;
 	Integer mID, mSchemaVersion, mStateMachineVersion;
     String mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
@@ -132,13 +132,24 @@ public class Event implements C2KLocalObject
     {
     	if (uuid == null || uuid.length() == 0) 
     		mAgentPath = null;
+    	else if (uuid.contains(":")) {
+    		String[] agentStr = uuid.split(":");
+    		if (agentStr.length!=2)
+    			throw new InvalidItemPathException();
+    		setAgentPath(AgentPath.fromUUIDString(agentStr[0]));
+    		setDelegatorPath(AgentPath.fromUUIDString(agentStr[1]));
+    	}
     	else
 			setAgentPath(AgentPath.fromUUIDString(uuid));
     }
     
     public String getAgentUUID() {
-    	if (mAgentPath != null)
-    		return getAgentPath().getUUID().toString();
+    	if (mAgentPath != null) {
+    		if (mDelegatorPath != null)
+    			return getAgentPath().getUUID().toString()+":"+getDelegatorPath().getUUID().toString();
+    		else
+        		return getAgentPath().getUUID().toString();
+    	}
     	else
     		return null;
     }
@@ -195,6 +206,10 @@ public class Event implements C2KLocalObject
     {
         mAgentPath = agentPath;
     }
+    
+	public void setDelegatorPath(AgentPath delegatorPath) {
+		this.mDelegatorPath = delegatorPath;
+	}
 
 	public void setAgentRole(String agentRole)
 	{
@@ -273,7 +288,11 @@ public class Event implements C2KLocalObject
         return mAgentPath;
     }
 
-    public String getAgentRole()
+    public AgentPath getDelegatorPath() {
+		return mDelegatorPath;
+	}
+	
+	public String getAgentRole()
     {
     	return mAgentRole;
     }
