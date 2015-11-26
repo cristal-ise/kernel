@@ -79,11 +79,11 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 			String actData = Gateway.getResource().getTextResource(ns, location);
 			ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
 			actDef.setVersion(version);
-			return actDef.makeDescCollections();
+			return actDef.getDescCollections();
 		}
 		else if (schemaName.equals("Script")) {
 			Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
-			return thisScript.makeDescCollections();
+			return thisScript.getDescCollections();
 		}
 			return new CollectionArrayList();
 	}

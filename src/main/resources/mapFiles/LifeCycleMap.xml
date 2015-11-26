@@ -30,6 +30,9 @@
 	</class>
 	<class name="org.cristalise.kernel.lifecycle.ActivityDef" extends="org.cristalise.kernel.lifecycle.WfVertexDef">
 		<map-to xml="ActivityDef"/>
+		<field name="DescCollections" type="org.cristalise.kernel.collection.CollectionArrayList" direct="false">
+			<bind-xml name="DescriptionRefs" node="element"/>
+		</field>
 	</class>
 	<class name="org.cristalise.kernel.lifecycle.CompositeActivityDef" extends="org.cristalise.kernel.lifecycle.ActivityDef">
 		<map-to xml="CompositeActivityDef"/>

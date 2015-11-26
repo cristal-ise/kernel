@@ -578,7 +578,7 @@ public class Script implements DescriptionObject
 	}
 	
 	@Override
-	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+	public CollectionArrayList getDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
 		Dependency includeColl = new Dependency("Include");
 		for (Script script : mIncludes) {

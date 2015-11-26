@@ -235,7 +235,7 @@ public class StateMachine implements DescriptionObject
 	}
 	
 	@Override
-	public CollectionArrayList makeDescCollections() {
+	public CollectionArrayList getDescCollections() {
 		return new CollectionArrayList();
 	}
 	
