@@ -149,7 +149,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
     }
 
 	@Override
-	public CollectionArrayList getDescCollections() {
+	public CollectionArrayList makeDescCollections() {
 		return new CollectionArrayList();
 	}
 	

@@ -218,8 +218,8 @@ public class CompositeActivityDef extends ActivityDef
 	}
 
 	@Override
-	public CollectionArrayList getDescCollections() throws InvalidDataException, ObjectNotFoundException {
-		CollectionArrayList retArr = super.getDescCollections();
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+		CollectionArrayList retArr = super.makeDescCollections();
 		retArr.put(makeActDefCollection());
 		return retArr;
 	}
@@ -236,7 +236,7 @@ public class CompositeActivityDef extends ActivityDef
 				Logger.error(ex);
 			}
 		}
-		return getDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()]));
+		return makeDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()]));
 	}
 	/**
 	 * Method hasGoodNumberOfActivity.

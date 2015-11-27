@@ -25,9 +25,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
-import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyMember;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -319,13 +317,13 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		this.actStateMachine = actStateMachine;
 	}
 	
-	protected Dependency getDescCollection(String colName, DescriptionObject... descs) throws InvalidDataException {
+	protected Dependency makeDescCollection(String colName, DescriptionObject... descs) throws InvalidDataException {
 		Dependency descDep = new Dependency(colName); //TODO: restrict membership based on kernel propdef
 		if (mVersion != null && mVersion > -1) {
 			descDep.setVersion(mVersion);
 		}
 		for (DescriptionObject thisDesc : descs) {
-			if (thisDesc == null || descDep.contains(thisDesc.getItemPath())) continue;
+			if (thisDesc == null) continue;
 			try {
 				DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
 				descMem.getProperties().put("Version", thisDesc.getVersion());
@@ -339,51 +337,16 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	}
 	
 	@Override
-	public CollectionArrayList getDescCollections() throws InvalidDataException, ObjectNotFoundException {
+	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
 		
-		retArr.put(getDescCollection(SCHCOL, getSchema()));
+		retArr.put(makeDescCollection("Schema", getSchema()));
 		
-		retArr.put(getDescCollection(SCRCOL, getScript()));
+		retArr.put(makeDescCollection("Script", getScript()));
 		
-		retArr.put(getDescCollection(SMCOL, getStateMachine()));
+		retArr.put(makeDescCollection("StateMachine", getStateMachine()));
 		
 		return retArr;
-	}
-	
-	public void setDescCollections(CollectionArrayList colls) throws ObjectNotFoundException, InvalidDataException {
-		for (Collection<?> thisColl : colls.list) {
-			if (thisColl.getName().equals("Schema")) {
-				if (thisColl.size() == 0)
-					setSchema(null);
-				else {
-					CollectionMember thisMem = thisColl.getMembers().list.get(0);
-					String verStr = String.valueOf(thisMem.getProperties().get("Version"));
-					Integer ver = Integer.valueOf(verStr);
-					setSchema(LocalObjectLoader.getSchema(thisMem.getChildUUID(), ver));
-				}
-			}
-			else if (thisColl.getName().equals("Script")) {
-				if (thisColl.size() == 0)
-					setScript(null);
-				else {
-					CollectionMember thisMem = thisColl.getMembers().list.get(0);
-					String verStr = String.valueOf(thisMem.getProperties().get("Version"));
-					Integer ver = Integer.valueOf(verStr);
-					setScript(LocalObjectLoader.getScript(thisMem.getChildUUID(), ver));
-				}
-			}		
-			else if (thisColl.getName().equals("StateMachine")) {
-				if (thisColl.size() == 0)
-					setStateMachine(null);
-				else {
-					CollectionMember thisMem = thisColl.getMembers().list.get(0);
-					String verStr = String.valueOf(thisMem.getProperties().get("Version"));
-					Integer ver = Integer.valueOf(verStr);
-					setStateMachine(LocalObjectLoader.getStateMachine(thisMem.getChildUUID(), ver));
-				}
-			}			
-		}
 	}
 	
 	@Override

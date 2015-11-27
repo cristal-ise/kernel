@@ -25,36 +25,21 @@
 	<xs:element name="ActivityDef">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="Properties" type="properties"/>
-				<xs:element name="DescriptionRefs" minOccurs="0">
+				<xs:element name="Properties">
 					<xs:complexType>
 						<xs:sequence>
-							<xs:element name="Dependency" minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="KeyValuePair" maxOccurs="unbounded">
 								<xs:complexType>
-									<xs:sequence>
-										<xs:element name="CollectionMemberList" minOccurs="0" maxOccurs="unbounded">
-											<xs:complexType>
-												<xs:sequence>
-													<xs:element name="DependencyMember" minOccurs="0" maxOccurs="unbounded">
-														<xs:complexType>
-															<xs:sequence>
-																<xs:element name="Properties" minOccurs="0" type="properties"/>
-															</xs:sequence>
-														<xs:attribute name="ID" type="xs:int" use="optional"/>
-														<xs:attribute name="ChildUUID" type="xs:string" use="required"/>
-														</xs:complexType>
-													</xs:element>
-												</xs:sequence>
-											</xs:complexType>
-										</xs:element>
-										<xs:element name="Properties" minOccurs="0" type="properties"/>
-								</xs:sequence>
-								<xs:attribute name="CollectionName" type="xs:string" use="required"/>
-								<xs:attribute name="ClassProps" type="xs:string" use="optional"/>
+									<xs:attribute name="Key" type="xs:string" use="required"/>
+									<xs:attribute name="isAbstract" type="xs:boolean" use="optional"/>
+									<xs:attribute name="Boolean" type="xs:boolean" use="optional"/>
+									<xs:attribute name="String" type="xs:string" use="optional"/>
+									<xs:attribute name="Integer" type="xs:int" use="optional"/>
+									<xs:attribute name="Float" type="xs:double" use="optional"/>
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
-					</xs:complexType>				
+					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
 			<xs:attribute name="ID" type="xs:integer" use="required"/>
@@ -65,18 +50,4 @@
 			<xs:attribute name="IsComposite" type="xs:boolean" use="required" fixed="false"/>
 		</xs:complexType>
 	</xs:element>
-	<xs:complexType name="properties">
-		<xs:sequence>
-			<xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:attribute name="Key" type="xs:string" use="required"/>
-					<xs:attribute name="isAbstract" type="xs:boolean" use="optional"/>
-					<xs:attribute name="Boolean" type="xs:boolean" use="optional"/>
-					<xs:attribute name="String" type="xs:string" use="optional"/>
-					<xs:attribute name="Integer" type="xs:int" use="optional"/>
-					<xs:attribute name="Float" type="xs:double" use="optional"/>
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>	
 </xs:schema>

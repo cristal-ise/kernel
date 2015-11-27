@@ -173,36 +173,6 @@
 					</xs:complexType>
 				</xs:element>
 				<xs:element ref="Properties"/>
-<xs:element name="DescriptionRefs" minOccurs="0">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Dependency" minOccurs="0" maxOccurs="unbounded">
-								<xs:complexType>
-									<xs:sequence>
-										<xs:element name="CollectionMemberList" minOccurs="0" maxOccurs="unbounded">
-											<xs:complexType>
-												<xs:sequence>
-													<xs:element name="DependencyMember" minOccurs="0" maxOccurs="unbounded">
-														<xs:complexType>
-															<xs:sequence>
-																<xs:element ref="Properties" minOccurs="0"/>
-															</xs:sequence>
-														<xs:attribute name="ID" type="xs:int" use="optional"/>
-														<xs:attribute name="ChildUUID" type="xs:string" use="required"/>
-														</xs:complexType>
-													</xs:element>
-												</xs:sequence>
-											</xs:complexType>
-										</xs:element>
-										<xs:element ref="Properties" minOccurs="0"/>
-								</xs:sequence>
-								<xs:attribute name="CollectionName" type="xs:string" use="required"/>
-								<xs:attribute name="ClassProps" type="xs:string" use="optional"/>
-								</xs:complexType>
-							</xs:element>
-						</xs:sequence>
-					</xs:complexType>				
-				</xs:element>				
 				<xs:element name="castorNonLayoutableChildren" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 			</xs:sequence>
 			<xs:attribute name="ID" type="xs:integer" use="required"/>
