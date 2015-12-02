@@ -1,6 +1,6 @@
 /**
  * This file is part of the CRISTAL-iSE kernel.
- * Copyright (c) 2001-2014 The CRISTAL Consortium. All rights reserved.
+ * Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -109,7 +109,7 @@ public class Event implements C2KLocalObject
 
 	public void setID( Integer id ) {
         mID = id;
-        mName = String.valueOf(id);
+        mName = id==null?null:String.valueOf(id);
     }
     
     /**
@@ -164,7 +164,7 @@ public class Event implements C2KLocalObject
         try {
             mID = Integer.parseInt(name);
         } catch (NumberFormatException ex) {
-            mID = -1;
+            mID = null;
         }
     }
 
