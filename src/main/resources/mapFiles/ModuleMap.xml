@@ -88,6 +88,41 @@
 			<bind-xml node="text" />
 		</field>
 	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleActivity">
+		<map-to xml="Activity"/>
+   		<field name="name" direct="false" type="string">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="id" direct="false" type="string" get-method="getID" set-method="setID">
+			<bind-xml name="id" node="attribute" />
+		</field>		
+		<field name="version" direct="false" type="integer">
+			<bind-xml name="version" node="attribute" />
+		</field>
+		<field name="resourceLocation" direct="true" type="string">
+			<bind-xml name="resource" node="attribute" />
+		</field>
+		<field name="script" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
+			<bind-xml name="Script" node="element" />
+		</field>
+		<field name="schema" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
+			<bind-xml name="Schema" node="element" />
+		</field>
+		<field name="stateMachine" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
+			<bind-xml name="StateMachine" node="element" />
+		</field>
+	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleDescRef">
+		<field name="name" direct="false" type="string">
+			<bind-xml name="name" node="attribute" />
+		</field>
+		<field name="version" direct="false" type="integer">
+			<bind-xml name="version" node="attribute" />
+		</field>
+		<field name="id" direct="false" type="string">
+			<bind-xml name="id" node="attribute" />
+		</field>
+	</class>
 	<class name="org.cristalise.kernel.process.module.ModuleConfig">
 		<map-to xml="Config"/>
 		<field name="name" direct="true" type="string">

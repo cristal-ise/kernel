@@ -75,8 +75,8 @@
 						</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Resource" minOccurs="0" maxOccurs="unbounded">
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="Resource" minOccurs="0">
 								<xs:complexType>
 									<xs:simpleContent>
 										<xs:extension base="xs:string">
@@ -88,8 +88,8 @@
 									</xs:simpleContent>
 								</xs:complexType>
 							</xs:element>
-							<xs:element name="Activity" type="activity" minOccurs="0" maxOccurs="unbounded"/>
-							<xs:element name="CompositeActivity" minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="Activity" type="activity" minOccurs="0"/>
+							<xs:element name="CompositeActivity" minOccurs="0">
 								<xs:complexType>
 									<xs:complexContent>
 										<xs:extension base="activity">
@@ -100,7 +100,7 @@
 									</xs:complexContent>
 								</xs:complexType>
 							</xs:element>							
-							<xs:element name="Item" minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="Item" minOccurs="0">
 								<xs:complexType>
 									<xs:sequence>
 										<xs:element name="Property" type="property"
@@ -203,8 +203,7 @@
 										use="optional" />
 								</xs:complexType>
 							</xs:element>
-							<xs:element name="Role" maxOccurs="unbounded"
-								minOccurs="0">
+							<xs:element name="Role" minOccurs="0">
 								<xs:complexType>
 									<xs:simpleContent>
 										<xs:extension base="xs:string">
@@ -213,7 +212,7 @@
 									</xs:simpleContent>
 								</xs:complexType>
 							</xs:element>
-							<xs:element name="Agent" minOccurs="0" maxOccurs="unbounded">
+							<xs:element name="Agent" minOccurs="0">
 								<xs:complexType>
 									<xs:sequence>
 										<xs:element name="Role" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
@@ -224,8 +223,7 @@
 									<xs:attribute name="password" type="xs:string"
 										use="required" />
 								</xs:complexType>
-							</xs:element>
-						</xs:sequence>
+							</xs:element>						</xs:choice>
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
@@ -283,7 +281,10 @@
 			<xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
 			<xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
 		</xs:sequence>
-		<xs:attribute name="Resource" type="xs:string" use="required" />
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="version" type="xs:integer" use="optional" />
+		<xs:attribute name="id" type="xs:string" use="optional" />		
+		<xs:attribute name="resource" type="xs:string" use="required" />
 	</xs:complexType>
 	<xs:complexType name="itemref">
 		<xs:attribute name="uuid" type="uuid" use="optional"/>
