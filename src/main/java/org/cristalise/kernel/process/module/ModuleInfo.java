@@ -26,6 +26,7 @@ public class ModuleInfo {
 
 	public String desc;
 	public String version;
+	public String kernelVersion;
 	public ArrayList<String> dependency = new ArrayList<String>();
 	
 	public ModuleInfo() {

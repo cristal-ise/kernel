@@ -74,8 +74,13 @@ public class ModuleManager {
 				if (newModule.getResURL() != null && newModule.getResURL().length()>0) Gateway.getResource().addModuleBaseURL(newModule.getNamespace(), newModule.getResURL());
 				modules.add(newModule);
 				modulesXML.put(newModule.getNamespace(), moduleXML);
+				// check for clash
 				if (loadedModules.contains(newModule.getName())) throw new ModuleException("Module name clash: "+newModule.getName());
 				if (moduleNs.contains(newModule.getNamespace())) throw new ModuleException("Module namespace clash: "+newModule.getNamespace());
+				// check kernel version
+				String reqKernelVer = newModule.getInfo().kernelVersion;
+				if (reqKernelVer != null && Gateway.getKernelVersion().compareTo(reqKernelVer) < 0)
+					throw new ModuleException("Module "+newModule.getName()+" requires kernel version "+reqKernelVer +" or higher.");
 				Logger.debug(4, "Module found: "+newModule.getNamespace()+" - "+newModule.getName());
 				loadedModules.add(newModule.getName()); moduleNs.add(newModule.getNamespace());
 			} catch (ModuleException e) {

@@ -35,6 +35,7 @@
 								</xs:annotation>
 							</xs:element>
 							<xs:element name="Version" type="xs:string" />
+							<xs:element name="KernelVersion" type="xs:string" minOccurs="0"/>
 							<xs:element name="Dependency" type="xs:string"
 								minOccurs="0" maxOccurs="unbounded" />
 						</xs:sequence>

@@ -63,6 +63,9 @@
 		<field name="version" direct="true" type="string">
 			<bind-xml name="Version" node="element" />
 		</field>
+		<field name="kernelVersion" direct="true" type="string">
+			<bind-xml name="KernelVersion" node="element" />
+		</field>
 		<field name="dependency" collection="arraylist" direct="true"
 			type="string">
 			<bind-xml name="Dependency" node="element" />
