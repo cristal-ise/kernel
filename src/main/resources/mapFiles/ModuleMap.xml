@@ -115,6 +115,12 @@
 			<bind-xml name="StateMachine" node="element" />
 		</field>
 	</class>
+	<class name="org.cristalise.kernel.process.module.ModuleWorkflow" extends="org.cristalise.kernel.process.module.ModuleActivity">
+		<map-to xml="Workflow"/>
+		<field name="activities" direct="false" collection="arraylist" type="org.cristalise.kernel.process.module.ModuleDescRef">
+			<bind-xml name="Activity" node="element"/>
+		</field>
+	</class>
 	<class name="org.cristalise.kernel.process.module.ModuleDescRef">
 		<field name="name" direct="false" type="string">
 			<bind-xml name="name" node="attribute" />

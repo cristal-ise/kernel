@@ -329,22 +329,22 @@ public class CompositeActivityDef extends ActivityDef
 	
 	@Override
 	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
-		if (getSchema() != null) 
-			actSchema.export(imports, dir);
-		if (getScript() != null)
-			actScript.export(imports, dir);
-		if (getStateMachine() != null)
-			actStateMachine.export(imports, dir);
 		
+		// rebuild the child refs in case any slots have been removed
+		setRefChildActDef(findRefActDefs(getGraphModel()));
+		
+		//TODO: property include routing scripts in another dependency collection
 		for (int i=0; i<getChildren().length; i++) { // export routing scripts and schemas
 			GraphableVertex vert = getChildren()[i];
 			if (vert instanceof AndSplitDef)
 				try {
 					((AndSplitDef)vert).getRoutingScript().export(imports, dir);
 				} catch (ObjectNotFoundException ex) {}
-			if (vert instanceof ActivitySlotDef) 
-				((ActivitySlotDef)vert).getTheActivityDef().export(imports, dir);
-			
+			if (vert instanceof ActivitySlotDef) {
+				ActivityDef refAct = ((ActivitySlotDef) vert).getTheActivityDef();
+				refAct.export(imports, dir);
+			}
+							
 		}
 		
 		// export marshalled compAct
@@ -357,11 +357,18 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		FileStringUtility.string2File(new File(new File(dir, "CA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), compactXML);
 		if (imports!=null) {
-			imports.write("<Resource name=\""+getActName()+"\" "
+			imports.write("<Workflow name=\""+getActName()+"\" "
 					+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
 					+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-					+"type=\"CA\">boot/CA/"+getActName()
-					+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+					+"type=\"EA\" resource=\"boot/EA/"+getActName()
+					+(getVersion()==null?"":"_"+getVersion())+".xml\">"
+					+(getSchema()==null?"":"<Schema name=\""+getSchema().getName()+"\" id=\""+getSchema().getItemID()+"\" version=\""+getSchema().getVersion()+"\"/>")
+					+(getScript()==null?"":"<Script name=\""+getScript().getName()+"\" id=\""+getScript().getItemID()+"\" version=\""+getScript().getVersion()+"\"/>")
+					+(getStateMachine()==null?"":"<StateMachine name=\""+getStateMachine().getName()+"\" id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>"));
+			for (ActivityDef childActDef : refChildActDef) {
+				imports.write("<Activity name=\""+childActDef.getActName()+"\" id=\""+childActDef.getItemID()+"\" version=\""+childActDef.getVersion()+"\">");
+			}
+			imports.write("</Workflow>\n");
 		}
 	}
 }

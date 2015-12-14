@@ -22,12 +22,14 @@ package org.cristalise.kernel.process.module;
 
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
+import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Path;
@@ -40,12 +42,30 @@ import org.cristalise.kernel.utils.Logger;
 public class ModuleActivity extends ModuleResource {
 
 	ModuleDescRef script, schema, stateMachine;
+	ActivityDef actDef;
 
 	public ModuleActivity() {
 		super();
 		resourceType="EA";
+		actDef = new ActivityDef();
 	}
 	
+	public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
+		this();
+		this.version = version;
+		script = getDescRef(child, ActivityDef.SCRCOL);
+		schema = getDescRef(child, ActivityDef.SCHCOL);
+		stateMachine = getDescRef(child, ActivityDef.SMCOL);
+		
+	}
+	
+	public ModuleDescRef getDescRef(ItemProxy child, String collName) throws ObjectNotFoundException, InvalidDataException {
+		Collection<?> coll = child.getCollection(collName, version);
+		if (coll.size() == 1) throw new InvalidDataException("Too many members in "+collName+" collection in "+name);
+		CollectionMember collMem = coll.getMembers().list.get(0);
+		return new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get("Version").toString()));
+	}
+
 	@Override
 	public Path create(AgentPath agentPath, boolean reset)
 			throws ObjectNotFoundException, ObjectCannotBeUpdated,
@@ -58,28 +78,7 @@ public class ModuleActivity extends ModuleResource {
 			throw new CannotManageException("Exception verifying module resource "+ns+"/"+name);
 		}		
 
-		ActivityDef actDef = new ActivityDef();
-		try {
-			if (schema != null) 
-				actDef.setSchema(LocalObjectLoader.getSchema(schema.id == null? schema.name:schema.id, Integer.valueOf(schema.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("Schema definition in "+getName()+" not valid.");
-		}
-		try {
-			if (script != null) 
-				actDef.setScript(LocalObjectLoader.getScript(script.id == null? script.name:script.id, Integer.valueOf(script.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("Script definition in "+getName()+" not valid.");
-		}
-		try {
-			if (stateMachine != null) 
-				actDef.setStateMachine(LocalObjectLoader.getStateMachine(stateMachine.id == null? stateMachine.name:stateMachine.id, Integer.valueOf(stateMachine.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("State Machine definition in "+getName()+" not valid.");
-		}		
+		populateActivityDef();
 		
 		CollectionArrayList colls;
 		try {
@@ -105,6 +104,30 @@ public class ModuleActivity extends ModuleResource {
 		}
 
 		return domainPath;
+	}
+	
+	public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
+		try {
+			if (schema != null) 
+				actDef.setSchema(LocalObjectLoader.getSchema(schema.id == null? schema.name:schema.id, Integer.valueOf(schema.version)));
+		} catch (NumberFormatException | InvalidDataException e) {
+			Logger.error(e);
+			throw new CannotManageException("Schema definition in "+getName()+" not valid.");
+		}
+		try {
+			if (script != null) 
+				actDef.setScript(LocalObjectLoader.getScript(script.id == null? script.name:script.id, Integer.valueOf(script.version)));
+		} catch (NumberFormatException | InvalidDataException e) {
+			Logger.error(e);
+			throw new CannotManageException("Script definition in "+getName()+" not valid.");
+		}
+		try {
+			if (stateMachine != null) 
+				actDef.setStateMachine(LocalObjectLoader.getStateMachine(stateMachine.id == null? stateMachine.name:stateMachine.id, Integer.valueOf(stateMachine.version)));
+		} catch (NumberFormatException | InvalidDataException e) {
+			Logger.error(e);
+			throw new CannotManageException("State Machine definition in "+getName()+" not valid.");
+		}
 	}
 
 	public ModuleDescRef getScript() {

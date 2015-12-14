@@ -90,7 +90,7 @@
 								</xs:complexType>
 							</xs:element>
 							<xs:element name="Activity" type="activity" minOccurs="0"/>
-							<xs:element name="CompositeActivity" minOccurs="0">
+							<xs:element name="Workflow" minOccurs="0">
 								<xs:complexType>
 									<xs:complexContent>
 										<xs:extension base="activity">
