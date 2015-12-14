@@ -85,4 +85,11 @@ public abstract class ModuleImport {
 	public void setItemPath(ItemPath itemPath) {
 		this.itemPath = itemPath;
 	}
+	
+	@Override
+	public int hashCode() {
+		return name.hashCode()+(ns == null?0:ns.hashCode());
+	}
+
+
 }

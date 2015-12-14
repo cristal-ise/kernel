@@ -467,7 +467,9 @@ public class Bootstrap
         for (int i = 0; i < pdList.list.size(); i++) {
             PropertyDescription pd = pdList.list.get(i);
             String propName = pd.getName();
-            String propVal = propName.equals("Name")?itemName:pd.getDefaultValue();
+            String propVal = pd.getDefaultValue();
+            if (propName.equals("Name")) propVal = itemName;
+            if (propName.equals("Module")) propVal = ns==null?"kernel":ns;
             props.list.add(new Property(propName, propVal, pd.getIsMutable()));
         }
         
@@ -519,6 +521,8 @@ public class Bootstrap
              Gateway.getStorage().put(agentPath, new Property("Name", name, true), null);
              Gateway.getStorage().put(agentPath, new Property("Type", "Agent", false), null);
              AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
+             //TODO: properly init agent here with wf, props and colls
+             //agentProxy.initialise(agentId, itemProps, workflow, colls);
              systemAgents.put(name, agentProxy);
              return agentProxy;
          } catch (Exception ex) {

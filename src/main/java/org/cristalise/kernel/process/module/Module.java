@@ -20,9 +20,13 @@
  */
 package org.cristalise.kernel.process.module;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.cristalise.kernel.collection.Collection;
+import org.cristalise.kernel.collection.CollectionMember;
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.imports.ImportAgent;
 import org.cristalise.kernel.entity.imports.ImportDependency;
@@ -34,6 +38,7 @@ import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.RolePath;
+import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
@@ -216,6 +221,59 @@ public class Module extends ImportItem {
 		dependencyList.add(children);
 	}
 	
+	public void setImports(Collection<?> contents) throws ObjectNotFoundException, InvalidDataException {
+		imports.list.clear();
+		addImports(contents);
+	}
+	
+	public void addImports(Collection<?> contents) throws ObjectNotFoundException, InvalidDataException {
+		for (CollectionMember mem : contents.getMembers().list) {
+			if (mem.getItemPath() != null) {
+				ItemProxy child = mem.resolveItem();
+				String name = child.getName();
+				Integer version = Integer.valueOf(mem.getProperties().get("Version").toString());
+				String type = child.getProperty("Type");
+				ModuleImport newImport;
+				switch (type) {
+				case "ActivityDesc":
+				    String complex = child.getProperty("Complexity");
+				    if (complex.equals("Elementary")) {
+						newImport = new ModuleActivity(child, version);
+				    	break;
+				    }
+				    newImport = new ModuleWorkflow(child, version);
+				    break;
+				case "Script":
+				case "StateMachine":
+				case "OutcomeDesc":
+					newImport = new ModuleResource();
+					break;
+				default:
+					throw new InvalidDataException("Resource type '"+type+"' unknown for module export");
+				}
+				newImport.setName(name);
+				newImport.setItemPath(mem.getItemPath());
+				newImport.setNamespace(getNamespace());
+				if (!imports.list.contains(newImport)) {
+					try {
+						String currentModule = child.getProperty("Module");
+						if (currentModule != null && currentModule.length() > 0 &&
+								!currentModule.equals(getNamespace())) // already assigned to a different module
+							return;
+					} catch (ObjectNotFoundException ex) { // no module property, ok to include
+					}
+					imports.list.add(newImport);
+					String[] colls = child.getContents(ClusterStorage.COLLECTION);
+					for (String collName : colls) {
+						Collection<?> childColl = child.getCollection(collName, version);
+						addImports(childColl);
+					}
+				}
+						
+			}
+		}
+	}
+		
 	public void setConfig(ArrayList<ModuleConfig> config) {
 		this.config = config;
 	}
@@ -228,5 +286,7 @@ public class Module extends ImportItem {
 		return config;
 	}
 	
-	
+	public void export(File location) {
+		
+	}
 }

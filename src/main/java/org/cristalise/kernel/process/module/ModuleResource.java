@@ -77,5 +77,9 @@ public class ModuleResource extends ModuleImport {
 		this.resourceLocation = resourceLocation;
 	}
 
-	
+	@Override
+	public int hashCode() {
+		return super.hashCode()+resourceType.hashCode()+version;
+	}
+
 }

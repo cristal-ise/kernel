@@ -352,13 +352,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	@Override
 	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
 		
-		if (getSchema() != null)
-			actSchema.export(imports, dir);
-		if (getScript() != null)
-			actScript.export(imports, dir);
-		if (getStateMachine() != null)
-			actStateMachine.export(imports, dir);
-		
 		String actXML;
 		try {
 			actXML = Gateway.getMarshaller().marshall(this);

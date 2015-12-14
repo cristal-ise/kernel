@@ -24,6 +24,16 @@ public class ModuleDescRef {
 	String name;
 	String id;
 	Integer version;
+	
+	public ModuleDescRef() {
+	}
+	
+	public ModuleDescRef(String name, String id, Integer version) {
+		this.name = name;
+		this.id = id;
+		this.version = version;
+	}
+	
 	public String getName() {
 		return name;
 	}
