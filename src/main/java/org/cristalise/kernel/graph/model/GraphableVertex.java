@@ -221,8 +221,9 @@ public abstract class GraphableVertex extends Vertex
 	/**
 	 * Sets the childrenGraph.
 	 * @param childrenGraph The childrenGraph to set
+	 * @throws InvalidDataException - if the graph model wasn't valid in this context
 	 */
-	public void setChildrenGraphModel(GraphModel childrenGraph)
+	public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException
 	{
 		mChildrenGraphModel = childrenGraph;
 		DirectedEdge[] edges = mChildrenGraphModel.getEdges();

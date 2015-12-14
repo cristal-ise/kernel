@@ -25,13 +25,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
-import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
+import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
@@ -47,6 +47,20 @@ import org.cristalise.kernel.utils.Logger;
 public class CompositeActivityDef extends ActivityDef
 {
 	public static final String ACTCOL = "Activity";
+	private ArrayList<ActivityDef> refChildActDef = new ArrayList<ActivityDef>();
+	//TODO: don't build this from setGraphModel (remove throw), require it to be set by the module
+	
+	public ArrayList<ActivityDef> getRefChildActDef() {
+		return refChildActDef;
+	}
+	
+
+	public void setRefChildActDef(ArrayList<ActivityDef> refChildActDef) {
+		this.refChildActDef = refChildActDef;
+	}
+	
+
+
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
 			new TypeNameAndConstructionInfo("Activity", "Atomic"),
@@ -74,7 +88,9 @@ public class CompositeActivityDef extends ActivityDef
 	{
 		super();
 		getProperties().put("Abortable", false);
-		setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
+		try {
+			setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
+		} catch (InvalidDataException e) { } //shouldn't happen with an empty one
 		setIsComposite(true);
 	}
 	
@@ -101,10 +117,24 @@ public class CompositeActivityDef extends ActivityDef
 	 *
 	 * @param actDef
 	 * @param point
+	 * @throws InvalidDataException 
 	 */
-	public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point)
+	public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point) throws InvalidDataException
 	{
 		changed = true;
+		boolean newActDef = true;
+		for (ActivityDef existingActDef : refChildActDef) {
+			if (existingActDef.getName().equals(actDef.getName())) {
+				if (existingActDef.getVersion().equals(actDef.getVersion())) { 
+					actDef = existingActDef;
+					newActDef = false;
+					break;
+				}
+				else
+					throw new InvalidDataException("Cannot use same activity def with different version in the same composite activity");
+			}
+		}
+		if (newActDef)	refChildActDef.add(actDef);
 		ActivitySlotDef child = new ActivitySlotDef(name, actDef);
 		addChild(child, point);
         return child;
@@ -147,11 +177,10 @@ public class CompositeActivityDef extends ActivityDef
 			addChild(child, location);
 			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
 		}
-		else if (Type.equals("Atomic"))
+		else if (Type.equals("Atomic") || Type.equals("Composite"))
 		{
-			ActivityDef act = LocalObjectLoader.getElemActDef(Name, version);
-			child = new ActivitySlotDef(Name, act);
-			addChild(child, location);
+			ActivityDef act = Type.equals("Atomic")?LocalObjectLoader.getElemActDef(Name, version):LocalObjectLoader.getCompActDef(Name, version);
+			child = addExistingActivityDef(act.getActName(), act, location);
 			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
 		}
 		else if (Type.equals("Join"))
@@ -170,10 +199,7 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		else
 		{
-			CompositeActivityDef act = LocalObjectLoader.getCompActDef(Name, version);
-			child = new ActivitySlotDef(Name, act);
-			addChild(child, location);
-			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
+			throw new InvalidDataException("Unknown child type: "+Type);
 		}
 		return child;
 	}
@@ -220,23 +246,19 @@ public class CompositeActivityDef extends ActivityDef
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = super.makeDescCollections();
-		retArr.put(makeActDefCollection());
+		retArr.put(makeDescCollection(ACTCOL, refChildActDef.toArray(new ActivityDef[refChildActDef.size()])));
 		return retArr;
 	}
 	
-	public Dependency makeActDefCollection() throws InvalidDataException {
-		ArrayList<ActivityDef> descs = new ArrayList<ActivityDef>();
-		for (GraphableVertex elem : getChildren()) {
-			try {
-				if (elem instanceof ActivitySlotDef) {
-					ActivityDef actDef = ((ActivitySlotDef)elem).getTheActivityDef();
-					if (!descs.contains(actDef)) descs.add(actDef);
-				}
-			} catch (Exception ex) {
-				Logger.error(ex);
+	public ArrayList<ActivityDef> findRefActDefs(GraphModel graph) throws ObjectNotFoundException, InvalidDataException {
+		ArrayList<ActivityDef> graphActDefs = new ArrayList<ActivityDef>();
+		for (Vertex elem : graph.getVertices()) {
+			if (elem instanceof ActivitySlotDef) {
+				ActivityDef actDef = ((ActivitySlotDef)elem).getTheActivityDef();
+				if (!graphActDefs.contains(actDef)) graphActDefs.add(actDef);
 			}
 		}
-		return makeDescCollection(ACTCOL, descs.toArray(new ActivityDef[descs.size()]));
+		return graphActDefs;
 	}
 	/**
 	 * Method hasGoodNumberOfActivity.
@@ -269,16 +291,24 @@ public class CompositeActivityDef extends ActivityDef
 			return getName();
 		return super.getPath();
 	}
+	
 	@Override
-	public void setChildrenGraphModel(GraphModel childrenGraph) {
+	public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
 		super.setChildrenGraphModel(childrenGraph);
 		childrenGraph.setVertexOutlineCreator(new WfVertexDefOutlineCreator());
+		try {
+			setRefChildActDef(findRefActDefs(childrenGraph));
+		} catch (ObjectNotFoundException e) {
+			throw new InvalidDataException(e.getMessage());
+		}
 	}
-	//deprecated
+	
+	@Deprecated
 	public String[] getCastorNonLayoutableChildren() {
 		return new String[0];
 	}
 
+	@Deprecated
 	public void setCastorNonLayoutableChildren(String[] dummy) { }
 	
 	@Override

@@ -56,7 +56,9 @@ public class CompositeActivity extends Activity
     {
         super();
         getProperties().put("Abortable", false);
-        setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
+        try {
+			setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
+		} catch (InvalidDataException e) { } // shouldn't happen with an empty one
         setIsComposite(true);
     }
 
@@ -72,7 +74,7 @@ public class CompositeActivity extends Activity
 	}
 
 	@Override
-	public void setChildrenGraphModel(GraphModel childrenGraph) {
+	public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
 		super.setChildrenGraphModel(childrenGraph);
 		childrenGraph.setVertexOutlineCreator(new WfVertexOutlineCreator());
 	}
