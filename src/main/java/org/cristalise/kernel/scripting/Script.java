@@ -73,6 +73,7 @@ import org.xml.sax.InputSource;
  **************************************************************************/
 public class Script implements DescriptionObject
 {
+	public static final String INCLCOLL = "Includes";
     String mScript = "";
     CompiledScript mCompScript = null;
     String mName;
@@ -580,7 +581,7 @@ public class Script implements DescriptionObject
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
-		Dependency includeColl = new Dependency("Include");
+		Dependency includeColl = new Dependency(INCLCOLL);
 		for (Script script : mIncludes) {
 			try {
 				includeColl.addMember(script.getItemPath());
