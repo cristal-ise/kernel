@@ -1,19 +1,17 @@
 // Cristal Connect Local Centre example file
 // Copy this and change things
 
-// This name appears on the login box
+// This name appears on the login box of the Swing UI
 Name=Example Cristal Server
 Logo=http://path.to/image
-Authenticator=org.cristalise.kernel.lookup.ldap.LDAPAuthManager
 
-// TCP server ports
+// Item server network config
 ItemServer.name=HOSTNAME
 ItemServer.iiop=1500
 ItemServer.Proxy.port=1553
 ItemServer.Console.port=8080
 
-// LDAP config
-Lookup=org.cristalise.kernel.lookup.ldap.LDAPLookup
+// LDAP config (if LDAP Lookup is used)
 LDAP.GlobalPath=LDAPROOTPATH
 LDAP.RootPath=cn=cristal
 LDAP.LocalPath=cn=dev
