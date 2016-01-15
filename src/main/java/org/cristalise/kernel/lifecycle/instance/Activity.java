@@ -159,10 +159,10 @@ public class Activity extends WfVertex
 
 		// Find requested transition
 		Transition transition = getStateMachine().getTransition(transitionID);
-		
+
 		// Check if the transition is possible
 		String usedRole = transition.getPerformingRole(this, agent);
-		
+
 		// Verify outcome
 		Schema schema = null;
 		String viewName = null;
@@ -175,11 +175,11 @@ public class Activity extends WfVertex
 			else if (transition.getOutcome().isRequired()) 
 				throw new InvalidDataException("Transition requires outcome data, but none was given");
 		}
-		
+
 		// Get new state
 		State oldState = getStateMachine().getState(this.state);
 		State newState = getStateMachine().traverse(this, transition, agent);
-		
+
 		// Run extra logic in predefined steps here
 		String outcome = runActivityLogic(agent, itemPath, transitionID, requestData, locker);
 
@@ -288,25 +288,9 @@ public class Activity extends WfVertex
 				return false;
 			}
 		}
-//		else
-//		{
-//			Vertex[] outV = getOutGraphables();
-//			Vertex[] anteVertices = GraphTraversal.getTraversal(getParent().getChildrenGraphModel(), this, GraphTraversal.kUp, false);
-//			boolean errInLoop = false;
-//			for (int i = 0; i < outV.length; i++)
-//			{
-//				for (int j = 0; j < anteVertices.length; j++)
-//					if (!loop() && outV[i].getID() == anteVertices[j].getID())
-//						errInLoop = true;
-//			}
-//			if (errInLoop)
-//			{
-//				mErrors.add("Error In Loop");
-//				return false;
-//			}
-//		}
 		return true;
 	}
+	
 	/** Used in verify() */
 	@Override
 	public boolean loop()
