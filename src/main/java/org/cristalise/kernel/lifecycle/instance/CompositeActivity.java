@@ -35,6 +35,7 @@ import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.ItemPath;
@@ -339,7 +340,13 @@ public class CompositeActivity extends Activity
     @Override
 	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
     {
-        if (!getStateMachine().getState(state).isFinished())
+        if (!getStateMachine().getState(state).isFinished()) {
+        	Transition trans = getStateMachine().getTransition(CompositeActivity.COMPLETE);
+        	if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
+        		Logger.msg(5, "Composite activity has script or schema defined. Cannot autocomplete.");
+        		setActive(true);
+        		return;
+        	}
 			try {
 				request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
 			} catch (RuntimeException e) {
@@ -350,6 +357,7 @@ public class CompositeActivity extends Activity
 			} catch (Exception e) {
 				throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
 			}
+        }
         super.runNext(agent, itemPath, locker);
     }
 
