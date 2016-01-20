@@ -46,14 +46,14 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class Event implements C2KLocalObject
 {
-	ItemPath mItemPath; AgentPath mAgentPath, mDelegatorPath;
+	ItemPath mItemPath; AgentPath mAgentPath, mDelegatePath;
 	int mOriginState, mTransition, mTargetState;
 	Integer mID, mSchemaVersion, mStateMachineVersion;
     String mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
     GTimeStamp mTimeStamp;
     
     public Event(ItemPath itemPath, 
-    		AgentPath agentPath, String agentRole,
+    		AgentPath agentPath, AgentPath delegatePath, String agentRole,
     		String stepName, String stepPath, String stepType,
             StateMachine stateMachine, int transitionId) {
     	
@@ -61,6 +61,7 @@ public class Event implements C2KLocalObject
 		Logger.msg(7, "History.addEvent() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
 		setItemPath(itemPath);
 		setAgentPath(agentPath);
+		setDelegatePath(delegatePath);
 		setAgentRole(agentRole);
 		setStepName(stepName);
 		setStepPath(stepPath);
@@ -137,7 +138,7 @@ public class Event implements C2KLocalObject
     		if (agentStr.length!=2)
     			throw new InvalidItemPathException();
     		setAgentPath(AgentPath.fromUUIDString(agentStr[0]));
-    		setDelegatorPath(AgentPath.fromUUIDString(agentStr[1]));
+    		setDelegatePath(AgentPath.fromUUIDString(agentStr[1]));
     	}
     	else
 			setAgentPath(AgentPath.fromUUIDString(uuid));
@@ -145,8 +146,8 @@ public class Event implements C2KLocalObject
     
     public String getAgentUUID() {
     	if (mAgentPath != null) {
-    		if (mDelegatorPath != null)
-    			return getAgentPath().getUUID().toString()+":"+getDelegatorPath().getUUID().toString();
+    		if (mDelegatePath != null)
+    			return getAgentPath().getUUID().toString()+":"+getDelegatePath().getUUID().toString();
     		else
         		return getAgentPath().getUUID().toString();
     	}
@@ -207,8 +208,8 @@ public class Event implements C2KLocalObject
         mAgentPath = agentPath;
     }
     
-	public void setDelegatorPath(AgentPath delegatorPath) {
-		this.mDelegatorPath = delegatorPath;
+	public void setDelegatePath(AgentPath delegatorPath) {
+		this.mDelegatePath = delegatorPath;
 	}
 
 	public void setAgentRole(String agentRole)
@@ -288,8 +289,8 @@ public class Event implements C2KLocalObject
         return mAgentPath;
     }
 
-    public AgentPath getDelegatorPath() {
-		return mDelegatorPath;
+    public AgentPath getDelegatePath() {
+		return mDelegatePath;
 	}
 	
 	public String getAgentRole()

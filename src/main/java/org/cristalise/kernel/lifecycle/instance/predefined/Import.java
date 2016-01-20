@@ -96,7 +96,7 @@ public class Import extends PredefinedStep
 
         TransactionManager storage = Gateway.getStorage();
         History hist = getWf().getHistory();
-		Event event = hist.addEvent(agent, getCurrentAgentRole(), getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint, timestamp);
+		Event event = hist.addEvent(agent, null, getCurrentAgentRole(), getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint, timestamp);
 
 		try {
 			storage.put(item, new Outcome(event.getID(), requestData, schema), locker);

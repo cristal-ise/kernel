@@ -97,7 +97,7 @@ public abstract class WfVertex extends GraphableVertex
     public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
  {
         try {
-            ((CompositeActivity) getParent()).request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
+            ((CompositeActivity) getParent()).request(agent, null, itemPath, CompositeActivity.COMPLETE, null, locker);
         } 
         catch (Exception e) {
             // Logger.error(e);

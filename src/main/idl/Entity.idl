@@ -136,7 +136,19 @@ module entity
                     common::ObjectAlreadyExistsException,
                     common::InvalidCollectionModification);
 
-
+        string delegatedAction( in common::SystemKey agentKey,
+					        in common::SystemKey delegateAgentKey,
+                            in string              stepPath,
+                            in unsigned long       transitionID,
+                            in string    			requestData
+                          )
+            raises( common::AccessRightsException,
+                    common::InvalidTransitionException,
+                    common::ObjectNotFoundException,
+                    common::InvalidDataException,
+                    common::PersistencyException,
+                    common::ObjectAlreadyExistsException,
+                    common::InvalidCollectionModification);
         /**
         * Returns a set of Jobs for this Agent on this Item. Each Job represents a possible transition
         * of a particular Activity in the Item's lifecycle. The list may be filtered to only refer to 

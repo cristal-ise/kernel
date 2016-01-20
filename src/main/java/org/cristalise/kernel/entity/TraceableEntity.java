@@ -29,7 +29,6 @@ import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
-import org.cristalise.kernel.entity.ItemPOA;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.Logger;
 
@@ -125,6 +124,25 @@ public class TraceableEntity extends ItemPOA
     {
         synchronized (this) {
             return mItemImpl.requestAction(agentId, stepPath, transitionID, requestData);
+        }
+    }
+    
+    @Override
+	public String delegatedAction( SystemKey agentId,
+							   SystemKey delegateAgentId,
+                               String stepPath,
+                               int transitionID,
+                               String requestData
+                              )
+        throws AccessRightsException,
+               InvalidTransitionException,
+               ObjectNotFoundException,
+               InvalidDataException,
+               PersistencyException,
+               ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        synchronized (this) {
+            return mItemImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
         }
     }
 

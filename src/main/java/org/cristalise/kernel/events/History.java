@@ -69,21 +69,21 @@ public class History extends RemoteMap<Event> {
         }
     }
 	
-    public Event addEvent(AgentPath agentPath, String agentRole,
+    public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
             String stepName,
             String stepPath,
             String stepType,
             StateMachine stateMachine,
             int transitionId) {
     	return storeNewEvent(new Event(mItemPath, 
-    			agentPath, agentRole, 
+    			agentPath, delegatePath, agentRole, 
     			stepName, stepPath, stepType, 
     			stateMachine, transitionId));
     }
 
     
 	public Event addEvent(AgentPath agentPath, 
-			String agentRole,
+			AgentPath delegatePath, String agentRole,
 			String stepName, 
 			String stepPath, 
 			String stepType,
@@ -92,7 +92,7 @@ public class History extends RemoteMap<Event> {
 			int transitionId,
 			String viewName) {
     	Event newEvent = new Event(mItemPath, 
-    			agentPath, agentRole, 
+    			agentPath, delegatePath, agentRole, 
     			stepName, stepPath,	stepType, 
     			stateMachine, transitionId);
     	newEvent.addOutcomeDetails(schema, viewName);
@@ -100,33 +100,28 @@ public class History extends RemoteMap<Event> {
 	}
 
     
-    public Event addEvent(AgentPath agentPath, String agentRole,
-            String stepName,
-            String stepPath,
-            String stepType,
+    public Event addEvent(AgentPath agentPath, AgentPath delegatePath,	String agentRole,
+            String stepName, String stepPath, String stepType,
             StateMachine stateMachine,
             int transitionId,
             String timeString) throws InvalidDataException {
     	Event newEvent = new Event(mItemPath, 
-    			agentPath, agentRole, 
+    			agentPath, delegatePath, agentRole, 
     			stepName, stepPath,	stepType, 
     			stateMachine, transitionId);
     	newEvent.setTimeString(timeString);
     	return storeNewEvent(newEvent);
     }
 
-    public Event addEvent(AgentPath agentPath, String agentRole,
-            String stepName,
-            String stepPath,
-            String stepType,
-            Schema schema,
-            StateMachine stateMachine,
+    public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
+            String stepName, String stepPath, String stepType,
+            Schema schema, StateMachine stateMachine,
             int transitionId,
             String viewName,
             String timeString) throws InvalidDataException {
     	
     	Event newEvent = new Event(mItemPath, 
-    			agentPath, agentRole, 
+    			agentPath, delegatePath, agentRole, 
     			stepName, stepPath, stepType, 
     			stateMachine, transitionId);
     	newEvent.addOutcomeDetails(schema, viewName);

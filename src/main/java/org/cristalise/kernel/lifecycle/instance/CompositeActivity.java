@@ -319,7 +319,7 @@ public class CompositeActivity extends Activity
 			switch (getState()) { 
 			case CompositeActivity.WAITING:
 				try {
-					request(agent, itemPath, CompositeActivity.START, null, locker);
+					request(agent, null, itemPath, CompositeActivity.START, null, locker);
 				} catch (RuntimeException e) {
 					throw e;
 				} catch (AccessRightsException e) { // Agent didn't have permission to start the activity, so leave it waiting
@@ -348,7 +348,7 @@ public class CompositeActivity extends Activity
         		return;
         	}
 			try {
-				request(agent, itemPath, CompositeActivity.COMPLETE, null, locker);
+				request(agent, null, itemPath, CompositeActivity.COMPLETE, null, locker);
 			} catch (RuntimeException e) {
 				throw e;
 			} catch (AccessRightsException e) { // Agent didn't have permission to complete the activity, so leave it waiting
@@ -490,7 +490,7 @@ public class CompositeActivity extends Activity
     }
 
     @Override
-	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+	public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished() && transitionID == CompositeActivity.START)
         	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
@@ -502,7 +502,7 @@ public class CompositeActivity extends Activity
         	else
         		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
         }
-        return super.request(agent, itemPath, transitionID, requestData, locker);
+        return super.request(agent, delegator, itemPath, transitionID, requestData, locker);
     }
     
 	public void refreshJobs(ItemPath itemPath)

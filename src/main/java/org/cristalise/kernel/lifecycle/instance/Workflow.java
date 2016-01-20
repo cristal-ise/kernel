@@ -143,13 +143,13 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	 * @throws InvalidCollectionModification 
 	 */
 	//requestData is xmlstring
-	public String requestAction(AgentPath agent, String stepPath, ItemPath itemPath, int transitionID, String requestData)
+	public String requestAction(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath, int transitionID, String requestData)
 		throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
 		Logger.msg(3, "Workflow::requestAction() - transition:" + transitionID + " step:" + stepPath + " agent:" + agent);
 		GraphableVertex vert = search(stepPath);
 		if (vert != null && vert instanceof Activity)
-			return ((Activity) vert).request(agent, itemPath, transitionID, requestData, this);
+			return ((Activity) vert).request(agent, delegator, itemPath, transitionID, requestData, this);
 		else
 			throw new ObjectNotFoundException(stepPath + " not found");
 	}

@@ -114,7 +114,7 @@ public class ItemImplementation implements ItemOperations {
 			Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
 			Outcome initOutcome = new Outcome(0, propString, initSchema);
 	        History hist = new History(mItemPath, locker);
-	        Event newEvent = hist.addEvent(new AgentPath(agentId), "", "Initialize", "", "", initSchema, 
+	        Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", initSchema, 
 	        		Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
 	        initOutcome.setID(newEvent.getID());
 	        Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
@@ -178,9 +178,19 @@ public class ItemImplementation implements ItemOperations {
 		
 		return new ItemPredefinedStepContainer();
 	}
-
+	
 	@Override
 	public String requestAction(SystemKey agentId, String stepPath, int transitionID,
+			String requestData) throws AccessRightsException,
+			InvalidTransitionException, ObjectNotFoundException,
+			InvalidDataException, PersistencyException,
+			ObjectAlreadyExistsException, InvalidCollectionModification {
+
+		return delegatedAction(agentId, null, stepPath, transitionID, requestData);
+	}
+	
+	@Override
+	public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID,
 			String requestData) throws AccessRightsException,
 			InvalidTransitionException, ObjectNotFoundException,
 			InvalidDataException, PersistencyException,
@@ -189,14 +199,18 @@ public class ItemImplementation implements ItemOperations {
 		try {
 			
 			AgentPath agent = new AgentPath(agentId);
+			AgentPath delegate = null;
+			if (delegateId != null)
+				delegate = new AgentPath(delegateId);
 			Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition "
-					+ transitionID + " on " + stepPath + " by " + agent);
+					+ transitionID + " on " + stepPath + " by " + (delegate==null?"":delegate+" on behalf of ")  + agent );				
 
+			//TODO: check if delegate is allowed valid for agent
 			
 			Workflow lifeCycle = (Workflow) mStorage.get(mItemPath,
 					ClusterStorage.LIFECYCLE + "/workflow", null);
 
-			String finalOutcome = lifeCycle.requestAction(agent, stepPath, mItemPath,
+			String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath,
 					transitionID, requestData);
 
 			// store the workflow if we've changed the state of the domain

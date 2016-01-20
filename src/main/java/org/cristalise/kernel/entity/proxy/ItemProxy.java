@@ -62,7 +62,7 @@ import org.exolab.castor.xml.ValidationException;
  * @version $Revision: 1.25 $ $Date: 2005/05/10 11:40:09 $
  * @author  $Author: abranson $
  ******************************************************************************/
-public class ItemProxy
+public class ItemProxy 
 {
 
     protected Item    				mItem = null;
@@ -168,8 +168,12 @@ public class ItemProxy
             throw new InvalidDataException("No Agent specified.");
 
         Logger.msg(7, "ItemProxy - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
-        return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
+        if (thisJob.getDelegatePath() == null)
+        	return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
             thisJob.getTransition().getId(), outcome);
+        else
+        	return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
+        			thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
    /**************************************************************************

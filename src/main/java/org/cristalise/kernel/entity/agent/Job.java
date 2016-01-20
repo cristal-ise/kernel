@@ -77,17 +77,21 @@ public class Job implements C2KLocalObject
 
     private String agentRole;
 
+    private AgentPath agentPath;
+    
     private CastorHashMap actProps = new CastorHashMap();
     
+    private GTimeStamp creationDate;
+
     // non-persistent
     
     private String name;
     
-    private AgentPath agentPath;
-    
     private String agentName;
     
-    private GTimeStamp creationDate;
+    private AgentPath delegatePath;
+    
+    private String delegateName;    
     
 	private String outcomeData;
     
@@ -236,21 +240,44 @@ public class Job implements C2KLocalObject
     	agentName = agentPath.getAgentName();
     }
     
-    public void setAgentUUID( String uuid )
+    public AgentPath getDelegatePath() throws ObjectNotFoundException {
+    	if (delegatePath == null && getDelegateName() != null) {
+    		delegatePath = Gateway.getLookup().getAgentPath(getDelegateName());
+    	}
+        return delegatePath;
+    }
+
+	public void setDelegatePath(AgentPath delegatePath) {
+    	this.delegatePath = delegatePath;
+    	delegateName = delegatePath.getAgentName();
+    }
+    
+    public void setAgentUUID( String uuid ) throws InvalidItemPathException
     {
-    	if (uuid != null) 
-    		try {
-				setAgentPath(AgentPath.fromUUIDString(uuid));
-			} catch (InvalidAgentPathException e) {
-				Logger.error("Invalid agent path in Job: "+uuid);
-			}
+    	if (uuid == null || uuid.length() == 0) { 
+    		agentPath = null; agentName = null;
+    		delegatePath = null; delegateName = null;
+    	}
+    	else if (uuid.contains(":")) {
+    		String[] agentStr = uuid.split(":");
+    		if (agentStr.length!=2)
+    			throw new InvalidItemPathException();
+    		setAgentPath(AgentPath.fromUUIDString(agentStr[0]));
+    		setDelegatePath(AgentPath.fromUUIDString(agentStr[1]));
+    	}
+    	else
+			setAgentPath(AgentPath.fromUUIDString(uuid));
     }
     
     public String getAgentUUID() {
-    	try {
-			if (getAgentPath() != null)
-				return getAgentPath().getUUID().toString();
-		} catch (ObjectNotFoundException e) { }
+    	if (agentPath != null) {
+    		try {
+	    		if (delegatePath != null)
+	    			return getAgentPath().getUUID().toString()+":"+getDelegatePath().getUUID().toString();
+	    		else
+	        		return getAgentPath().getUUID().toString();
+    		} catch (ObjectNotFoundException ex) { }
+    	}
     	return null;
     }
     
@@ -260,12 +287,24 @@ public class Job implements C2KLocalObject
             agentName = (String) actProps.get("Agent Name");
         return agentName;
     }
+    
+    public String getDelegateName() {
+		if (delegateName == null && delegatePath != null)
+			delegateName = delegatePath.getAgentName();
+		return delegateName;
+	}
 
     public void setAgentName(String agentName) throws ObjectNotFoundException
     {
         this.agentName = agentName;
         agentPath = Gateway.getLookup().getAgentPath(agentName);
     }
+    
+    public void setDelegateName(String delegateName) throws ObjectNotFoundException
+    {
+        this.delegateName = delegateName;
+        delegatePath = Gateway.getLookup().getAgentPath(delegateName);
+    }    
     
     public String getAgentRole() {
         return agentRole;

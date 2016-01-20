@@ -375,7 +375,7 @@ public class Bootstrap
         History hist = new History( item.getPath(), item);
         String viewName = String.valueOf(version);
 
-        int eventID = hist.addEvent( systemAgents.get("system").getPath(), "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
+        int eventID = hist.addEvent( systemAgents.get("system").getPath(), null, "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
                 newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName).getID();
 
         newOutcome.setID(eventID);

@@ -144,7 +144,18 @@ public class ActiveEntity extends AgentPOA
         }
 		
 	}
-
+	
+    @Override
+	public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId, 
+			String stepPath, int transitionID, String requestData) throws AccessRightsException,
+			InvalidTransitionException, ObjectNotFoundException,
+			InvalidDataException, PersistencyException,
+			ObjectAlreadyExistsException, InvalidCollectionModification {
+        synchronized (this) {
+            return mAgentImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
+        }
+    }
+	
 	@Override
 	public String queryLifeCycle(SystemKey agentId, boolean filter)
 			throws AccessRightsException, ObjectNotFoundException,

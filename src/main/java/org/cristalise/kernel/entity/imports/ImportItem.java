@@ -226,7 +226,7 @@ public class ImportItem extends ModuleImport {
 			}
         	
         	// write new view/outcome/event
-            Event newEvent = hist.addEvent(agentPath, "Admin", "Import", "Import", "Import", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, thisOutcome.viewname);
+            Event newEvent = hist.addEvent(agentPath, null, "Admin", "Import", "Import", "Import", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, thisOutcome.viewname);
             newOutcome.setID(newEvent.getID());
             impView.setEventId(newEvent.getID());
             try {

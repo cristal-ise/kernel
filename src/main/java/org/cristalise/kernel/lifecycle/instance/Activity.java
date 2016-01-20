@@ -154,7 +154,7 @@ public class Activity extends WfVertex
 	 * @throws ObjectCannotBeUpdated 
 	 * @throws CannotManageException 
 	 * @throws InvalidCollectionModification */
-	public String request(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+	public String request(AgentPath agent, AgentPath delegate, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
 
 		// Find requested transition
@@ -192,10 +192,10 @@ public class Activity extends WfVertex
 		try {
 			History hist = getWf().getHistory(locker);
 			if (storeOutcome)
-				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), schema, 
+				newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, 
 						getStateMachine(), transitionID, viewName);
 			else 
-				newEvent = hist.addEvent(agent, usedRole, getName(), getPath(), getType(), 
+				newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), 
 						getStateMachine(), transitionID);
 			
 			Logger.msg(7, "Activity::auditEvent() - Event:" + newEvent.getName() + " was added to the AuditTrail");
