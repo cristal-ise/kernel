@@ -22,6 +22,7 @@ package org.cristalise.kernel.process.module;
 
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -43,7 +44,7 @@ public abstract class ModuleImport {
 	}
     
 	public abstract Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException,
-			ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification;
+			ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification, InvalidDataException;
 	
     public void setID( String uuid ) throws InvalidItemPathException 
     {

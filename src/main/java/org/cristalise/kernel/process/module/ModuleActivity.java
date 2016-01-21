@@ -47,7 +47,6 @@ public class ModuleActivity extends ModuleResource {
 	public ModuleActivity() {
 		super();
 		resourceType="EA";
-		actDef = new ActivityDef();
 	}
 	
 	public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
@@ -69,7 +68,7 @@ public class ModuleActivity extends ModuleResource {
 	@Override
 	public Path create(AgentPath agentPath, boolean reset)
 			throws ObjectNotFoundException, ObjectCannotBeUpdated,
-			CannotManageException, ObjectAlreadyExistsException {
+			CannotManageException, ObjectAlreadyExistsException, InvalidDataException {
 		try {
 			domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
 			itemPath = domainPath.getItemPath();
@@ -78,6 +77,7 @@ public class ModuleActivity extends ModuleResource {
 			throw new CannotManageException("Exception verifying module resource "+ns+"/"+name);
 		}		
 
+		actDef = LocalObjectLoader.getActDef(name, version);
 		populateActivityDef();
 		
 		CollectionArrayList colls;
@@ -106,6 +106,7 @@ public class ModuleActivity extends ModuleResource {
 		return domainPath;
 	}
 	
+
 	public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
 		try {
 			if (schema != null) 

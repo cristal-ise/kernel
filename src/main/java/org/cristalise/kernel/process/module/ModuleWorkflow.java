@@ -38,7 +38,6 @@ public class ModuleWorkflow extends ModuleActivity {
 	public ModuleWorkflow() {
 		super();
 		resourceType="CA";
-		actDef = new CompositeActivityDef();
 	}
 	
 	public ModuleWorkflow(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
@@ -62,9 +61,10 @@ public class ModuleWorkflow extends ModuleActivity {
 	@Override
 	public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
 		super.populateActivityDef();
-		ArrayList<ActivityDef> graphActDefs = ((CompositeActivityDef)actDef).getRefChildActDef();
+		CompositeActivityDef compActDef = (CompositeActivityDef)actDef;
+		ArrayList<ActivityDef> graphActDefs = compActDef.getRefChildActDef();
 		if (activities.size() != graphActDefs.size())
-			throw new CannotManageException("");
+			throw new CannotManageException("There were "+activities.size()+" declared activities, but the graph uses "+graphActDefs.size());
 		for (ModuleDescRef moduleDescRef : activities) {
 			boolean found = false;
 			for (ActivityDef childActDef : graphActDefs) {
