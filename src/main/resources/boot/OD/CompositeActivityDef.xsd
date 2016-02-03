@@ -31,12 +31,18 @@
 	<xs:element name="CompositeActivityDef">
 		<xs:complexType>
 			<xs:sequence>
+				<xs:element ref="CentrePoint" minOccurs="0"/>
+				<xs:element ref="OutlinePoint" minOccurs="0" maxOccurs="4"/>			
+				<xs:element ref="InEdgeId" minOccurs="0"/>
+				<xs:element ref="OutEdgeId" minOccurs="0" maxOccurs="unbounded"/>				
 				<xs:element name="childrenGraphModel">
 					<xs:complexType>
 						<xs:sequence>
 							<xs:element name="GraphModelCastorData">
 								<xs:complexType>
 									<xs:choice minOccurs="0" maxOccurs="unbounded">
+										<xs:element ref="CompositeActivityDef"/>
+										<xs:element ref="ActivityDef"/>
 										<xs:element name="ActivitySlotDef">
 											<xs:complexType>
 												<xs:sequence>
@@ -183,6 +189,38 @@
 			<xs:attribute name="IsComposite" type="xs:boolean" use="required"/>
 		</xs:complexType>
 	</xs:element>
+	<xs:element name="ActivityDef">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="CentrePoint" minOccurs="0"/>
+				<xs:element ref="OutlinePoint" minOccurs="0" maxOccurs="4"/>
+				<xs:element ref="InEdgeId" minOccurs="0"/>
+				<xs:element ref="OutEdgeId" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="Properties">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="KeyValuePair" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:attribute name="Key" type="xs:string" use="required"/>
+									<xs:attribute name="isAbstract" type="xs:boolean" use="optional"/>
+									<xs:attribute name="Boolean" type="xs:boolean" use="optional"/>
+									<xs:attribute name="String" type="xs:string" use="optional"/>
+									<xs:attribute name="Integer" type="xs:int" use="optional"/>
+									<xs:attribute name="Float" type="xs:double" use="optional"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="ID" type="xs:integer" use="required"/>
+			<xs:attribute name="Name" type="xs:string" use="required"/>
+			<xs:attribute name="Height" type="xs:integer" use="optional"/>
+			<xs:attribute name="Width" type="xs:integer" use="optional"/>
+			<xs:attribute name="IsLayoutable" type="xs:boolean" use="required"/>
+			<xs:attribute name="IsComposite" type="xs:boolean" use="required" fixed="false"/>
+		</xs:complexType>
+	</xs:element>	
 	<xs:element name="InEdgeId" type="xs:integer"/>
 	<xs:element name="OutEdgeId" type="xs:integer"/>
 	<xs:element name="OutlinePoint">

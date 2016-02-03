@@ -40,7 +40,7 @@ public class WfVertexDefOutlineCreator implements VertexOutlineCreator
         int          vertexHeight  = 0;
 
 
-        if ( vertex instanceof ActivitySlotDef )
+        if ( vertex instanceof ActivitySlotDef  || vertex instanceof ActivityDef)
         {
             vertexWidth  = mActivityWidth;
             vertexHeight = mActivityHeight;

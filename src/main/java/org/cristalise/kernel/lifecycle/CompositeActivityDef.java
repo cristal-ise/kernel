@@ -25,6 +25,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.GraphModel;
@@ -64,7 +65,9 @@ public class CompositeActivityDef extends ActivityDef
 	private final TypeNameAndConstructionInfo[] mVertexTypeNameAndConstructionInfo =
 		{
 			new TypeNameAndConstructionInfo("Activity", "Atomic"),
+			new TypeNameAndConstructionInfo("Local Activity", "AtomicLocal"),
 			new TypeNameAndConstructionInfo("Composite", "Composite"),
+			new TypeNameAndConstructionInfo("Sub-workflow", "CompositeLocal"),
 			new TypeNameAndConstructionInfo("AND Split", "And"),
 			new TypeNameAndConstructionInfo("OR Split", "Or"),
 			new TypeNameAndConstructionInfo("XOR Split", "XOr"),
@@ -139,6 +142,16 @@ public class CompositeActivityDef extends ActivityDef
 		addChild(child, point);
         return child;
 	}
+	
+	public ActivityDef addLocalActivityDef(String name, String type, GraphPoint point)
+	{
+		changed = true;
+		ActivityDef child = type.startsWith("Composite")?new CompositeActivityDef():new ActivityDef();
+		child.setName(name);
+		child.setIsLayoutable(true);
+		addChild(child, point);
+		return child;
+	}
 	/**
 	 * Method newChild.
 	 *
@@ -182,6 +195,10 @@ public class CompositeActivityDef extends ActivityDef
 			ActivityDef act = Type.equals("Atomic")?LocalObjectLoader.getElemActDef(Name, version):LocalObjectLoader.getCompActDef(Name, version);
 			child = addExistingActivityDef(act.getActName(), act, location);
 			Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
+		}
+		else if (Type.equals("AtomicLocal") || Type.equals("CompositeLocal"))
+		{
+			child = addLocalActivityDef(Name, Type, location);
 		}
 		else if (Type.equals("Join"))
 		{
@@ -247,8 +264,12 @@ public class CompositeActivityDef extends ActivityDef
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = super.makeDescCollections();
-		retArr.put(makeDescCollection(ACTCOL, refChildActDef.toArray(new ActivityDef[refChildActDef.size()])));
+		retArr.put(makeActDefCollection());
 		return retArr;
+	}
+	
+	public Dependency makeActDefCollection() throws InvalidDataException {
+		return makeDescCollection(ACTCOL, refChildActDef.toArray(new ActivityDef[refChildActDef.size()]));
 	}
 	
 	public ArrayList<ActivityDef> findRefActDefs(GraphModel graph) throws ObjectNotFoundException, InvalidDataException {
