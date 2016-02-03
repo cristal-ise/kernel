@@ -188,8 +188,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         configureInstance(act);		
         
         act.setName(name);
-        act.setType(getName());
-
+        if (getItemPath() != null)
+        	act.setType(getItemID());
 		return act;
 	}
 	

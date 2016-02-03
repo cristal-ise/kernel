@@ -48,10 +48,12 @@ import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
+import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -75,6 +77,7 @@ public class Activity extends WfVertex
 	private boolean loopTested;
 	private GTimeStamp mStateDate;
 	private String mType;
+	private String mTypeName;
 	
 	public Activity()
 	{
@@ -556,7 +559,23 @@ public class Activity extends WfVertex
 	public String getType()
 	{
 		return mType;
-	} /**
+	} 
+	
+	public String getTypeName()
+	{
+		if (mType == null) return null;
+		if (mTypeName == null) {
+			try {
+				ItemPath actType = new ItemPath(mType);
+				Property nameProp = (Property)Gateway.getStorage().get(actType, ClusterStorage.PROPERTY+"/Name", null);
+				mTypeName = nameProp.getValue();
+			} catch (Exception e) { 
+				mTypeName = mType;
+			}
+		}
+		return mTypeName;
+	}
+	/**
 	   * Sets the type.
 	   *
 	   * @param type
@@ -565,6 +584,7 @@ public class Activity extends WfVertex
 	public void setType(String type)
 	{
 		mType = type;
+		mTypeName = null;
 	}
 
 	@Override

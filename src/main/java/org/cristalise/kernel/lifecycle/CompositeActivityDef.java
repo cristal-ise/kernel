@@ -218,7 +218,8 @@ public class CompositeActivityDef extends ActivityDef
 	{
 		CompositeActivity cAct = new CompositeActivity();
         configureInstance(cAct);
-        cAct.setType(getName());
+        if (getItemPath() != null)
+        	cAct.setType(getItemID());
         cAct.setName(name);
         GraphableVertex[] vertexDefs = getLayoutableChildren();
 		WfVertex[] wfVertices = new WfVertex[vertexDefs.length];
