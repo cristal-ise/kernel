@@ -416,7 +416,11 @@ public class Bootstrap
 						"Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
 				return false;
 			} else {
-				Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:"	+ item.getPath() + schema.getName() + ": " + xmlDiff.toString());
+				StringBuffer diffDetails = new StringBuffer();
+				diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:").append(item.getPath().toString())
+					.append(" name:").append(schema.getName()).append(" Details: ");
+				xmlDiff.appendMessage(diffDetails);
+				Logger.msg(diffDetails.toString());
 				if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
 					Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
 					return false;
