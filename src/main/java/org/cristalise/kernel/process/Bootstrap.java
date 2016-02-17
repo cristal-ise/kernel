@@ -370,7 +370,7 @@ public class Bootstrap
     private static void storeOutcomeEventAndViews(ItemProxy item, Outcome newOutcome, int version)
             throws PersistencyException, ObjectNotFoundException, InvalidDataException
     {
-        Logger.msg("Bootstrap.storeOutcomeEventAndViews() - Writing new " + newOutcome.getSchema().getName() + " v" + version);
+        Logger.msg("Bootstrap.storeOutcomeEventAndViews() - Writing new " + newOutcome.getSchema().getName() + " v" + version + " to "+item.getName());
 
         History hist = new History( item.getPath(), item);
         String viewName = String.valueOf(version);
@@ -417,8 +417,8 @@ public class Bootstrap
 				return false;
 			} else {
 				StringBuffer diffDetails = new StringBuffer();
-				diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item:").append(item.getPath().toString())
-					.append(" name:").append(schema.getName()).append(" Details: ");
+				diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item: ").
+					append(item.getName()).append(" syskey:").append(item.getPath());
 				xmlDiff.appendMessage(diffDetails);
 				Logger.msg(diffDetails.toString());
 				if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
