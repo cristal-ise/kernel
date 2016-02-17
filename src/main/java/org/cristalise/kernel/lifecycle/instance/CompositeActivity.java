@@ -35,6 +35,7 @@ import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.State;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
@@ -63,12 +64,6 @@ public class CompositeActivity extends Activity
         setIsComposite(true);
     }
 
-    // State machine
-	public static final int START = 0;
-	public static final int COMPLETE = 1;
-	public static final int WAITING = 0;
-	public static final int STARTED = 1;
-	public static final int FINISHED = 2;
 	@Override
 	protected String getDefaultSMName() {
 		return "CompositeActivity";
@@ -311,29 +306,46 @@ public class CompositeActivity extends Activity
     @Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
-        Logger.debug(8, getPath() + "CompisiteActivity::run() state: " + getState());
+        Logger.debug(8, getPath() + "CompositeActivity::run() state: " + getState());
 
         super.run(agent, itemPath, locker);
-        if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
+        State currentState = getStateMachine().getState(state);
+        if (getChildrenGraphModel().getStartVertex() != null && !currentState.isFinished())
         {
-			switch (getState()) { 
-			case CompositeActivity.WAITING:
-				try {
-					request(agent, null, itemPath, CompositeActivity.START, null, locker);
-				} catch (RuntimeException e) {
-					throw e;
-				} catch (AccessRightsException e) { // Agent didn't have permission to start the activity, so leave it waiting
+        	
+        	if (getStateMachine().getInitialStateCode() == state) {
+        		Transition autoStart = null;
+        		//see if there's only one that isn't terminating
+    			try {
+					for (Transition transition : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
+						if (!transition.isFinishing()) {
+							if (autoStart == null)
+								autoStart = transition;
+							else {
+								autoStart = null;
+								break;
+							}
+						}
+					}
+				} catch (ObjectNotFoundException e) {
 					Logger.error(e);
-					return;
-				} catch (Exception e) {
-					throw new InvalidDataException("Problem initializing composite activity: "+e.getMessage());
+					throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
 				}
-			break;
-			case CompositeActivity.STARTED:
-				WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
-				first.run(agent, itemPath, locker);
-			default:
-			}
+        		if (autoStart != null) {
+					try {
+						request(agent, null, itemPath, autoStart.getId(), null, locker);
+					} catch (RuntimeException e) {
+						throw e;
+					} catch (AccessRightsException e) { // Agent didn't have permission to start the activity, so leave it waiting
+						Logger.error(e);
+						return;
+					} catch (Exception e) {
+						throw new InvalidDataException("Problem initializing composite activity: "+e.getMessage());
+					}
+					WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
+					first.run(agent, itemPath, locker);
+        		}
+        	}
         }
     }
 
@@ -341,22 +353,49 @@ public class CompositeActivity extends Activity
 	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
     {
         if (!getStateMachine().getState(state).isFinished()) {
-        	Transition trans = getStateMachine().getTransition(CompositeActivity.COMPLETE);
-        	if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
-        		Logger.msg(5, "Composite activity has script or schema defined. Cannot autocomplete.");
+        	Transition trans = null;
+        	try {
+				for (Transition possTran : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
+					// Find the next transition for automatic procedure. A non-finishing transition will override a finishing one, 
+					// but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point. 
+
+					if (trans == null || (trans.isFinishing() && !possTran.isFinishing()))
+						trans = possTran;
+					else if (trans.isFinishing() == possTran.isFinishing()) {
+						Logger.warning("Unclear choice of transition possible from current state for Composite Activity '"+getName()+"'. Cannot automatically proceed.");
+						setActive(true);
+						return;
+					}		
+				}
+			} catch (ObjectNotFoundException e) {
+				Logger.error(e);
+				throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
+			}
+        	
+        	if (trans == null) { // current agent can't proceed
+        		Logger.msg(3, "Not possible for the current agent to proceed with the Composite Activity '"+getName()+"'.");
         		setActive(true);
         		return;
         	}
-			try {
-				request(agent, null, itemPath, CompositeActivity.COMPLETE, null, locker);
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (AccessRightsException e) { // Agent didn't have permission to complete the activity, so leave it waiting
-				Logger.error(e);
-				return;
-			} catch (Exception e) {
-				throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
-			}
+
+        	// automatically execute the next outcome if it doesn't require an outcome.
+        	if (trans != null) {
+        		if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
+	        		Logger.msg(3, "Composite activity '"+getName()+"' has script or schema defined. Cannot proceed automatically.");
+	        		setActive(true);
+	        		return;
+	        	}
+        		
+				try {
+					request(agent, null, itemPath, trans.getId(), null, locker);
+					if (!trans.isFinishing()) // don't run next if we didn't finish
+						return;
+				} catch (Exception e) {
+					Logger.error(e);
+					setActive(true);
+					throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
+				}
+        	}
         }
         super.runNext(agent, itemPath, locker);
     }
@@ -492,16 +531,17 @@ public class CompositeActivity extends Activity
     @Override
 	public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
-        if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished() && transitionID == CompositeActivity.START)
-        	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
-
-        if (transitionID == CompositeActivity.COMPLETE && hasActive()) {
+        Transition trans = getStateMachine().getTransition(transitionID);
+        if (trans.isFinishing() && hasActive()) {
         	boolean abortable = "true".equals(String.valueOf(getProperties().get("Abortable")));
         	if (abortable)
         		abort();
         	else
         		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
-        }
+        
+        if (getChildrenGraphModel().getStartVertex() != null && getStateMachine().getState(state).equals(getStateMachine().getInitialState()))
+        	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
+        
         return super.request(agent, delegator, itemPath, transitionID, requestData, locker);
     }
     
