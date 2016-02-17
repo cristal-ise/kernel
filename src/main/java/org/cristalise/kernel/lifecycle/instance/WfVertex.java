@@ -182,13 +182,15 @@ public abstract class WfVertex extends GraphableVertex
                         dataHelper = new PropertyDataHelper();
                         break;
                     case "activity":
-                        dataHelper = new ActivityDataHelper(getWf());
+                        dataHelper = new ActivityDataHelper();
                         break;
                     default:
                         throw new InvalidDataException("Unknown data type (viewpoint/property/activity): "+value);
                     }
-
-                    String inputParam = dataHelper.get(itemPath, actContext, dataPath, locker);
+        			if (itemPath == null) itemPath = getWf().getItemPath();
+        			
+        			dataHelper.setItemPath(itemPath);
+                    String inputParam = dataHelper.get(actContext, dataPath, locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
                     script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }

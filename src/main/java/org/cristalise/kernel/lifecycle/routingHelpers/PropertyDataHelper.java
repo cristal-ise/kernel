@@ -26,12 +26,19 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
-import org.exolab.castor.mapping.xml.Property;
+import org.cristalise.kernel.property.Property;
 
 public class PropertyDataHelper implements DataHelper {
 
+	ItemPath item;
+	
 	@Override
-	public String get(ItemPath item, String actContext, String dataPath, Object locker)
+	public void setItemPath(ItemPath itemPath) {
+		this.item = itemPath;
+		
+	}
+	@Override
+	public String get(String actContext, String dataPath, Object locker)
 			throws InvalidDataException, PersistencyException,
 			ObjectNotFoundException {
 		//Syntax of search : <PropertyName>

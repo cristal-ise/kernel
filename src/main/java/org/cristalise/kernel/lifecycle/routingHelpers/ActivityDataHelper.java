@@ -40,11 +40,15 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
  */
 public class ActivityDataHelper implements DataHelper {
 
-    Workflow workflow = null;
+	ItemPath item;
+	
+	@Override
+	public void setItemPath(ItemPath itemPath) {
+		this.item = itemPath;
+		
+	}
 
     public ActivityDataHelper() {}
-
-    public ActivityDataHelper(Workflow wf) { workflow = wf; }
 
     /**
      * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
@@ -60,10 +64,10 @@ public class ActivityDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(ItemPath item, String actContext, String dataPath, Object locker)
+	public String get(String actContext, String dataPath, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        if(workflow == null) workflow = (Workflow) Gateway.getStorage().get(item, ClusterStorage.LIFECYCLE, locker);
+        Workflow workflow = (Workflow) Gateway.getStorage().get(item, ClusterStorage.LIFECYCLE, locker);
 
         String[] paths = dataPath.split(":");
 

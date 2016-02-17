@@ -37,6 +37,15 @@ import org.cristalise.kernel.utils.Logger;
  * Implements the Routing DataHelper to get Outcome data using Viewpoint path and XPath.
  */
 public class ViewpointDataHelper implements DataHelper {
+	
+	ItemPath item;
+	
+	@Override
+	public void setItemPath(ItemPath itemPath) {
+		this.item = itemPath;
+		
+	}
+	
     /**
      * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
      * retrieves a single value based on XPath
@@ -51,7 +60,7 @@ public class ViewpointDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(ItemPath item, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
+	public String get(String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         String[] paths = dataPath.split(":");
 
@@ -77,4 +86,5 @@ public class ViewpointDataHelper implements DataHelper {
        	    throw new InvalidDataException("Invalid XPath: "+xpath);
        	}
     }
+
 }
