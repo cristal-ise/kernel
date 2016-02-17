@@ -46,6 +46,7 @@ public class AndSplitDef extends WfVertexDef
 		mErrors = new Vector<String>(0, 1);
         getProperties().put("RoutingScriptName", "");
         getProperties().put("RoutingScriptVersion", "");
+        getProperties().put("RoutingExpr", "");
 	}
 
 	/**

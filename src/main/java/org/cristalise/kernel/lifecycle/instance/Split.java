@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.cristalise.kernel.common.AccessRightsException;
@@ -33,6 +34,7 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -212,6 +214,39 @@ public abstract class Split extends WfVertex
         }
         loopTested = false;
         return loop2;
+    }
+    
+    public String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
+    	String nexts;
+		String scriptName = (String) getProperties().get("RoutingScriptName");
+		Integer scriptVersion = deriveVersionNumber(getProperties().get("RoutingScriptVersion"));
+		String expr = (String) getProperties().get("RoutingExpr");
+		
+		if ((scriptName != null && scriptName.length() > 0) && 
+				(expr == null || expr.length() == 0)) {
+	        try {
+				nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
+			} catch (ScriptingEngineException e) {
+				Logger.error(e);
+				throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
+			}
+		}
+		else if (expr != null && expr.length() > 0){
+			try {
+				nexts = evaluatePropertyValue(itemPath, expr, null).toString();
+			} catch (Exception e) {
+				Logger.error(e);
+				throw new InvalidDataException("XORSplit expression evaulation failed: "+expr+" with "+e.getMessage());
+			}
+		}
+		else
+			throw new InvalidDataException("XORSplit encountered without valid routing script nor expression");
+		
+        StringTokenizer tok = new StringTokenizer(nexts,",");
+        String[] nextsTab = new String[tok.countTokens()];
+        for (int i=0;i<nextsTab.length;i++)
+            nextsTab[i] = tok.nextToken();
+        return nextsTab;
     }
 
     public String[] nextNames()

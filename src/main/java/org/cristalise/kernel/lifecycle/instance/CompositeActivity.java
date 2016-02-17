@@ -58,6 +58,7 @@ public class CompositeActivity extends Activity
     {
         super();
         getProperties().put("Abortable", false);
+        getProperties().put("RepeatWhen", "false");
         try {
 			setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
 		} catch (InvalidDataException e) { } // shouldn't happen with an empty one
@@ -538,8 +539,16 @@ public class CompositeActivity extends Activity
         		abort();
         	else
         		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
+        }
         
-        if (getChildrenGraphModel().getStartVertex() != null && getStateMachine().getState(state).equals(getStateMachine().getInitialState()))
+        if (getStateMachine().getTransition(transitionID).reinitializes()) {
+        	int preserveState = state;
+        	reinit(getID());
+        	setState(preserveState);
+        }
+        
+        if (getChildrenGraphModel().getStartVertex() != null && (getStateMachine().getState(state).equals(getStateMachine().getInitialState())
+        		|| getStateMachine().getTransition(transitionID).reinitializes()))
         	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
         
         return super.request(agent, delegator, itemPath, transitionID, requestData, locker);

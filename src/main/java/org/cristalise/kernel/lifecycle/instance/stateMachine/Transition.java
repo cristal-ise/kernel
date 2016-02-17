@@ -54,6 +54,7 @@ public class Transition {
 	// activation properties
 	boolean requiresActive = true; // Whether the activity must be active for this transition to be available
 	boolean finishing; // whether the target state is a finishing state;
+	boolean reinitializes = false;
 	
 	// permissions
 	String roleOverride;
@@ -114,6 +115,16 @@ public class Transition {
 	
 	public boolean isFinishing() {
 		return finishing;
+	}
+
+	public boolean reinitializes() {
+		return reinitializes;
+	}
+	
+	public void setReinitializes(boolean reinit) {
+		if (finishing) throw new RuntimeException("Transition cannot be both reinitializing and finishing");
+		Logger.debug("Reinit: "+reinit);
+		reinitializes = reinit;
 	}
 
 	public void setRequiresActive(boolean requiresActive) {
@@ -200,7 +211,7 @@ public class Transition {
 	public String getPerformingRole(Activity act, AgentPath agent) throws ObjectNotFoundException, AccessRightsException {
 		
 		// check available
-		if (!isEnabled(act.getProperties()))
+		if (!isEnabled(act))
 			throw new AccessRightsException("Transition '"+name+"' is disabled by the '"+enabledProp+"' property.");
 		
 		// check active
@@ -276,10 +287,17 @@ public class Transition {
 		return result;
 	}
 	
-	public boolean isEnabled(CastorHashMap props) {
+	public boolean isEnabled(Activity act) throws ObjectNotFoundException {
 		if (enabledProp == null)
 			return true;
-		return (Boolean)props.get(enabledProp);
+		Object propValue;
+		try {
+			propValue = act.evaluateProperty(null, enabledProp, null);
+		} catch (Exception e) {
+			Logger.error(e);
+			throw new ObjectNotFoundException(e.getMessage());
+		}
+		return new Boolean(propValue.toString());
 	}
 
 	public boolean hasOutcome(CastorHashMap actProps) {

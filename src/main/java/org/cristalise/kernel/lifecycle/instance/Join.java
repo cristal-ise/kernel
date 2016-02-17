@@ -82,8 +82,6 @@ public class Join extends WfVertex
 				WfVertex nextAct = (WfVertex) outVertices[0];
 				nextAct.run(agent, item, locker);
 			}
-			else
-				super.runNext(agent, item, locker);
 		}
 	}
 	/**

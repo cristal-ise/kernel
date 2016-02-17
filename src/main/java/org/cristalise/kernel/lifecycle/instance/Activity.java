@@ -376,7 +376,7 @@ public class Activity extends WfVertex
 	{
 		Vertex[] outVertices = getOutGraphables();
 		setState(getStateMachine().getInitialState().getId());
-		if (outVertices.length > 0)
+		if (outVertices.length > 0 && idLoop != getID())
 		{
 			WfVertex nextAct = (WfVertex) outVertices[0];
 			nextAct.reinit(idLoop);

@@ -55,6 +55,7 @@
 						<xs:attribute name="origin" type="xs:int" use="required" />
 						<xs:attribute name="target" type="xs:int" use="required" />
 						<xs:attribute name="enablingProperty" type="xs:string" />
+						<xs:attribute name="reinitializes" type="xs:boolean" />
 						<xs:attribute name="roleOverride" type="xs:string" />
 						<xs:attribute name="reservation">
 							<xs:simpleType>

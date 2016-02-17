@@ -66,6 +66,9 @@
 		<field name="enabledProp" type="string" direct="false">
 			<bind-xml name="enablingProperty" node="attribute" />
 		</field>
+		<field name="reinitializes" type="boolean" direct="false" get-method="reinitializes" set-method="setReinitializes">
+			<bind-xml name="reinitializes" node="attribute" />
+		</field>		
 		<field name="roleOverride" type="string" direct="false">
 			<bind-xml name="roleOverride" node="attribute" />
 		</field>

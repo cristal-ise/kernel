@@ -27,6 +27,7 @@
 
               <Transition id="0" name="Start" origin="0" target="1"/>
               <Transition id="1" name="Complete" origin="1" target="2"/>
+              <Transition id="2" name="Loop" origin="1" target="1" enablingProperty="RepeatWhen" reinitializes="true"/>
 </StateMachine>
 
 

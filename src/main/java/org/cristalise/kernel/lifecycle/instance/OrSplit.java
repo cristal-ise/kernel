@@ -19,13 +19,10 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance;
-import java.util.StringTokenizer;
-
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.DirectedEdge;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -42,46 +39,32 @@ public class OrSplit extends Split
 		super();
 	}
 	@Override
-	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
 	{
-		String nexts;
-		String scriptName = (String) getProperties().get("RoutingScriptName");
-		Integer scriptVersion = deriveVersionNumber(getProperties().get("RoutingScriptVersion"));
-        try {
-			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
-		} catch (ScriptingEngineException e) {
-			Logger.error(e);
-			throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
-		}
-		StringTokenizer tok = new StringTokenizer(nexts, ",");
-		Logger.msg(7, tok.countTokens() + " nexts to activate:" + nexts);
+		String[] nextsTab = calculateNexts(itemPath, locker);
+		
 		int active = 0;
-		try
-		{
-			DirectedEdge[] outEdges = getOutEdges();
-//            AdvancementCalculator adv = new AdvancementCalculator();
-//            adv.calculate((CompositeActivity)getParent());
-			while (tok.hasMoreTokens())
-			{
-				String thisNext = tok.nextToken();
-				Logger.msg(7, "Finding next " + thisNext);
-				for (DirectedEdge outEdge : outEdges) {
-					Next nextEdge = (Next) outEdge;
-					if (thisNext != null && thisNext.equals(nextEdge.getProperties().get("Alias")))
-					{
-                        WfVertex term = nextEdge.getTerminusVertex();
-                        term.run(agent, itemPath, locker);
-						Logger.msg(7, "Running " + nextEdge.getProperties().get("Alias"));
-						active++;
+		DirectedEdge[] outEdges = getOutEdges();
+		for (String thisNext : nextsTab) {
+			Logger.msg(7, "Finding next " + thisNext);
+			for (DirectedEdge outEdge : outEdges) {
+				Next nextEdge = (Next) outEdge;
+				if (thisNext != null && thisNext.equals(nextEdge.getProperties().get("Alias")))
+				{
+                    WfVertex term = nextEdge.getTerminusVertex();
+                    try {
+						term.run(agent, itemPath, locker);
+					} catch (InvalidDataException e) {
+						Logger.error(e);
+						throw new InvalidDataException("Error enabling next "+thisNext);
 					}
+					Logger.msg(7, "Running " + nextEdge.getProperties().get("Alias"));
+					active++;
 				}
 			}
-			// if no active nexts throw exception
 		}
-		catch (Exception e)
-		{
-			Logger.error(e);
-		}
+
+		// if no active nexts throw exception
 		if (active == 0)
 			throw new InvalidDataException("No nexts were activated!");
 	}

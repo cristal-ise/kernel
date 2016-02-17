@@ -21,14 +21,11 @@
 package org.cristalise.kernel.lifecycle.instance;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.DirectedEdge;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.scripting.ScriptingEngineException;
-import org.cristalise.kernel.utils.Logger;
 
 
 /**
@@ -48,28 +45,17 @@ public class XOrSplit extends Split
     @Override
 	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
-        ArrayList<DirectedEdge> nextsToFollow = new ArrayList<DirectedEdge>();
-        String nexts;
-		String scriptName = (String) getProperties().get("RoutingScriptName");
-		Integer scriptVersion = deriveVersionNumber(getProperties().get("RoutingScriptVersion"));
-        try {
-			nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
-		} catch (ScriptingEngineException e) {
-			Logger.error(e);
-			throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
-		}
 
-        StringTokenizer tok = new StringTokenizer(nexts,",");
-        String[] nextsTab = new String[tok.countTokens()];
-        for (int i=0;i<nextsTab.length;i++)
-            nextsTab[i] = tok.nextToken();
+        String[] nextsTab = calculateNexts(itemPath, locker);
+
+        ArrayList<DirectedEdge> nextsToFollow = new ArrayList<DirectedEdge>();
 
         DirectedEdge[] outEdges = getOutEdges();
         for (DirectedEdge outEdge : outEdges) {
             if (isInTable((String)((Next)outEdge).getProperties().get("Alias"), nextsTab))
                 nextsToFollow.add(outEdge);
         }
-//        Logger.debug(0, getID()+" following "+nexts);
+
         if (nextsToFollow.size() != 1)
             throw new InvalidDataException("not good number of active next");
 

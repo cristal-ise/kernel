@@ -90,7 +90,8 @@ public class CompositeActivityDef extends ActivityDef
 	public CompositeActivityDef()
 	{
 		super();
-		getProperties().put("Abortable", false);
+        getProperties().put("Abortable", false);
+        getProperties().put("RepeatWhen", "false");
 		try {
 			setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
 		} catch (InvalidDataException e) { } //shouldn't happen with an empty one

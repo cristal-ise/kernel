@@ -94,17 +94,8 @@ public abstract class WfVertex extends GraphableVertex
      * @throws ObjectAlreadyExistsException 
      * @throws ObjectCannotBeUpdated 
      */
-    public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
- {
-        try {
-            ((CompositeActivity) getParent()).request(agent, null, itemPath, CompositeActivity.COMPLETE, null, locker);
-        } 
-        catch (Exception e) {
-            // Logger.error(e);
-        }
-
-    }
-
+    public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
+ 
     /**
      * Method reinit.
      * @param idLoop
@@ -150,47 +141,59 @@ public abstract class WfVertex extends GraphableVertex
      * @param vertex
      */
 	public abstract Next addNext(WfVertex vertex);
+	
+	public Object evaluateProperty(ItemPath itemPath, String propName, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+		return evaluatePropertyValue(itemPath, getProperties().get(propName), locker);
+	}
 
+	public Object evaluatePropertyValue(ItemPath itemPath, Object propValue, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+
+		if (!(propValue instanceof String) || !((String)propValue).contains("//")) //
+			return propValue;
+		String propValString = (String)propValue;
+		DataHelper dataHelper;
+        String[] valueSplit = propValString.split("//");
+
+        if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+propValue);
+
+        String pathType = valueSplit[0];
+        String dataPath = valueSplit[1];
+        
+        //derive the parent composite in which the script is running
+        String actContext = getPath();
+        actContext = actContext.substring(0, actContext.lastIndexOf('/'));
+
+        switch (pathType) {
+        case "viewpoint":
+            dataHelper = new ViewpointDataHelper();
+            break;
+        case "property":
+            dataHelper = new PropertyDataHelper();
+            break;
+        case "activity":
+            dataHelper = new ActivityDataHelper();
+            break;
+        default: // No recognized helper, just return the raw value
+            return propValue;
+        }
+        if (itemPath == null) itemPath = getWf().getItemPath();
+        dataHelper.setItemPath(itemPath);
+
+        return dataHelper.get(actContext, dataPath, locker);
+	}
+	
+	
     protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath, Object locker) throws ScriptingEngineException
     {
         try {
             Script script = getScript(scriptName, scriptVersion);
             HashMap<?, ?> scriptInputParams = script.getAllInputParams();
             
-            //derive the parent composite in which the script is running
-            String actContext = getPath();
-            actContext = actContext.substring(0, actContext.lastIndexOf('/'));
-            
             for (KeyValuePair vertexProp : getProperties().getKeyValuePairs()) {
                 if (scriptInputParams.containsKey(vertexProp.getKey())) {
-                    String value = vertexProp.getStringValue();
+                    Object value = vertexProp.getValue();
                     Logger.msg(5,"WfVertex.evaluateScript() - Match found for '"+vertexProp.getKey()+"' => setting value from " + value);
-
-                    DataHelper dataHelper;
-                    String[] valueSplit = value.split("//");
-
-                    if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+value);
-
-                    String pathType = valueSplit[0];
-                    String dataPath = value.substring(pathType.length()+2);
-
-                    switch (pathType) {
-                    case "viewpoint":
-                        dataHelper = new ViewpointDataHelper();
-                        break;
-                    case "property":
-                        dataHelper = new PropertyDataHelper();
-                        break;
-                    case "activity":
-                        dataHelper = new ActivityDataHelper();
-                        break;
-                    default:
-                        throw new InvalidDataException("Unknown data type (viewpoint/property/activity): "+value);
-                    }
-        			if (itemPath == null) itemPath = getWf().getItemPath();
-        			
-        			dataHelper.setItemPath(itemPath);
-                    String inputParam = dataHelper.get(actContext, dataPath, locker);
+                    Object inputParam = evaluatePropertyValue(itemPath, value, locker);
                     Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
                     script.setInputParamValue(vertexProp.getKey(), inputParam);
                 }
