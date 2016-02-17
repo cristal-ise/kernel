@@ -508,7 +508,8 @@ public class Script implements DescriptionObject
         		outputValue = returnValue;
         	else
         		outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-        	Logger.msg(4, "Script.execute() - Output parameter "+outputName+"="+(outputValue==null?"null":outputValue.toString()));
+        	if (outputValue!=null || outputName != null)
+        	Logger.msg(4, "Script.execute() - Output parameter"+(outputName==null?" ":outputName+" ")+"= "+(outputValue==null?"null":outputValue.toString()));
         	
        		// check the class
        		if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))
