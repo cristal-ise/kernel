@@ -123,7 +123,6 @@ public class Transition {
 	
 	public void setReinitializes(boolean reinit) {
 		if (finishing) throw new RuntimeException("Transition cannot be both reinitializing and finishing");
-		Logger.debug("Reinit: "+reinit);
 		reinitializes = reinit;
 	}
 
