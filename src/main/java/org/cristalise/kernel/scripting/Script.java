@@ -194,7 +194,9 @@ public class Script implements DescriptionObject
     
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
     	String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
-    	engine = new ScriptEngineManager(getClass().getClassLoader()).getEngineByName(lang);
+    	ScriptEngineManager sem = (ScriptEngineManager)Gateway.getProperties().getObject("Script.EngineManager");
+    	if (sem == null) sem = new ScriptEngineManager(getClass().getClassLoader());
+    	engine = sem.getEngineByName(lang);
     	if (engine==null)
     		throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
     	Bindings beans = engine.createBindings();
