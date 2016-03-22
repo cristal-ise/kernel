@@ -40,14 +40,6 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
  */
 public class ActivityDataHelper implements DataHelper {
 
-	ItemPath item;
-	
-	@Override
-	public void setItemPath(ItemPath itemPath) {
-		this.item = itemPath;
-		
-	}
-
     public ActivityDataHelper() {}
 
     /**
@@ -64,10 +56,10 @@ public class ActivityDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(String actContext, String dataPath, Object locker)
+	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        Workflow workflow = (Workflow) Gateway.getStorage().get(item, ClusterStorage.LIFECYCLE, locker);
+        Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterStorage.LIFECYCLE, locker);
 
         String[] paths = dataPath.split(":");
 
@@ -92,8 +84,8 @@ public class ActivityDataHelper implements DataHelper {
         if (viewName == null || viewName.equals("")) viewName = "last";
 
         // get the viewpoint and outcome
-        Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
-        Outcome oc = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
+        Outcome oc = (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
 
         // apply the XPath to its outcome
         try {

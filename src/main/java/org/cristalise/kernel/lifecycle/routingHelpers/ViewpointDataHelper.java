@@ -38,14 +38,6 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class ViewpointDataHelper implements DataHelper {
 	
-	ItemPath item;
-	
-	@Override
-	public void setItemPath(ItemPath itemPath) {
-		this.item = itemPath;
-		
-	}
-	
     /**
      * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
      * retrieves a single value based on XPath
@@ -60,7 +52,7 @@ public class ViewpointDataHelper implements DataHelper {
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
-	public String get(String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
+	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         String[] paths = dataPath.split(":");
 
@@ -71,13 +63,13 @@ public class ViewpointDataHelper implements DataHelper {
         
         // Leading dot now no longer necessary - remove if present
         if (viewpoint.startsWith("./")) {
-        	Logger.warning("Removing leading dot on viewpoint data helper path at "+actContext+" in "+item.getUUID().toString() + ". Definition should be migrated.");
+        	Logger.warning("Removing leading dot on viewpoint data helper path at "+actContext+" in "+itemPath.getUUID().toString() + ". Definition should be migrated.");
         	viewpoint = viewpoint.substring(2);
         }
         
         // load viewpoint
-        Viewpoint view = (Viewpoint) Gateway.getStorage().get(item, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
-        Outcome outcome = (Outcome)Gateway.getStorage().get(item, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
+        Outcome outcome = (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
 
         // apply the XPath to its outcome
        	try {

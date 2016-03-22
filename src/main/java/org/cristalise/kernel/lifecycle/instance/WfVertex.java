@@ -163,23 +163,34 @@ public abstract class WfVertex extends GraphableVertex
         String actContext = getPath();
         actContext = actContext.substring(0, actContext.lastIndexOf('/'));
 
-        switch (pathType) {
-        case "viewpoint":
-            dataHelper = new ViewpointDataHelper();
-            break;
-        case "property":
-            dataHelper = new PropertyDataHelper();
-            break;
-        case "activity":
-            dataHelper = new ActivityDataHelper();
-            break;
-        default: // No recognized helper, just return the raw value
+        try {
+            dataHelper = getDataHelper(pathType);
+        } catch (ObjectNotFoundException ex) { // No recognized helper, just return the raw value
             return propValue;
         }
         if (itemPath == null) itemPath = getWf().getItemPath();
-        dataHelper.setItemPath(itemPath);
 
-        return dataHelper.get(actContext, dataPath, locker);
+        return dataHelper.get(itemPath, actContext, dataPath, locker);
+	}
+	
+	public static DataHelper getDataHelper(String id) throws InvalidDataException, ObjectNotFoundException {
+		Object configHelper = Gateway.getProperties().getObject("DataHelper."+id);
+		if (configHelper != null) {
+			if (configHelper instanceof DataHelper) 
+				return (DataHelper)configHelper;
+			else 
+				throw new InvalidDataException("Property DataHelper."+id+" was not a DataHelper: " +configHelper.toString());
+		}
+		else
+			switch (id) {
+	        case "viewpoint":
+	            return new ViewpointDataHelper();
+	        case "property":
+	        	return new PropertyDataHelper();
+	        case "activity":
+	        	return new ActivityDataHelper();
+			}
+		throw new ObjectNotFoundException("Data helper '"+id+"' unknown");
 	}
 	
 	

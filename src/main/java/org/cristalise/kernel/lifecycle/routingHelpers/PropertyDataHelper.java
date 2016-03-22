@@ -30,19 +30,12 @@ import org.cristalise.kernel.property.Property;
 
 public class PropertyDataHelper implements DataHelper {
 
-	ItemPath item;
-	
 	@Override
-	public void setItemPath(ItemPath itemPath) {
-		this.item = itemPath;
-		
-	}
-	@Override
-	public String get(String actContext, String dataPath, Object locker)
+	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker)
 			throws InvalidDataException, PersistencyException,
 			ObjectNotFoundException {
 		//Syntax of search : <PropertyName>
-		Property prop = (Property)Gateway.getStorage().get(item, ClusterStorage.PROPERTY+"/"+dataPath, locker);
+		Property prop = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+dataPath, locker);
 		return prop.getValue();
 	}
 	
