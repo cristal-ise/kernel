@@ -12,8 +12,8 @@
 	Every change of a state in an Item is a consequence of an execution of an activity in that Item's lifecycle, 
 	meaning that Cristal-ise applications are completely traceable, even in their design. It also supports extensive 
 	versioning of Item description data, giving the system a high level of flexibility.</description>
-	<url>http://dev.cccs.uwe.ac.uk/docs/${project.artifactId}/${project.version}/</url>
-	<inceptionYear>2000</inceptionYear>
+	<url>https://github.com/cristal-ise/kernel</url>
+	<inceptionYear>1997</inceptionYear>
 	<licenses>
 		<license>
 			<name>GNU Library or Lesser General Public License v3 (LGPL3)</name>
@@ -76,18 +76,14 @@
 		</mailingList>
 	</mailingLists>
 	<distributionManagement>
-		<repository>
-			<id>cccs.releases</id>
-			<url>http://dev.cccs.uwe.ac.uk:8081/nexus/content/repositories/releases</url>
-		</repository>
 		<snapshotRepository>
-			<id>cccs.snapshots</id>
-			<url>http://dev.cccs.uwe.ac.uk:8081/nexus/content/repositories/snapshots</url>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
-		<site>
-			<id>cccs.web</id>
-			<url>file:/var/www/docs/${project.artifactId}/${project.version}/</url>
-		</site>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
 	</distributionManagement>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -315,6 +311,14 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>		
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -372,47 +376,53 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>cccs.releases</id>
-			<name>CCCS Nexus Release Repository</name>
-			<url>http://dev.cccs.uwe.ac.uk:8081/nexus/content/repositories/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>cccs.snapshots</id>
-			<name>CCCS Nexus Snapshot Repository</name>
-			<url>http://dev.cccs.uwe.ac.uk:8081/nexus/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>cccs.public</id>
-			<name>CCCS Nexus Public Repository</name>
-			<url>http://dev.cccs.uwe.ac.uk:8081/nexus/content/repositories/public</url>
-		</repository>
-	</repositories>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<show>public</show>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
+	
+    <profiles>
+        <profile>
+            <id>ossrh</id>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.defaultKeyring>false</gpg.defaultKeyring>
+                <gpg.publicKeyring>${env.GPG_DIR}/pubring.gpg</gpg.publicKeyring>
+                <gpg.secretKeyring>${env.GPG_DIR}/secring.gpg</gpg.secretKeyring>
+            </properties>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.2</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>	
 </project>
