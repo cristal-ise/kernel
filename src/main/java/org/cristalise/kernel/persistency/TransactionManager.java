@@ -253,7 +253,12 @@ public class TransactionManager {
                 dumpPendingTransactions(0);
 				Logger.die("Database failure");
             }
-            storage.commit(locker);
+			try {
+				storage.commit(locker);
+			} catch (PersistencyException e) {
+				storage.abort(locker);
+				Logger.die("Transactional database failure");
+			}
         }
     }
 

@@ -442,7 +442,7 @@ public class ClusterStorageManager {
 		}	
 	}
 	
-	public void commit(Object locker) {
+	public void commit(Object locker) throws PersistencyException {
 		for (TransactionalClusterStorage thisStore : transactionalStores) {
 			thisStore.commit(locker);
 		}	
