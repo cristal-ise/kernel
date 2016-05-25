@@ -5,7 +5,7 @@
 	<groupId>org.cristalise</groupId>
 	<artifactId>cristalise-kernel</artifactId>
 	<name>cristalise-kernel</name>
-	<version>3.2</version>
+	<version>3.3-SNAPSHOT</version>
 	<description>Cristal-ise is a description-driven software platform originally developed to track the construction of 
 	the CMS ECAL detector of the LHC at CERN. This is its core library, known as the kernel, which manages 
 	business objects called Items. Items are entirely configured from data, called descriptions, held in other Items. 
@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>2.4.3</version>
+			<version>2.4.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -198,7 +198,7 @@
 									<pluginExecutionFilter>
 										<groupId>org.codehaus.mojo</groupId>
 										<artifactId>idlj-maven-plugin</artifactId>
-										<versionRange>[1.1,)</versionRange>
+										<versionRange>[1.2,)</versionRange>
 										<goals>
 											<goal>generate</goal>
 										</goals>
@@ -235,12 +235,15 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>idlj-maven-plugin</artifactId>
-				<version>1.1</version>
+				<version>1.2.1</version>
 				<executions>
 					<execution>
 						<goals>
 							<goal>generate</goal>
 						</goals>
+						<configuration>
+						    <encoding>UTF-8</encoding>
+						</configuration>
 					</execution>
 				</executions>
 				<configuration>
@@ -288,6 +291,7 @@
 							<sources>
 								<source>${project.build.directory}/generated-sources/idl/</source>
 							</sources>
+							<encoding>UTF-8</encoding>
 						</configuration>
 					</execution>
 				</executions>
