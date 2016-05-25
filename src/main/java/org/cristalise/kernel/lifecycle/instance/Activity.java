@@ -115,6 +115,9 @@ public class Activity extends WfVertex
 				name = getDefaultSMName();
 				if (version == null) version = 0;
 			}
+			else if(version == null) {
+			    throw new InvalidDataException("Activity property StateMachineVersion is null");
+			}
 			
 			// Try to load the state machine
 			try {
@@ -123,7 +126,7 @@ public class Activity extends WfVertex
 				Logger.error(ex);
 				throw new InvalidDataException("Could not load state machine '"+name+"' v"+version);
 			}
-		} 
+		}
 		return machine;
 	}
 	
