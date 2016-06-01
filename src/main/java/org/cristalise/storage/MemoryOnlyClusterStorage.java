@@ -36,6 +36,10 @@ import org.cristalise.kernel.utils.Logger;
 public class MemoryOnlyClusterStorage extends ClusterStorage {
 
     HashMap<ItemPath, Map<String, C2KLocalObject>> memoryCache = new HashMap<ItemPath, Map<String, C2KLocalObject>>();
+
+    public void clear() {
+        memoryCache.clear();
+    }
 	/**
 	 * 
 	 */
