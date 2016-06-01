@@ -33,7 +33,6 @@ import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -90,13 +89,9 @@ public class ModuleActivity extends ModuleResource {
 		for (Collection<?> coll : colls.list) {
 			try {
 				Gateway.getStorage().put(itemPath, coll, null);
-				// create last collection if not present
-				try {
-					Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+coll.getName()+"/last", null);
-				} catch (ObjectNotFoundException ex) {
-					coll.setVersion(null);
-					Gateway.getStorage().put(itemPath, coll, null);
-				}
+				// create last collection
+				coll.setVersion(null);
+				Gateway.getStorage().put(itemPath, coll, null);
 			} catch (PersistencyException e) {
 				Logger.error(e);
 				throw new CannotManageException("Persistency exception storing description collections for "+getName()+".");
