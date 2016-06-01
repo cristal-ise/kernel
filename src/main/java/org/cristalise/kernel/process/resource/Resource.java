@@ -166,7 +166,7 @@ public class Resource implements ResourceLoader {
 	public String getTextResource(String ns, String resName) throws ObjectNotFoundException
     //        throws IOException
     {
-        Logger.msg(8, "Resource::getTextResource() - Getting resource from "+ns+": " + resName);
+        Logger.msg(8, "Resource::getTextResource() - Getting resource from namespacce "+ns+": " + resName);
 
         if (txtCache.containsKey(ns+'/'+resName)) {
             return txtCache.get(ns+'/'+resName);
@@ -186,6 +186,7 @@ public class Resource implements ResourceLoader {
             txtCache.put(ns+'/'+resName, newRes);
             return newRes;
         } catch (Exception e) {
+            Logger.error(e);
             throw new ObjectNotFoundException(e.getMessage());
         }
     }
