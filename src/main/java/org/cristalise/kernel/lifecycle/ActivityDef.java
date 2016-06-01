@@ -264,6 +264,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		for (DependencyMember resMem : resColl.getMembers().list) {
 			String resUUID = resMem.getChildUUID();
 			Integer resVer = deriveVersionNumber(resMem.getProperties().get("Version"));
+
+			if(resVer == null) throw new InvalidDataException("Collection "+collName+" DependencyMember version is null");
+
 			switch (collName) {
 			case SCHCOL:
 				retArr.add(LocalObjectLoader.getSchema(resUUID, resVer));
