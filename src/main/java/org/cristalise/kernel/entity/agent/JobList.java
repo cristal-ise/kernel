@@ -40,6 +40,10 @@ import org.cristalise.kernel.utils.Logger;
 public class JobList extends RemoteMap<Job>
 {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1110616958817712975L;
     /**************************************************************************
     * Empty constructor for Castor
     **************************************************************************/
