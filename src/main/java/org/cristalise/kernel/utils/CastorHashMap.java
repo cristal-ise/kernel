@@ -24,82 +24,76 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * This subclass of HashMap can be marshalled and unmarshalled with Castor
+ */
+public class CastorHashMap extends HashMap<String, Object> {
 
-// This subclass of hashtable can be marshalled
-// and unmarshalled with Castor
-public class CastorHashMap extends HashMap<String,Object>
-{
-    public CastorHashMap()
-    {
+    private static final long serialVersionUID = -8756025533843275162L;
+
+    public CastorHashMap() {
         clear();
     }
-    
+
     ArrayList<String> abstractPropNames = new ArrayList<String>();
 
-    public KeyValuePair[] getKeyValuePairs()
-    {
-        int            numKeys       = size();
+    public KeyValuePair[] getKeyValuePairs() {
+        int numKeys = size();
+        int i = 0;
 
         KeyValuePair[] keyValuePairs = new KeyValuePair[numKeys];
-        Iterator<String> keyIter     = keySet().iterator();
-        int            i             = 0;
+        Iterator<String> keyIter = keySet().iterator();
 
-        for(i=0; i<numKeys; i++)
-            if (keyIter.hasNext())
-            {
+        for (i = 0; i < numKeys; i++)
+            if (keyIter.hasNext()) {
                 String name = keyIter.next();
-                keyValuePairs[i]   = new KeyValuePair(name ,get(name), abstractPropNames.contains(name));
+                keyValuePairs[i] = new KeyValuePair(name, get(name), abstractPropNames.contains(name));
             }
 
         return keyValuePairs;
     }
 
-
-    public void setKeyValuePairs(KeyValuePair[] keyValuePairs)
-    {
+    public void setKeyValuePairs(KeyValuePair[] keyValuePairs) {
         int i = 0;
 
         // Clears this hashtable so that it contains no keys
         clear();
 
         // Put each key value pair into this hashtable
-        for(i=0; i<keyValuePairs.length; i++)
-        {
+        for (i = 0; i < keyValuePairs.length; i++) {
             setKeyValuePair(keyValuePairs[i]);
         }
     }
 
     @Override
-	public void clear() {
-		super.clear();
-		abstractPropNames = new ArrayList<String>();
-	}
-
-
-	public void setKeyValuePair(KeyValuePair keyValuePair)
-    {
-	    put(keyValuePair.getKey(), keyValuePair.getValue());
-	    if (keyValuePair.isAbstract())
-	    	abstractPropNames.add(keyValuePair.getKey());
-	    else
-	    	abstractPropNames.remove(keyValuePair.getKey());
+    public void clear() {
+        super.clear();
+        abstractPropNames = new ArrayList<String>();
     }
 
-	public ArrayList<String> getAbstract() {
-		return abstractPropNames;
-	}
-	
-	public boolean isAbstract(String propName) {
-		return abstractPropNames.contains(propName);
-	}
+    public void setKeyValuePair(KeyValuePair keyValuePair) {
+        put(keyValuePair.getKey(), keyValuePair.getValue());
+        
+        if (keyValuePair.isAbstract())
+            abstractPropNames.add(keyValuePair.getKey());
+        else
+            abstractPropNames.remove(keyValuePair.getKey());
+    }
 
+    public ArrayList<String> getAbstract() {
+        return abstractPropNames;
+    }
 
-	public void put(String key, Object value, boolean isAbstract) {
-		super.put(key, value);
-		if (isAbstract) 
-			abstractPropNames.add(key);
-		else 
-			abstractPropNames.remove(key);
-		
-	}
+    public boolean isAbstract(String propName) {
+        return abstractPropNames.contains(propName);
+    }
+
+    public void put(String key, Object value, boolean isAbstract) {
+        super.put(key, value);
+
+        if (isAbstract)
+            abstractPropNames.add(key);
+        else
+            abstractPropNames.remove(key);
+    }
 }
