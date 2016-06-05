@@ -24,8 +24,11 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.entity.agent.Job;
 
 
+/**
+ * OutcomeInitator can be defined to construct an initial state for the Outcome
+ */
 public interface OutcomeInitiator {
 
-	public String initOutcome(Job job) throws InvalidDataException;
-
+    public String initOutcome(Job job) throws InvalidDataException;
+    public Outcome initOutcomeInstance(Job job) throws InvalidDataException;
 }
