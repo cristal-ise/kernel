@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Dependency;
@@ -39,39 +38,32 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
+/**
+ * 
  *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class AddMemberToCollection extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public AddMemberToCollection()
-    {
+ */
+public class AddMemberToCollection extends PredefinedStep {
+    /**
+     * Constructor for Castor
+     */
+    public AddMemberToCollection() {
         super();
     }
 
-
     /**
+     * <pre>
      * Generates a new slot in a Dependency for the given item
      * 
      * Params:
      * 0 - collection name
      * 1 - target entity key
      * 2 - slot properties
-     * @throws ObjectAlreadyExistsException 
-     * @throws PersistencyException 
-     * @throws ObjectNotFoundException 
-     * @throws InvalidCollectionModification 
+     * </pre>
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification {
-    	
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification
+    {
         String collName;
         ItemPath newChild;
         Dependency dep;
@@ -79,34 +71,40 @@ public class AddMemberToCollection extends PredefinedStep
 
         // extract parameters
         String[] params = getDataList(requestData);
+
         if (Logger.doLog(3)) Logger.msg(3, "AddMemberToCollection: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+
         try {
             collName = params[0];
-        	try {
-        		newChild = new ItemPath(params[1]);
-        	} catch (InvalidItemPathException e) {
-        		newChild = new DomainPath(params[1]).getItemPath();
-        	}
-            if (params.length > 2)
-            	props = (CastorHashMap)Gateway.getMarshaller().unmarshall(params[2]);
-            
-        } catch (Exception e) {
+            try {
+                newChild = new ItemPath(params[1]);
+            } 
+            catch (InvalidItemPathException e) {
+                newChild = new DomainPath(params[1]).getItemPath();
+            }
+            if (params.length > 2) {
+                Logger.msg(3, "AddMemberToCollection: Unmarshalling Properties");
+                props = (CastorHashMap)Gateway.getMarshaller().unmarshall(params[2]);
+            }
+        }
+        catch (Exception e) {
+            Logger.error(e);
             throw new InvalidDataException("AddMemberToCollection: Invalid parameters "+Arrays.toString(params));
         }
 
         // load collection
-    	C2KLocalObject collObj;
-		collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
-    	if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection: AddMemberToCollection operates on Dependency collections only.");
+        C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+
+        if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection: AddMemberToCollection operates on Dependency collections only.");
+
         dep = (Dependency)collObj;
-        
+
         // find member and assign entity
-    	if (props == null)
-    		dep.addMember(newChild);
-    	else
-    		dep.addMember(newChild, props, dep.getClassProps());
+        if (props == null) dep.addMember(newChild);
+        else               dep.addMember(newChild, props, dep.getClassProps());
 
         Gateway.getStorage().put(item, dep, locker);
+
         return requestData;
     }
 }

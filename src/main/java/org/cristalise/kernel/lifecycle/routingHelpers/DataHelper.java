@@ -27,6 +27,21 @@ import org.cristalise.kernel.lookup.ItemPath;
 
 public interface DataHelper {
 
-	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException;
-
+    /**
+     * Data helpers are a mechanism that allows easy referencing of different types of data 
+     * within an Item, in order to use that data for process control or generating new data. 
+     * They are referenced using a URI-like syntax, usually in workflow vertex properties.
+     * Check wiki for more information.
+     * 
+     * @param itemPath the current item to be used
+     * @param actContext the current Activity path in which the DataHelper is used
+     * @param dataPath its content is implementation specidifc
+     * @param locker the transaction locker object used for ClusterStorage methods
+     * @return The resolved value
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     */
+    public String get(ItemPath itemPath, String actContext, String dataPath, Object locker) 
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException;
 }

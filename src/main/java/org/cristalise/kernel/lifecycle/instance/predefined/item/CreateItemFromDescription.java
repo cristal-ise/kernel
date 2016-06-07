@@ -195,6 +195,16 @@ public class CreateItemFromDescription extends PredefinedStep {
         }
     }
 
+    /**
+     * Copies the CollectionDescriptions of the Item requesting this predefined step.
+     * 
+     * @param itemPath
+     * @param descVer
+     * @param locker
+     * @return
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     */
     protected CollectionArrayList getNewCollections(ItemPath itemPath, String descVer, Object locker) 
             throws ObjectNotFoundException, PersistencyException
     {
