@@ -34,9 +34,10 @@ import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.LocalObjectLoader;
+import org.cristalise.kernel.utils.Logger;
 
 /**
- * Implements the Routing DataHelper to get Outcome data using Activity path and XPath. 
+ * Implements the DataHelper to get Outcome data using Activity path and XPath. DataHelpers ares 
  */
 public class ActivityDataHelper implements DataHelper {
 
@@ -50,7 +51,7 @@ public class ActivityDataHelper implements DataHelper {
      * @param dataPath syntax is <pre><ActivityPath>:<XPathinOutcome></pre> e.g. workflow/domain/first:/testdata/counter.
      *                 XPath must select a single node.
      * @param locker the transaction locker object
-     * @return
+     * @return resolved value
      * @throws InvalidDataException dataPath has incorrect syntax
      * @throws PersistencyException 
      * @throws ObjectNotFoundException item or its data cannot be found in storage 
@@ -59,6 +60,8 @@ public class ActivityDataHelper implements DataHelper {
 	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
+        Logger.msg(5,"ActivityDataHelper.get() - item:"+itemPath+", actContext:"+actContext+", dataPath:"+dataPath);
+
         Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterStorage.LIFECYCLE, locker);
 
         String[] paths = dataPath.split(":");
@@ -71,7 +74,7 @@ public class ActivityDataHelper implements DataHelper {
         if (actPath.startsWith(".")) {
         	actPath = actContext+(actContext.endsWith("/")?"":"/")+actPath.substring(2);
         }
-        
+
         // Find the referenced activity
         GraphableVertex act = workflow.search(actPath);
 
@@ -85,7 +88,7 @@ public class ActivityDataHelper implements DataHelper {
 
         // get the viewpoint and outcome
         Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
-        Outcome oc = (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Outcome   oc   = (Outcome)   Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"  +schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
 
         // apply the XPath to its outcome
         try {
@@ -95,5 +98,4 @@ public class ActivityDataHelper implements DataHelper {
             throw new InvalidDataException("Invalid XPath: "+paths[1]);
         }
     }
-
 }
