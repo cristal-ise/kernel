@@ -265,7 +265,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			String resUUID = resMem.getChildUUID();
 			Integer resVer = deriveVersionNumber(resMem.getProperties().get("Version"));
 
-			if(resVer == null) throw new InvalidDataException("Collection "+collName+" DependencyMember version is null");
+			if(resVer == null) throw new InvalidDataException("Version is null for Item:"+itemPath+", Collection:"+collName+", DependencyMember:"+resUUID);
 
 			switch (collName) {
 			case SCHCOL:
