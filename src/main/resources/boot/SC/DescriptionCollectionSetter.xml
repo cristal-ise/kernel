@@ -1,5 +1,4 @@
 <!--
-
     This file is part of the CRISTAL-iSE kernel.
     Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
 
@@ -21,55 +20,62 @@
 
 -->
 <cristalscript>
-	<param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy"/>
-	<param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy"/>
-	<param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
+    <param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy"/>
+    <param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy"/>
+    <param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
     <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
     <script language="javascript" name="DescriptionCollectionSetter"><![CDATA[
-		importClass(org.cristalise.kernel.utils.LocalObjectLoader);
+    importClass(org.cristalise.kernel.utils.Logger);
+    importClass(org.cristalise.kernel.utils.LocalObjectLoader);
+    importClass(org.cristalise.kernel.utils.CastorHashMap);
 
-		var objType = job.getActPropString("ObjectType");
+    var objType = job.getActPropString("ObjectType");
 
-		if (objType == null || objType.isEmpty()) 
-			throw "ObjectType not specified.";
+    if (objType == null || objType.isEmpty()) 
+    throw "Script:DescriptionCollectionSetter - ObjectType not specified in ActProps of Job.";
 
-		
-		var descColl;
-		try {
-			descColl = item.getObject("/Collection/"+objType+"/last");
-		} catch (e) {
-			throw "Collection "+objType+" does not exist!";
-		}
-		
-		var newObj;
-		var objName = job.getOutcome().getField("ObjectID");
-		var objVer = job.getOutcome().getField("Version");
-		
-		if (objName != null && !objName.isEmpty()) {
-			try {
-				if (objType.equals("Schema"))
-					newObj = LocalObjectLoader.getSchema(objName, objVer);
-				else if (objType.equals("Script"))
-					newObj = LocalObjectLoader.getScript(objName, objVer);
-				else if (objType.equals("StateMachine"))
-					newObj = LocalObjectLoader.getStateMachine(objName, objVer);
-			} catch (e) {
-				throw e;
-			}
-		}
+    var descColl;
+    try {
+        descColl = item.getObject("/Collection/"+objType+"/last");
+    } catch (e) {
+        throw "Script:DescriptionCollectionSetter - Collection/"+objType+"/last does not exist!";
+    }
 
-		var params = new Array(2);
-		params[0] = objType;			
-		if (descColl.size() > 0) {
-			params[1] = descColl.getMembers().list.iterator().next().getID();
-			agent.execute(item, "RemoveSlotFromCollection", params);
-		}
-		
-		if (newObj != null) {
-			params[1] = newObj.getItemID();
-			agent.execute(item, "AddMemberToCollection", params);
-		}
-		
-		
-		]]></script>
+    var newObj;
+    var objName = job.getOutcome().getField("ObjectID");
+    var objVer  = job.getOutcome().getField("Version");
+
+    if (objName != null && !objName.isEmpty()) {
+        try {
+            if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
+            else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
+            else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
+            else 
+                throw "Script:DescriptionCollectionSetter - Unhandled ObjectType:"+objType;
+
+            var params = new Array(2);
+            params[0] = objType;
+
+            if (descColl.size() > 0) {
+                Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member first");
+                params[1] = descColl.getMembers().list.iterator().next().getID();
+                agent.execute(item, "RemoveSlotFromCollection", params);
+            }
+
+            Logger.msg(5, "Script:DescriptionCollectionSetter - Adding new member");
+            var props = new CastorHashMap();
+            props.put("Version", objVer, true);
+
+            params = new Array(3);
+            params[0] = objType;
+            params[1] = newObj.getItemID();
+            params[2] = agent.marshall(props);
+            agent.execute(item, "AddMemberToCollection", params);
+        }
+        catch (e) {
+            Logger.error(e);
+            throw e;
+        }
+    }
+    ]]></script>
 </cristalscript>
