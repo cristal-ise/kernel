@@ -591,10 +591,10 @@ public class Job implements C2KLocalObject
     /**
      * Searches Activity property names using Regular Expressions
      * 
-     * @param regex
-     * @return
+     * @param regex the pattern to be mathced
+     * @return Map of property name and value
      */
-    public Map<String, Object> matchhActPropNames(String regex) {
+    public Map<String, Object> matchActPropNames(String regex) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         for(String propName : actProps.keySet()) {
