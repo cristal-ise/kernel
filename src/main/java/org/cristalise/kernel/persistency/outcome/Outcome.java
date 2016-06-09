@@ -172,9 +172,10 @@ public class Outcome implements C2KLocalObject {
 
     public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
         Node field = getNodeByXPath(xpath);
-        if (field == null)
-            throw new InvalidDataException(xpath);
 
+        if (field == null) {
+            throw new InvalidDataException(xpath);
+        }
         else if (field.getNodeType()==Node.TEXT_NODE || field.getNodeType()==Node.CDATA_SECTION_NODE)
             return field.getNodeValue();
 
@@ -199,8 +200,17 @@ public class Outcome implements C2KLocalObject {
             throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
     }
 
+    /**
+     * Sets the text, CDATA or attribute value of the Node selected by the XPath
+     * 
+     * @param xpath the selected Node to be updated
+     * @param data string containing the data
+     * @throws XPathExpressionException
+     * @throws InvalidDataException
+     */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
         Node field = getNodeByXPath(xpath);
+
         if (field == null) {
             throw new InvalidDataException(xpath);
         }
@@ -229,6 +239,25 @@ public class Outcome implements C2KLocalObject {
             throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
     }
 
+    /**
+     * Append the Node created from xmlFragment as a child of the Node selected by the XPath
+     * 
+     * @param xpath the selected parent node
+     * @param xmlFragment string containing the xml fragment
+     * @return the Node just added
+     * @throws InvalidDataException
+     */
+    public Node appendXmlFragment(String xpath, String xmlFragment) throws InvalidDataException {
+        try {
+            Node parentNode = getNodeByXPath(xpath);
+            Node newNode = parse(xmlFragment).getDocumentElement();
+            return parentNode.appendChild(mDOM.importNode(newNode, true));
+        }
+        catch (SAXException | IOException | XPathExpressionException e) {
+            Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
+        }
+    }
 
     public String getData() {
         return serialize(mDOM, false);
@@ -265,9 +294,11 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Parses the outcome into a DOM tree
-     * @return a DOM Document
-     * @throws IOException 
-     * @throws SAXException 
+     * 
+     * @param xmL string to be parsed
+     * @return the parsed Document
+     * @throws SAXException
+     * @throws IOException
      */
     public static Document parse(String xml) throws SAXException, IOException {
         synchronized (parser) {
@@ -287,21 +318,16 @@ public class Outcome implements C2KLocalObject {
     }
 
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
-
         XPathExpression expr = xpath.compile(xpathExpr);
         return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
-
     }
 
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
-
         XPathExpression expr = xpath.compile(xpathExpr);
         return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
-
     }
 
-    static public String serialize(Document doc, boolean prettyPrint)
-    {
+    static public String serialize(Document doc, boolean prettyPrint) {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer;
         try {
