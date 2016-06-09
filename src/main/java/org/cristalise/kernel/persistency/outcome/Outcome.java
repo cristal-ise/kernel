@@ -64,7 +64,7 @@ public class Outcome implements C2KLocalObject {
     static XPath xpath;
 
     static {
-    	// Set up parser
+        // Set up parser
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
         dbf.setNamespaceAware(false);
@@ -79,20 +79,20 @@ public class Outcome implements C2KLocalObject {
         XPathFactory xPathFactory = XPathFactory.newInstance();
         xpath = xPathFactory.newXPath();
     }
-    
+
     public Outcome(int id, String xml, Schema schema) throws InvalidDataException {
-    	this(id, (Document)null, schema);
-    	try {
-    		mDOM = parse(xml);
-    	} catch (IOException | SAXException ex) {
-    		Logger.error(ex);
-    		throw new InvalidDataException("XML not valid: "+ex.getMessage());
-    	}
+        this(id, (Document)null, schema);
+        try {
+            mDOM = parse(xml);
+        } catch (IOException | SAXException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("XML not valid: "+ex.getMessage());
+        }
     }
-    
+
     public String validate() throws InvalidDataException {
-    	OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
-    	return validator.validate(mDOM);
+        OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
+        return validator.validate(mDOM);
     }
 
     //id is the eventID
@@ -101,19 +101,19 @@ public class Outcome implements C2KLocalObject {
         mDOM = dom;
         mSchema = schema;
     }
-    
+
     public Outcome(String path, String xml) throws PersistencyException, InvalidDataException {
-    	this(path, (Document)null);
-    	try {
-    		mDOM = parse(xml);
-    	} catch (IOException | SAXException ex) {
-    		Logger.error(ex);
-    		throw new InvalidDataException("XML not valid: "+ex.getMessage());
-    	}
+        this(path, (Document)null);
+        try {
+            mDOM = parse(xml);
+        } catch (IOException | SAXException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("XML not valid: "+ex.getMessage());
+        }
     }
 
     public Outcome(String path, Document data) throws PersistencyException, InvalidDataException {
-    // derive all the meta data from the path
+        // derive all the meta data from the path
         StringTokenizer tok = new StringTokenizer(path,"/");
         if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
             throw new PersistencyException("Outcome() - Outcome path must have three components: "+path);
@@ -122,16 +122,16 @@ public class Outcome implements C2KLocalObject {
         String verstring = tok.nextToken();
         String objId = tok.nextToken();
         try {
-        	schemaVersion = Integer.valueOf(verstring);
+            schemaVersion = Integer.valueOf(verstring);
         } catch (NumberFormatException ex) {
             throw new PersistencyException("Outcome() - Outcome version was an invalid number: "+verstring);
         }
         try {
-			mSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-		} catch (ObjectNotFoundException e) {
-			Logger.error(e);
-			throw new PersistencyException("Outcome() - problem loading schema "+schemaName+" v"+schemaVersion);
-		}
+            mSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+        } catch (ObjectNotFoundException e) {
+            Logger.error(e);
+            throw new PersistencyException("Outcome() - problem loading schema "+schemaName+" v"+schemaVersion);
+        }
         try {
             mID = Integer.valueOf(objId);
         } catch (NumberFormatException ex) {
@@ -149,16 +149,16 @@ public class Outcome implements C2KLocalObject {
     }
 
     @Override
-	public void setName(String name) {
-    	try {
-    		mID = Integer.valueOf(name);
-    	} catch (NumberFormatException e) {
-    		Logger.error("Invalid id set on Outcome:"+name);
-    	}
+    public void setName(String name) {
+        try {
+            mID = Integer.valueOf(name);
+        } catch (NumberFormatException e) {
+            Logger.error("Invalid id set on Outcome:"+name);
+        }
     }
 
     @Override
-	public String getName() {
+    public String getName() {
         return mID.toString();
     }
 
@@ -169,79 +169,79 @@ public class Outcome implements C2KLocalObject {
     public void setDOM(Document dom) {
         mDOM = dom;
     }
-    
-    public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
-    	Node field = getNodeByXPath(xpath);
-    	if (field == null)
-    		throw new InvalidDataException(xpath);
-    	
-    	else if (field.getNodeType()==Node.TEXT_NODE || field.getNodeType()==Node.CDATA_SECTION_NODE)
-    		return field.getNodeValue();
-    	
-    	else if (field.getNodeType()==Node.ELEMENT_NODE) {
-    		NodeList fieldChildren = field.getChildNodes();
-    		if (fieldChildren.getLength() == 0) 
-    			throw new InvalidDataException("No child node for element");
-    		
-    		else if (fieldChildren.getLength() == 1) {
-    			Node child = fieldChildren.item(0);
-    			if (child.getNodeType()==Node.TEXT_NODE || child.getNodeType()==Node.CDATA_SECTION_NODE)
-    				return child.getNodeValue();
-    			else
-    				throw new InvalidDataException("Can't get data from child node of type "+child.getNodeName());
-    		}
-    		else 
-    			throw new InvalidDataException("Element "+xpath+" has too many children");
-    	}
-    	else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
-    		return field.getNodeValue();
-    	else
-    		throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
-    }
-    
-    public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
-    	Node field = getNodeByXPath(xpath);
-    	if (field == null)
-    		throw new InvalidDataException(xpath);
 
-    	else if (field.getNodeType()==Node.ELEMENT_NODE) {
-    		NodeList fieldChildren = field.getChildNodes();
-    		if (fieldChildren.getLength() == 0) {
-    			field.appendChild(mDOM.createTextNode(data));
-    		}
-    		else if (fieldChildren.getLength() == 1) {
-    			Node child = fieldChildren.item(0);
-    			switch (child.getNodeType()) {
-    			case Node.TEXT_NODE:
-    			case Node.CDATA_SECTION_NODE:
-    				child.setNodeValue(data);
-    				break;
-    			default:
-    				throw new InvalidDataException("Can't set child node of type "+child.getNodeName());
-    			}
-    		}
-    		else 
-    			throw new InvalidDataException("Element "+xpath+" has too many children");
-    	}
-    	else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
-    		field.setNodeValue(data);
-    	else
-    		throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
+    public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
+        Node field = getNodeByXPath(xpath);
+        if (field == null)
+            throw new InvalidDataException(xpath);
+
+        else if (field.getNodeType()==Node.TEXT_NODE || field.getNodeType()==Node.CDATA_SECTION_NODE)
+            return field.getNodeValue();
+
+        else if (field.getNodeType()==Node.ELEMENT_NODE) {
+            NodeList fieldChildren = field.getChildNodes();
+            if (fieldChildren.getLength() == 0) 
+                throw new InvalidDataException("No child node for element");
+
+            else if (fieldChildren.getLength() == 1) {
+                Node child = fieldChildren.item(0);
+                if (child.getNodeType()==Node.TEXT_NODE || child.getNodeType()==Node.CDATA_SECTION_NODE)
+                    return child.getNodeValue();
+                else
+                    throw new InvalidDataException("Can't get data from child node of type "+child.getNodeName());
+            }
+            else 
+                throw new InvalidDataException("Element "+xpath+" has too many children");
+        }
+        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
+            return field.getNodeValue();
+        else
+            throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
+    }
+
+    public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
+        Node field = getNodeByXPath(xpath);
+        if (field == null) {
+            throw new InvalidDataException(xpath);
+        }
+        else if (field.getNodeType()==Node.ELEMENT_NODE) {
+            NodeList fieldChildren = field.getChildNodes();
+            if (fieldChildren.getLength() == 0) {
+                field.appendChild(mDOM.createTextNode(data));
+            }
+            else if (fieldChildren.getLength() == 1) {
+                Node child = fieldChildren.item(0);
+                switch (child.getNodeType()) {
+                case Node.TEXT_NODE:
+                case Node.CDATA_SECTION_NODE:
+                    child.setNodeValue(data);
+                    break;
+                default:
+                    throw new InvalidDataException("Can't set child node of type "+child.getNodeName());
+                }
+            }
+            else 
+                throw new InvalidDataException("Element "+xpath+" has too many children");
+        }
+        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
+            field.setNodeValue(data);
+        else
+            throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
     }
 
 
     public String getData() {
-    	return serialize(mDOM, false);
+        return serialize(mDOM, false);
     }
-    
+
     public Document getDOM() {
-    	return mDOM;
+        return mDOM;
     }
 
     public Schema getSchema() {
-    	return mSchema;
+        return mSchema;
     }
-    
+
     public void setSchema(Schema schema) {
         mSchema = schema;
     }    
@@ -256,10 +256,10 @@ public class Outcome implements C2KLocalObject {
         return mSchema.getVersion();
     }
 
-	@Override
-	public String getClusterType() {
-		return ClusterStorage.OUTCOME;
-	}
+    @Override
+    public String getClusterType() {
+        return ClusterStorage.OUTCOME;
+    }
 
     // special script API methods
 
@@ -271,55 +271,55 @@ public class Outcome implements C2KLocalObject {
      */
     public static Document parse(String xml) throws SAXException, IOException {
         synchronized (parser) {
-        	if (xml!=null)
-        		return parser.parse(new InputSource(new StringReader(xml)));
-        	else
-        		return parser.newDocument();
+            if (xml!=null)
+                return parser.parse(new InputSource(new StringReader(xml)));
+            else
+                return parser.newDocument();
         }
     }
-    
+
     public String getField(String name) {
-    	 NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
-    	 if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
-    		 return ((Text)elements.item(0).getFirstChild()).getData();
-    	 else
-    		 return null;
+        NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
+        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
+            return ((Text)elements.item(0).getFirstChild()).getData();
+        else
+            return null;
     }
-    
+
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
-    	
-    	XPathExpression expr = xpath.compile(xpathExpr);
-    	return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
-    	
+
+        XPathExpression expr = xpath.compile(xpathExpr);
+        return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
+
     }
-    
+
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
-    	
-    	XPathExpression expr = xpath.compile(xpathExpr);
-    	return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
-    	
+
+        XPathExpression expr = xpath.compile(xpathExpr);
+        return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
+
     }
 
     static public String serialize(Document doc, boolean prettyPrint)
     {
-    	TransformerFactory tf = TransformerFactory.newInstance();
-    	Transformer transformer;
-		try {
-			transformer = tf.newTransformer();
-		} catch (TransformerConfigurationException ex) {
-			Logger.error(ex);
-			return "";
-		}
-    	transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    	transformer.setOutputProperty(OutputKeys.INDENT, prettyPrint?"yes":"no");
-    	transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-    	
-    	Writer out = new StringWriter();
-    	try {
-			transformer.transform(new DOMSource(doc), new StreamResult(out));
-		} catch (TransformerException e) {
-			Logger.error(e);
-		}
-    	return out.toString();
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer;
+        try {
+            transformer = tf.newTransformer();
+        } catch (TransformerConfigurationException ex) {
+            Logger.error(ex);
+            return "";
+        }
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.INDENT, prettyPrint?"yes":"no");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+        Writer out = new StringWriter();
+        try {
+            transformer.transform(new DOMSource(doc), new StreamResult(out));
+        } catch (TransformerException e) {
+            Logger.error(e);
+        }
+        return out.toString();
     }
 }
