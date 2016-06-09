@@ -25,10 +25,25 @@ import org.cristalise.kernel.entity.agent.Job;
 
 
 /**
- * OutcomeInitator can be defined to construct an initial state for the Outcome
+ * OutcomeInitator can be defined to construct an initial state of an Outcome
  */
 public interface OutcomeInitiator {
 
+    /**
+     * Constructs and initialises the Outcome string (XML)
+     * 
+     * @param job the Job containing information about the Outcome to be constructed
+     * @return XML string
+     * @throws InvalidDataException
+     */
     public String initOutcome(Job job) throws InvalidDataException;
+
+    /**
+     * Constructsand initialises the Outcome object
+     * 
+     * @param job the Job containing information about the Outcome to be constructed
+     * @return Outcome object
+     * @throws InvalidDataException
+     */
     public Outcome initOutcomeInstance(Job job) throws InvalidDataException;
 }
