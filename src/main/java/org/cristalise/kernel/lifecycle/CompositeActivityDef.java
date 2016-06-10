@@ -354,7 +354,7 @@ public class CompositeActivityDef extends ActivityDef
 	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
 		
 		// rebuild the child refs in case any slots have been removed
-		setRefChildActDef(findRefActDefs(getGraphModel()));
+		setRefChildActDef(findRefActDefs(getChildrenGraphModel()));
 		
 		//TODO: property include routing scripts in another dependency collection
 		for (int i=0; i<getChildren().length; i++) { // export routing scripts and schemas
