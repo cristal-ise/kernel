@@ -291,7 +291,7 @@ public class CompositeActivity extends Activity
      */
     WfVertex search(int id)
     {
-        return (WfVertex)getGraphModel().resolveVertex(id);
+        return (WfVertex)getChildrenGraphModel().resolveVertex(id);
     }
 
     /**
