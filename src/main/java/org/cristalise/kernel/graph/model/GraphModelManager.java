@@ -73,7 +73,7 @@ public class GraphModelManager extends Observable
             else {
                 mParentModels.push(newModel);
                 Logger.msg(7, "Pushing model and switching to "+parentId);
-                newModel = childModelVertex.getChildGraphModel();
+                newModel = childModelVertex.getChildrenGraphModel();
             }
         }
         setModel(newModel);
@@ -98,7 +98,7 @@ public class GraphModelManager extends Observable
     }
 
     public void zoomIn(Vertex child) {
-        GraphModel childModel = child.getChildGraphModel();
+        GraphModel childModel = child.getChildrenGraphModel();
         if (childModel != null) {
             mParentModels.push(mGraphModel);
             mParentIds.add(Integer.valueOf(child.getID()));

@@ -63,7 +63,7 @@ abstract public class Graphable extends Vertex
 		this.parent = parent;
 	}
 	@Override
-	public GraphModel getChildGraphModel() {
+	public GraphModel getChildrenGraphModel() {
 		return children;
 	}
 

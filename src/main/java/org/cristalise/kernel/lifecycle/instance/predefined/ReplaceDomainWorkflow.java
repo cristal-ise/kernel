@@ -52,7 +52,7 @@ public class ReplaceDomainWorkflow extends PredefinedStep
         if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
         if (params.length != 1) throw new InvalidDataException("AddC2KObject: Invalid parameters "+Arrays.toString(params));
 
-        lifeCycle.getChildGraphModel().removeVertex(lifeCycle.search("workflow/domain"));
+        lifeCycle.getChildrenGraphModel().removeVertex(lifeCycle.search("workflow/domain"));
 		CompositeActivity domain;
 		try {
 			domain = (CompositeActivity) Gateway.getMarshaller().unmarshall(params[0]);

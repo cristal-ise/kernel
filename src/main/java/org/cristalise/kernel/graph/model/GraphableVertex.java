@@ -86,7 +86,7 @@ public abstract class GraphableVertex extends Vertex
 		this.parent = parent;
 	}
 	@Override
-	public GraphModel getChildGraphModel()
+	public GraphModel getChildrenGraphModel()
 	{
 		return mChildrenGraphModel;
 	}
@@ -126,7 +126,7 @@ public abstract class GraphableVertex extends Vertex
 	{
 		if (getIsComposite())
 		{
-			return getChildGraphModel().getEdges();
+			return getChildrenGraphModel().getEdges();
 		}
 		return null;
 	}
@@ -207,17 +207,10 @@ public abstract class GraphableVertex extends Vertex
 
 	public void addChild(GraphableVertex graphableVertex, GraphPoint g)
 	{
-		getChildGraphModel().addVertexAndCreateId(graphableVertex, g);
+		getChildrenGraphModel().addVertexAndCreateId(graphableVertex, g);
 		graphableVertex.setParent(this);
 	}
-	/**
-	 * Returns the childrenGraph.
-	 * @return GraphModel
-	 */
-	public GraphModel getChildrenGraphModel()
-	{
-		return mChildrenGraphModel;
-	}
+
 	/**
 	 * Sets the childrenGraph.
 	 * @param childrenGraph The childrenGraph to set

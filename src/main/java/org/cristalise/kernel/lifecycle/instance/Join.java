@@ -57,7 +57,7 @@ public class Join extends WfVertex
 	 * @throws InvalidDataException 
 	 */
     private boolean hasPrevActiveActs() throws InvalidDataException {
-        for(Vertex v: GraphTraversal.getTraversal(getParent().getChildGraphModel(),this,GraphTraversal.kUp,true) ) {
+        for(Vertex v: GraphTraversal.getTraversal(getParent().getChildrenGraphModel(),this,GraphTraversal.kUp,true) ) {
             if(v instanceof Activity && ((Activity)v).active) return true;
         }
         return false;

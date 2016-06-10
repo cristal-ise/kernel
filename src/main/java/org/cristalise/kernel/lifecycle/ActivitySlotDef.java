@@ -144,7 +144,7 @@ public class ActivitySlotDef extends WfVertexDef
 			}
 		}
 		
-		Vertex[] allSiblings = getParent().getChildGraphModel().getVertices();
+		Vertex[] allSiblings = getParent().getChildrenGraphModel().getVertices();
 		String thisName = (String)getProperties().get("Name");
 		if (thisName == null || thisName.length()==0) mErrors.add("Slot name is empty");
 		else for (Vertex v : allSiblings) {
