@@ -44,8 +44,6 @@ public class Vertex
     private GraphPoint[] mOutlinePoints   = new GraphPoint[0];
 
 
-	private GraphModel graphModel;
-
     public void setID(int id)
     {
         mId = id;
@@ -298,24 +296,13 @@ public class Vertex
     }
 
 
-    public GraphModel getChildGraphModel() {
+    public GraphModel getChildrenGraphModel() {
         return null;
     }
 
     public Object getCreationContext() {
         return null;
     }
-
-
-	public GraphModel getGraphModel()
-	{
-		return graphModel;
-	}
-
-	public void setGraphModel(GraphModel graphModel)
-	{
-		this.graphModel = graphModel;
-	}
 
     public boolean isJoin() {
         return false;
