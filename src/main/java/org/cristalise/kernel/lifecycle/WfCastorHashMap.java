@@ -19,24 +19,31 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentRole;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Breakpoint;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Description;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OutcomeInit;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Viewpoint;
+
 import org.cristalise.kernel.utils.CastorHashMap;
+
 /**
- * @version $Revision: 1.29 $ $Date: 2005/05/20 13:07:13 $
- * @author  $Author: abranson $
+ * 
  */
-public class WfCastorHashMap extends CastorHashMap
-{
-	/**
-	 * @see java.lang.Object#Object()
-	 */
+public class WfCastorHashMap extends CastorHashMap {
+    
+    private static final long serialVersionUID = 8700678607957394346L;
+
 	public WfCastorHashMap()
 	{
-		put("Description", "");
-        put("Agent Name", "");
-        put("Agent Role", "");
-		put("Breakpoint", false);
-        put("Viewpoint", "");
-        put("OutcomeInit", "");
+		put(Description.getAlternativeName(), "");
+        put(AgentName.getAlternativeName(), "");
+        put(AgentRole.getAlternativeName(), "");
+		put(Breakpoint.getAlternativeName(), false);
+        put(Viewpoint.getAlternativeName(), "");
+        put(OutcomeInit.getAlternativeName(), "");
 
      /* Deprecated description references
         put("SchemaType", "");
@@ -46,6 +53,5 @@ public class WfCastorHashMap extends CastorHashMap
         put("StateMachineName", "Default");
         put("StateMachineVersion", 0);
       */
-        
 	}
 }

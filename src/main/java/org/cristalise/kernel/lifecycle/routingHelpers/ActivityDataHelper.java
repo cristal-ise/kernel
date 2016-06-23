@@ -20,11 +20,15 @@
  */
 package org.cristalise.kernel.lifecycle.routingHelpers;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
+
 import javax.xml.xpath.XPathExpressionException;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.ItemPath;
@@ -80,11 +84,11 @@ public class ActivityDataHelper implements DataHelper {
         GraphableVertex act = workflow.search(actPath);
 
         // Get the schema and viewpoint names
-        String schemaName = act.getProperties().get("SchemaType").toString();
-        Integer schemaVersion = Integer.valueOf(act.getProperties().get("SchemaVersion").toString());
+        String schemaName = act.getBuiltInProperty(SchemaType).toString();
+        Integer schemaVersion = Integer.valueOf(act.getBuiltInProperty(SchemaVersion).toString());
         Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-        String viewName   = act.getProperties().get("Viewpoint").toString();
-        
+        String viewName   = act.getBuiltInProperty(BuiltInVertexProperties.Viewpoint).toString();
+
         if (viewName == null || viewName.equals("")) viewName = "last";
 
         // get the viewpoint and outcome

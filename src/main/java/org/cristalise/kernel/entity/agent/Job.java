@@ -20,6 +20,10 @@
  */
 package org.cristalise.kernel.entity.agent;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OutcomeInit;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +36,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.events.Event;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
@@ -194,8 +199,8 @@ public class Job implements C2KLocalObject
 
     public Transition getTransition() {
         if (transition != null && transitionResolved == false) {
-            String name = getActPropString("StateMachineName");
-            int version = (Integer)getActProp("StateMachineVersion");
+            String name = getActPropString(StateMachineName);
+            int version = (Integer)getActProp(StateMachineVersion);
             StateMachine sm;
             try {
                 sm = LocalObjectLoader.getStateMachine(name, version);
@@ -420,7 +425,7 @@ public class Job implements C2KLocalObject
     }
 
     public String getLastView() throws InvalidDataException, ObjectNotFoundException {
-        String viewName = (String) getActProp("Viewpoint");
+        String viewName = getActPropString("Viewpoint");
         if (viewName.length() > 0) {
             // find schema
             String schemaName = getSchema().getName();
@@ -439,23 +444,28 @@ public class Job implements C2KLocalObject
             throw new ObjectNotFoundException();
     }
 
+    /**
+     * 
+     * @return
+     * @throws InvalidDataException
+     */
     public OutcomeInitiator getOutcomeInitiator() throws InvalidDataException {
-        String ocInitName = (String) getActProp("OutcomeInit");
+        String ocInitName = getActPropString(OutcomeInit);
         OutcomeInitiator ocInit;
         if (ocInitName.length() > 0) {
-            String ocPropName = "OutcomeInit."+ocInitName;
+            String ocPropName = OutcomeInit.name()+"."+ocInitName;
             synchronized (ocInitCache) {
                 ocInit = ocInitCache.get(ocPropName);
                 if (ocInit == null) {
                     Object ocInitObj;
                     if (!Gateway.getProperties().containsKey(ocPropName)) {
-                        throw new InvalidDataException("Outcome instantiator "+ocPropName+" isn't defined");
+                        throw new InvalidDataException("Property OutcomeInstantiator "+ocPropName+" isn't defined. Check module.xml");
                     }
                     try {
                         ocInitObj = Gateway.getProperties().getInstance(ocPropName);
                     } catch (Exception e) {
                         Logger.error(e);
-                        throw new InvalidDataException("Outcome instantiator "+ocPropName+" couldn't be instantiated");
+                        throw new InvalidDataException("OutcomeInstantiator "+ocPropName+" couldn't be instantiated");
                     }
                     ocInit = (OutcomeInitiator)ocInitObj; // throw runtime class cast if it isn't one
                     ocInitCache.put(ocPropName, ocInit);
@@ -582,10 +592,19 @@ public class Job implements C2KLocalObject
         return actProps.get(name);
     }
 
+    public Object getActProp(BuiltInVertexProperties name) {
+        return getActProp(name.getAlternativeName());
+    }
+
     public String getActPropString(String name)
     {
         Object obj = getActProp(name);
         return obj==null?null:String.valueOf(obj);
+    }
+
+    public String getActPropString(BuiltInVertexProperties name)
+    {
+        return getActPropString(name.getAlternativeName());
     }
 
     /**

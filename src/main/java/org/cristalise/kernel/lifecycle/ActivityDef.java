@@ -19,6 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -263,7 +266,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
 		for (DependencyMember resMem : resColl.getMembers().list) {
 			String resUUID = resMem.getChildUUID();
-			Integer resVer = deriveVersionNumber(resMem.getProperties().get("Version"));
+			Integer resVer = deriveVersionNumber(resMem.getProperties().get(Version.name()));
 
 			if(resVer == null) throw new InvalidDataException("Version is null for Item:"+itemPath+", Collection:"+collName+", DependencyMember:"+resUUID);
 
@@ -329,7 +332,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			if (thisDesc == null) continue;
 			try {
 				DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
-				descMem.getProperties().put("Version", thisDesc.getVersion());
+				descMem.getProperties().put(Version.name(), thisDesc.getVersion());
 			} catch (Exception e) { 
 				Logger.error(e);
 				throw new InvalidDataException("Problem creating description collection for "+thisDesc+ " in "+getName());

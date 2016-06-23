@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lifecycle;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.Activity;
@@ -48,7 +49,7 @@ public class ActivitySlotDef extends WfVertexDef
 	public ActivitySlotDef(String name, ActivityDef actDef)
 	{
 		setName(name);
-		getProperties().put("Name", name);
+		setBuiltInProperty(BuiltInVertexProperties.Name, name);
 		setTheActivityDef(actDef);
 	}
 
@@ -82,7 +83,7 @@ public class ActivitySlotDef extends WfVertexDef
 					String childUUID = thisActDef.getItemID();
 					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
 						ActivityDef currentActDef = (ActivityDef)thisActDef;
-						Integer requiredVersion = deriveVersionNumber(getProperties().get("Version"));
+						Integer requiredVersion = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.Version));
 						if (currentActDef.getVersion() != requiredVersion) // collection indicated a different version - get the right one
 							setTheActivityDef(LocalObjectLoader.getActDef(childUUID, requiredVersion));
 						else // use the existing one
@@ -93,7 +94,7 @@ public class ActivitySlotDef extends WfVertexDef
 			} catch (ObjectNotFoundException ex) { } // old def with no collection
 		
 			if (theActivityDef == null) { // try to load from property
-				Integer version = deriveVersionNumber(getProperties().get("Version"));
+				Integer version = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.Version));
 				if (version == null) throw new InvalidDataException("No version defined in ActivityDefSlot "+getName());
 				setTheActivityDef(LocalObjectLoader.getActDef(getActivityDef(), version));
 			}
@@ -105,7 +106,7 @@ public class ActivitySlotDef extends WfVertexDef
 	public void setTheActivityDef(ActivityDef actDef) {
 		theActivityDef = actDef;
 		activityDef = actDef.getItemID();
-		getProperties().put("Version", actDef.getVersion());
+		setBuiltInProperty(BuiltInVertexProperties.Version, actDef.getVersion());
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;
 	}
@@ -145,12 +146,12 @@ public class ActivitySlotDef extends WfVertexDef
 		}
 		
 		Vertex[] allSiblings = getParent().getChildrenGraphModel().getVertices();
-		String thisName = (String)getProperties().get("Name");
+		String thisName = (String)getBuiltInProperty(BuiltInVertexProperties.Name);
 		if (thisName == null || thisName.length()==0) mErrors.add("Slot name is empty");
 		else for (Vertex v : allSiblings) {
 			if (v instanceof ActivitySlotDef && v.getID()!=getID()) {
 				ActivitySlotDef otherSlot = (ActivitySlotDef)v;
-				String otherName = (String)otherSlot.getProperties().get("Name");
+				String otherName = (String)otherSlot.getBuiltInProperty(BuiltInVertexProperties.Name);
 				if (otherName != null && otherName.equals(thisName)) {
 					mErrors.add("Duplicate slot name");
 					err = false;
@@ -225,7 +226,7 @@ public class ActivitySlotDef extends WfVertexDef
 
 	public String getActName()
 	{
-		return (String) getProperties().get("Name");
+		return (String) getBuiltInProperty(BuiltInVertexProperties.Name);
 	}
 
 	@Override

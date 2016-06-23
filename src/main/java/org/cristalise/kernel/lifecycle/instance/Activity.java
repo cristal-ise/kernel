@@ -38,6 +38,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.WfCastorHashMap;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.State;
@@ -230,7 +231,7 @@ public class Activity extends WfVertex
 		}
 
 		if (newState.isFinished()) {
-			if (!(getProperties().get("Breakpoint").equals(Boolean.TRUE) && !oldState.isFinished()))
+			if (!(getBuiltInProperty(BuiltInVertexProperties.Breakpoint).equals(Boolean.TRUE) && !oldState.isFinished()))
 				runNext(agent, itemPath, locker);
 		}
 		

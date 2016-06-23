@@ -23,6 +23,8 @@
  */
 package org.cristalise.kernel.utils;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -84,7 +86,7 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 	public ActivityDef buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
 		try {
 			ActivityDef thisActDef = (ActivityDef)Gateway.getMarshaller().unmarshall(data);
-			thisActDef.getProperties().put("Version", version);
+			thisActDef.setBuiltInProperty(Version, version);
 	        thisActDef.setName(name);
 	        thisActDef.setVersion(version);
 	        thisActDef.setItemPath(path);

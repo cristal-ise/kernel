@@ -19,23 +19,23 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.graph.model;
+
 /**
 * @version $Revision: 1.24 $ $Date: 2005/10/05 07:39:37 $
 * @author  $Author: abranson $
 */
-
-
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
 
 public abstract class GraphableVertex extends Vertex
 {
-	public static final String NAME = "Name";
+//	public static final String NAME = "Name";
 	private CastorHashMap mProperties = null;
 	private boolean mIsLayoutable;
 	protected boolean mIsComposite;
 	private GraphModel mChildrenGraphModel;
+	
 	public GraphableVertex()
 	{
 		mProperties = new CastorHashMap();
@@ -276,4 +276,13 @@ public abstract class GraphableVertex extends Vertex
 			return getParent().getPath() + "/" + getName();
 		return getParent().getPath() + "/" + getID();
 	}
+
+	public Object getBuiltInProperty(BuiltInVertexProperties prop) {
+	    return mProperties.get(prop.getAlternativeName());
+	}
+
+	public void setBuiltInProperty(BuiltInVertexProperties prop, Object val) {
+	    mProperties.put(prop.getAlternativeName(), val);
+	}
+
 }

@@ -23,6 +23,8 @@ package org.cristalise.kernel.lifecycle.instance.predefined.server;
 
 
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
+
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -42,7 +44,7 @@ public class CreateNewItem extends PredefinedStep
     public CreateNewItem()
     {
         super();
-		getProperties().put("SchemaType", "Item");
+		setBuiltInProperty(SchemaType, "Item");
     }
 
 	//requestdata is xmlstring

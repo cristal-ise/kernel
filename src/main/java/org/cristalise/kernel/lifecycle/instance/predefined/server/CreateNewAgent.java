@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.server;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
+
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -38,7 +40,7 @@ public class CreateNewAgent extends PredefinedStep
     public CreateNewAgent()
     {
         super();
-		getProperties().put("SchemaType", "Agent");
+		setBuiltInProperty(SchemaType, "Agent");
     }
 
 	//requestdata is xmlstring

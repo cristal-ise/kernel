@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.CollectionDescription;
@@ -172,7 +174,7 @@ public class CreateItemFromDescription extends PredefinedStep {
 
         CollectionMember wfMember = thisCol.getMembers().list.get(0);
         wfDefName = wfMember.resolveItem().getName();
-        Object wfVerObj = wfMember.getProperties().get("Version");
+        Object wfVerObj = wfMember.getProperties().get(Version.name());
 
         if (wfVerObj == null || String.valueOf(wfVerObj).length() == 0)
             throw new InvalidDataException("Workflow version number not set");

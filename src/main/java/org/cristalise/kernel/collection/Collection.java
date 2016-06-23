@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.collection;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -164,7 +166,7 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
      */
     public String getDescVer(E mem) {
     	String descVer = "last";
-    	Object descVerObj = mem.getProperties().get("Version");
+    	Object descVerObj = mem.getProperties().get(Version.name());
     	if (descVerObj != null) descVer = descVerObj.toString();
     	return descVer;
     }

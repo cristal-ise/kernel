@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.process.module;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.Collection;
@@ -44,7 +46,7 @@ public class ModuleWorkflow extends ModuleActivity {
 		super(child, version);
 		Collection<?> coll = child.getCollection(CompositeActivityDef.ACTCOL, version);
 		for (CollectionMember collMem : coll.getMembers().list) {
-			activities.add(new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get("Version").toString())));			
+			activities.add(new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get(Version.name()).toString())));			
 		}
 	}
 

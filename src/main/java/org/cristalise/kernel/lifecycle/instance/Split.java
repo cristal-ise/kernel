@@ -20,16 +20,14 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingExpr;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptVersion;
+
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.InvalidTransitionException;
-import org.cristalise.kernel.common.ObjectAlreadyExistsException;
-import org.cristalise.kernel.common.ObjectCannotBeUpdated;
-import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -52,21 +50,14 @@ public abstract class Split extends WfVertex
     public Split()
     {
         mErrors = new Vector<String>(0, 1);
-        getProperties().put("RoutingScriptName", "");
-        getProperties().put("RoutingScriptVersion", "");
+        setBuiltInProperty(RoutingScriptName, "");
+        setBuiltInProperty(RoutingScriptVersion, "");
     }
 
     private boolean loopTested;
 
     /**
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectCannotBeUpdated 
-     * @see org.cristalise.kernel.lifecycle.instance.WfVertex#runNext()
+     * 
      */
     @Override
 	public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
@@ -177,14 +168,7 @@ public abstract class Split extends WfVertex
     }
 
     /**
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectCannotBeUpdated 
-     * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
+     * 
      */
     @Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
@@ -218,12 +202,11 @@ public abstract class Split extends WfVertex
     
     public String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
     	String nexts;
-		String scriptName = (String) getProperties().get("RoutingScriptName");
-		Integer scriptVersion = deriveVersionNumber(getProperties().get("RoutingScriptVersion"));
-		String expr = (String) getProperties().get("RoutingExpr");
-		
-		if ((scriptName != null && scriptName.length() > 0) && 
-				(expr == null || expr.length() == 0)) {
+		String  scriptName    = (String) getBuiltInProperty(RoutingScriptName);
+		String  expr          = (String) getBuiltInProperty(RoutingExpr);
+		Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(RoutingScriptVersion));
+
+		if ((scriptName != null && scriptName.length() > 0) && (expr == null || expr.length() == 0)) {
 	        try {
 				nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
 			} catch (ScriptingEngineException e) {

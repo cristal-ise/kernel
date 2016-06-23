@@ -28,6 +28,7 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
@@ -90,11 +91,14 @@ public class CompositeActivityDef extends ActivityDef
 	public CompositeActivityDef()
 	{
 		super();
-        getProperties().put("Abortable", false);
-        getProperties().put("RepeatWhen", "false");
+		setBuiltInProperty(BuiltInVertexProperties.Abortable, false);
+		setBuiltInProperty(BuiltInVertexProperties.RepeatWhen, false);
+		
 		try {
 			setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
-		} catch (InvalidDataException e) { } //shouldn't happen with an empty one
+		}
+		catch (InvalidDataException e) { } //shouldn't happen with an empty one
+		
 		setIsComposite(true);
 	}
 	

@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
@@ -35,47 +36,41 @@ import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.Logger;
 
 
-
 /**
-* @version $Revision: 1.10 $ $Date: 2004/10/21 08:02:23 $
-* @author  $Author: abranson $
-*/
+ * 
+ */
+public class DependencyMember implements CollectionMember {
+    private ItemPath      mItemPath   = null;
+    private ItemProxy     mItem       = null;
+    private int           mId         = -1;
+    private CastorHashMap mProperties = null;
+    private String        mClassProps;
 
 
-public class DependencyMember implements CollectionMember
-{
-
-    private ItemPath  mItemPath    	  = null;
-    private ItemProxy mItem           = null;
-    private int       mId			  = -1;
-	private CastorHashMap mProperties = null;
-	private String mClassProps;
-
-
-   /**************************************************************************
-    *
-    **************************************************************************/
+    /**************************************************************************
+     *
+     **************************************************************************/
     public DependencyMember()
     {
         mProperties = new CastorHashMap();
     }
 
     @Override
-	public ItemPath getItemPath()
+    public ItemPath getItemPath()
     {
         return mItemPath;
     }
 
-	public void setProperties(CastorHashMap props)
-	{
-		mProperties = props;
-	}
+    public void setProperties(CastorHashMap props)
+    {
+        mProperties = props;
+    }
 
-	@Override
-	public CastorHashMap getProperties()
-	{
-		return mProperties;
-	}
+    @Override
+    public CastorHashMap getProperties()
+    {
+        return mProperties;
+    }
 
     public KeyValuePair[] getKeyValuePairs()
     {
@@ -86,28 +81,28 @@ public class DependencyMember implements CollectionMember
         mProperties.setKeyValuePairs(pairs);
     }
 
-	@Override
-	public int getID() {
-		return mId;
-	}
+    @Override
+    public int getID() {
+        return mId;
+    }
 
-	public void setID(int id) {
-		mId = id;
-	}
+    public void setID(int id) {
+        mId = id;
+    }
 
-	public void setClassProps(String props)
+    public void setClassProps(String props)
     {
         mClassProps = props;
     }
 
     @Override
-	public String getClassProps()
+    public String getClassProps()
     {
         return mClassProps;
     }
 
     @Override
-	public void assignItem(ItemPath itemPath) throws InvalidCollectionModification
+    public void assignItem(ItemPath itemPath) throws InvalidCollectionModification
     {
         if (itemPath != null) {
             if (mClassProps == null || getProperties() == null)
@@ -125,7 +120,7 @@ public class DependencyMember implements CollectionMember
                         throw new InvalidCollectionModification("Property "+aClassProp+ " does not exist for item " + itemPath );
                     if (!ItemProperty.getValue().equalsIgnoreCase(memberValue))
                         throw new InvalidCollectionModification("DependencyMember::checkProperty() Values of mandatory prop "+aClassProp+" do not match " + ItemProperty.getValue()+"!="+memberValue);
-                 }
+                }
                 catch (Exception ex)
                 {
                     Logger.error(ex);
@@ -139,27 +134,33 @@ public class DependencyMember implements CollectionMember
     }
 
     @Override
-	public void clearItem() {
-    	mItemPath = null;
+    public void clearItem() {
+        mItemPath = null;
         mItem = null;
     }
 
     @Override
-	public ItemProxy resolveItem() throws ObjectNotFoundException {
+    public ItemProxy resolveItem() throws ObjectNotFoundException {
         if (mItem == null && mItemPath != null)
-        		mItem = Gateway.getProxyManager().getProxy(mItemPath);
+            mItem = Gateway.getProxyManager().getProxy(mItemPath);
         return mItem;
     }
 
-	public void setChildUUID(String uuid) throws InvalidCollectionModification, InvalidItemPathException {
-		mItemPath = new ItemPath(uuid);
-	}
+    public void setChildUUID(String uuid) throws InvalidCollectionModification, InvalidItemPathException {
+        mItemPath = new ItemPath(uuid);
+    }
 
 
-	@Override
-	public String getChildUUID() {
-		return mItemPath.getUUID().toString();
-	}
+    @Override
+    public String getChildUUID() {
+        return mItemPath.getUUID().toString();
+    }
 
+    public Object getBuiltInProperty(BuiltInVertexProperties prop) {
+        return mProperties.get(prop.getAlternativeName());
+    }
 
+    public void setBuiltInProperty(BuiltInVertexProperties prop, Object val) {
+        mProperties.put(prop.getAlternativeName(), val);
+    }
 }
