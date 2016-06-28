@@ -19,6 +19,15 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance;
+
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentRole;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Breakpoint;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Description;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Viewpoint;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -38,7 +47,6 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
-import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.WfCastorHashMap;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.State;
@@ -116,8 +124,8 @@ public class Activity extends WfVertex
 	
 	public StateMachine getStateMachine() throws InvalidDataException {
 		if (machine == null) {
-			String name = (String)getProperties().get("StateMachineName");
-			Integer version = deriveVersionNumber(getProperties().get("StateMachineVersion"));
+			String name = (String)getBuiltInProperty(StateMachineName);
+			Integer version = deriveVersionNumber(getBuiltInProperty(StateMachineVersion));
 			// Use default if not defined
 			if (name == null || name.length() == 0) {
 				name = getDefaultSMName();
@@ -198,7 +206,7 @@ public class Activity extends WfVertex
 		boolean storeOutcome = false;
 		if (transition.hasOutcome(getProperties())) {
 			schema = transition.getSchema(getProperties());
-			viewName = (String)getProperties().get("Viewpoint");
+			viewName = (String)getBuiltInProperty(Viewpoint);
 			if (requestData != null && requestData.length()>0)
 				storeOutcome = true;
 			else if (transition.getOutcome().isRequired()) 
@@ -214,7 +222,7 @@ public class Activity extends WfVertex
 
 		// set new state and reservation
 		setState(newState.getId());
-		getProperties().put("Agent Name", transition.getReservation(this, agent));
+		setBuiltInProperty(AgentName, transition.getReservation(this, agent));
 
 		// store new event
 		Event newEvent = null;
@@ -253,7 +261,7 @@ public class Activity extends WfVertex
 		}
 
 		if (newState.isFinished()) {
-			if (!(getBuiltInProperty(BuiltInVertexProperties.Breakpoint).equals(Boolean.TRUE) && !oldState.isFinished()))
+			if (!(getBuiltInProperty(Breakpoint).equals(Boolean.TRUE) && !oldState.isFinished()))
 				runNext(agent, itemPath, locker);
 		}
 		
@@ -469,16 +477,16 @@ public class Activity extends WfVertex
 	public String getDescription()
 	{
 		if (getProperties().containsKey("Description"))
-			return (String) (getProperties().get("Description"));
+			return (String) (getBuiltInProperty(Description));
 		return "No description";
 	}
 	public String getCurrentAgentName()
 	{
-		return (String) getProperties().get("Agent Name");
+		return (String) getBuiltInProperty(AgentName);
 	}
 	public String getCurrentAgentRole()
 	{
-		return (String) getProperties().get("Agent Role");
+		return (String) getBuiltInProperty(AgentRole);
 	}
 
 	/**
