@@ -20,58 +20,71 @@
  */
 package org.cristalise.kernel.process;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.cristalise.kernel.common.InvalidTransitionException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.MemberSubscription;
 import org.cristalise.kernel.entity.proxy.ProxyObserver;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.utils.Logger;
+import org.exolab.castor.mapping.MappingException;
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.ValidationException;
 
 
-/**************************************************************************
- *
- * $Revision: 1.31 $
- * $Date: 2004/10/21 08:02:19 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
+/**
+ * 
+ */
 public class UserCodeProcess extends StandardClient implements ProxyObserver<Job>, Runnable {
-	
-	// Default state machine transitions
-    private static final int START = 1;
-	private static final int COMPLETE = 2;
-	private static final int SUSPEND = 3;
-	private static final int RESUME = 4;
-	
-	protected AgentProxy agent;
+
+    private final int START;
+    private final int COMPLETE;
+    private final int SUSPEND;
+    private final int RESUME;
+
+    protected AgentProxy agent = null;
     static boolean active = true;
     ArrayList<String> ignoredPaths = new ArrayList<String>();
     HashMap<String, ErrorInfo> errors = new HashMap<String, ErrorInfo>();
     final HashMap<String, C2KLocalObject> jobs = new HashMap<String, C2KLocalObject>();
 
-    public UserCodeProcess(String agentName, String agentPass, String resource) {
+    public UserCodeProcess(String agentName, String agentPass, String resource) 
+            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException
+    {
+        //TODO: make this configurable from properties
+        StateMachine sm = (StateMachine)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/SM/Default.xml"));
+
+        //TODO: make this configurable from properties
+        START    = sm.getTransitionID("Start");
+        COMPLETE = sm.getTransitionID("Complete");
+        SUSPEND  = sm.getTransitionID("Suspend");
+        RESUME   = sm.getTransitionID("Resume");
+
         // login - try for a while in case server hasn't imported our user yet
-        for (int i=1;i<6;i++) {
+        for (int i=1; i < 6; i++) {
             try {
                 Logger.msg("Login attempt "+i+" of 5");
                 agent = Gateway.connect(agentName, agentPass, resource);
                 break;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 Logger.error("Could not log in.");
                 Logger.error(ex);
+
                 try {
                     Thread.sleep(5000);
-                } catch (InterruptedException ex2) { }
+                }
+                catch (InterruptedException ex2) { }
             }
         }
         System.out.println(getDesc()+" initialised for " + agentName);
@@ -83,25 +96,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         // subscribe to job list
         agent.subscribe(new MemberSubscription<Job>(this, ClusterStorage.JOB, true));
         while (active) {
-            Job thisJob = null;
-            synchronized (jobs) {
-                if (jobs.size() > 0) {
-                    thisJob = getJob(jobs, COMPLETE);
-                    if (thisJob == null)
-                        thisJob = getJob(jobs, START);
-                    if (thisJob == null)
-                        thisJob = getJob(jobs, SUSPEND);
-                    if (thisJob == null)
-                        thisJob = getJob(jobs, RESUME);
-
-                    if (thisJob == null) {
-                        Logger.error("No supported jobs, but joblist is not empty! Discarding remaining jobs");
-                        jobs.clear();
-                    }
-                    else
-                        jobs.remove(ClusterStorage.getPath(thisJob));
-                }
-            }
+            Job thisJob = getActualJob();
 
             if (thisJob != null) {
                 String jobKey = thisJob.getItemPath()+":"+thisJob.getStepPath();
@@ -109,8 +104,8 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                 try {
                     if (transitionId==START) {
                         Logger.msg(5, "Testing start conditions");
-                        boolean start = assessStartConditions(thisJob);
-                        if (start) {
+
+                        if (assessStartConditions(thisJob)) {
                             Logger.msg(5, "Attempting to start");
                             agent.execute(thisJob);
                         }
@@ -121,28 +116,30 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                     else if (transitionId==COMPLETE) {
                         Logger.msg(5, "Executing logic");
                         runUCLogic(thisJob);
-                        if (ignoredPaths.contains(jobKey))
-                            ignoredPaths.remove(jobKey);
+                        
+                        if (ignoredPaths.contains(jobKey)) ignoredPaths.remove(jobKey);
                     }
                     else if (transitionId==SUSPEND) {
                         if (ignoredPaths.contains(jobKey)) {
-                        	if (errors.containsKey(jobKey)) {
-                        		thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
-                        		errors.remove(jobKey);
-                        	}
+                            if (errors.containsKey(jobKey)) {
+                                thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
+                                errors.remove(jobKey);
+                            }
                             agent.execute(thisJob);
                         }
                     }
                     else if (transitionId==RESUME) {
-                        if (!ignoredPaths.contains(jobKey))
-                            agent.execute(thisJob);
+                        if (!ignoredPaths.contains(jobKey)) agent.execute(thisJob);
                     }
-                } catch (ScriptErrorException ex) {
-                	errors.put(jobKey, ex.getErrors());
-                	ignoredPaths.add(jobKey);
-                } catch (InvalidTransitionException ex) {
+                }
+                catch (ScriptErrorException ex) {
+                    errors.put(jobKey, ex.getErrors());
+                    ignoredPaths.add(jobKey);
+                }
+                catch (InvalidTransitionException ex) {
                     // must have already been done by someone else - ignore
-                } catch (Throwable ex) {
+                }
+                catch (Throwable ex) {
                     Logger.error("Error executing "+thisJob.getTransition().getName()+" job:");
                     Logger.error(ex);
                     ErrorInfo ei = new ErrorInfo();
@@ -157,22 +154,46 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                 synchronized (jobs) {
                     if (jobs.size() == 0) {
                         Logger.msg("Sleeping");
-                            while (active && jobs.size() == 0)
-                                jobs.wait(2000);
-                        }
+                        while (active && jobs.size() == 0) jobs.wait(2000);
                     }
+                }
             } catch (InterruptedException ex) { }
         }
 
         // shut down
-        try
-        {
+        try {
         	Gateway.close();
         }
-        catch( Exception ex )
-        {
+        catch( Exception ex ) {
             Logger.error(ex);
         }
+    }
+
+    /**
+     * Gets the next possible Job based on the Transitions of the Default StateMachine
+     * 
+     * @return the actual Job
+     */
+    protected Job getActualJob() {
+        Job thisJob = null;
+
+        synchronized (jobs) {
+            if (jobs.size() > 0) {
+
+                thisJob = getJob(jobs, COMPLETE);
+                if (thisJob == null) thisJob = getJob(jobs, START);
+                if (thisJob == null) thisJob = getJob(jobs, SUSPEND);
+                if (thisJob == null) thisJob = getJob(jobs, RESUME);
+
+                if (thisJob == null) {
+                    Logger.error("No supported jobs, but joblist is not empty! Discarding remaining jobs");
+                    jobs.clear();
+                }
+                else
+                    jobs.remove(ClusterStorage.getPath(thisJob));
+            }
+        }
+        return thisJob;
     }
 
 	private static Job getJob(HashMap<String, C2KLocalObject> jobs, int transition) {
@@ -210,15 +231,15 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             }
 
     }
-    
-	@Override
-	public void control(String control, String msg) {
-		if (MemberSubscription.ERROR.equals(control))
-			Logger.error("Error in job subscription: "+msg);
-	}
+
+    @Override
+    public void control(String control, String msg) {
+        if (MemberSubscription.ERROR.equals(control))
+            Logger.error("Error in job subscription: "+msg);
+    }
 
     /**
-    * Removes job removal notification from the AgentProxy.
+    * Job removal notification from the AgentProxy.
     */
     @Override
 	public void remove(String id) {
@@ -228,36 +249,34 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         }
     }
 
-    public static UserCodeProcess getInstance() throws UnknownHostException {
+    public static UserCodeProcess getInstance() 
+            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException
+    {
         return new UserCodeProcess(InetAddress.getLocalHost().getHostName(), "uc", Gateway.getProperties().getString("AuthResource", "Cristal"));
     }
 
-    static public void main(String[] args)
-    {
+    static public void main(String[] args) {
         int status = 0;
 
-        try
-        {
+        try {
         	Gateway.init(readC2KArgs(args));
             UserCodeProcess proc = getInstance();
             new Thread(proc).start();
+            
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
-				public void run() {
+                public void run() {
                     shutdown();
                 }
             }));
         }
-        catch( Exception ex )
-        {
+        catch( Exception ex ) {
             Logger.error(ex);
 
-            try
-            {
+            try {
             	Gateway.close();
             }
-            catch(Exception ex1)
-            {
+            catch(Exception ex1) {
                 Logger.error(ex1);
             }
             status = 1;
@@ -272,5 +291,4 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     public static void shutdown() {
         active = false;
     }
-
 }

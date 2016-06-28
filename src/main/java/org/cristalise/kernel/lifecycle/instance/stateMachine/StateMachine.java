@@ -287,4 +287,16 @@ public class StateMachine implements DescriptionObject
 				+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
 	}
 	
+	/**
+	 * Helper method to get transition ID by name
+	 * 
+	 * @param name
+	 * @return the integer ID associated with the Transition name. Returns -1 in case the name does not exist
+	 */
+	public int getTransitionID(String name) {
+	    for (Transition t: transitions) {
+            if(t.getName().equals(name)) return t.getId();
+        }
+	    return -1;
+	}
 }
