@@ -384,16 +384,20 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		FileStringUtility.string2File(new File(new File(dir, "CA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), compactXML);
 		if (imports!=null) {
-			imports.write("<Workflow name=\""+getActName()+"\" "
-					+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
-					+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-					+"type=\"EA\" resource=\"boot/EA/"+getActName()
-					+(getVersion()==null?"":"_"+getVersion())+".xml\">"
-					+(getSchema()==null?"":"<Schema name=\""+getSchema().getName()+"\" id=\""+getSchema().getItemID()+"\" version=\""+getSchema().getVersion()+"\"/>")
-					+(getScript()==null?"":"<Script name=\""+getScript().getName()+"\" id=\""+getScript().getItemID()+"\" version=\""+getScript().getVersion()+"\"/>")
-					+(getStateMachine()==null?"":"<StateMachine name=\""+getStateMachine().getName()+"\" id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>"));
+			imports.write(
+			        "<Workflow "
+    			        +"name=\""+getActName()+"\" "
+    					+(getItemPath()==null ? "" : "id=\""+getItemID()+"\" ")
+    					+(getVersion()==null  ? "" : "version=\""+getVersion()+"\" ")
+    					+"resource=\"boot/EA/"+getActName()+(getVersion()==null ? "" : "_"+getVersion())+".xml\""
+					+">"
+                    +(getStateMachine()==null ? "" : "<StateMachine name=\""+getStateMachine().getName()+"\" id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
+					+(getSchema()      ==null ? "" : "<Schema       name=\""+getSchema().getName()      +"\" id=\""+getSchema().getItemID()      +"\" version=\""+getSchema().getVersion()      +"\"/>")
+					+(getScript()      ==null ? "" : "<Script       name=\""+getScript().getName()      +"\" id=\""+getScript().getItemID()      +"\" version=\""+getScript().getVersion()      +"\"/>")
+			);
+
 			for (ActivityDef childActDef : refChildActDef) {
-				imports.write("<Activity name=\""+childActDef.getActName()+"\" id=\""+childActDef.getItemID()+"\" version=\""+childActDef.getVersion()+"\">");
+				imports.write("<Activity name=\""+childActDef.getActName()+"\" id=\""+childActDef.getItemID()+"\" version=\""+childActDef.getVersion()+"\"/>");
 			}
 			imports.write("</Workflow>\n");
 		}

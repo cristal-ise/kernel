@@ -357,7 +357,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	
 	@Override
 	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
-		
 		String actXML;
 		try {
 			actXML = Gateway.getMarshaller().marshall(this);
@@ -366,14 +365,16 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			throw new InvalidDataException("Couldn't marshall activity def "+getActName());
 		}
 		FileStringUtility.string2File(new File(new File(dir, "EA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), actXML);
-		if (imports!=null) imports.write("<Activity name=\""+getActName()+"\" "
-				+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
-				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-				+"type=\"EA\" resource=\"boot/EA/"+getActName()
-				+(getVersion()==null?"":"_"+getVersion())+".xml\">"
-				+(getSchema()==null?"":"<Schema id=\""+getSchema().getItemID()+"\" version=\""+getSchema().getVersion()+"\"/>")
-				+(getScript()==null?"":"<Script id=\""+getScript().getItemID()+"\" version=\""+getScript().getVersion()+"\"/>")
-				+(getStateMachine()==null?"":"<StateMachine id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
+		if (imports!=null) imports.write(
+		        "<Activity "
+		                +"name=\""+getActName()+"\" "
+		                +(getItemPath()==null ? "" : "id=\""     +getItemID() +"\" ")
+		                +(getVersion() ==null ? "" : "version=\""+getVersion()+"\" ")
+		                +"resource=\"boot/EA/"+getActName()+(getVersion()==null ? "" : "_"+getVersion())+".xml\""
+		        +">"
+                +(getStateMachine()==null ? "" : "<StateMachine id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
+				+(getSchema()      ==null ? "" : "<Schema       id=\""+getSchema().getItemID()      +"\" version=\""+getSchema().getVersion()      +"\"/>")
+				+(getScript()      ==null ? "" : "<Script       id=\""+getScript().getItemID()      +"\" version=\""+getScript().getVersion()      +"\"/>")
 				+"</Activity>\n");
 	}
 }
