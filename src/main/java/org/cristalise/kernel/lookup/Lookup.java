@@ -104,10 +104,9 @@ public interface Lookup {
 	public Iterator<Path> search(Path start, String name);
 
 	/**
-	 * Search for Items in the specified path with the given property name and value
+	 * Search for Items in the specified path with the given property list
 	 * @param start Search root
-	 * @param propname Property name
-	 * @param propvalue The property value to search for
+	 * @param props list of Properties
 	 * @return An Iterator of matching Paths
 	 */
 	public Iterator<Path> search(Path start, Property... props);
@@ -149,7 +148,7 @@ public interface Lookup {
 	 * Returns all of the Agents in this centre who hold this role (including sub-roles)
 	 * 
 	 * @param rolePath
-	 * @return
+	 * @return the list of Agents
 	 * @throws ObjectNotFoundException
 	 */
 	public AgentPath[] getAgents(RolePath rolePath) throws ObjectNotFoundException;
@@ -158,7 +157,7 @@ public interface Lookup {
 	 * Get all roles held by the given Agent
 	 * 
 	 * @param agentPath
-	 * @return
+	 * @return the list of Roles
 	 */
 	public RolePath[] getRoles(AgentPath agentPath);
 
@@ -167,14 +166,14 @@ public interface Lookup {
 	 * 
 	 * @param agentPath
 	 * @param role
-	 * @return
+	 * @return true or false 
 	 */
 	public boolean hasRole(AgentPath agentPath, RolePath role);
 
 	/**
-	 * Return the username of the Agent referenced by an AgentPath
+	 * Return the name of the Agent referenced by an AgentPath
 	 * @param agentPath
-	 * @return
+	 * @return the name string
 	 * @throws ObjectNotFoundException
 	 */
 	public String getAgentName(AgentPath agentPath) throws ObjectNotFoundException;
