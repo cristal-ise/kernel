@@ -63,7 +63,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription
 	 * @throws ObjectAlreadyExistsException The Agent already exists
 	 * @throws CannotManageException The Agent could not be created
 	 * @throws ObjectCannotBeUpdated The addition of the new entries into the LookupManager failed
-	 * @see org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription#runActivityLogic(org.cristalise.kernel.lookup.AgentPath, int, int, java.lang.String)
+	 * @see org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription#runActivityLogic(AgentPath, ItemPath, int, String, Object)
 	 */
 	@Override
 	protected String runActivityLogic(AgentPath agent, ItemPath item,

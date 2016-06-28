@@ -203,7 +203,7 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @param itemPath
      * @param descVer
      * @param locker
-     * @return
+     * @return the new collection
      * @throws ObjectNotFoundException
      * @throws PersistencyException
      */

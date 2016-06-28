@@ -208,11 +208,7 @@ public class ActivitySlotDef extends WfVertexDef
 	{
 		return true;
 	}
-	/**
-	 * Method getInfo.
-	 *
-	 * @return CastorHashMap
-	 */
+
 	private void configureInstance(Activity act)
 	{
 		KeyValuePair[] k = getProperties().getKeyValuePairs();

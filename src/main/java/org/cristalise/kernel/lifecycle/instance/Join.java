@@ -21,13 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance;
 import java.util.Vector;
 
-import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.InvalidTransitionException;
-import org.cristalise.kernel.common.ObjectAlreadyExistsException;
-import org.cristalise.kernel.common.ObjectCannotBeUpdated;
-import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -53,7 +47,7 @@ public class Join extends WfVertex
 	
 	/**
 	 * 
-	 * @return
+	 * @return boolean
 	 * @throws InvalidDataException 
 	 */
     private boolean hasPrevActiveActs() throws InvalidDataException {
@@ -188,16 +182,7 @@ public class Join extends WfVertex
 		else
 			return mErrors.elementAt(0);
 	}
-	/**
-	 * @throws InvalidDataException 
-	 * @throws ObjectNotFoundException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws PersistencyException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated 
-	 * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
-	 */
+
 	@Override
 	public void run(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
 	{

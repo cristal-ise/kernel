@@ -60,8 +60,7 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * @version $Revision: 1.222 $ $Date: 2005/10/05 07:39:37 $
- * @author $Author: abranson $
+ * 
  */
 public class Activity extends WfVertex
 {
@@ -69,12 +68,18 @@ public class Activity extends WfVertex
 	 * vector of errors (Strings) that is constructed each time verify() is launched
 	 */
 	protected Vector<String> mErrors;
-	/** @associates a State machine engine */
+	/**
+	 * @associates a State machine engine
+	 */
 	private StateMachine machine;
 	protected int state = -1;
-	/** true is available to be executed */
+	/**
+	 * true is available to be executed
+	 */
 	public boolean active = false;
-	/** used in verify() */
+	/**
+	 * used in verify()
+	 */
 	private boolean loopTested;
 	private GTimeStamp mStateDate;
 	private String mType;
@@ -93,7 +98,9 @@ public class Activity extends WfVertex
 		return "Default";
 	}
 
-	/** add the activity which id is idNext as next of the current one */
+	/**
+	 * add the activity which id is idNext as next of the current one
+	 */
 	Next addNext(String idNext)
 	{
 		return addNext((WfVertex) getParent().search(idNext));
@@ -131,7 +138,10 @@ public class Activity extends WfVertex
 		return machine;
 	}
 	
-	/** return the current State of the State machine (Used in Serialisation) */
+	/**
+	 * @return The current State of the Statemachine (Used in Serialisation)
+	 * @throws InvalidDataException
+	 */
 	public int getState() throws InvalidDataException
 	{
 		if (state == -1)
@@ -154,16 +164,28 @@ public class Activity extends WfVertex
 	}
 	
 
-	/** cf Item request 
-	 * @throws ObjectNotFoundException 
-	 * @throws PersistencyException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated 
-	 * @throws CannotManageException 
-	 * @throws InvalidCollectionModification */
+	/**
+	 * Item request 
+	 * 
+	 * @param agent
+	 * @param delegate
+	 * @param itemPath
+	 * @param transitionID
+	 * @param requestData
+	 * @param locker
+	 * @return Outcome string
+	 * @throws AccessRightsException
+	 * @throws InvalidTransitionException
+	 * @throws InvalidDataException
+	 * @throws ObjectNotFoundException
+	 * @throws PersistencyException
+	 * @throws ObjectAlreadyExistsException
+	 * @throws ObjectCannotBeUpdated
+	 * @throws CannotManageException
+	 * @throws InvalidCollectionModification
+	 */
 	public String request(AgentPath agent, AgentPath delegate, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
-
 		// Find requested transition
 		Transition transition = getStateMachine().getTransition(transitionID);
 
@@ -298,7 +320,9 @@ public class Activity extends WfVertex
 		return true;
 	}
 	
-	/** Used in verify() */
+	/**
+	 * Used in verify()
+	 */
 	@Override
 	public boolean loop()
 	{
@@ -312,13 +336,9 @@ public class Activity extends WfVertex
 		loopTested = false;
 		return loop2;
 	}
-	/** sets the next activity available if possible 
-	 * @throws ObjectNotFoundException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws PersistencyException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated */
+	/** 
+	 * sets the next activity available if possible 
+	 */
 	@Override
 	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
@@ -364,7 +384,10 @@ public class Activity extends WfVertex
 			throw s;
 		}
 	}
-	/** @return the only Next of the Activity */
+	/**
+	 * 
+     * @return the only Next of the Activity
+	 */
 	public Next getNext()
 	{
 		if (getOutEdges().length > 0)
@@ -372,9 +395,9 @@ public class Activity extends WfVertex
 		else
 			return null;
 	}
-	/** reinitialises the Activity and propagate (for Loop) 
-	 * @throws InvalidDataException 
-	 * @throws ObjectNotFoundException */
+	/** 
+	 * reinitialises the Activity and propagate (for Loop)  
+	 */
 	@Override
 	public void reinit(int idLoop) throws InvalidDataException
 	{
@@ -386,7 +409,9 @@ public class Activity extends WfVertex
 			nextAct.reinit(idLoop);
 		}
 	}
-	/** return the String that identifies the errors found in th activity */
+	/**
+     * return the String that identifies the errors found in th activity
+	 */
 	@Override
 	public String getErrors()
 	{
@@ -396,13 +421,6 @@ public class Activity extends WfVertex
 	}
 	/**
 	 * called by precedent Activity runNext() for setting the activity able to be executed
-	 * @throws InvalidDataException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws ObjectNotFoundException 
-	 * @throws PersistencyException 
-	 * @throws ObjectCannotBeUpdated 
 	 */
 	@Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
@@ -423,13 +441,6 @@ public class Activity extends WfVertex
 	}
 	/**
 	 * sets the activity available to be executed on start of Workflow or composite activity (when it is the first one of the (sub)process
-	 * @throws InvalidDataException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectNotFoundException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws PersistencyException 
-	 * @throws ObjectCannotBeUpdated 
 	 */
 	@Override
 	public void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
@@ -437,18 +448,24 @@ public class Activity extends WfVertex
 		Logger.debug(8, getPath() + " runfirst");
 		run(agent, itemPath, locker);
 	}
-	/** @return the current ability to be executed */
+	/**
+	 * @return the current ability to be executed
+	 */
 	public boolean getActive()
 	{
 		return active;
 	}
 	
-	/** sets the ability to be executed */
+	/**
+	 * sets the ability to be executed
+	 */
 	public void setActive(boolean acti)
 	{
 		active = acti;
 	}
-	/** @return the Description field of properties */
+	/**
+	 * @return the Description field of properties
+	 */
 	public String getDescription()
 	{
 		if (getProperties().containsKey("Description"))
@@ -465,10 +482,15 @@ public class Activity extends WfVertex
 	}
 
 	/**
-	 * returns the lists of jobs for the activity and children (cf org.cristalise.kernel.entity.Job)
-	 * @throws InvalidDataException 
-	 * @throws ObjectNotFoundException 
-	 * @throws InvalidAgentPathException 
+     * calculates the lists of jobs for the activity and children (cf org.cristalise.kernel.entity.Job)
+	 * 
+	 * @param agent
+	 * @param itemPath
+	 * @param recurse
+	 * @return the job available for the agent
+	 * @throws InvalidAgentPathException
+	 * @throws ObjectNotFoundException
+	 * @throws InvalidDataException
 	 */
 	public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
 	{
@@ -535,7 +557,7 @@ public class Activity extends WfVertex
 	/**
 	   * Returns the startDate.
 	   *
-	   * @return GTimeStamp
+	   * @return GTimeStamp startDate
 	   */
 	public GTimeStamp getStateDate()
 	{
@@ -555,16 +577,16 @@ public class Activity extends WfVertex
 		setStateDate(date);
 	} 
 	
- /**
-	   * Returns the type.
-	   *
-	   * @return String
-	   */
+	/**
+	 * Returns the type.
+	 *
+	 * @return String
+	 */
 	public String getType()
 	{
 		return mType;
 	} 
-	
+
 	public String getTypeName()
 	{
 		if (mType == null) return null;
@@ -582,8 +604,7 @@ public class Activity extends WfVertex
 	/**
 	   * Sets the type.
 	   *
-	   * @param type
-	   *            The type to set
+	   * @param type The type to set
 	   */
 	public void setType(String type)
 	{
@@ -595,5 +616,4 @@ public class Activity extends WfVertex
 	public void abort() {
 		active = false;
 	}
-
 }

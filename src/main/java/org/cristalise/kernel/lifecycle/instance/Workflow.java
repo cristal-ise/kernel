@@ -89,7 +89,7 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 	 * For other storage, such as during initialization, a non-cached History is created
 	 * 
 	 * @param locker
-	 * @return
+	 * @return history
 	 * @throws InvalidDataException
 	 */
 	public History getHistory(Object locker) throws InvalidDataException {
@@ -127,22 +127,24 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 		return mEdgeTypeNameAndConstructionInfo;
 	}
 	/**
-	 * Method requestAction.
-	 *
-	 * @param agentInfo
+	 * 
+	 * @param agent
+	 * @param delegator
 	 * @param stepPath
+	 * @param itemPath
 	 * @param transitionID
-	 * @param reguestData
+	 * @param requestData xml string
+	 * @return Outcome string
 	 * @throws ObjectNotFoundException
 	 * @throws AccessRightsException
 	 * @throws InvalidTransitionException
 	 * @throws InvalidDataException
-	 * @throws PersistencyException 
-	 * @throws ObjectCannotBeUpdated 
-	 * @throws CannotManageException 
-	 * @throws InvalidCollectionModification 
+	 * @throws ObjectAlreadyExistsException
+	 * @throws PersistencyException
+	 * @throws ObjectCannotBeUpdated
+	 * @throws CannotManageException
+	 * @throws InvalidCollectionModification
 	 */
-	//requestData is xmlstring
 	public String requestAction(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath, int transitionID, String requestData)
 		throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
 	{
@@ -210,15 +212,11 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
 		return this;
 	}
 	/**
-	 * Method initialise.
-	 *
-	 * @param systemKey
-	 * @throws InvalidDataException 
-	 * @throws ObjectNotFoundException 
-	 * @throws AccessRightsException 
-	 * @throws InvalidTransitionException 
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated 
+	 * 
+	 * @param itemPath
+	 * @param agent
+	 * @param locker
+	 * @throws InvalidDataException
 	 */
 	public void initialise(ItemPath itemPath, AgentPath agent, Object locker) throws InvalidDataException
 	{
@@ -244,14 +242,15 @@ public class Workflow extends CompositeActivity implements C2KLocalObject
     }
 
 	/**
-	 * if type = 0 only domain steps will be queried if type = 1 only predefined steps will be queried else both will be queried
+     * if type = 0 only domain steps will be queried if type = 1 only predefined steps will be queried else both will be queried
+	 * 
 	 * @param agent
-	 * @param itemSysKey
+	 * @param itemPath
 	 * @param type
-	 * @return
+	 * @return list of job 
+	 * @throws InvalidAgentPathException
 	 * @throws ObjectNotFoundException
 	 * @throws InvalidDataException
-	 * @throws InvalidAgentPathException 
 	 */
 	public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, int type) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 
 	{

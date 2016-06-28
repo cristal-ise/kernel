@@ -114,7 +114,8 @@ public class CompositeActivity extends Activity
     }
 
     /**
-     * @param vertex
+     * 
+     * @param vertexID
      */
     public void setFirstVertex(int vertexID) {
         Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::setFirstVertex() vertexID:"+vertexID);
@@ -136,12 +137,11 @@ public class CompositeActivity extends Activity
     }
 
     /**
-     * Method newChild.
-     *
+     * 
+     * @param child
      * @param Name
-     * @param Type
      * @param point
-     * @return WfVertex
+     * @return  child vertex
      */
     public WfVertex newExistingChild(Activity child, String Name, GraphPoint point)
     {
@@ -171,7 +171,6 @@ public class CompositeActivity extends Activity
      * @param vertexTypeId
      * @param point
      * @return WfVertex
-     * @throws InvalidDataException 
      */
     public WfVertex newChild(String vertexTypeId, GraphPoint point)
     {
@@ -184,7 +183,7 @@ public class CompositeActivity extends Activity
      * @param name
      * @param first
      * @param point
-     * @return
+     * @return new child vertex
      */
     public WfVertex newChild(Types type, String name, boolean first, GraphPoint point) {
         switch (type) {
@@ -295,16 +294,6 @@ public class CompositeActivity extends Activity
         return (WfVertex)getChildrenGraphModel().resolveVertex(id);
     }
 
-    /**
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectCannotBeUpdated 
-     * @see org.cristalise.kernel.lifecycle.instance.WfVertex#run()
-     */
     @Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
@@ -404,10 +393,7 @@ public class CompositeActivity extends Activity
 
 
     /**
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-     * @throws InvalidAgentPathException 
-     * @see org.cristalise.kernel.lifecycle.instance.Activity#calculateJobs()
+     * 
      */
     @Override
 	public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 

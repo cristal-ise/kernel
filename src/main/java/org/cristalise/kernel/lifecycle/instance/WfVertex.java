@@ -24,11 +24,7 @@ package org.cristalise.kernel.lifecycle.instance;
 
 import java.util.HashMap;
 
-import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.InvalidTransitionException;
-import org.cristalise.kernel.common.ObjectAlreadyExistsException;
-import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.GraphableVertex;
@@ -63,15 +59,15 @@ public abstract class WfVertex extends GraphableVertex
         Route
     }
     
-    /**sets the activity available to be executed on start of Workflow or composite activity (when it is the first one of the
-     * (sub)process
-     * @throws InvalidDataException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectCannotBeUpdated */
+    /**
+     * sets the activity available to be executed on start of Workflow or composite activity 
+     * (when it is the first one of the (sub)process)
+     * 
+     * @param agent
+     * @param itemPath
+     * @param locker
+     * @throws InvalidDataException
+     */
     public abstract void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
@@ -85,23 +81,19 @@ public abstract class WfVertex extends GraphableVertex
     }
 
     /**
-	 * Method runNext.
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectCannotBeUpdated 
+     * 
+     * @param agent
+     * @param itemPath
+     * @param locker
+     * @throws InvalidDataException
      */
     public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
  
     /**
-     * Method reinit.
+     * 
      * @param idLoop
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
-	 */
+     * @throws InvalidDataException
+     */
     public abstract void reinit( int idLoop ) throws InvalidDataException;
     
     public void abort() { }
@@ -119,14 +111,11 @@ public abstract class WfVertex extends GraphableVertex
 	public abstract String getErrors();
 
     /**
-	 * Method run.
-     * @throws InvalidDataException 
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectNotFoundException 
-     * @throws AccessRightsException 
-     * @throws InvalidTransitionException 
-     * @throws PersistencyException 
-     * @throws ObjectCannotBeUpdated 
+     * 
+     * @param agent
+     * @param itemPath
+     * @param locker
+     * @throws InvalidDataException
      */
 	public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
