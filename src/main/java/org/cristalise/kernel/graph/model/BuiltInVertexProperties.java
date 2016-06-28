@@ -21,12 +21,16 @@
 
 package org.cristalise.kernel.graph.model;
 
-
 /**
  * Enumeration to define all Vertex properties which are used by collection and lifecycle packages
  *
  */
 public enum BuiltInVertexProperties {
+    /**
+     * Boolean property. Makes CompositeActitivy abortable, i.e. it can be finished even if it has active children.
+     */
+    Abortable,
+
     /**
      * String property. The name of the Agent associated with Activities. Can be null or undefined.
      */
@@ -38,110 +42,131 @@ public enum BuiltInVertexProperties {
     AgentRole("Agent Role"),
 
     /**
-     * String property. It is used in ActivitySlotDef to override the name of the ActivityDef
+     * Boolean property ...
      */
-    Name,
-    
+    Breakpoint,
+
     /**
-     * Integer property. It is used in CollectionMember to store the version of DescriptionDependency
-     */
-    Version,
-    
-    /**
-     * String property ...
+     * String property used in ActivityDef to store the description text
      */
     Description,
 
     /**
-     * Boolean property ...
+     * String property. It is used in ActivitySlotDef to override the name of the ActivityDef
      */
-    Breakpoint,
-    
+    Name,
+
     /**
-     * String property
+     * String property. The type of object the Activity is going to create. Values are Schema, Script, StateMachine. Used in script
+     * DescriptionCollectionSetter. Can be null or undefined.
      */
-    Viewpoint,
+    ObjectType,
 
     /**
      * String property to hold the name of the OutcomeInititator to be used by the Job associated with Activities. 
-     * The name is used to find the class name defined in the Config section of the module.xml. 
-     * For example, the OutcomeInitiator named <b>Empty</b> is defined like this:
+     * The name is used to find the class name defined in the Config section of the module.xml. For example, the
+     * OutcomeInitiator named <b>Empty</b> is defined like this:
+     *
      * <pre>
      * {@code<Config name="OutcomeInit.Empty">org.cristalise.kernel.persistency.outcome.EmptyOutcomeInitiator</Config>}
      * </pre>
-     * 
+     *
      * Can be null or undefined.
      */
     OutcomeInit,
 
     /**
-     * String property to hold either the name of the Script or the UUID of the Schema Item associated with Splits.
-     * Can be null or undefined.
+     * Boolean property. Enables the Loop Transition of the CompositeActivity
+     * StateMachine
      */
-    RoutingScriptName,
+    RepeatWhen,
 
     /**
-     * Integer property to hold the version of the Schema associated with Splits. Can be null or undefined. 
-     */
-    RoutingScriptVersion,
-
-    /**
-     * String property. Routing expression associated with Splits. It is interpreted with the Script class. 
+     * String property. Routing expression associated with Splits. It is interpreted by the Script class. The content should 
+     * start with the script engine name followed by the expression separated by a column like this:
+     * 
+     * <pre>
+     * javascript: new java.lang.Integer(counter % 2);
+     * </pre>
      */
     RoutingExpr,
 
     /**
-     * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
+     * String property to hold either the name of the Script or the UUID of the Schema Item associated with Splits.
+     * If RoutingScriptVersion is null the content if any is interpreted like {@link #RoutingExpr}.
+     * 
+     * Can be null or undefined.
+     */ 
+    RoutingScriptName,
+
+    /**
+     * Integer property to hold the version of the Schema associated with Splits.
+     * 
+     * Can be null or undefined.
+     */
+    RoutingScriptVersion,
+
+    /**
+     * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities. 
+     * 
      * Can be null or undefined.
      */
     SchemaType,
 
     /**
-     * Integer property to hold the version of the Schema associated with Activities.
+     * Integer property to hold the version of the Schema associated with Activities. 
+     * 
      * Can be null or undefined.
      */
     SchemaVersion,
 
     /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
+     * 
      * Can be null or undefined.
      */
     ScriptName,
 
     /**
-     * Integer property to hold the version of the Script associated with Activities. Can be null or undefined.
+     * Integer property to hold the version of the Script associated with Activities. 
+     * 
+     * Can be null or undefined.
      */
     ScriptVersion,
-    
+
     /**
-     * String property to hold either the name of the StateMachine or the UUID of the StateMachine Item associated with Activities.
-     * Can be null or undefined. The default StateMachine is called Default
+     * String property to hold either the name of the StateMachine or the UUID of the StateMachine 
+     * Item associated with Activities. Can be null or undefined. The default StateMachine is called Default
+     * 
+     * Can be null or undefined.
      */
     StateMachineName,
-    
+
     /**
-     * Integer property to hold the version of the StateMachine associated with Activities. Can be null or undefined.
+     * Integer property to hold the version of the StateMachine associated with Activities.
+     * 
+     * Can be null or undefined.
      */
     StateMachineVersion,
 
     /**
-     * String property. The type of object the Activity is going to create. Values are Schema, Script, StateMachine. 
-     * Used in script DescriptionCollectionSetter. Can be null or undefined.
+     * Integer property. It is used in CollectionMember to store the version of DescriptionDependency
      */
-    ObjectType,
+    Version,
 
     /**
-     * Boolean property. Makes CompositeActitivy abortable, i.e. it can be finished even if it has active children.
+     * String property used in Script CreateNewNumberedVersionFromLast and SetLastNumberedVersionFromLast
+     * to specify {@link org.cristalise.kernel.persistency.outcome.Viewpoint#setSchemaName(String)}.
      */
-    Abortable,
+    ViewName,
 
     /**
-     * Boolean property. Enables the Loop Transition of the CompositeActivity StateMachine
+     * String property used to specify {@link org.cristalise.kernel.persistency.outcome.Viewpoint#setName(String)}.
      */
-    RepeatWhen;
+    Viewpoint;
 
     /**
-     * This is only needed for backward compatibility because 'Agent Name' and 'Agent Role' string are used
+     * This is only needed for backward compatibility because 'Agent Name' and 'Agent Role' string were used historically
      */
     private String alternativeName;
 
@@ -149,7 +174,7 @@ public enum BuiltInVertexProperties {
         alternativeName = name();
     }
 
-    private BuiltInVertexProperties(String n) {
+    private BuiltInVertexProperties(final String n) {
         alternativeName = n;
     }
 
