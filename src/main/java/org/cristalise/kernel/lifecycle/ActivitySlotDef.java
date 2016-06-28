@@ -29,6 +29,7 @@ import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
+import org.cristalise.kernel.utils.Logger;
 
 /**
  * @version $Revision: 1.46 $ $Date: 2005/10/05 07:39:36 $
@@ -75,10 +76,10 @@ public class ActivitySlotDef extends WfVertexDef
 
 	public ActivityDef getTheActivityDef() throws ObjectNotFoundException, InvalidDataException
 	{
-		if (theActivityDef == null) { // try to load from item desc collection
+		if (theActivityDef == null) {
 			try {
-				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent())
-						.getCollectionResource(CompositeActivityDef.ACTCOL); 
+			    Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from item desc collection of ActSlotDef:"+getName());
+				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent()).getCollectionResource(CompositeActivityDef.ACTCOL); 
 				for (DescriptionObject thisActDef : parentActDefs) {
 					String childUUID = thisActDef.getItemID();
 					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
@@ -94,6 +95,7 @@ public class ActivitySlotDef extends WfVertexDef
 			} catch (ObjectNotFoundException ex) { } // old def with no collection
 		
 			if (theActivityDef == null) { // try to load from property
+                Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from property of ActSlotDef:"+getName());
 				Integer version = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.Version));
 				if (version == null) throw new InvalidDataException("No version defined in ActivityDefSlot "+getName());
 				setTheActivityDef(LocalObjectLoader.getActDef(getActivityDef(), version));
