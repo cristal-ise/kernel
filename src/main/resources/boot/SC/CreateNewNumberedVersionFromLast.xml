@@ -43,7 +43,7 @@
 		try {
 			var existingLast = agent.unmarshall(item.queryData("/ViewPoint/"+viewName+"/last"));
 		} catch (e) {
-			throw "No data found. You must submit at least one version before executing this activity.";
+			throw "No data found for '/ViewPoint/"+viewName+"/last'. You must submit at least one version before executing this activity.";
 		}
 		
 		var params = new Array(3);
