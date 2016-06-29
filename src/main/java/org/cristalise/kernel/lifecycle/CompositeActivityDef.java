@@ -363,17 +363,19 @@ public class CompositeActivityDef extends ActivityDef
 		//TODO: property include routing scripts in another dependency collection
 		for (int i=0; i<getChildren().length; i++) { // export routing scripts and schemas
 			GraphableVertex vert = getChildren()[i];
-			if (vert instanceof AndSplitDef)
+			if (vert instanceof AndSplitDef) {
 				try {
 					((AndSplitDef)vert).getRoutingScript().export(imports, dir);
-				} catch (ObjectNotFoundException ex) {}
+				}
+				catch (ObjectNotFoundException ex) {}
+			}
+
 			if (vert instanceof ActivitySlotDef) {
 				ActivityDef refAct = ((ActivitySlotDef) vert).getTheActivityDef();
 				refAct.export(imports, dir);
-			}
-							
+			}				
 		}
-		
+
 		// export marshalled compAct
 		String compactXML;
 		try {
@@ -384,17 +386,7 @@ public class CompositeActivityDef extends ActivityDef
 		}
 		FileStringUtility.string2File(new File(new File(dir, "CA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), compactXML);
 		if (imports!=null) {
-			imports.write(
-			        "<Workflow "
-    			        +"name=\""+getActName()+"\" "
-    					+(getItemPath()==null ? "" : "id=\""+getItemID()+"\" ")
-    					+(getVersion()==null  ? "" : "version=\""+getVersion()+"\" ")
-    					+"resource=\"boot/EA/"+getActName()+(getVersion()==null ? "" : "_"+getVersion())+".xml\""
-					+">"
-                    +(getStateMachine()==null ? "" : "<StateMachine name=\""+getStateMachine().getName()+"\" id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
-					+(getSchema()      ==null ? "" : "<Schema       name=\""+getSchema().getName()      +"\" id=\""+getSchema().getItemID()      +"\" version=\""+getSchema().getVersion()      +"\"/>")
-					+(getScript()      ==null ? "" : "<Script       name=\""+getScript().getName()      +"\" id=\""+getScript().getItemID()      +"\" version=\""+getScript().getVersion()      +"\"/>")
-			);
+			imports.write("<Workflow " + getExportAttributes("CA") + ">" + getExportCollections());
 
 			for (ActivityDef childActDef : refChildActDef) {
 				imports.write("<Activity name=\""+childActDef.getActName()+"\" id=\""+childActDef.getItemID()+"\" version=\""+childActDef.getVersion()+"\"/>");

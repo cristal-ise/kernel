@@ -341,7 +341,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return descDep;
 
 	}
-	
+
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
@@ -365,16 +365,21 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			throw new InvalidDataException("Couldn't marshall activity def "+getActName());
 		}
 		FileStringUtility.string2File(new File(new File(dir, "EA"), getActName()+(getVersion()==null?"":"_"+getVersion())+".xml"), actXML);
-		if (imports!=null) imports.write(
-		        "<Activity "
-		                +"name=\""+getActName()+"\" "
-		                +(getItemPath()==null ? "" : "id=\""     +getItemID() +"\" ")
-		                +(getVersion() ==null ? "" : "version=\""+getVersion()+"\" ")
-		                +"resource=\"boot/EA/"+getActName()+(getVersion()==null ? "" : "_"+getVersion())+".xml\""
-		        +">"
-                +(getStateMachine()==null ? "" : "<StateMachine id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
-				+(getSchema()      ==null ? "" : "<Schema       id=\""+getSchema().getItemID()      +"\" version=\""+getSchema().getVersion()      +"\"/>")
-				+(getScript()      ==null ? "" : "<Script       id=\""+getScript().getItemID()      +"\" version=\""+getScript().getVersion()      +"\"/>")
-				+"</Activity>\n");
+		if (imports!=null) {
+			imports.write("<Activity " + getExportAttributes("EA") + ">" + getExportCollections() + "</Activity>\n");
+		}
+	}
+
+	protected String getExportAttributes(String type) throws InvalidDataException, ObjectNotFoundException, IOException {
+			return "name=\""+getActName()+"\" "
+					+(getItemPath()==null ? "" : "id=\""     +getItemID() +"\" ")
+					+(getVersion() ==null ? "" : "version=\""+getVersion()+"\" ")
+					+"resource=\"boot/"+type+"/"+getActName()+(getVersion()==null ? "" : "_"+getVersion())+".xml\"";
+	}
+
+	protected String getExportCollections() throws InvalidDataException, ObjectNotFoundException, IOException {
+       	return   (getStateMachine()==null ? "" : "<StateMachine name=\""+getStateMachine().getName()+"\" id=\""+getStateMachine().getItemID()+"\" version=\""+getStateMachine().getVersion()+"\"/>")
+				+(getSchema()      ==null ? "" : "<Schema       name=\""+getSchema().getName()+"\"       id=\""+getSchema().getItemID()      +"\" version=\""+getSchema().getVersion()      +"\"/>")
+				+(getScript()      ==null ? "" : "<Script       name=\""+getScript().getName()+"\"       id=\""+getScript().getItemID()      +"\" version=\""+getScript().getVersion()      +"\"/>");
 	}
 }
