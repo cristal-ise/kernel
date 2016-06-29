@@ -29,6 +29,9 @@
     importClass(org.cristalise.kernel.utils.Logger);
     importClass(org.cristalise.kernel.utils.LocalObjectLoader);
     importClass(org.cristalise.kernel.utils.CastorHashMap);
+    importClass(org.cristalise.kernel.lookup.DomainPath);
+    importClass(org.cristalise.kernel.process.Gateway);
+    importClass(org.cristalise.kernel.property.Property);
 
     var objType = job.getActPropString("ObjectType");
 
@@ -45,14 +48,29 @@
     var newObj;
     var objName = job.getOutcome().getField("ObjectID");
     var objVer  = job.getOutcome().getField("Version");
+    var uuid;
 
     if (objName != null && !objName.isEmpty()) {
         try {
             if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
             else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
             else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
-            else 
-                throw "Script:DescriptionCollectionSetter - Unhandled ObjectType:"+objType;
+            else {
+           	    var searchProps = new Array(2);
+
+                searchProps[0] = new Property("Name", objName);
+                searchProps[1] = new Property("Type", objType);
+
+                var foundItems = Gateway.getLookup().search(new DomainPath("/"), searchProps);
+
+                if(foundItems.hasNext()) {
+                    uuid = foundItems.next().getItemPath().getUUID();
+                    if(foundItems.hasNext())
+                        throw "Script:DescriptionCollectionSetter - Umbiguous Lookup.search(props Name:"+objName+", Type:"+objType+")";
+                }
+                else
+                    throw "Script:DescriptionCollectionSetter - Nothing found for Lookup.search(props Name:"+objName+", Type:"+objType+")";
+            }
 
             var params = new Array(2);
             params[0] = objType;
@@ -69,8 +87,11 @@
 
             params = new Array(3);
             params[0] = objType;
-            params[1] = newObj.getItemID();
             params[2] = agent.marshall(props);
+
+            if(newObj != null) params[1] = newObj.getItemID();
+            else               params[1] = uuid;
+
             agent.execute(item, "AddMemberToCollection", params);
         }
         catch (e) {
