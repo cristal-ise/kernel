@@ -20,6 +20,12 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptVersion;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
 
 import java.io.File;
@@ -35,6 +41,7 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
@@ -50,26 +57,19 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * @version $Revision: 1.45 $ $Date: 2005/10/05 07:39:36 $
- * @author $Author: abranson $
+ * 
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject
 {
-	public static final String SCHNAME = "SchemaType";
-	public static final String SCHVER = "SchemaVersion";
-	public static final String SCRNAME = "ScriptName";
-	public static final String SCRVER = "ScriptVersion";
-	public static final String SMNAME = "StateMachineName";
-	public static final String SMVER = "StateMachineVersion";
-	
 	public static final String SCHCOL = "schema";
 	public static final String SCRCOL = "script";
 	public static final String SMCOL = "statemachine";
-	
+
 	private int mId = -1;
 	private String mName = "";
 	private Integer mVersion = null; // null is 'last', previously was -1
 	public boolean changed = false;
+	
 	Schema actSchema;
 	Script actScript;
 	StateMachine actStateMachine;
@@ -174,10 +174,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		return getName();
 	}
 
-	public void configureInstanceProp(CastorHashMap props, DescriptionObject desc, String nameProp, String verProp) {
+	public void configureInstanceProp(CastorHashMap props, DescriptionObject desc, BuiltInVertexProperties nameProp, BuiltInVertexProperties verProp) {
 		if (desc != null) {
-			props.put(nameProp, desc.getItemID());
-			props.put(verProp, desc.getVersion());
+			setBuiltInProperty(nameProp, desc.getItemID());
+			setBuiltInProperty(verProp, desc.getVersion());
 		}
 	}
 	@Override
@@ -201,9 +201,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 	public void configureInstance(WfVertex act) throws InvalidDataException, ObjectNotFoundException {
 		super.configureInstance(act);
 
-		configureInstanceProp(act.getProperties(), getSchema(), SCHNAME, SCHVER);
-		configureInstanceProp(act.getProperties(), getScript(), SCRNAME, SCRVER);
-		configureInstanceProp(act.getProperties(), getStateMachine(), SMNAME, SMVER);
+		configureInstanceProp(act.getProperties(), getSchema(), SchemaType, SchemaVersion);
+		configureInstanceProp(act.getProperties(), getScript(), ScriptName, ScriptVersion);
+		configureInstanceProp(act.getProperties(), getStateMachine(), StateMachineName, StateMachineVersion);
 	}
 
 	@Override
@@ -222,7 +222,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			try {
 				actSchema = (Schema)getCollectionResource(SCHCOL)[0];
 			} catch (ObjectNotFoundException ex) {			
-				actSchema = (Schema)getPropertyResource(SCHNAME, SCHVER);
+				actSchema = (Schema)getPropertyResource(SchemaType, SchemaVersion);
 			}
 		}
 		return actSchema;
@@ -233,7 +233,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			try {
 				actScript = (Script)getCollectionResource(SCRCOL)[0];
 			} catch (ObjectNotFoundException ex) {
-			actScript = (Script)getPropertyResource(SCRNAME, SCRVER);
+			actScript = (Script)getPropertyResource(ScriptName, ScriptVersion);
 			}
 		}
 		return actScript;
@@ -244,11 +244,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 			try {
 				actStateMachine = (StateMachine)getCollectionResource(SMCOL)[0];
 			} catch (ObjectNotFoundException ex) {
-				String smNameProp = (String)getProperties().get(SMNAME);
+				String smNameProp = (String)getProperties().get(StateMachineName);
 				if (smNameProp == null || smNameProp.length()>0)
 					actStateMachine = LocalObjectLoader.getStateMachine(getDefaultSMName(), 0);
 				else
-					actStateMachine = (StateMachine)getPropertyResource(SMNAME, SMVER);
+					actStateMachine = (StateMachine)getPropertyResource(StateMachineName, StateMachineVersion);
 			}
 		}
 		return actStateMachine;
@@ -289,21 +289,21 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 		if (retArr.size()==0) throw new ObjectNotFoundException();
 		return retArr.toArray(new DescriptionObject[retArr.size()]);
 	}
-	
-	protected DescriptionObject getPropertyResource(String nameProp, String verProp) throws InvalidDataException, ObjectNotFoundException {
+
+	protected DescriptionObject getPropertyResource(BuiltInVertexProperties nameProp, BuiltInVertexProperties verProp) throws InvalidDataException, ObjectNotFoundException {
 		if (Gateway.getLookup() == null) return null;
 		String resName = (String)getProperties().get(nameProp);
-		
-		if (!(getProperties().isAbstract(nameProp)) && resName != null && resName.length() > 0) {
+
+		if (!(getProperties().isAbstract(nameProp.name())) && resName != null && resName.length() > 0) {
 			Integer resVer = deriveVersionNumber(getProperties().get(verProp));
-			if (resVer == null && !(getProperties().isAbstract(verProp))) 
+			if (resVer == null && !(getProperties().isAbstract(verProp.name()))) 
 				throw new InvalidDataException("Invalid version property '"+resVer+"' in "+verProp+" for "+getName());
 			switch (nameProp) {
-			case SCHNAME:
+			case SchemaType:
 				return LocalObjectLoader.getSchema(resName, resVer);
-			case SCRNAME:
+			case ScriptName:
 				return LocalObjectLoader.getScript(resName, resVer);
-			case SMNAME:
+			case StateMachineName:
 				return LocalObjectLoader.getStateMachine(resName, resVer);
 			default:
 			}
