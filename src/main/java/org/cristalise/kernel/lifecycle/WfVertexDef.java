@@ -28,40 +28,44 @@ import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.utils.KeyValuePair;
 
-
 /**
- * @version $Revision: 1.22 $ $Date: 2005/11/15 15:56:38 $
- * @author  $Author: abranson $
+ * 
  */
-public abstract class WfVertexDef extends GraphableVertex
-{
+public abstract class WfVertexDef extends GraphableVertex {
     public Vector<String> mErrors;
 
     protected boolean loopTested;
 
     /**
-     * @see java.lang.Object#Object()
+     * 
      */
-    /** @label wf */
-    public WfVertexDef()
-    {
+    public WfVertexDef() {
         mErrors = new Vector<String>(0, 1);
         setIsLayoutable(true);
     }
 
     public abstract WfVertex instantiate() throws ObjectNotFoundException, InvalidDataException;
 
+    /**
+     * Copies Properties from vertex definition to vertex instance, and also set the Edges
+     * 
+     * @param newVertex the vertex instance to be configured
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
     public void configureInstance(WfVertex newVertex) throws InvalidDataException, ObjectNotFoundException {
-		KeyValuePair[] k = getProperties().getKeyValuePairs();
-		for (KeyValuePair element : k)
-			newVertex.getProperties().put(element.getKey(), element.getValue(), element.isAbstract());
-    	newVertex.setID(getID());
-    	if (getIsLayoutable()) {
-        	newVertex.setInEdgeIds(getInEdgeIds());
-        	newVertex.setOutEdgeIds(getOutEdgeIds());
-    		newVertex.setCentrePoint(getCentrePoint());
-    		newVertex.setOutlinePoints(getOutlinePoints());
-    	}
+        for (KeyValuePair element : getProperties().getKeyValuePairs()) {
+            newVertex.getProperties().put(element.getKey(), element.getValue(), element.isAbstract());
+        }
+
+        newVertex.setID(getID());
+
+        if (getIsLayoutable()) {
+            newVertex.setInEdgeIds(getInEdgeIds());
+            newVertex.setOutEdgeIds(getOutEdgeIds());
+            newVertex.setCentrePoint(getCentrePoint());
+            newVertex.setOutlinePoints(getOutlinePoints());
+        }
     }
 
     /**
@@ -76,18 +80,15 @@ public abstract class WfVertexDef extends GraphableVertex
      *
      * @return String
      */
-    public String getErrors()
-    {
-        if (mErrors.size() == 0)
-            return "No error";
-        else if (mErrors.size() == 1)
-        	return mErrors.elementAt(0);
+    public String getErrors() {
+        if (mErrors.size() == 0) return "No error";
+        else if (mErrors.size() == 1) return mErrors.elementAt(0);
         else {
-        	StringBuffer errorBuffer = new StringBuffer();
-        	for (String error : mErrors) {
-        		if (errorBuffer.length() > 0) errorBuffer.append(", ");
-				errorBuffer.append(error);
-			}
+            StringBuffer errorBuffer = new StringBuffer();
+            for (String error : mErrors) {
+                if (errorBuffer.length() > 0) errorBuffer.append(", ");
+                errorBuffer.append(error);
+            }
             return errorBuffer.toString();
         }
     }
@@ -97,14 +98,11 @@ public abstract class WfVertexDef extends GraphableVertex
      *
      * @return boolean
      */
-    public boolean loop()
-    {
+    public boolean loop() {
         boolean loop2 = false;
-        if (!loopTested)
-        {
+        if (!loopTested) {
             loopTested = true;
-            if (getOutGraphables().length != 0)
-                loop2 = ((WfVertexDef) getOutGraphables()[0]).loop();
+            if (getOutGraphables().length != 0) loop2 = ((WfVertexDef) getOutGraphables()[0]).loop();
         }
         loopTested = false;
         return loop2;
