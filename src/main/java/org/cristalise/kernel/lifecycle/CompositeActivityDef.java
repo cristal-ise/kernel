@@ -69,7 +69,7 @@ public class CompositeActivityDef extends ActivityDef {
             new TypeNameAndConstructionInfo("Join",             "Join"),
             new TypeNameAndConstructionInfo("Loop",             "Loop"),
     };
-    
+
     private final TypeNameAndConstructionInfo[] mEdgeTypeNameAndConstructionInfo  = { new TypeNameAndConstructionInfo("Next Edge", "Next") };
 
     public TypeNameAndConstructionInfo[] getVertexTypeNameAndConstructionInfo() {
@@ -119,10 +119,10 @@ public class CompositeActivityDef extends ActivityDef {
      * @param point
      * @throws InvalidDataException
      */
-    public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point)
-            throws InvalidDataException {
+    public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point) throws InvalidDataException {
         changed = true;
         boolean newActDef = true;
+
         for (ActivityDef existingActDef : refChildActDef) {
             if (existingActDef.getName().equals(actDef.getName())) {
                 if (existingActDef.getVersion().equals(actDef.getVersion())) {
@@ -130,13 +130,16 @@ public class CompositeActivityDef extends ActivityDef {
                     newActDef = false;
                     break;
                 }
-                else throw new InvalidDataException(
-                        "Cannot use same activity def with different version in the same composite activity");
+                else {
+                    throw new InvalidDataException("Cannot use same activity def with different version in the same composite activity");
+                }
             }
         }
         if (newActDef) refChildActDef.add(actDef);
+        
         ActivitySlotDef child = new ActivitySlotDef(name, actDef);
         addChild(child, point);
+
         return child;
     }
 
@@ -228,10 +231,11 @@ public class CompositeActivityDef extends ActivityDef {
         configureInstance(caInstance);
 
         if (getItemPath() != null) caInstance.setType(getItemID());
-        caInstance.getChildrenGraphModel().setStartVertexId(getChildrenGraphModel().getStartVertexId());
-        caInstance.getChildrenGraphModel().setEdges( instantiateEdges(caInstance) );
-        caInstance.getChildrenGraphModel().setVertices( intantiateVertices(caInstance) );
-        caInstance.getChildrenGraphModel().setNextId(getChildrenGraphModel().getNextId());
+
+        caInstance.getChildrenGraphModel().setStartVertexId(   getChildrenGraphModel().getStartVertexId() );
+        caInstance.getChildrenGraphModel().setEdges(           instantiateEdges(caInstance)               );
+        caInstance.getChildrenGraphModel().setVertices(        intantiateVertices(caInstance)             );
+        caInstance.getChildrenGraphModel().setNextId(          getChildrenGraphModel().getNextId()        );
         caInstance.getChildrenGraphModel().resetVertexOutlines();
 
         return caInstance;
@@ -338,15 +342,6 @@ public class CompositeActivityDef extends ActivityDef {
         }
     }
 
-    @Deprecated
-    public String[] getCastorNonLayoutableChildren() {
-        return new String[0];
-    }
-
-    @Deprecated
-    public void setCastorNonLayoutableChildren(String[] dummy) {
-    }
-
     @Override
     public boolean verify() {
         boolean err = super.verify();
@@ -364,12 +359,11 @@ public class CompositeActivityDef extends ActivityDef {
 
     @Override
     public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
-
         // rebuild the child refs in case any slots have been removed
         setRefChildActDef(findRefActDefs(getChildrenGraphModel()));
 
         // TODO: property include routing scripts in another dependency collection
-        
+
         // export routing scripts and schemas
         for (int i = 0; i < getChildren().length; i++) {
             GraphableVertex vert = getChildren()[i];
@@ -386,18 +380,16 @@ public class CompositeActivityDef extends ActivityDef {
             }
         }
 
-        // export marshalled compAct
-        String compactXML;
         try {
-            compactXML = Gateway.getMarshaller().marshall(this);
+            // export marshalled compAct
+            String compactXML = Gateway.getMarshaller().marshall(this);
+            FileStringUtility.string2File(new File(new File(dir, "CA"), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
         }
         catch (Exception e) {
             Logger.error(e);
             throw new InvalidDataException("Couldn't marshall composite activity def " + getActName());
         }
 
-        FileStringUtility.string2File(new File(new File(dir, "CA"), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
-        
         if (imports != null) {
             imports.write("<Workflow " + getExportAttributes("CA") + ">" + getExportCollections());
 
