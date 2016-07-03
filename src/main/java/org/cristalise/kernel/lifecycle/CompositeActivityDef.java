@@ -342,6 +342,15 @@ public class CompositeActivityDef extends ActivityDef {
         }
     }
 
+    @Deprecated
+    public String[] getCastorNonLayoutableChildren() {
+        return new String[0];
+    }
+
+    @Deprecated
+    public void setCastorNonLayoutableChildren(String[] dummy) {
+    }
+
     @Override
     public boolean verify() {
         boolean err = super.verify();
