@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -47,7 +49,6 @@ import org.cristalise.kernel.utils.Logger;
  * 
  */
 public class CompositeActivityDef extends ActivityDef {
-    public static final String     ACTCOL         = "Activity";
     private ArrayList<ActivityDef> refChildActDef = new ArrayList<ActivityDef>();
 
     public ArrayList<ActivityDef> getRefChildActDef() {
@@ -288,7 +289,7 @@ public class CompositeActivityDef extends ActivityDef {
     }
 
     public Dependency makeActDefCollection() throws InvalidDataException {
-        return makeDescCollection(ACTCOL, refChildActDef.toArray(new ActivityDef[refChildActDef.size()]));
+        return makeDescCollection(ACTIVITY, refChildActDef.toArray(new ActivityDef[refChildActDef.size()]));
     }
 
     public ArrayList<ActivityDef> findRefActDefs(GraphModel graph) throws ObjectNotFoundException, InvalidDataException {

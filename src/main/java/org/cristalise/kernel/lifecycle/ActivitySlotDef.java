@@ -19,6 +19,9 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
@@ -39,7 +42,6 @@ public class ActivitySlotDef extends WfVertexDef
 {
 	private String activityDef;
 	private ActivityDef theActivityDef;
-
 
 	public ActivitySlotDef() {
 		
@@ -79,7 +81,7 @@ public class ActivitySlotDef extends WfVertexDef
 		if (theActivityDef == null) {
 			try {
 			    Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from item desc collection of ActSlotDef:"+getName());
-				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent()).getCollectionResource(CompositeActivityDef.ACTCOL); 
+				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent()).getBuiltInCollectionResource(ACTIVITY); 
 				for (DescriptionObject thisActDef : parentActDefs) {
 					String childUUID = thisActDef.getItemID();
 					Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - Collection childUUID:"+childUUID+" of ActSlotDef:"+getName());

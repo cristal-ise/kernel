@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.process.module;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class ModuleWorkflow extends ModuleActivity {
 	
 	public ModuleWorkflow(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
 		super(child, version);
-		Collection<?> coll = child.getCollection(CompositeActivityDef.ACTCOL, version);
+		Collection<?> coll = child.getCollection(ACTIVITY, version);
 		for (CollectionMember collMem : coll.getMembers().list) {
 			activities.add(new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get(Version.name()).toString())));			
 		}

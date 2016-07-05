@@ -20,6 +20,11 @@
  */
 package org.cristalise.kernel.process.module;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
+import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
+import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
+
+import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.CollectionMember;
@@ -51,15 +56,17 @@ public class ModuleActivity extends ModuleResource {
 	public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
 		this();
 		this.version = version;
-		script = getDescRef(child, ActivityDef.SCRCOL);
-		schema = getDescRef(child, ActivityDef.SCHCOL);
-		stateMachine = getDescRef(child, ActivityDef.SMCOL);
+		script = getDescRef(child, SCRIPT);
+		schema = getDescRef(child, SCHEMA);
+		stateMachine = getDescRef(child, STATE_MACHINE);
 		
 	}
 	
-	public ModuleDescRef getDescRef(ItemProxy child, String collName) throws ObjectNotFoundException, InvalidDataException {
-		Collection<?> coll = child.getCollection(collName, version);
-		if (coll.size() == 1) throw new InvalidDataException("Too many members in "+collName+" collection in "+name);
+	public ModuleDescRef getDescRef(ItemProxy child, BuiltInCollections collection) throws ObjectNotFoundException, InvalidDataException {
+		Collection<?> coll = child.getCollection(collection.getName(), version);
+		
+		if (coll.size() == 1) throw new InvalidDataException("Too many members in "+collection+" collection in "+name);
+		
 		CollectionMember collMem = coll.getMembers().list.get(0);
 		return new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get("Version").toString()));
 	}

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.AccessRightsException;
@@ -55,27 +56,20 @@ import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 
 
-/******************************************************************************
- * It is a wrapper for the connection and communication with Item
+/**
+ * It is a wrapper for the connection and communication with Item.
  * It caches data loaded from the Item to reduce communication
- *
- * @version $Revision: 1.25 $ $Date: 2005/05/10 11:40:09 $
- * @author  $Author: abranson $
- ******************************************************************************/
+ */
 public class ItemProxy 
 {
-
-    protected Item    				mItem = null;
-    protected ItemPath				mItemPath;
+    protected Item                  mItem = null;
+    protected ItemPath              mItemPath;
     protected org.omg.CORBA.Object  mIOR;
-    private final HashMap<MemberSubscription<?>, ProxyObserver<?>>
-    								mSubscriptions;
-    
-   /**************************************************************************
-    *  
-    **************************************************************************/
+
+    private final HashMap<MemberSubscription<?>, ProxyObserver<?>> mSubscriptions;
+
     protected ItemProxy( org.omg.CORBA.Object  ior,
-                         ItemPath              itemPath)
+            ItemPath              itemPath)
     {
         Logger.msg(8, "ItemProxy::initialise() - Initialising item proxy " +itemPath);
 
@@ -85,30 +79,30 @@ public class ItemProxy
 
     }
 
-	public ItemPath getPath() {
-		return mItemPath;
-	}
-	
-	protected Item getItem() throws ObjectNotFoundException {
-		if (mItem == null)
-			mItem = narrow();
-		return mItem;
-	}
+    public ItemPath getPath() {
+        return mItemPath;
+    }
 
-	public Item narrow() throws ObjectNotFoundException
-     {
-         try {
-             return ItemHelper.narrow(mIOR);
-         } catch (org.omg.CORBA.BAD_PARAM ex) { }
-         throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down.");
-     }
-	
-	public void initialise( AgentPath agentId,
-							PropertyArrayList  itemProps,
+    protected Item getItem() throws ObjectNotFoundException {
+        if (mItem == null)
+            mItem = narrow();
+        return mItem;
+    }
+
+    public Item narrow() throws ObjectNotFoundException
+    {
+        try {
+            return ItemHelper.narrow(mIOR);
+        } catch (org.omg.CORBA.BAD_PARAM ex) { }
+        throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down.");
+    }
+
+    public void initialise( AgentPath agentId,
+                            PropertyArrayList  itemProps,
                             CompositeActivity  workflow,
                             CollectionArrayList colls
                             )
-        throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
+                    throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
     {
         Logger.msg(7, "ItemProxy::initialise - started");
         CastorXMLUtility xml = Gateway.getMarshaller();
@@ -118,13 +112,13 @@ public class ItemProxy
         if (workflow != null) wfString = xml.marshall(workflow);
         String collString = "";
         if (colls != null) collString = xml.marshall(colls);
-        
+
         getItem().initialise( agentId.getSystemKey(), propString, wfString, collString);
     }
 
     public void setProperty(AgentProxy agent, String name, String value)
-        throws AccessRightsException,
-        PersistencyException, InvalidDataException
+            throws AccessRightsException,
+            PersistencyException, InvalidDataException
     {
         String[] params = new String[2];
         params[0] = name;
@@ -142,13 +136,21 @@ public class ItemProxy
             throw new PersistencyException("Could not store property");
         }
     }
-    
-   /**
-    * @throws InvalidCollectionModification 
-    *
-    **************************************************************************/
+
+    /**
+     * 
+     * @param thisJob
+     * @return Outcome
+     * @throws AccessRightsException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
     public String requestAction( Job thisJob )
-        throws AccessRightsException,
+            throws AccessRightsException,
             InvalidTransitionException,
             ObjectNotFoundException,
             InvalidDataException,
@@ -156,100 +158,123 @@ public class ItemProxy
             ObjectAlreadyExistsException, 
             InvalidCollectionModification
     {
-		String outcome = thisJob.getOutcomeString();
-		// check fields that should have been filled in
-		if (outcome==null)
-			if (thisJob.isOutcomeRequired())
-				throw new InvalidDataException("Outcome is required.");
-			else
-				outcome="";
+        String outcome = thisJob.getOutcomeString();
+        // check fields that should have been filled in
+        if (outcome==null)
+            if (thisJob.isOutcomeRequired())
+                throw new InvalidDataException("Outcome is required.");
+            else
+                outcome="";
 
         if (thisJob.getAgentPath() == null)
             throw new InvalidDataException("No Agent specified.");
 
         Logger.msg(7, "ItemProxy - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
         if (thisJob.getDelegatePath() == null)
-        	return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
-            thisJob.getTransition().getId(), outcome);
+            return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
+                    thisJob.getTransition().getId(), outcome);
         else
-        	return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
-        			thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
+            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
+                    thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
-   /**************************************************************************
-    *
-    **************************************************************************/
     private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
-        throws AccessRightsException,
-               ObjectNotFoundException,
-               PersistencyException
+            throws AccessRightsException,
+            ObjectNotFoundException,
+            PersistencyException
     {
         JobArrayList thisJobList;
         try {
             String jobs =  getItem().queryLifeCycle(agentPath.getSystemKey(), filter);
             thisJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(jobs);
-            }
+        }
         catch (Exception e) {
             Logger.error(e);
             throw new PersistencyException("Exception::ItemProxy::getJobList() - Cannot unmarshall the jobs");
         }
         return thisJobList.list;
-    }
+            }
 
     public ArrayList<Job> getJobList(AgentProxy agent)
-    throws AccessRightsException,
-           ObjectNotFoundException,
-           PersistencyException
-    {
+            throws AccessRightsException,
+            ObjectNotFoundException,
+            PersistencyException
+            {
         return getJobList(agent.getPath(), true);
-    }
+            }
 
     private Job getJobByName(String actName, AgentPath agent)
-    throws AccessRightsException,
-           ObjectNotFoundException,
-           PersistencyException {
+            throws AccessRightsException,
+            ObjectNotFoundException,
+            PersistencyException {
 
-    	ArrayList<Job> jobList = getJobList(agent, true);
-    	for (Job job : jobList) {
-			if (job.getStepName().equals(actName) && job.getTransition().isFinishing())
-					return job;
-    	}
-    	return null;
+        ArrayList<Job> jobList = getJobList(agent, true);
+        for (Job job : jobList) {
+            if (job.getStepName().equals(actName) && job.getTransition().isFinishing())
+                return job;
+        }
+        return null;
 
     }
-    
-    /** Gets the current version of the named collection
+
+    /** 
+     * Gets the current version of the named Collection
+     * 
+     * @param collection The built-in collection
+     * @return the Collection object
+     * @throws ObjectNotFoundException
+     */
+    public Collection<?> getCollection(BuiltInCollections collection) throws ObjectNotFoundException {
+        return getCollection(collection, null);
+    }
+
+    /** 
+     * Gets a numbered version (snapshot) of a collection
+     * 
+     * @param collection The built-in Collection
+     * @param version The collection number (null for the current version)
+     * @return the Collection object
+     * @throws ObjectNotFoundException
+     */
+    public Collection<?> getCollection(BuiltInCollections collection, Integer version) throws ObjectNotFoundException {
+        return getCollection(collection.getName(), version);
+    }
+
+    /** 
+     * Gets the current version of the named collection
      * 
      * @param collName The collection name
      * @return the Collection object
      * @throws ObjectNotFoundException
      */
     public Collection<?> getCollection(String collName) throws ObjectNotFoundException {
-    	return getCollection(collName, null);
+        return getCollection(collName, null);
     }
-    
-    /** Gets a numbered version (snapshot) of a collection
+
+    /** 
+     * Gets a numbered version (snapshot) of a collection
      * 
      * @param collName The collection name
      * @param version The collection number (null for the current version)
-     * @return 
+     * @return the Collection object
      * @throws ObjectNotFoundException
      */
     public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
-    	String verStr = version==null?"last":String.valueOf(version);
-    	return (Collection<?>)getObject(ClusterStorage.COLLECTION+"/"+collName+"/"+verStr);
+        String verStr = version==null?"last":String.valueOf(version);
+        return (Collection<?>)getObject(ClusterStorage.COLLECTION+"/"+collName+"/"+verStr);
     }
-    
+
     /** Gets the Workflow object of this Item
      * 
      * @return the Item's Workflow object
      * @throws ObjectNotFoundException
      */
     public Workflow getWorkflow() throws ObjectNotFoundException {
-    	return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
+        return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
     }
-    
-    /** Gets the named viewpoint
+
+    /** 
+     * Gets the named viewpoint
      * 
      * @param schemaName Outcome schema name
      * @param viewName Viewpoint name
@@ -257,90 +282,96 @@ public class ItemProxy
      * @throws ObjectNotFoundException
      */
     public Viewpoint getViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
-    	return (Viewpoint)getObject(ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
+        return (Viewpoint)getObject(ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
     }
-    
-    /** Tries to find a job with the given name for the given Agent in
-     * the workflow.
+
+    /** 
+     * Tries to find a job with the given name for the given Agent in the workflow.
      * 
      * @param actName The activity name to look for
      * @param agent The agent to fetch jobs for
-     * @return
+     * @return the Viewpoint object
      * @throws AccessRightsException
      * @throws ObjectNotFoundException
      * @throws PersistencyException Error loading the relevant objects
      */
     public Job getJobByName(String actName, AgentProxy agent)
-    throws AccessRightsException,
-           ObjectNotFoundException,
-           PersistencyException {
-    	return getJobByName(actName, agent.getPath());
+            throws AccessRightsException,
+            ObjectNotFoundException,
+            PersistencyException {
+        return getJobByName(actName, agent.getPath());
     }
-    
+
     /**
      * If this is reaped, clear out the cache for it too.
      */
     @Override
-	protected void finalize() throws Throwable {
+    protected void finalize() throws Throwable {
         Logger.msg(7, "Proxy "+mItemPath+" reaped");
         Gateway.getStorage().clearCache(mItemPath, null);
         Gateway.getProxyManager().removeProxy(mItemPath);
         super.finalize();
     }
 
-   /**************************************************************************
-    *
-    **************************************************************************/
-	public String queryData( String path )
-        throws ObjectNotFoundException
+    /**
+     * 
+     * @param path 
+     * @return string
+     * @throws ObjectNotFoundException
+     */
+    public String queryData( String path )
+            throws ObjectNotFoundException
     {
 
-    	try {
-			Logger.msg(7, "EntityProxy.queryData() - "+mItemPath+"/"+path);
-			if (path.endsWith("all")) {
-				Logger.msg(7, "EntityProxy.queryData() - listing contents");
-				String[] result = Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()-3));
-				StringBuffer retString = new StringBuffer();
-				for (int i = 0; i < result.length; i++) {
-					retString.append(result[i]);
-					if (i<result.length-1) retString.append(",");
-				}
-				Logger.msg(7, "EntityProxy.queryData() - "+retString.toString());
-				return retString.toString();
-			}
-			C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
-			return Gateway.getMarshaller().marshall(target);
+        try {
+            Logger.msg(7, "EntityProxy.queryData() - "+mItemPath+"/"+path);
+            if (path.endsWith("all")) {
+                Logger.msg(7, "EntityProxy.queryData() - listing contents");
+                String[] result = Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()-3));
+                StringBuffer retString = new StringBuffer();
+                for (int i = 0; i < result.length; i++) {
+                    retString.append(result[i]);
+                    if (i<result.length-1) retString.append(",");
+                }
+                Logger.msg(7, "EntityProxy.queryData() - "+retString.toString());
+                return retString.toString();
+            }
+            C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
+            return Gateway.getMarshaller().marshall(target);
         } catch (ObjectNotFoundException e) {
             throw e;
-		} catch (Exception e) {
-			Logger.error(e);
-			return "<ERROR>"+e.getMessage()+"</ERROR>";
-		}
+        } catch (Exception e) {
+            Logger.error(e);
+            return "<ERROR>"+e.getMessage()+"</ERROR>";
+        }
     }
 
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
-			return Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()));
-		} catch (PersistencyException e) {
-			throw new ObjectNotFoundException(e.toString());
-		}
+            return Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()));
+        } catch (PersistencyException e) {
+            throw new ObjectNotFoundException(e.toString());
+        }
     }
 
 
-   /**************************************************************************
-    *
-    **************************************************************************/
+    /**
+     * 
+     * @param xpath
+     * @return C2KLocalObject
+     * @throws ObjectNotFoundException
+     */
     public C2KLocalObject getObject( String xpath )
-        throws ObjectNotFoundException
+            throws ObjectNotFoundException
     {
         // load from storage, falling back to proxy loader if not found in others
         try
         {
-           return Gateway.getStorage().get( mItemPath, xpath , null);
+            return Gateway.getStorage().get( mItemPath, xpath , null);
         }
         catch( PersistencyException ex )
         {
-        	Logger.msg(4, "Exception loading object :"+mItemPath+"/"+xpath);
+            Logger.msg(4, "Exception loading object :"+mItemPath+"/"+xpath);
             throw new ObjectNotFoundException( ex.toString() );
         }
     }
@@ -348,18 +379,18 @@ public class ItemProxy
 
 
     public String getProperty( String name )
-        throws ObjectNotFoundException
+            throws ObjectNotFoundException
     {
         Logger.msg(5, "Get property "+name+" from item "+mItemPath);
-    	Property prop = (Property)getObject("Property/"+name);
-    	try
+        Property prop = (Property)getObject("Property/"+name);
+        try
         {
-    		return prop.getValue();
-    	}
+            return prop.getValue();
+        }
         catch (NullPointerException ex)
         {
-    		throw new ObjectNotFoundException();
-    	}
+            throw new ObjectNotFoundException();
+        }
     }
 
     public String getName()
@@ -373,15 +404,15 @@ public class ItemProxy
 
 
 
-    
+
     /**************************************************************************
      * Subscription methods
      **************************************************************************/
 
     public void subscribe(MemberSubscription<?> newSub) {
-    	
-    	newSub.setSubject(this);
-    	synchronized (this){
+
+        newSub.setSubject(this);
+        synchronized (this){
             mSubscriptions.put( newSub, newSub.getObserver() );
         }
         new Thread(newSub).start();

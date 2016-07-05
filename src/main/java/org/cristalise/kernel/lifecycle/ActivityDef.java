@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
+import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
+import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptName;
@@ -34,6 +37,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyMember;
@@ -60,10 +64,6 @@ import org.cristalise.kernel.utils.Logger;
  * 
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject {
-    public static final String SCHCOL = "schema";
-    public static final String SCRCOL = "script";
-    public static final String SMCOL  = "statemachine";
-
     private int     mId      = -1;
     private String  mName    = "";
     private Integer mVersion = null;  // null is 'last',previously was -1
@@ -216,7 +216,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             Logger.msg(1, "ActivityDef.getSchema(actName:"+getName()+") - Loading ...");
 
             try {
-                actSchema = (Schema) getCollectionResource(SCHCOL)[0];
+                actSchema = (Schema) getBuiltInCollectionResource(SCHEMA)[0];
             }
             catch (ObjectNotFoundException ex) {
                 actSchema = (Schema) getPropertyResource(SchemaType, SchemaVersion);
@@ -230,7 +230,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             Logger.msg(1, "ActivityDef.getScript(actName:"+getName()+") - Loading ...");
 
             try {
-                actScript = (Script) getCollectionResource(SCRCOL)[0];
+                actScript = (Script) getBuiltInCollectionResource(SCRIPT)[0];
             }
             catch (ObjectNotFoundException ex) {
                 actScript = (Script) getPropertyResource(ScriptName, ScriptVersion);
@@ -244,7 +244,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             Logger.msg(1, "ActivityDef.getStateMachine(actName:"+getName()+") - Loading ...");
 
             try {
-                actStateMachine = (StateMachine) getCollectionResource(SMCOL)[0];
+                actStateMachine = (StateMachine) getBuiltInCollectionResource(STATE_MACHINE)[0];
             }
             catch (ObjectNotFoundException ex) {
                 String smNameProp = (String) getProperties().get(StateMachineName);
@@ -256,20 +256,20 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return actStateMachine;
     }
 
-    protected DescriptionObject[] getCollectionResource(String collName) throws ObjectNotFoundException, InvalidDataException {
+    protected DescriptionObject[] getBuiltInCollectionResource(BuiltInCollections collection) throws ObjectNotFoundException, InvalidDataException {
         // not stored yet
         if (itemPath == null) throw new ObjectNotFoundException(); 
 
-        Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collName);
+        Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collection);
 
         Dependency resColl;
         String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
         
         try {
-            resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collName + "/" + verStr, null);
+            resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collection + "/" + verStr, null);
         }
         catch (PersistencyException e) {
-            throw new InvalidDataException("Error loading description collection " + collName);
+            throw new InvalidDataException("Error loading description collection " + collection);
         }
 
         ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
@@ -279,20 +279,20 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             Integer resVer = deriveVersionNumber(resMem.getBuiltInProperty(Version));
 
             if (resVer == null) {
-                throw new InvalidDataException("Version is null for Item:" + itemPath + ", Collection:" + collName + ", DependencyMember:" + resUUID);
+                throw new InvalidDataException("Version is null for Item:" + itemPath + ", Collection:" + collection + ", DependencyMember:" + resUUID);
             }
 
-            switch (collName) {
-                case SCHCOL:
+            switch (collection) {
+                case SCHEMA:
                     retArr.add(LocalObjectLoader.getSchema(resUUID, resVer));
                     break;
-                case SCRCOL:
+                case SCRIPT:
                     retArr.add(LocalObjectLoader.getScript(resUUID, resVer));
                     break;
-                case SMCOL:
+                case STATE_MACHINE:
                     retArr.add(LocalObjectLoader.getStateMachine(resUUID, resVer));
                     break;
-                case CompositeActivityDef.ACTCOL:
+                case ACTIVITY:
                     retArr.add(LocalObjectLoader.getActDef(resUUID, resVer));
                     break;
                 default:
@@ -344,9 +344,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         this.actStateMachine = actStateMachine;
     }
 
-    public Dependency makeDescCollection(String colName, DescriptionObject... descs) throws InvalidDataException {
+    public Dependency makeDescCollection(BuiltInCollections collection, DescriptionObject... descs) throws InvalidDataException {
         //TODO: restrictmembership based on kernel propdef
-        Dependency descDep = new Dependency(colName);
+        Dependency descDep = new Dependency(collection.getName());
         if (mVersion != null && mVersion > -1) {
             descDep.setVersion(mVersion);
         }
@@ -369,9 +369,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
         CollectionArrayList retArr = new CollectionArrayList();
 
-        retArr.put(makeDescCollection("Schema",       getSchema()));
-        retArr.put(makeDescCollection("Script",       getScript()));
-        retArr.put(makeDescCollection("StateMachine", getStateMachine()));
+        retArr.put(makeDescCollection(SCHEMA,        getSchema()));
+        retArr.put(makeDescCollection(SCRIPT,        getScript()));
+        retArr.put(makeDescCollection(STATE_MACHINE, getStateMachine()));
 
         return retArr;
     }
