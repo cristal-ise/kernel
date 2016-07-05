@@ -233,8 +233,8 @@ public class CompositeActivityDef extends ActivityDef {
         if (getItemPath() != null) caInstance.setType(getItemID());
 
         caInstance.getChildrenGraphModel().setStartVertexId(   getChildrenGraphModel().getStartVertexId() );
-        caInstance.getChildrenGraphModel().setEdges(           instantiateEdges(caInstance)               );
         caInstance.getChildrenGraphModel().setVertices(        intantiateVertices(caInstance)             );
+        caInstance.getChildrenGraphModel().setEdges(           instantiateEdges(caInstance)               );
         caInstance.getChildrenGraphModel().setNextId(          getChildrenGraphModel().getNextId()        );
         caInstance.getChildrenGraphModel().resetVertexOutlines();
 
