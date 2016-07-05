@@ -199,17 +199,18 @@ public class Job implements C2KLocalObject
 
     public Transition getTransition() {
         if (transition != null && transitionResolved == false) {
-            String name = getActPropString(StateMachineName);
-            int version = (Integer)getActProp(StateMachineVersion);
-            StateMachine sm;
+            Logger.msg(5, "Job.getgetTransition() - actProps:"+actProps);
             try {
-                sm = LocalObjectLoader.getStateMachine(name, version);
+                String name = getActPropString(StateMachineName);
+                int version = (Integer)getActProp(StateMachineVersion);
+                StateMachine sm = LocalObjectLoader.getStateMachine(name, version);
+                transition = sm.getTransition(transition.getId());
+                transitionResolved = true;
             }
             catch (Exception e) {
+                Logger.error(e);
                 return transition;
             }
-            transition = sm.getTransition(transition.getId());
-            transitionResolved = true;
         }
         return transition;
     }
