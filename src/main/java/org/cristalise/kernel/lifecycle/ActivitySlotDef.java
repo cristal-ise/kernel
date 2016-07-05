@@ -82,6 +82,7 @@ public class ActivitySlotDef extends WfVertexDef
 				DescriptionObject[] parentActDefs =  ((CompositeActivityDef)getParent()).getCollectionResource(CompositeActivityDef.ACTCOL); 
 				for (DescriptionObject thisActDef : parentActDefs) {
 					String childUUID = thisActDef.getItemID();
+					Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - Collection childUUID:"+childUUID+" of ActSlotDef:"+getName());
 					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
 						ActivityDef currentActDef = (ActivityDef)thisActDef;
 						Integer requiredVersion = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.Version));
@@ -93,9 +94,9 @@ public class ActivitySlotDef extends WfVertexDef
 					}
 				}
 			} catch (ObjectNotFoundException ex) { } // old def with no collection
-		
+
 			if (theActivityDef == null) { // try to load from property
-                Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from property of ActSlotDef:"+getName());
+			    Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from property of ActSlotDef:"+getName());
 				Integer version = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.Version));
 				if (version == null) throw new InvalidDataException("No version defined in ActivityDefSlot "+getName());
 				setTheActivityDef(LocalObjectLoader.getActDef(getActivityDef(), version));
@@ -111,6 +112,8 @@ public class ActivitySlotDef extends WfVertexDef
 		setBuiltInProperty(BuiltInVertexProperties.Version, actDef.getVersion());
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;
+
+		Logger.msg(5, "ActivitySlotDef.setTheActivityDef() - ActSlotDef:"+getName() + " UUID:"+activityDef);
 	}
 	/**
 	 * @see org.cristalise.kernel.lifecycle.WfVertexDef#verify()

@@ -23,9 +23,9 @@ package org.cristalise.kernel.lifecycle;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptName;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptVersion;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptVersion;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
 
 import java.io.File;
@@ -159,18 +159,20 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     /**
-     * @see
-     * org.cristalise.kernel.lifecycle.commonInterface.ActType#getDescName()
      */
     public String getDescName() {
         return getName();
     }
 
-    public void configureInstanceProp(CastorHashMap props, DescriptionObject desc, BuiltInVertexProperties nameProp,
-            BuiltInVertexProperties verProp) {
+    public void configureInstanceProp(CastorHashMap instanceProps, DescriptionObject desc, BuiltInVertexProperties nameProp, BuiltInVertexProperties verProp) {
         if (desc != null) {
-            setBuiltInProperty(nameProp, desc.getItemID());
-            setBuiltInProperty(verProp, desc.getVersion());
+            Logger.msg(5, "ActivityDef.configureInstanceProp(actName:"+getName()+") - Setting property:"+nameProp);
+
+            instanceProps.setBuiltInProperty(nameProp, desc.getItemID());
+            instanceProps.setBuiltInProperty(verProp, desc.getVersion());
+        }
+        else {
+            Logger.msg(8, "ActivityDef.configureInstanceProp(actName:"+getName()+") - No values were set for property:"+nameProp);
         }
     }
 
@@ -211,6 +213,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
         if (actSchema == null) {
+            Logger.msg(1, "ActivityDef.getSchema(actName:"+getName()+") - Loading ...");
+
             try {
                 actSchema = (Schema) getCollectionResource(SCHCOL)[0];
             }
@@ -223,6 +227,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     public Script getScript() throws InvalidDataException, ObjectNotFoundException {
         if (actScript == null) {
+            Logger.msg(1, "ActivityDef.getScript(actName:"+getName()+") - Loading ...");
+
             try {
                 actScript = (Script) getCollectionResource(SCRCOL)[0];
             }
@@ -235,6 +241,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     public StateMachine getStateMachine() throws InvalidDataException, ObjectNotFoundException {
         if (actStateMachine == null) {
+            Logger.msg(1, "ActivityDef.getStateMachine(actName:"+getName()+") - Loading ...");
+
             try {
                 actStateMachine = (StateMachine) getCollectionResource(SMCOL)[0];
             }
@@ -252,6 +260,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         // not stored yet
         if (itemPath == null) throw new ObjectNotFoundException(); 
 
+        Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collName);
+
         Dependency resColl;
         String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
         
@@ -266,7 +276,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
         for (DependencyMember resMem : resColl.getMembers().list) {
             String resUUID = resMem.getChildUUID();
-            Integer resVer = deriveVersionNumber(resMem.getProperties().get(Version.name()));
+            Integer resVer = deriveVersionNumber(resMem.getBuiltInProperty(Version));
 
             if (resVer == null) {
                 throw new InvalidDataException("Version is null for Item:" + itemPath + ", Collection:" + collName + ", DependencyMember:" + resUUID);
@@ -298,13 +308,14 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             throws InvalidDataException, ObjectNotFoundException
     {
         if (Gateway.getLookup() == null) return null;
+        Logger.msg(5, "ActivityDef.getPropertyResource(actName:"+getName()+") - Loading from property:"+nameProp);
 
-        String resName = (String) getProperties().get(nameProp);
+        String resName = (String) getBuiltInProperty(nameProp);
 
-        if (!(getProperties().isAbstract(nameProp.name())) && resName != null && resName.length() > 0) {
-            Integer resVer = deriveVersionNumber(getProperties().get(verProp));
-            
-            if (resVer == null && !(getProperties().isAbstract(verProp.name()))) {
+        if (!(getProperties().isAbstract(nameProp)) && resName != null && resName.length() > 0) {
+            Integer resVer = deriveVersionNumber(getBuiltInProperty(verProp));
+
+            if (resVer == null && !(getProperties().isAbstract(verProp))) {
                 throw new InvalidDataException("Invalid version property '" + resVer + "' in " + verProp + " for " + getName());
             }
 
@@ -344,12 +355,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             if (thisDesc == null) continue;
             try {
                 DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
-                descMem.getProperties().put(Version.name(), thisDesc.getVersion());
+                descMem.setBuiltInProperty(Version, thisDesc.getVersion());
             }
             catch (Exception e) {
                 Logger.error(e);
-                throw new InvalidDataException("Problem creating description collection for " + thisDesc + " in "
-                        + getName());
+                throw new InvalidDataException("Problem creating description collection for " + thisDesc + " in " + getName());
             }
         }
         return descDep;

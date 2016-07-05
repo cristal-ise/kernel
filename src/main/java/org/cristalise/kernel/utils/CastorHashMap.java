@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
+
 /**
  * This subclass of HashMap can be marshalled and unmarshalled with Castor
  */
@@ -84,8 +86,19 @@ public class CastorHashMap extends HashMap<String, Object> {
         return abstractPropNames;
     }
 
+    public boolean isAbstract(BuiltInVertexProperties prop) {
+        return isAbstract(prop.getAlternativeName());
+    }
     public boolean isAbstract(String propName) {
         return abstractPropNames.contains(propName);
+    }
+
+    public void setBuiltInProperty(BuiltInVertexProperties prop, Object value) {
+        setBuiltInProperty(prop, value, false);
+    }
+
+    public void setBuiltInProperty(BuiltInVertexProperties prop, Object value, boolean isAbstract) {
+        put(prop.getAlternativeName(), value, isAbstract);
     }
 
     public void put(String key, Object value, boolean isAbstract) {
