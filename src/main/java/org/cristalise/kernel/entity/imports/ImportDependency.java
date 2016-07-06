@@ -22,6 +22,7 @@ package org.cristalise.kernel.entity.imports;
 
 import java.util.ArrayList;
 
+import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyDescription;
 import org.cristalise.kernel.common.InvalidCollectionModification;
@@ -49,6 +50,10 @@ public class ImportDependency {
 
     public ImportDependency() {
         super();
+    }
+
+    public ImportDependency(BuiltInCollections collection) {
+        this(collection.getName());
     }
 
     public ImportDependency(String name) {

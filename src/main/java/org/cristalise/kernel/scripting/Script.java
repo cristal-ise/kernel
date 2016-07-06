@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.scripting;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.INCLUDE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -73,7 +75,7 @@ import org.xml.sax.InputSource;
  **************************************************************************/
 public class Script implements DescriptionObject
 {
-	public static final String INCLCOLL = "Includes";
+	//public static final String INCLCOLL = "Includes";
     String mScript = "";
     CompiledScript mCompScript = null;
     String mName;
@@ -584,7 +586,7 @@ public class Script implements DescriptionObject
 	@Override
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
 		CollectionArrayList retArr = new CollectionArrayList();
-		Dependency includeColl = new Dependency(INCLCOLL);
+		Dependency includeColl = new Dependency(INCLUDE);
 		for (Script script : mIncludes) {
 			try {
 				includeColl.addMember(script.getItemPath());

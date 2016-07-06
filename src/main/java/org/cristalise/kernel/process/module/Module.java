@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.process.module;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.CONTENTS;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -212,7 +214,7 @@ public class Module extends ImportItem {
 	public void setImports(ModuleImports imp) {
 		// Add dependency for all children
 		imports = imp;
-		ImportDependency children = new ImportDependency("Contents");
+		ImportDependency children = new ImportDependency(CONTENTS);
 		for (ModuleImport thisImport : imports.list) {
 			DomainPath path = thisImport.domainPath;
 			if (path != null)

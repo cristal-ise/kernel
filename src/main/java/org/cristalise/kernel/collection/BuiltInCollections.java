@@ -25,55 +25,57 @@ package org.cristalise.kernel.collection;
  */
 public enum BuiltInCollections {
     /**
-     * CollectionDescription of CompositeActivityDef. It is instantiated as ....
+     * CollectionDescription of CompositeActivityDef. It is instantiated as .... Also it is Dependency Collection of Workflow.
      */
     ACTIVITY("Activity"),
 
     /**
-     * CollectionDescription of Module. It is instantiated as ....
+     * Dependency Collection of Module. ....
      */
     CONTENTS("Contents"),
 
     /**
-     * CollectionDescription of Script. It is instantiated as ...
+     * Dependency Collection of Script. ...
      * 
      */
     INCLUDE("Include"),
 
     /**
-     * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties
+     * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties (see bellow).
+     * Also it is Dependency Collection of Activity.
      * 
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SchemaType
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SchemaVersion
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SCHEMA_NAME
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SCHEMA_VERSION
      */
     SCHEMA("Schema"),
 
     /**
-     * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties:
+     * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties (see bellow). 
+     * Also it is Dependency Collection of Workflow.
      * 
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#StateMachineName
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#StateMachineVersion
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SCRIPT_NAME
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#SCRIPT_VERSION
      */
     SCRIPT("Script"),
 
     /**
      * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties
      * 
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#StateMachineName
-     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#StateMachineVersion
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#STATE_MACHINE_NAME
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#STATE_MACHINE_VERSION
      */
     STATE_MACHINE("StateMachine"),
     
 
     /**
-     * 
+     * Dependency collection
      */
-    WORKFLOW("Workflow"),
+    WORKFLOW("workflow"),
 
     /**
-     * 
+     * CollectionDescription of DescriptionFactory (is this correct ???)
      */
-    WORKFLOW_PRIME("Workflow'");
+    WORKFLOW_PRIME("workflow'");
 
 
     private String collectionName;
