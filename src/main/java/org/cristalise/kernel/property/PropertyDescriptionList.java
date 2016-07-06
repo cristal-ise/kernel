@@ -60,44 +60,44 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
         }
         return false;
     }
-    
+
     public void add(String name, String value, boolean isClassId, boolean isMutable) {
-    	for (PropertyDescription element : list) {
+        for (PropertyDescription element : list) {
             if (element.getName().equals(name)) {
                 list.remove(element);
                 break;
             }
         }
-    	list.add(new PropertyDescription(name, value, isClassId, isMutable));
+        list.add(new PropertyDescription(name, value, isClassId, isMutable));
     }
-    
+
     public boolean definesProperty(String name) {
-    	for (PropertyDescription element : list) {
-    		if (element.getName().equals(name))
-    			return true;
-    	}
-    	return false;
+        for (PropertyDescription element : list) {
+            if (element.getName().equals(name))
+                return true;
+        }
+        return false;
     }
-    
+
     public PropertyArrayList instantiate(PropertyArrayList initProps) throws InvalidDataException {
-    	// check that supplied init properties exist in desc list
-    	HashMap<String, String> validatedInitProps = new HashMap<String, String>();
-    	for (Property initProp : initProps.list) {
-    		if (!definesProperty(initProp.getName()))
-    			throw new InvalidDataException("Property "+initProp.getName()+" has not been declared in the property descriptions");
-    		else
-    			validatedInitProps.put(initProp.getName(), initProp.getValue());
-		}
-    	
-    	PropertyArrayList propInst = new PropertyArrayList();
+        // check that supplied init properties exist in desc list
+        HashMap<String, String> validatedInitProps = new HashMap<String, String>();
+        for (Property initProp : initProps.list) {
+            if (!definesProperty(initProp.getName()))
+                throw new InvalidDataException("Property "+initProp.getName()+" has not been declared in the property descriptions");
+            else
+                validatedInitProps.put(initProp.getName(), initProp.getValue());
+        }
+
+        PropertyArrayList propInst = new PropertyArrayList();
         for (int i = 0; i < list.size(); i++) {
-        	PropertyDescription pd = list.get(i);
-        	String propName = pd.getName();
-        	String propVal = pd.getDefaultValue();
-        	if (validatedInitProps.containsKey(propName))
-        		propVal = validatedInitProps.get(propName);
-        	boolean isMutable = pd.getIsMutable();
-        	propInst.list.add( new Property(propName, propVal, isMutable));
+            PropertyDescription pd = list.get(i);
+            String propName = pd.getName();
+            String propVal = pd.getDefaultValue();
+            if (validatedInitProps.containsKey(propName))
+                propVal = validatedInitProps.get(propName);
+            boolean isMutable = pd.getIsMutable();
+            propInst.list.add( new Property(propName, propVal, isMutable));
         }
         return propInst;
     }

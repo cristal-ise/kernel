@@ -22,52 +22,46 @@ package org.cristalise.kernel.utils;
 
 import java.util.ArrayList;
 
-/**************************************************************************
+/**
  * Wrapper for a root element to an ArrayList. Castor Marshalls arraylists
  * as multiple elements, so this class is needed to provide a root element
  * to stop it crashing.
- *
- * $Revision: 1.4 $
- * $Date: 2004/01/22 11:17:42 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
+ */
 //
 abstract public class CastorArrayList<E> {
     public ArrayList<E> list;
 
     public CastorArrayList() {
         super();
-		list = new ArrayList<E>();
+        list = new ArrayList<E>();
     }
 
     @Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((list == null) ? 0 : list.hashCode());
-		return result;
-	}
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((list == null) ? 0 : list.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CastorArrayList<?> other = (CastorArrayList<?>) obj;
-		if (list == null) {
-			if (other.list != null)
-				return false;
-		} else if (!list.equals(other.list))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CastorArrayList<?> other = (CastorArrayList<?>) obj;
+        if (list == null) {
+            if (other.list != null)
+                return false;
+        } else if (!list.equals(other.list))
+            return false;
+        return true;
+    }
 
-	public CastorArrayList(ArrayList<E> list) {
+    public CastorArrayList(ArrayList<E> list) {
         this();
         this.list = list;
     }
