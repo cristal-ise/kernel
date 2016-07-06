@@ -278,11 +278,11 @@ public abstract class GraphableVertex extends Vertex
 	}
 
 	public Object getBuiltInProperty(BuiltInVertexProperties prop) {
-	    return mProperties.get(prop.getAlternativeName());
+	    return mProperties.get(prop.getName());
 	}
 
 	public void setBuiltInProperty(BuiltInVertexProperties prop, Object val) {
-	    mProperties.put(prop.getAlternativeName(), val);
+	    mProperties.put(prop.getName(), val);
 	}
 
 }

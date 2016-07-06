@@ -23,13 +23,13 @@ package org.cristalise.kernel.lifecycle;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ScriptVersion;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Version;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 
 import java.io.File;
 import java.io.IOException;
@@ -196,9 +196,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     public void configureInstance(WfVertex act) throws InvalidDataException, ObjectNotFoundException {
         super.configureInstance(act);
 
-        configureInstanceProp(act.getProperties(), getSchema(),       SchemaType,       SchemaVersion);
-        configureInstanceProp(act.getProperties(), getScript(),       ScriptName,       ScriptVersion);
-        configureInstanceProp(act.getProperties(), getStateMachine(), StateMachineName, StateMachineVersion);
+        configureInstanceProp(act.getProperties(), getSchema(),       SCHEMA_NAME,       SCHEMA_VERSION);
+        configureInstanceProp(act.getProperties(), getScript(),       SCRIPT_NAME,       SCRIPT_VERSION);
+        configureInstanceProp(act.getProperties(), getStateMachine(), STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
     }
 
     @Override
@@ -219,7 +219,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                 actSchema = (Schema) getBuiltInCollectionResource(SCHEMA)[0];
             }
             catch (ObjectNotFoundException ex) {
-                actSchema = (Schema) getPropertyResource(SchemaType, SchemaVersion);
+                actSchema = (Schema) getPropertyResource(SCHEMA_NAME, SCHEMA_VERSION);
             }
         }
         return actSchema;
@@ -233,7 +233,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                 actScript = (Script) getBuiltInCollectionResource(SCRIPT)[0];
             }
             catch (ObjectNotFoundException ex) {
-                actScript = (Script) getPropertyResource(ScriptName, ScriptVersion);
+                actScript = (Script) getPropertyResource(SCRIPT_NAME, SCRIPT_VERSION);
             }
         }
         return actScript;
@@ -247,10 +247,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                 actStateMachine = (StateMachine) getBuiltInCollectionResource(STATE_MACHINE)[0];
             }
             catch (ObjectNotFoundException ex) {
-                String smNameProp = (String) getProperties().get(StateMachineName);
+                String smNameProp = (String) getProperties().get(STATE_MACHINE_NAME);
                 
                 if (smNameProp == null || smNameProp.length() > 0) actStateMachine = LocalObjectLoader.getStateMachine(getDefaultSMName(), 0);
-                else actStateMachine = (StateMachine) getPropertyResource(StateMachineName, StateMachineVersion);
+                else actStateMachine = (StateMachine) getPropertyResource(STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
             }
         }
         return actStateMachine;
@@ -276,7 +276,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
         for (DependencyMember resMem : resColl.getMembers().list) {
             String resUUID = resMem.getChildUUID();
-            Integer resVer = deriveVersionNumber(resMem.getBuiltInProperty(Version));
+            Integer resVer = deriveVersionNumber(resMem.getBuiltInProperty(VERSION));
 
             if (resVer == null) {
                 throw new InvalidDataException("Version is null for Item:" + itemPath + ", Collection:" + collection + ", DependencyMember:" + resUUID);
@@ -320,11 +320,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             }
 
             switch (nameProp) {
-                case SchemaType:
+                case SCHEMA_NAME:
                     return LocalObjectLoader.getSchema(resName, resVer);
-                case ScriptName:
+                case SCRIPT_NAME:
                     return LocalObjectLoader.getScript(resName, resVer);
-                case StateMachineName:
+                case STATE_MACHINE_NAME:
                     return LocalObjectLoader.getStateMachine(resName, resVer);
                 default:
             }
@@ -355,7 +355,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             if (thisDesc == null) continue;
             try {
                 DependencyMember descMem = descDep.addMember(thisDesc.getItemPath());
-                descMem.setBuiltInProperty(Version, thisDesc.getVersion());
+                descMem.setBuiltInProperty(VERSION, thisDesc.getVersion());
             }
             catch (Exception e) {
                 Logger.error(e);

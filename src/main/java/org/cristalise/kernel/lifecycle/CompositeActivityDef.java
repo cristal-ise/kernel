@@ -21,6 +21,8 @@
 package org.cristalise.kernel.lifecycle;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ABORTABLE;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.REPEAT_WHEN;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +33,6 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
@@ -83,8 +84,8 @@ public class CompositeActivityDef extends ActivityDef {
 
     public CompositeActivityDef() {
         super();
-        setBuiltInProperty(BuiltInVertexProperties.Abortable, false);
-        setBuiltInProperty(BuiltInVertexProperties.RepeatWhen, false);
+        setBuiltInProperty(ABORTABLE, false);
+        setBuiltInProperty(REPEAT_WHEN, false);
 
         try {
             setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));

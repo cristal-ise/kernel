@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingExpr;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_EXPR;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_VERSION;
 
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -50,8 +50,8 @@ public abstract class Split extends WfVertex
     public Split()
     {
         mErrors = new Vector<String>(0, 1);
-        setBuiltInProperty(RoutingScriptName, "");
-        setBuiltInProperty(RoutingScriptVersion, "");
+        setBuiltInProperty(ROUTING_SCRIPT_NAME, "");
+        setBuiltInProperty(ROUTING_SCRIPT_VERSION, "");
     }
 
     private boolean loopTested;
@@ -202,9 +202,9 @@ public abstract class Split extends WfVertex
     
     public String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
     	String nexts;
-		String  scriptName    = (String) getBuiltInProperty(RoutingScriptName);
-		String  expr          = (String) getBuiltInProperty(RoutingExpr);
-		Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(RoutingScriptVersion));
+		String  scriptName    = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
+		String  expr          = (String) getBuiltInProperty(ROUTING_EXPR);
+		Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(ROUTING_SCRIPT_VERSION));
 
 		if ((scriptName != null && scriptName.length() > 0) && (expr == null || expr.length() == 0)) {
 	        try {

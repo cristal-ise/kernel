@@ -87,10 +87,14 @@ public class CastorHashMap extends HashMap<String, Object> {
     }
 
     public boolean isAbstract(BuiltInVertexProperties prop) {
-        return isAbstract(prop.getAlternativeName());
+        return isAbstract(prop.getName());
     }
     public boolean isAbstract(String propName) {
         return abstractPropNames.contains(propName);
+    }
+
+    public Object getBuiltInProperty(BuiltInVertexProperties prop) {
+        return get(prop.getName());
     }
 
     public void setBuiltInProperty(BuiltInVertexProperties prop, Object value) {
@@ -98,7 +102,7 @@ public class CastorHashMap extends HashMap<String, Object> {
     }
 
     public void setBuiltInProperty(BuiltInVertexProperties prop, Object value, boolean isAbstract) {
-        put(prop.getAlternativeName(), value, isAbstract);
+        put(prop.getName(), value, isAbstract);
     }
 
     public void put(String key, Object value, boolean isAbstract) {

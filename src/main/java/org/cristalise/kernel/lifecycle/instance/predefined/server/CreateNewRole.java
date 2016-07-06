@@ -20,7 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.server;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -40,7 +40,7 @@ public class CreateNewRole extends PredefinedStep
     public CreateNewRole()
     {
         super();
-        setBuiltInProperty(SchemaType, "Role");
+        setBuiltInProperty(SCHEMA_NAME, "Role");
     }
 
 	//requestdata is xmlstring

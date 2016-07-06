@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingExpr;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.RoutingScriptVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_EXPR;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_VERSION;
 
 import java.util.Vector;
 
@@ -49,9 +49,9 @@ public class AndSplitDef extends WfVertexDef
 	{
 		mErrors = new Vector<String>(0, 1);
 
-		setBuiltInProperty(RoutingScriptName, "");
-		setBuiltInProperty(RoutingScriptVersion, "");
-		setBuiltInProperty(RoutingExpr, "");
+		setBuiltInProperty(ROUTING_SCRIPT_NAME, "");
+		setBuiltInProperty(ROUTING_SCRIPT_VERSION, "");
+		setBuiltInProperty(ROUTING_EXPR, "");
 	}
 
 	/**
@@ -143,10 +143,10 @@ public class AndSplitDef extends WfVertexDef
 	}
 	
 	public Script getRoutingScript() throws ObjectNotFoundException, InvalidDataException {
-		String scriptName = (String) getBuiltInProperty(RoutingScriptName);
+		String scriptName = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
 		Integer scriptVersion;
 		try {
-			String scriptVerStr = (String) getBuiltInProperty(RoutingScriptVersion);
+			String scriptVerStr = (String) getBuiltInProperty(ROUTING_SCRIPT_VERSION);
 			if (scriptVerStr!=null && !scriptVerStr.isEmpty()) 
 				scriptVersion = Integer.valueOf(scriptVerStr.toString());
 			else throw new ObjectNotFoundException();

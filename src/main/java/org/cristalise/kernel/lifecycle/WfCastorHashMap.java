@@ -20,12 +20,12 @@
  */
 package org.cristalise.kernel.lifecycle;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AgentRole;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Breakpoint;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Description;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OutcomeInit;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.Viewpoint;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_ROLE;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.BREAKPOINT;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DESCRIPTION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import org.cristalise.kernel.utils.CastorHashMap;
 
@@ -36,22 +36,12 @@ public class WfCastorHashMap extends CastorHashMap {
     
     private static final long serialVersionUID = 8700678607957394346L;
 
-	public WfCastorHashMap()
-	{
-		put(Description.getAlternativeName(), "");
-        put(AgentName.getAlternativeName(), "");
-        put(AgentRole.getAlternativeName(), "");
-		put(Breakpoint.getAlternativeName(), false);
-        put(Viewpoint.getAlternativeName(), "");
-        put(OutcomeInit.getAlternativeName(), "");
-
-     /* Deprecated description references
-        put("SchemaType", "");
-	    put("SchemaVersion", "");
-        put("ScriptName", "");
-        put("ScriptVersion", "");
-        put("StateMachineName", "Default");
-        put("StateMachineVersion", 0);
-      */
+	public WfCastorHashMap() {
+	    setBuiltInProperty(DESCRIPTION,  "");
+	    setBuiltInProperty(AGENT_NAME,   "");
+	    setBuiltInProperty(AGENT_ROLE,   "");
+	    setBuiltInProperty(BREAKPOINT,   false);
+	    setBuiltInProperty(VIEW_POINT,   "");
+	    setBuiltInProperty(OUTCOME_INIT, "");
 	}
 }

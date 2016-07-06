@@ -18,7 +18,6 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
-
 package org.cristalise.kernel.graph.model;
 
 /**
@@ -29,38 +28,38 @@ public enum BuiltInVertexProperties {
     /**
      * Boolean property. Makes CompositeActitivy abortable, i.e. it can be finished even if it has active children.
      */
-    Abortable,
+    ABORTABLE("Abortable"),
 
     /**
      * String property. The name of the Agent associated with Activities. Can be null or undefined.
      */
-    AgentName("Agent Name"),
+    AGENT_NAME("Agent Name"),
 
     /**
      * String property. The role of the Agent associated with Activities. Can be null or undefined.
      */
-    AgentRole("Agent Role"),
+    AGENT_ROLE("Agent Role"),
 
     /**
      * Boolean property ...
      */
-    Breakpoint,
+    BREAKPOINT("Breakpoint"),
 
     /**
      * String property used in ActivityDef to store the description text
      */
-    Description,
+    DESCRIPTION("Description"),
 
     /**
      * String property. It is used in ActivitySlotDef to override the name of the ActivityDef
      */
-    Name,
+    NAME("Name"),
 
     /**
      * String property. The type of object the Activity is going to create. Values are Schema, Script, StateMachine. Used in script
      * DescriptionCollectionSetter. Can be null or undefined.
      */
-    ObjectType,
+    OBJECT_TYPE("ObjectType"),
 
     /**
      * String property to hold the name of the OutcomeInititator to be used by the Job associated with Activities. 
@@ -73,13 +72,12 @@ public enum BuiltInVertexProperties {
      *
      * Can be null or undefined.
      */
-    OutcomeInit,
+    OUTCOME_INIT("OutcomeInit"),
 
     /**
-     * Boolean property. Enables the Loop Transition of the CompositeActivity
-     * StateMachine
+     * Boolean property. Enables the Loop Transition of the CompositeActivity StateMachine
      */
-    RepeatWhen,
+    REPEAT_WHEN("RepeatWhen"),
 
     /**
      * String property. Routing expression associated with Splits. It is interpreted by the Script class. The content should 
@@ -89,50 +87,50 @@ public enum BuiltInVertexProperties {
      * javascript: new java.lang.Integer(counter % 2);
      * </pre>
      */
-    RoutingExpr,
+    ROUTING_EXPR("RoutingExpr"),
 
     /**
      * String property to hold either the name of the Script or the UUID of the Schema Item associated with Splits.
-     * If RoutingScriptVersion is null the content if any is interpreted like {@link #RoutingExpr}.
+     * If RoutingScriptVersion is null the content if any is interpreted like {@link #ROUTING_EXPR}.
      * 
      * Can be null or undefined.
      */ 
-    RoutingScriptName,
+    ROUTING_SCRIPT_NAME("RoutingScriptName"),
 
     /**
      * Integer property to hold the version of the Schema associated with Splits.
      * 
      * Can be null or undefined.
      */
-    RoutingScriptVersion,
+    ROUTING_SCRIPT_VERSION("RoutingScriptVersion"),
 
     /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities. 
      * 
      * Can be null or undefined.
      */
-    SchemaType,
+    SCHEMA_NAME("SchemaType"),
 
     /**
      * Integer property to hold the version of the Schema associated with Activities. 
      * 
      * Can be null or undefined.
      */
-    SchemaVersion,
+    SCHEMA_VERSION("SchemaVersion"),
 
     /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
      * 
      * Can be null or undefined.
      */
-    ScriptName,
+    SCRIPT_NAME("ScriptName"),
 
     /**
      * Integer property to hold the version of the Script associated with Activities. 
      * 
      * Can be null or undefined.
      */
-    ScriptVersion,
+    SCRIPT_VERSION("ScriptVersion"),
 
     /**
      * String property to hold either the name of the StateMachine or the UUID of the StateMachine 
@@ -140,45 +138,45 @@ public enum BuiltInVertexProperties {
      * 
      * Can be null or undefined.
      */
-    StateMachineName,
+    STATE_MACHINE_NAME("StateMachineName"),
 
     /**
      * Integer property to hold the version of the StateMachine associated with Activities.
      * 
      * Can be null or undefined.
      */
-    StateMachineVersion,
+    STATE_MACHINE_VERSION("StateMachineVersion"),
 
     /**
      * Integer property. It is used in CollectionMember to store the version of DescriptionDependency
      */
-    Version,
+    VERSION("Version"),
 
     /**
      * String property used in Script CreateNewNumberedVersionFromLast and SetLastNumberedVersionFromLast
      * to specify {@link org.cristalise.kernel.persistency.outcome.Viewpoint#setSchemaName(String)}.
      */
-    ViewName,
+    VIEW_NAME("ViewName"),
 
     /**
      * String property used to specify {@link org.cristalise.kernel.persistency.outcome.Viewpoint#setName(String)}.
      */
-    Viewpoint;
+    VIEW_POINT("Viewpoint");
 
     /**
-     * This is only needed for backward compatibility because 'Agent Name' and 'Agent Role' string were used historically
+     * Provides the actual string name of the Property used in the kernel
      */
-    private String alternativeName;
-
-    private BuiltInVertexProperties() {
-        alternativeName = name();
-    }
+    private String propertyName;
 
     private BuiltInVertexProperties(final String n) {
-        alternativeName = n;
+        propertyName = n;
     }
 
-    public String getAlternativeName() {
-        return alternativeName;
+    public String getName() {
+        return propertyName;
+    }
+
+    public String toString() {
+        return getName();
     }
 }

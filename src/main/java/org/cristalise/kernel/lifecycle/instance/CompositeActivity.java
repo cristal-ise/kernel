@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ABORTABLE;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.REPEAT_WHEN;
+
 import java.util.ArrayList;
 
 import org.cristalise.kernel.common.AccessRightsException;
@@ -32,7 +35,6 @@ import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
-import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
@@ -58,8 +60,8 @@ public class CompositeActivity extends Activity
     public CompositeActivity()
     {
         super();
-        setBuiltInProperty(BuiltInVertexProperties.Abortable, false);
-        setBuiltInProperty(BuiltInVertexProperties.RepeatWhen, false);
+        setBuiltInProperty(ABORTABLE, false);
+        setBuiltInProperty(REPEAT_WHEN, false);
         try {
 			setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
 		} catch (InvalidDataException e) { } // shouldn't happen with an empty one
@@ -521,7 +523,7 @@ public class CompositeActivity extends Activity
     {
         Transition trans = getStateMachine().getTransition(transitionID);
         if (trans.isFinishing() && hasActive()) {
-        	if ((Boolean)getBuiltInProperty(BuiltInVertexProperties.Abortable))
+        	if ((Boolean)getBuiltInProperty(ABORTABLE))
         		abort();
         	else
         		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");

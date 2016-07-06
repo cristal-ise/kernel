@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.entity.agent;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OutcomeInit;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineName;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.StateMachineVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,8 +201,8 @@ public class Job implements C2KLocalObject
         if (transition != null && transitionResolved == false) {
             Logger.msg(5, "Job.getgetTransition() - actProps:"+actProps);
             try {
-                String name = getActPropString(StateMachineName);
-                int version = (Integer)getActProp(StateMachineVersion);
+                String name = getActPropString(STATE_MACHINE_NAME);
+                int version = (Integer)getActProp(STATE_MACHINE_VERSION);
                 StateMachine sm = LocalObjectLoader.getStateMachine(name, version);
                 transition = sm.getTransition(transition.getId());
                 transitionResolved = true;
@@ -451,10 +451,10 @@ public class Job implements C2KLocalObject
      * @throws InvalidDataException
      */
     public OutcomeInitiator getOutcomeInitiator() throws InvalidDataException {
-        String ocInitName = getActPropString(OutcomeInit);
+        String ocInitName = getActPropString(OUTCOME_INIT);
         OutcomeInitiator ocInit;
         if (ocInitName.length() > 0) {
-            String ocPropName = OutcomeInit.name()+"."+ocInitName;
+            String ocPropName = OUTCOME_INIT.getName()+"."+ocInitName;
             synchronized (ocInitCache) {
                 ocInit = ocInitCache.get(ocPropName);
                 if (ocInit == null) {
@@ -594,7 +594,7 @@ public class Job implements C2KLocalObject
     }
 
     public Object getActProp(BuiltInVertexProperties name) {
-        return getActProp(name.getAlternativeName());
+        return getActProp(name.getName());
     }
 
     public String getActPropString(String name)
@@ -605,7 +605,7 @@ public class Job implements C2KLocalObject
 
     public String getActPropString(BuiltInVertexProperties name)
     {
-        return getActPropString(name.getAlternativeName());
+        return getActPropString(name.getName());
     }
 
     /**

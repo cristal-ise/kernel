@@ -19,8 +19,8 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaType;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SchemaVersion;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
 
 import java.io.StringReader;
 
@@ -66,8 +66,8 @@ public abstract class PredefinedStep extends Activity
 	
 	public PredefinedStep() {
 		super();
-		setBuiltInProperty(SchemaType, "PredefinedStepOutcome");
-		setBuiltInProperty(SchemaVersion, "0");
+		setBuiltInProperty(SCHEMA_NAME, "PredefinedStepOutcome");
+		setBuiltInProperty(SCHEMA_VERSION, "0");
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public abstract class PredefinedStep extends Activity
 			String stepPath = thisContainer.getName()+"/"+stepName;
 			Activity step = (Activity)thisContainer.search(stepPath);
 			if (step != null) {
-				return (String)step.getBuiltInProperty(SchemaType);
+				return (String)step.getBuiltInProperty(SCHEMA_NAME);
 			}
 		}
 		return "PredefinedStepOutcome"; // default to standard if not found - server may be a newer version
