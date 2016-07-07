@@ -34,25 +34,16 @@ import org.cristalise.kernel.utils.Logger;
 
 
 /**
- * Implements the Routing DataHelper to get Outcome data using Viewpoint path and XPath.
+ * Implements the  DataHelper to get Outcome data using Viewpoint and XPath.
  */
 public class ViewpointDataHelper implements DataHelper {
-	
+
     /**
-     * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
-     * retrieves a single value based on XPath
-     * 
-     * @param item the current item to be used
-     * @param dataPath syntax is <pre><ViepointPath>:<XPathinOutcome></pre> e.g. /testSchema/last:/testdata/counter.
-     *                 XPath must select a single node.
-     * @param locker the transaction locker object
-     * @return
-     * @throws InvalidDataException dataPath has incorrect syntax
-     * @throws PersistencyException 
-     * @throws ObjectNotFoundException item or its data cannot be found in storage 
+     * dataPath syntax is used for search : viewpoint:/xpath/to/field
      */
     @Override
-	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    public String get(ItemPath itemPath, String actContext, String dataPath, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         String[] paths = dataPath.split(":");
 
@@ -60,23 +51,24 @@ public class ViewpointDataHelper implements DataHelper {
 
         String viewpoint = paths[0];
         String xpath = paths[1];
-        
+
         // Leading dot now no longer necessary - remove if present
         if (viewpoint.startsWith("./")) {
-        	Logger.warning("Removing leading dot on viewpoint data helper path at "+actContext+" in "+itemPath.getUUID().toString() + ". Definition should be migrated.");
-        	viewpoint = viewpoint.substring(2);
+            Logger.warning("Removing leading dot on viewpoint data helper path at "+actContext+" in "+
+                            itemPath.getUUID().toString() + ". Definition should be migrated.");
+            viewpoint = viewpoint.substring(2);
         }
-        
-        // load viewpoint
+
+        // load Viewpoint and Outcome
         Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
         Outcome outcome = (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
 
         // apply the XPath to its outcome
        	try {
        	    return outcome.getFieldByXPath(xpath);
-       	} catch (XPathExpressionException e) {
+       	}
+       	catch (XPathExpressionException e) {
        	    throw new InvalidDataException("Invalid XPath: "+xpath);
        	}
     }
-
 }

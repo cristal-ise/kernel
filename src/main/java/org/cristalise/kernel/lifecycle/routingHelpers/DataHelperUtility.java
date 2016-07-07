@@ -21,13 +21,26 @@
 package org.cristalise.kernel.lifecycle.routingHelpers;
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 
 /**
- *
+ * Utility class to retrieve and resolve DataHelpers
  */
 public class DataHelperUtility {
 
+    /**
+     * First checks the configuration properties to instantiate the requested Datahelper.
+     * If there is such no property, it uses the given id to instantiate one of these classes:
+     * {@link ViewpointDataHelper}, {@link PropertyDataHelper}, {@link ActivityDataHelper}
+     * 
+     * @param id
+     * @return the DataHelper instance
+     * @throws InvalidDataException
+     */
     public static DataHelper getDataHelper(String id) throws InvalidDataException {
         Object configHelper = Gateway.getProperties().getObject("DataHelper."+id);
 
@@ -35,7 +48,7 @@ public class DataHelperUtility {
             if (configHelper instanceof DataHelper) 
                 return (DataHelper)configHelper;
             else 
-                throw new InvalidDataException("Property DataHelper."+id+" was not a DataHelper: " +configHelper.toString());
+                throw new InvalidDataException("Config value is not an instance of DataHelper - 'DataHelper."+id+"'=" +configHelper.toString());
         }
         else {
             switch (id) {
@@ -47,7 +60,41 @@ public class DataHelperUtility {
                     return new ActivityDataHelper();
             }
         }
-
         return null;
+    }
+
+    /**
+     * If the 
+     * 
+     * @param itemPath
+     * @param value
+     * @param actContext
+     * @param locker
+     * @return String value which was evaluated using {@link DataHelper} implementation
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     */
+    public static Object evaluateValue(ItemPath itemPath, Object value, String actContext, Object locker) 
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
+        if (!(value instanceof String) || !((String)value).contains("//"))
+            return value;
+
+        if(itemPath == null) throw new InvalidDataException();
+
+        String[] valueSplit = ((String)value).split("//");
+
+        if (valueSplit.length != 2) throw new InvalidDataException("DataHelperUtility.evaluateValue() - Value has too many '//':"+value);
+
+        String pathType = valueSplit[0];
+        String dataPath = valueSplit[1];
+        
+        Logger.msg(5, "DataHelperUtility.evaluateValue() - pathType:"+pathType+" dataPath:"+dataPath);
+
+        DataHelper dataHelper = getDataHelper(pathType);
+
+        if (dataHelper != null) return dataHelper.get(itemPath, actContext, dataPath, locker);
+        else                    return value;
     }
 }

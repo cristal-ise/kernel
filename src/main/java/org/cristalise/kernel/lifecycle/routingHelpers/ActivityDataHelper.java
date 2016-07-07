@@ -50,16 +50,6 @@ public class ActivityDataHelper implements DataHelper {
     /**
      * Retrieves the Workflow of the given Item, searches the Activity using the activity path and
      * retrieves a single value based on XPath
-     * 
-     * @param itemPath the current item to be used
-     * @param actContext the current Activity path in which the DataHelper is used
-     * @param dataPath syntax is <pre><ActivityPath>:<XPathinOutcome></pre> e.g. workflow/domain/first:/testdata/counter.
-     *                 XPath must select a single node.
-     * @param locker the transaction locker object used for ClusterStorage methods
-     * @return resolved value
-     * @throws InvalidDataException dataPath has incorrect syntax
-     * @throws PersistencyException 
-     * @throws ObjectNotFoundException item or its data cannot be found in storage 
      */
     @Override
 	public String get(ItemPath itemPath, String actContext, String dataPath, Object locker)

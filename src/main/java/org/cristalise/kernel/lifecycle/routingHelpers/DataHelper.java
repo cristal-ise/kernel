@@ -35,7 +35,7 @@ public interface DataHelper {
      * 
      * @param itemPath the current item to be used
      * @param actContext the current Activity path in which the DataHelper is used
-     * @param dataPath its content is implementation specidifc
+     * @param dataPath its content is implementation speciifc
      * @param locker the transaction locker object used for ClusterStorage methods
      * @return The resolved value
      * @throws InvalidDataException
