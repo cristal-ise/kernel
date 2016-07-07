@@ -91,4 +91,11 @@ public enum BuiltInCollections {
     public String toString() {
         return getName();
     }
+
+    public static BuiltInCollections getValue(String collName) {
+        for (BuiltInCollections coll : BuiltInCollections.values()) {
+            if(coll.getName().equals(collName) || coll.name().equals(collName)) return coll;
+        }
+        return null;
+    }
 }
