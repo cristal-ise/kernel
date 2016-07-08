@@ -287,16 +287,17 @@ public class Transition {
 	}
 	
 	public boolean isEnabled(Activity act) throws ObjectNotFoundException {
-		if (enabledProp == null)
-			return true;
-		Object propValue;
+	    
+	    if (enabledProp == null || "".equals(enabledProp)) return true;
+
 		try {
-			propValue = act.evaluateProperty(null, enabledProp, null);
-		} catch (Exception e) {
+		    Object propValue = act.evaluateProperty(null, enabledProp, null);
+	        return new Boolean(propValue.toString());
+		}
+		catch (Exception e) {
 			Logger.error(e);
 			throw new ObjectNotFoundException(e.getMessage());
 		}
-		return new Boolean(propValue.toString());
 	}
 
 	public boolean hasOutcome(CastorHashMap actProps) {
