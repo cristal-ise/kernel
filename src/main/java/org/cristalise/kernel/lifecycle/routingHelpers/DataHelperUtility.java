@@ -78,14 +78,14 @@ public class DataHelperUtility {
     public static Object evaluateValue(ItemPath itemPath, Object value, String actContext, Object locker) 
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
-        if (!(value instanceof String) || !((String)value).contains("//"))
+        if (value == null || !(value instanceof String) || !((String)value).contains("//"))
             return value;
 
-        if(itemPath == null) throw new InvalidDataException();
+        if(itemPath == null) throw new InvalidDataException("DataHelper must have ItemPath initialised");
 
         String[] valueSplit = ((String)value).split("//");
 
-        if (valueSplit.length != 2) throw new InvalidDataException("DataHelperUtility.evaluateValue() - Value has too many '//':"+value);
+        if (valueSplit.length != 2) throw new InvalidDataException("DataHelperUtility.evaluateValue() - Too many '//' in value:"+value);
 
         String pathType = valueSplit[0];
         String dataPath = valueSplit[1];
