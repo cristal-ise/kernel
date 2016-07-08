@@ -59,9 +59,9 @@ public class Resource implements ResourceLoader {
     }
 
     @Override
-	public ClassLoader getClassLoader(String className) {
-		return Resource.class.getClassLoader();
-	}
+	public ClassLoader getClassLoader(String className) { 
+        return Resource.class.getClassLoader();
+    }
     
     @Override
 	public Class<?> getClassForName(String name) throws ClassNotFoundException {
@@ -173,7 +173,6 @@ public class Resource implements ResourceLoader {
         }
 
         try {
-
             String newRes = null;
             URL loc;
             
@@ -181,6 +180,7 @@ public class Resource implements ResourceLoader {
                 loc = getKernelResourceURL(resName);
             else
             	loc = getModuleResourceURL(ns, resName);
+            
             Logger.msg(5, "Loading resource: "+loc.toString());
             newRes = FileStringUtility.url2String(loc);
             txtCache.put(ns+'/'+resName, newRes);
@@ -193,6 +193,7 @@ public class Resource implements ResourceLoader {
 
 	@Override
 	public Enumeration<URL> getModuleDefURLs() throws Exception {
-		return ClassLoader.getSystemResources("META-INF/cristal/module.xml");
+	    return getClassLoader("").getResources("META-INF/cristal/module.xml");
+		//return ClassLoader.getSystemResources("META-INF/cristal/module.xml");
 	}
 }
