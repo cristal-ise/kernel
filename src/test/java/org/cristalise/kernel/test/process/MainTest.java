@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.test.process;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -41,7 +42,7 @@ import org.junit.Test;
 public class MainTest {
 
     @Before
-    public void setup() throws InvalidDataException {
+    public void setup() throws InvalidDataException, IOException {
         Logger.addLogStream(System.out, 1);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);

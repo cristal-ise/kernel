@@ -23,6 +23,7 @@ package org.cristalise.kernel.process;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -128,34 +129,32 @@ abstract public class AbstractMain
         String configPath = argProps.getProperty("config");
         if (configPath == null)
         	throw new BadArgumentsException("Config file not specified");
-        
-        if (!new File(configPath).exists())
-        	throw new BadArgumentsException("Config file "+configPath+" not found");
-        else
-        	Logger.msg(0, "Config file: "+configPath);
+
 
         // Load config & connect files into c2kprops
-        c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty("config") );
-        c2kProps.putAll(argProps); // args overlap config
+        try {
+            c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty("config") );
+            c2kProps.putAll(argProps); // args overlap config
 
-        String connectFile = c2kProps.getProperty("connect");
-        if (connectFile == null)
-        	throw new BadArgumentsException("Connect file not specified");
-        
-        if (!new File(connectFile).exists())
-        	throw new BadArgumentsException("Connect file "+connectFile+" not found");
-        else
-        	Logger.msg(0, "Connect file: "+connectFile);
+            String connectFile = c2kProps.getProperty("connect");
+            if (connectFile == null)
+                throw new BadArgumentsException("Connect file not specified");
 
-       	FileStringUtility.appendConfigFile( c2kProps, connectFile);
+            FileStringUtility.appendConfigFile( c2kProps, connectFile);
 
-       	if (!c2kProps.containsKey("LocalCentre")) {
-       		String connectFileName = new File(connectFile).getName();
-       		String centreId = connectFileName.substring(0, connectFileName.lastIndexOf(".clc"));
-       		c2kProps.setProperty("LocalCentre", centreId);
-       	}
+            if (!c2kProps.containsKey("LocalCentre")) {
+                String connectFileName = new File(connectFile).getName();
+                String centreId = connectFileName.substring(0, connectFileName.lastIndexOf(".clc"));
+                c2kProps.setProperty("LocalCentre", centreId);
+            }
 
-        c2kProps.putAll(argProps); // args override connect file too
+            c2kProps.putAll(argProps); // args override connect file too
+        }
+        catch (IOException e) {
+            Logger.error(e);
+            throw new BadArgumentsException(e.getMessage());
+        }
+
         Logger.msg(7, "AbstractMain::standardSetUp() - readC2KArgs() DONE.");
 
         return c2kProps;

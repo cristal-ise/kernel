@@ -304,55 +304,42 @@ public class FileStringUtility
 
 	/**************************************************************************
 	 * Open a URL or File as an InputStream
+	 * @throws IOException 
 	 **************************************************************************/
-	static public InputStream openTextStream(String source)
+	static public InputStream openTextStream(String source) throws IOException
 	{
 		java.io.InputStream in = null;
 		java.net.URL url = null;
 
 		// Try to open URL connection first
-		try
-		{
-			try
-			{
-				url = new URL(source);
-				in = url.openStream();
-			}
-			catch (MalformedURLException e)
-			{
-				// Try to open plain file, if `configFile' is not a
-				// URL specification
-				in = new FileInputStream(source);
-			}
+		try {
+		    url = new URL(source);
+			in = url.openStream();
 		}
-		catch (java.io.IOException ex)
+		catch (MalformedURLException e)
 		{
-			Logger.error("FileStringUtility.openTextStream() - could not load text stream:" + source);
+		    // Try to open plain file, if `configFile' is not a
+		    // URL specification
+			in = new FileInputStream(source);
 		}
 		return in;
 	}
 
 	/**************************************************************************
 	 * Load the contents of the configuration file
+	 * @throws IOException 
 	 **************************************************************************/
-	static public java.util.Properties loadConfigFile(String configFile)
+	static public java.util.Properties loadConfigFile(String configFile) throws IOException
 	{
 		java.io.BufferedInputStream bin = null;
 		java.io.InputStream in = openTextStream(configFile);
 		java.util.Properties props = new java.util.Properties();
 
-		if (in != null)
-		{
-			try
-			{
-				bin = new java.io.BufferedInputStream(in);
-				props.load(bin);
-				in.close();
-			}
-			catch (IOException ex)
-			{
-				Logger.error("FileStringUtility.loadConfigFile() - could not load configuration file '" + configFile+"'");
-			}
+		if (in != null) {
+
+		    bin = new java.io.BufferedInputStream(in);
+			props.load(bin);
+			in.close();
 		}
 		return props;
 	}
@@ -386,25 +373,16 @@ public class FileStringUtility
 
 	/**************************************************************************
 	 * Load the contents of the configuration file
+	 * @throws IOException 
 	 **************************************************************************/
-	static public void appendConfigFile(java.util.Properties props, String configFile)
+	static public void appendConfigFile(java.util.Properties props, String configFile) throws IOException
 	{
 		java.io.BufferedInputStream bin = null;
 		java.io.InputStream in = openTextStream(configFile);
 
-		if (in != null)
-		{
-			try
-			{
-				bin = new java.io.BufferedInputStream(in);
-				props.load(bin);
-				in.close();
-			}
-			catch (java.io.IOException ex)
-			{
-    			Logger.error("FileStringUtility.appendConfigFile() - could not append configuration file '" + configFile+"'");
-			}
-		}
+		bin = new java.io.BufferedInputStream(in);
+		props.load(bin);
+		in.close();
 	}
     public static String convert(String init)
     {
