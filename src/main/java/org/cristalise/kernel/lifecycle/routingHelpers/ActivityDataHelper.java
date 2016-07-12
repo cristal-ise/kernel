@@ -57,8 +57,6 @@ public class ActivityDataHelper implements DataHelper {
     {
         Logger.msg(5,"ActivityDataHelper.get() - item:"+itemPath+", actContext:"+actContext+", dataPath:"+dataPath);
 
-        Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterStorage.LIFECYCLE, locker);
-
         String[] paths = dataPath.split(":");
 
         if (paths.length != 2) throw new InvalidDataException("Invalid path '"+dataPath+"' it must have only one colon (:)");
@@ -70,8 +68,13 @@ public class ActivityDataHelper implements DataHelper {
             actPath = actContext+(actContext.endsWith("/") ? "" : "/")+actPath.substring(2);
         }
 
-        // Find the referenced activity
+        // Find the referenced activity, so get the workflow and search
+        Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterStorage.LIFECYCLE+"/workflow", locker);
         GraphableVertex act = workflow.search(actPath);
+
+        if (act == null) {
+            throw new InvalidDataException("Workflow search failed for actPath:"+actPath+" - item:"+itemPath+", actContext:"+actContext+", dataPath:"+dataPath);
+        }
 
         // Get the schema and viewpoint names
         String schemaName = act.getBuiltInProperty(SCHEMA_NAME).toString();
@@ -90,7 +93,7 @@ public class ActivityDataHelper implements DataHelper {
             return oc.getFieldByXPath(xpath);
         }
         catch (XPathExpressionException e) {
-            throw new InvalidDataException("Invalid XPath: "+paths[1]);
+            throw new InvalidDataException("Invalid xpath:"+xpath+" - item:"+itemPath+", actContext:"+actContext+", dataPath:"+dataPath);
         }
     }
 }
