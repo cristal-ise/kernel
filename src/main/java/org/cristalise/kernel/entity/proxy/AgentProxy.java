@@ -161,8 +161,10 @@ public class AgentProxy extends ItemProxy
         if (job.isOutcomeSet()) {
             Logger.msg(3, "AgentProxy - validating outcome");
             String error = job.getOutcome().validate();
-            if (error.length() > 0)
+            if (error.length() > 0) {
+                Logger.error(job.getOutcome().getData());
                 throw new InvalidDataException(error);
+            }
         }
 
         job.setAgentPath(mAgentPath);
