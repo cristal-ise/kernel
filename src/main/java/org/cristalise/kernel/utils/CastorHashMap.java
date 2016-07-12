@@ -24,7 +24,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
+import org.cristalise.kernel.lifecycle.routingHelpers.DataHelperUtility;
+import org.cristalise.kernel.lookup.ItemPath;
 
 /**
  * This subclass of HashMap can be marshalled and unmarshalled with Castor
@@ -112,5 +117,9 @@ public class CastorHashMap extends HashMap<String, Object> {
             abstractPropNames.add(key);
         else
             abstractPropNames.remove(key);
+    }
+
+    public Object evaluateProperty(ItemPath itemPath, String propName, String actContext, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+        return DataHelperUtility.evaluateValue(itemPath, get(propName), actContext, locker);
     }
 }

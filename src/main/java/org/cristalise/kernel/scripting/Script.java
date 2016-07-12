@@ -52,8 +52,10 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -64,18 +66,11 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
+/**
+ * 
+ */
+public class Script implements DescriptionObject {
 
-/**************************************************************************
- *
- * $Revision: 1.25 $
- * $Date: 2005/10/05 07:39:37 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-public class Script implements DescriptionObject
-{
-	//public static final String INCLCOLL = "Includes";
     String mScript = "";
     CompiledScript mCompScript = null;
     String mName;
@@ -94,23 +89,22 @@ public class Script implements DescriptionObject
      * @throws ParameterException
      */
     public Script(String name, Integer version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
-    	mName = name; mVersion = version; mItemPath = path;
-    	parseScriptXML(xml);
+        mName = name; mVersion = version; mItemPath = path;
+        parseScriptXML(xml);
     }
 
     /**
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
      * Output class is forced to an object.
      */
-    public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException
-    {
+    public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException {
         mName = "<expr>";
         setScriptEngine(lang);
         mVersion = null;
         addOutput(null, returnType);
         setScriptData(expr);
     }
-    
+
     /**
      * Creates a script executor requiring an agent to be set. Used by module event scripts.
      * 
@@ -120,19 +114,17 @@ public class Script implements DescriptionObject
      * @param agent - the agentproxy to pass into the script as 'agent'
      * @throws ScriptingEngineException
      */
-    public Script(String lang, String name, String expr, AgentProxy agent) throws ScriptingEngineException
-    {
-    	this(lang, expr, Object.class);
-    	mName = name;
-    	addInputParam("agent", AgentProxy.class);
-    	setInputParamValue("agent", agent);
+    public Script(String lang, String name, String expr, AgentProxy agent) throws ScriptingEngineException {
+        this(lang, expr, Object.class);
+        mName = name;
+        addInputParam("agent", AgentProxy.class);
+        setInputParamValue("agent", agent);
     }
 
-    public Script(String lang, String expr) throws ScriptingEngineException
-    {
+    public Script(String lang, String expr) throws ScriptingEngineException {
         this(lang, expr, Object.class);
     }
-    
+
     /**
      * For consoles
      * 
@@ -141,8 +133,8 @@ public class Script implements DescriptionObject
      * @param out - the output PrintStream for reporting results that don't go to the log
      */
     public Script(String lang, AgentProxy agent, PrintStream out) throws Exception {
-    	setScriptEngine(lang);
-    	Bindings beans = context.getBindings(ScriptContext.ENGINE_SCOPE);
+        setScriptEngine(lang);
+        Bindings beans = context.getBindings(ScriptContext.ENGINE_SCOPE);
         beans.put("storage", Gateway.getStorage());
         beans.put("db", Gateway.getStorage().getDb());
         beans.put("proxy", Gateway.getProxyManager());
@@ -153,103 +145,125 @@ public class Script implements DescriptionObject
         PrintWriter output = new PrintWriter(out);
         context.setWriter(output);
         context.setErrorWriter(output);
+
         HashMap<String, String> consoleScripts = Gateway.getResource().getAllTextResources("textFiles/consoleScript."+lang+".txt");
-		for (String ns : consoleScripts.keySet()) {
-			try {
-				engine.put(ScriptEngine.FILENAME, ns+" init script");
-				engine.eval(consoleScripts.get(ns));
-			} catch (ScriptException ex) {
-				out.println("Exception parsing console script for "+(ns==null?"kernel":ns+" module"));
-				ex.printStackTrace(out);
-			}
-		}
-		addOutput(null, Object.class);
+        
+        for (String ns : consoleScripts.keySet()) {
+            try {
+                engine.put(ScriptEngine.FILENAME, ns+" init script");
+                engine.eval(consoleScripts.get(ns));
+            } catch (ScriptException ex) {
+                out.println("Exception parsing console script for "+(ns==null?"kernel":ns+" module"));
+                ex.printStackTrace(out);
+            }
+        }
+        addOutput(null, Object.class);
 
     }
-   
-    public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) throws ScriptingEngineException, InvalidDataException
+
+    /**
+     * Adds ItemProxy (object), AgentProxy (subject) and Job to the script input parameters and errors to the output parameters
+     * even if these are not defined in the Script XML
+     * 
+     * @param object ItemProxy representing the Item for the Job
+     * @param subject AgentProxy representing executing Agent
+     * @param job Job to be executed
+     * @throws ScriptingEngineException
+     * @throws InvalidDataException
+     */
+    public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
+            throws ScriptingEngineException, InvalidDataException
     {
         // set environment - this needs to be well documented for script developers
         if (!mInputParams.containsKey("item")) {
-        	Logger.warning("Item param not declared in Script "+getName()+" v"+getVersion());
-        	addInputParam("item", ItemProxy.class);
+            Logger.warning("Item param not declared in Script "+getName()+" v"+getVersion());
+            addInputParam("item", ItemProxy.class);
         }
         setInputParamValue("item", object);
 
         if (!mInputParams.containsKey("agent")) {
-        	Logger.warning("Agent param not declared in Script "+getName()+" v"+getVersion());
-        	addInputParam("agent", AgentProxy.class);
+            Logger.warning("Agent param not declared in Script "+getName()+" v"+getVersion());
+            addInputParam("agent", AgentProxy.class);
         }
         setInputParamValue("agent", subject);
 
         if (!mInputParams.containsKey("job")) {
-        	Logger.warning("Job param not declared in Script "+getName()+" v"+getVersion());
-        	addInputParam("job", Job.class);
+            Logger.warning("Job param not declared in Script "+getName()+" v"+getVersion());
+            addInputParam("job", Job.class);
         }
         setInputParamValue("job", job);
 
         if (!mOutputParams.containsKey("errors")) {
-        	Logger.warning("Errors output not declared in Script "+getName()+" v"+getVersion());
-        	addOutput("errors", ErrorInfo.class);
+            Logger.warning("Errors output not declared in Script "+getName()+" v"+getVersion());
+            addOutput("errors", ErrorInfo.class);
         }
     }
-    
+
+    /**
+     * 
+     * @param requestedLang
+     * @throws ScriptingEngineException
+     */
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
-    	String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
-    	ScriptEngineManager sem = (ScriptEngineManager)Gateway.getProperties().getObject("Script.EngineManager");
-    	if (sem == null) sem = new ScriptEngineManager(getClass().getClassLoader());
-    	engine = sem.getEngineByName(lang);
-    	if (engine==null)
-    		throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
-    	Bindings beans = engine.createBindings();
-    	context = new SimpleScriptContext();
-    	context.setBindings(beans, ScriptContext.ENGINE_SCOPE);
-    	engine.setContext(context);
+        String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
+        ScriptEngineManager sem = (ScriptEngineManager)Gateway.getProperties().getObject("Script.EngineManager");
+        if (sem == null) sem = new ScriptEngineManager(getClass().getClassLoader());
+        engine = sem.getEngineByName(lang);
+        if (engine==null)
+            throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
+        Bindings beans = engine.createBindings();
+        context = new SimpleScriptContext();
+        context.setBindings(beans, ScriptContext.ENGINE_SCOPE);
+        engine.setContext(context);
     }
-    
+
+    /**
+     * 
+     * @param context
+     */
     public void setContext(ScriptContext context) {
-    	this.context = context;
-    	if (engine != null) engine.setContext(context);
+        this.context = context;
+        if (engine != null) engine.setContext(context);
     }
-    
+
+    /**
+     * 
+     * @return {@link ScriptContext}
+     */
     public ScriptContext getContext() {
-    	return context;
+        return context;
     }
-    
+
     /**
      * Extracts script data from script xml.
      *
      * @param scriptXML
      * @throws ScriptParsingException - when script is invalid
      */
-    private void parseScriptXML(String scriptXML) throws ScriptParsingException, ParameterException
-    {
+    private void parseScriptXML(String scriptXML) throws ScriptParsingException, ParameterException {
+        //TODO: raw parsing of Script XML with CASTOR unmarshall if possbile
+
         Document scriptDoc = null;
 
         // get the DOM document from the XML
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        try
-        {
+        try {
             DocumentBuilder domBuilder = factory.newDocumentBuilder();
             scriptDoc = domBuilder.parse(new InputSource(new StringReader(scriptXML)));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ScriptParsingException("Error parsing Script XML : " + ex.toString());
         }
 
-        Element root = scriptDoc.getDocumentElement();
-        
         // parse script first
-        Element scriptElem = (Element)scriptDoc.getElementsByTagName("script").item(0);
-        {
+        Element scriptElem = (Element)scriptDoc.getElementsByTagName("script").item(0); {
             if (!scriptElem.hasAttribute("language"))
                 throw new ScriptParsingException("Script data incomplete, must specify scripting language");
             Logger.msg(6, "Script.parseScriptXML() - Script Language: " + scriptElem.getAttribute("language"));
             try {
-            	setScriptEngine(scriptElem.getAttribute("language"));
+                setScriptEngine(scriptElem.getAttribute("language"));
             } catch (ScriptingEngineException ex) {
-            	throw new ScriptParsingException(ex.getMessage());
+                throw new ScriptParsingException(ex.getMessage());
             }
 
             // get script source
@@ -257,7 +271,7 @@ public class Script implements DescriptionObject
             if (scriptChildNodes.getLength() != 1)
                 throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
             if (scriptChildNodes.item(0) instanceof Text)
-            	setScriptData(((Text) scriptChildNodes.item(0)).getData());
+                setScriptData(((Text) scriptChildNodes.item(0)).getData());
             else
                 throw new ScriptParsingException("Child element of script tag was not text");
             Logger.msg(6, "Script.parseScriptXML() - script:" + mScript);
@@ -265,7 +279,7 @@ public class Script implements DescriptionObject
 
         NodeList includeList = scriptDoc.getElementsByTagName("include");
         for (int i=0; i<includeList.getLength(); i++) {
-        	Element include = (Element)includeList.item(i);
+            Element include = (Element)includeList.item(i);
             if (!(include.hasAttribute("name") && include.hasAttribute("version")))
                 throw new ScriptParsingException("Script include declaration incomplete, must have name and version");
             String includeName = include.getAttribute("name");
@@ -278,53 +292,53 @@ public class Script implements DescriptionObject
                     addIncludedInputParam(includeParam.getName(), includeParam.getType());
                 }
             } catch (NumberFormatException e) {
-            	throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
+                throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
             } catch (ScriptingEngineException e) {
-            	Logger.error(e);
-				throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+": "+e.getMessage());
+                Logger.error(e);
+                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+": "+e.getMessage());
             } catch (ObjectNotFoundException e) {
-            	Logger.error(e);
-            	throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" not found.");
-			} catch (InvalidDataException e) {
-				Logger.error(e);
-				throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" was invalid: "+e.getMessage());
-			}
+                Logger.error(e);
+                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" not found.");
+            } catch (InvalidDataException e) {
+                Logger.error(e);
+                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" was invalid: "+e.getMessage());
+            }
         }
-        
+
         NodeList paramList = scriptDoc.getElementsByTagName("param");
         for (int i=0; i<paramList.getLength(); i++) {
-        	Element param = (Element)paramList.item(i);        
+            Element param = (Element)paramList.item(i);        
             if (!(param.hasAttribute("name") && param.hasAttribute("type")))
-            	throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
+                throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
             addInputParam(param.getAttribute("name"), param.getAttribute("type"));
         }
-        
+
         NodeList outputList = scriptDoc.getElementsByTagName("output");
         for (int i=0; i<outputList.getLength(); i++) {
-        	Element output = (Element)outputList.item(i);
+            Element output = (Element)outputList.item(i);
             if (!output.hasAttribute("type"))
-            	throw new ScriptParsingException("Script Output declaration incomplete, must have type");
+                throw new ScriptParsingException("Script Output declaration incomplete, must have type");
             addOutput(output.getAttribute("name"), output.getAttribute("type"));
         }
     }
 
-    protected void addInputParam(String name, String type) throws ParameterException
-    {
-    	try
-        {
+    /**
+     * 
+     * @param name
+     * @param type
+     * @throws ParameterException
+     */
+    protected void addInputParam(String name, String type) throws ParameterException {
+        try {
             addInputParam(name, Gateway.getResource().getClassForName(type));
         }
-        catch (ClassNotFoundException ex)
-        {
+        catch (ClassNotFoundException ex) {
             throw new ParameterException("Input parameter " + name + " specifies class " + type + " which was not found.");
         }
     }
-    
-    protected void addInputParam(String name, Class<?> type) throws ParameterException
-    {
-        Parameter inputParam = new Parameter(name, type);
 
-        
+    protected void addInputParam(String name, Class<?> type) throws ParameterException {
+        Parameter inputParam = new Parameter(name, type);
 
         Logger.msg(6, "ScriptExecutor.parseScriptXML() - declared parameter " + name + " (" + type + ")");
         //add parameter to hashtable
@@ -333,8 +347,13 @@ public class Script implements DescriptionObject
 
     }
 
-    protected void addIncludedInputParam(String name, Class<?> type) throws ParameterException
-    {
+    /**
+     * 
+     * @param name
+     * @param type
+     * @throws ParameterException
+     */
+    protected void addIncludedInputParam(String name, Class<?> type) throws ParameterException {
         // check if we already have it
         if (mAllInputParams.containsKey(name)) {
             Parameter existingParam = mAllInputParams.get(name);
@@ -354,10 +373,14 @@ public class Script implements DescriptionObject
 
     }
 
-    protected void addOutput(String name, String type) throws ParameterException
-    {
-        try
-        {
+    /**
+     * 
+     * @param name
+     * @param type
+     * @throws ParameterException
+     */
+    protected void addOutput(String name, String type) throws ParameterException {
+        try {
             addOutput(name, Gateway.getResource().getClassForName(type));
         }
         catch (ClassNotFoundException ex) {
@@ -365,26 +388,27 @@ public class Script implements DescriptionObject
         }
     }
 
-    protected void addOutput(String name, Class<?> type) throws ParameterException
-    {
-        String outputName = name;
+    /**
+     * 
+     * @param name
+     * @param type
+     * @throws ParameterException
+     */
+    protected void addOutput(String name, Class<?> type) throws ParameterException {
+        if (mOutputParams.containsKey(name)) {
+            throw new ParameterException("Output parameter '"+name+"' declared more than once.");
+        }
 
-        Parameter outputParam = new Parameter(name, type);
-
-        if (mOutputParams.containsKey(outputName))
-        	throw new ParameterException("Output parameter '"+outputName+"' declared more than once.");
-
-        mOutputParams.put(outputName, outputParam);
-        
+        mOutputParams.put(name, new Parameter(name, type));
     }
 
     /**
      * Gets all declared parameters
+     * 
      * @return HashMap of String (name), org.cristalise.kernel.scripting.Parameter (param)
      * @see org.cristalise.kernel.scripting.Parameter
      */
-    public HashMap<String, Parameter> getInputParams()
-    {
+    public HashMap<String, Parameter> getInputParams() {
         return mInputParams;
     }
 
@@ -393,8 +417,7 @@ public class Script implements DescriptionObject
      * @return HashMap of String (name), org.cristalise.kernel.scripting.Parameter (param)
      * @see org.cristalise.kernel.scripting.Parameter
      */
-    public HashMap<String, Parameter> getAllInputParams()
-    {
+    public HashMap<String, Parameter> getAllInputParams() {
         return mAllInputParams;
     }
 
@@ -405,17 +428,17 @@ public class Script implements DescriptionObject
      * @param value - object to use for this parameter
      * @throws ParameterException - name not found or wrong type
      */
-    public boolean setInputParamValue(String name, Object value) throws ParameterException
-    {
+    public boolean setInputParamValue(String name, Object value) throws ParameterException {
         Parameter param = mInputParams.get(name);
         boolean wasUsed = false;
         if (!mAllInputParams.containsKey(name))
             return false;
 
         if (param != null) { // param is in this script
-            if (!param.getType().isInstance(value))
-                throw new ParameterException(
-                    "Parameter " + name + " in script "+mName+" v"+mVersion+" is wrong type \n" + "Required: " + param.getType().toString() + "\n" + "Supplied: " + value.getClass().toString());
+            if (!param.getType().isInstance(value)) {
+                throw new ParameterException( "Parameter "+name+" in script "+mName+" v"+mVersion+" is wrong type \n"+
+                        "Required: "+param.getType().toString()+"\n"+"Supplied: "+value.getClass().toString());
+            }
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(name, value);
             Logger.msg(7, "Script.setInputParamValue() - " + name + ": " + value.toString());
             param.setInitialised(true);
@@ -430,6 +453,46 @@ public class Script implements DescriptionObject
     }
 
     /**
+     * Reads and evaluates input properties, set input parameters from those properties and executes the Script
+     * 
+     * @param itemPath 
+     * @param inputProps
+     * @param actContext
+     * @param locker
+     * @return the values returned by the Script
+     * @throws ScriptingEngineException
+     */
+    public Object evaluate(ItemPath itemPath, CastorHashMap inputProps, String actContext, Object locker) throws ScriptingEngineException {
+        try {
+            for (String inputParamName: getAllInputParams().keySet()) {
+                if (inputProps.containsKey(inputParamName)) {
+                    setInputParamValue(inputParamName, inputProps.evaluateProperty(itemPath, inputParamName, actContext, locker));
+                }
+            }
+
+            if (getAllInputParams().containsKey("item"))
+                setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
+
+            if (getAllInputParams().containsKey("agent"))
+                setInputParamValue("agent", Gateway.getProxyManager().getProxy(Gateway.getLookup().getAgentPath("system")));
+
+            Object retVal = execute();
+
+            if (retVal == null) retVal = "";
+
+            Logger.msg(2, "Split.evaluateScript("+getName()+") - Script returned:'"+retVal+"'");
+
+            return retVal;
+        }
+        catch (Exception e) {
+            Logger.error("Script.evaluate() - Script:" + getName());
+            Logger.error(e);
+            throw new ScriptingEngineException(e.getMessage());
+        }
+    }
+
+
+   /**
      * Executes the script with the submitted parameters. All declared input parametes should have been set first.
      *
      * @return The return value depends on the way the output type was declared in the script xml.
@@ -441,9 +504,8 @@ public class Script implements DescriptionObject
      * </ul>
      * @throws ScriptingEngineException - input parameters weren't set, there was an error executing the script, or the output was invalid
      */
-    public Object execute() throws ScriptingEngineException
-    {
-        // check input params
+    public Object execute() throws ScriptingEngineException {
+        //TODO: Split Script.execute() to several logically independent methods to make it easier to maintain check input params
         StringBuffer missingParams = new StringBuffer();
         for (Parameter thisParam : mInputParams.values()) {
             if (!thisParam.getInitialised())
@@ -454,166 +516,214 @@ public class Script implements DescriptionObject
             throw new ScriptingEngineException("Execution aborted, the following declared parameters were not set: \n" + missingParams.toString());
 
         for (Parameter outputParam : mOutputParams.values()) {
-        	if (outputParam.getName() == null || outputParam.getName().length()==0) continue; // If the name is null then it's the return type. don't pre-register it
-            Logger.msg(8, "Script.setOutput() - Initialising output bean '" + outputParam.getName() + "'");
-            Object emptyObject;
-			try {
-				emptyObject = outputParam.getType().newInstance();
-			} catch (Exception e) {
-				emptyObject = null;
-			}
-			context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
+            //If the name is null then it's the return type. don't pre-register it
+            if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
 
-		}
+            Logger.msg(8, "Script.execute() - Initialising output bean '" + outputParam.getName() + "'");
+            
+            Object emptyObject;
+            try {
+                emptyObject = outputParam.getType().newInstance();
+            } catch (Exception e) {
+                emptyObject = null;
+            }
+            context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
+        }
 
         // execute the child scripts
         for (Script importScript : mIncludes) {
-        	if (Logger.doLog(8))
-        		Logger.msg(8, "Import script:\n"+importScript.mScript);
-        	else
-        		Logger.msg(5, "Executing imported script "+importScript.getName()+" v"+importScript.getVersion());
+            if (Logger.doLog(8))  Logger.msg(8, "Import script:\n"+importScript.mScript);
+            else                  Logger.msg(5, "Executing imported script "+importScript.getName()+" v"+importScript.getVersion());
+
             importScript.execute();
         }
 
         // run the script
         Object returnValue = null;
-        try
-        {
+        try {
             Logger.msg(7, "Script.execute() - Executing script");
-        	if (Logger.doLog(8))
-        		Logger.msg(8, "Script:\n"+mScript);
-            
+            if (Logger.doLog(8)) Logger.msg(8, "Script:\n"+mScript);
+
             if (engine == null)
-            	throw new ScriptingEngineException("Script engine not set. Cannot execute scripts.");
+                throw new ScriptingEngineException("Script engine not set. Cannot execute scripts.");
+
             engine.put(ScriptEngine.FILENAME, mName);
+
             if (mCompScript != null) 
-            	returnValue = mCompScript.eval(context);
+                returnValue = mCompScript.eval(context);
             else
-            	returnValue = engine.eval(mScript);
+                returnValue = engine.eval(mScript);
+
             Logger.msg(7, "Script.execute() - script returned \"" + returnValue + "\"");
         }
-        catch (Throwable ex)
-        {
+        catch (Throwable ex) {
+            Logger.error(ex);
             throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getMessage());
         }
-        
+
         // if no outputs are defined, return null
         if (mOutputParams.size() == 0) {
-        	Logger.msg(4, "Script.execute() - No output params. Returning null.");
-        	return null;
+            Logger.msg(4, "Script.execute() - No output params. Returning null.");
+            return null;
         }
-        
-		HashMap<String, Object> outputs = new HashMap<String, Object>();
-		
+
+        HashMap<String, Object> outputs = new HashMap<String, Object>();
+
         for (Parameter outputParam : mOutputParams.values()) {
-        	String outputName = outputParam.getName();
-        	Object outputValue;
-        	if (outputName == null || outputName.length()==0)
-        		outputValue = returnValue;
-        	else
-        		outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-        	if (outputValue!=null || outputName != null)
-        	Logger.msg(4, "Script.execute() - Output parameter"+(outputName==null?" ":outputName+" ")+"= "+(outputValue==null?"null":outputValue.toString()));
-        	
-       		// check the class
-       		if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))
-       			throw new ScriptingEngineException(
-                     "Script output "+outputName+" was not null or instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
-                  		
-       		Logger.msg(8, "Script.execute() - output "+outputValue);
-       		if (mOutputParams.size() == 1) {
-       			Logger.msg(6, "Script.execute() - only one parameter, returning "+(outputValue==null?"null":outputValue.toString()));
-       			return outputValue;
-       		}
-       		outputs.put(outputParam.getName(), outputValue);
-		}
-        
+            String outputName = outputParam.getName();
+            Object outputValue;
+
+            if (outputName == null || outputName.length()==0)
+                outputValue = returnValue;
+            else
+                outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
+
+            if (outputValue!=null || outputName != null)
+                Logger.msg(4, "Script.execute() - Output parameter "+(outputName==null ? "" : outputName+" ")+"= "+(outputValue==null?"null":outputValue.toString()));
+
+            // check the class
+            if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))
+                throw new ScriptingEngineException(
+                        "Script output "+outputName+" was not null or instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+
+            Logger.msg(8, "Script.execute() - output "+outputValue);
+
+            if (mOutputParams.size() == 1) {
+                Logger.msg(6, "Script.execute() - only one parameter, returning "+(outputValue==null?"null":outputValue.toString()));
+                return outputValue;
+            }
+            outputs.put(outputParam.getName(), outputValue);
+        }
+
         return outputs;
     }
-    
+
+    /**
+     * 
+     * @param script
+     * @throws ScriptParsingException
+     */
     public void setScriptData(String script) throws ScriptParsingException {
-    	mScript = script;
+        mScript = script;
         if (engine instanceof Compilable) {
-			try {
-				Logger.msg(1, "Compiling script "+mName);
-	            engine.put(ScriptEngine.FILENAME, mName);
-				mCompScript = ((Compilable)engine).compile(mScript);
-			} catch (ScriptException e) {
-				throw new ScriptParsingException(e.getMessage());
-			}
+            try {
+                Logger.msg(1, "Compiling script "+mName);
+                engine.put(ScriptEngine.FILENAME, mName);
+                mCompScript = ((Compilable)engine).compile(mScript);
+            }
+            catch (ScriptException e) {
+                Logger.error(e);
+                throw new ScriptParsingException(e.getMessage());
+            }
         }
     }
-    
+
     public String getScriptData() {
-    	return mScript;
+        return mScript;
     }
-    
-    @Override
-	public String getName() {
-		return mName;
-	}
 
     @Override
-	public Integer getVersion() {
-		return mVersion;
-	}
+    public String getName() {
+        return mName;
+    }
 
-	@Override
-	public ItemPath getItemPath() {
-		return mItemPath;
-	}
-	
-	@Override
-	public String getItemID() {
-		return mItemPath.getUUID().toString();
-	}
+    @Override
+    public Integer getVersion() {
+        return mVersion;
+    }
 
-	@Override
-	public void setName(String name) {
-		mName = name;
-	}
-	
-	@Override
-	public void setVersion(Integer version) {
-		mVersion = version;
-	}
-	
-	@Override
-	public void setItemPath(ItemPath path) {
-		mItemPath = path;
-	}
-	
-	@Override
-	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
-		CollectionArrayList retArr = new CollectionArrayList();
-		Dependency includeColl = new Dependency(INCLUDE);
-		for (Script script : mIncludes) {
-			try {
-				includeColl.addMember(script.getItemPath());
-			} catch (InvalidCollectionModification e) {
-				throw new InvalidDataException("Could not add "+script.getName()+" to description collection. "+e.getMessage());
-			} catch (ObjectAlreadyExistsException e) {	
-				throw new InvalidDataException("Script "+script.getName()+" included more than once.");
-			} // 
-		}
-		retArr.put(includeColl);
-		return retArr;
-	}
-	
-	@Override
-	public void export(Writer imports, File dir) throws IOException {
-		FileStringUtility.string2File(new File(new File(dir, "SC"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
-		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
-				+(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
-				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-				+"type=\"SC\">boot/SC/"+getName()
-				+(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
-	}
-	
-	static public void main(String[] args) {
-    	for(ScriptEngineFactory sef: new ScriptEngineManager().getEngineFactories()) {
-    		System.out.println(sef.getEngineName()+" v"+sef.getEngineVersion()+" using "+sef.getLanguageName()+" v"+sef.getLanguageVersion()+" "+sef.getNames());
-    	}
-    	System.out.println("Preferred javascript engine: "+new ScriptEngineManager().getEngineByName("javascript").getClass().getName());
+    @Override
+    public ItemPath getItemPath() {
+        return mItemPath;
+    }
+
+    @Override
+    public String getItemID() {
+        return mItemPath.getUUID().toString();
+    }
+
+    @Override
+    public void setName(String name) {
+        mName = name;
+    }
+
+    @Override
+    public void setVersion(Integer version) {
+        mVersion = version;
+    }
+
+    @Override
+    public void setItemPath(ItemPath path) {
+        mItemPath = path;
+    }
+
+    /**
+     * Resolves the Script object using its name and version. If Version is null tries to interpret the name 
+     * as an expression
+     * 
+     * @see BuiltInVertexProperties#ROUTING_EXPR
+     * 
+     * @param name the name of the Script Item or an expression
+     * @param version the version of the Script. If set to null
+     * @return {@link Script}
+     * @throws ScriptingEngineException
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     */
+    public static Script getScript(String name, Integer version) 
+            throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
+    {
+        if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
+
+        if (version != null) {
+            return LocalObjectLoader.getScript(name, version);
+        }
+        else {
+            // empty version: try expression
+            String[] tokens = name.split(":");
+
+            if(tokens.length == 2) return new Script(tokens[0], tokens[1]);
+            else                   throw new InvalidDataException("Data '"+name+"' cannot be interpreted as expression");
+        }
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+        CollectionArrayList retArr = new CollectionArrayList();
+        Dependency includeColl = new Dependency(INCLUDE);
+        for (Script script : mIncludes) {
+            try {
+                includeColl.addMember(script.getItemPath());
+            } catch (InvalidCollectionModification e) {
+                throw new InvalidDataException("Could not add "+script.getName()+" to description collection. "+e.getMessage());
+            } catch (ObjectAlreadyExistsException e) {	
+                throw new InvalidDataException("Script "+script.getName()+" included more than once.");
+            } // 
+        }
+        retArr.put(includeColl);
+        return retArr;
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public void export(Writer imports, File dir) throws IOException {
+        FileStringUtility.string2File(new File(new File(dir, "SC"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
+        if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
+                +(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
+                +(getVersion()==null?"":"version=\""+getVersion()+"\" ")
+                +"type=\"SC\">boot/SC/"+getName()
+                +(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+    }
+
+    static public void main(String[] args) {
+        for(ScriptEngineFactory sef: new ScriptEngineManager().getEngineFactories()) {
+            System.out.println(sef.getEngineName()+" v"+sef.getEngineVersion()+" using "+sef.getLanguageName()+" v"+sef.getLanguageVersion()+" "+sef.getNames());
+        }
+        System.out.println("Preferred javascript engine: "+new ScriptEngineManager().getEngineByName("javascript").getClass().getName());
     }
 }
