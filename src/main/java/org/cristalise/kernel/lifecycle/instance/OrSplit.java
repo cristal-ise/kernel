@@ -19,6 +19,8 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance;
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.DirectedEdge;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -26,8 +28,6 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * @version $Revision: 1.22 $ $Date: 2005/05/10 15:14:54 $
- * @author $Author: abranson $
  */
 public class OrSplit extends Split
 {
@@ -49,7 +49,7 @@ public class OrSplit extends Split
 			Logger.msg(7, "Finding next " + thisNext);
 			for (DirectedEdge outEdge : outEdges) {
 				Next nextEdge = (Next) outEdge;
-				if (thisNext != null && thisNext.equals(nextEdge.getProperties().get("Alias")))
+				if (thisNext != null && thisNext.equals(nextEdge.getBuiltInProperty(ALIAS)))
 				{
                     WfVertex term = nextEdge.getTerminusVertex();
                     try {
@@ -58,7 +58,7 @@ public class OrSplit extends Split
 						Logger.error(e);
 						throw new InvalidDataException("Error enabling next "+thisNext);
 					}
-					Logger.msg(7, "Running " + nextEdge.getProperties().get("Alias"));
+					Logger.msg(7, "Running " + nextEdge.getBuiltInProperty(ALIAS));
 					active++;
 				}
 			}

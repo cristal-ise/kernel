@@ -20,14 +20,15 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.TYPE;
+
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableEdge;
 
 /**
- * @version $Revision: 1.58 $ $Date: 2005/05/10 15:14:54 $
- * @author  $Author: abranson $
+ * This class represents the link between 2 successive activities
  */
-/** this class represents the link between 2 successive activities */
 public class Next extends GraphableEdge
 {
 	/**
@@ -40,6 +41,7 @@ public class Next extends GraphableEdge
 
 	/**
 	 * Method Next.
+	 * 
 	 * @param pre
 	 * @param nex
 	 */
@@ -47,8 +49,8 @@ public class Next extends GraphableEdge
 	public Next(WfVertex pre, WfVertex nex)
 	{
 		super(pre, nex);
-        getProperties().put("Alias","");
-        getProperties().put("Type","Straight");
+		setBuiltInProperty(ALIAS, "");
+		setBuiltInProperty(TYPE, "Straight");
 	}
 
 	/**
@@ -70,18 +72,18 @@ public class Next extends GraphableEdge
 		GraphPoint terminusPoint = getTerminusPoint();
 		GraphPoint midPoint = new GraphPoint();
 
-		if (("Broken +".equals(getProperties().get("Type"))))
+		if (("Broken +".equals(getBuiltInProperty(TYPE))))
 		{
 			midPoint.x = (originPoint.x + terminusPoint.x) / 2;
 			midPoint.y = (originPoint.y + terminusPoint.y) / 2;
 		}
-		else if (("Broken -".equals(getProperties().get("Type"))))
+		else if (("Broken -".equals(getBuiltInProperty(TYPE))))
 		{
 			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
 			midPoint.x = arrowOnY ? terminusPoint.x : (originPoint.x + terminusPoint.x) / 2;
 			midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : originPoint.y;
 		}
-		else if (("Broken |".equals(getProperties().get("Type"))))
+		else if (("Broken |".equals(getBuiltInProperty(TYPE))))
 		{
 			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
 			midPoint.x = arrowOnY ? originPoint.x : (originPoint.x + terminusPoint.x) / 2;

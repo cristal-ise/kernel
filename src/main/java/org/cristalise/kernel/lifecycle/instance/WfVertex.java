@@ -20,31 +20,19 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
-
-
-import java.util.HashMap;
-
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.GraphableVertex;
-import org.cristalise.kernel.lifecycle.routingHelpers.ActivityDataHelper;
-import org.cristalise.kernel.lifecycle.routingHelpers.DataHelper;
-import org.cristalise.kernel.lifecycle.routingHelpers.PropertyDataHelper;
-import org.cristalise.kernel.lifecycle.routingHelpers.ViewpointDataHelper;
+import org.cristalise.kernel.lifecycle.routingHelpers.DataHelperUtility;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
-import org.cristalise.kernel.utils.KeyValuePair;
-import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-
 /**
- * @version $Revision: 1.38 $ $Date: 2005/09/07 13:46:31 $
- * @author  $Author: abranson $
+ * 
  */
 public abstract class WfVertex extends GraphableVertex
 {
@@ -58,7 +46,7 @@ public abstract class WfVertex extends GraphableVertex
         Join,
         Route
     }
-    
+
     /**
      * sets the activity available to be executed on start of Workflow or composite activity 
      * (when it is the first one of the (sub)process)
@@ -71,13 +59,12 @@ public abstract class WfVertex extends GraphableVertex
     public abstract void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
-     * @see java.lang.Object#Object()
+     * 
      */
-    public WfVertex()
-    {
+    public WfVertex() {
         super();
-    	setIsLayoutable(true);
-    	setIsComposite(false);
+        setIsLayoutable(true);
+        setIsComposite(false);
     }
 
     /**
@@ -88,27 +75,27 @@ public abstract class WfVertex extends GraphableVertex
      * @throws InvalidDataException
      */
     public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
- 
+
     /**
      * 
      * @param idLoop
      * @throws InvalidDataException
      */
     public abstract void reinit( int idLoop ) throws InvalidDataException;
-    
+
     public void abort() { }
 
     /**
      * Method verify.
      * @return boolean
      */
-	public abstract boolean verify();
+    public abstract boolean verify();
 
     /**
      * Method getErrors.
      * @return String
      */
-	public abstract String getErrors();
+    public abstract String getErrors();
 
     /**
      * 
@@ -117,127 +104,90 @@ public abstract class WfVertex extends GraphableVertex
      * @param locker
      * @throws InvalidDataException
      */
-	public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
+    public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
-     * Method loop.
      * @return boolean
      */
-	public abstract boolean loop();
+    public abstract boolean loop();
+    
+    /**
+     * Derive the path of the parent CompositeAct in which the script is running
+     * 
+     * @return the path of the parent CompositeAct
+     */
+    public String getActContext() {
+        return getPath().substring(0, getPath().lastIndexOf('/'));
+    }
 
     /**
      * Method addNext.
      * @param vertex
      */
-	public abstract Next addNext(WfVertex vertex);
-	
-	public Object evaluateProperty(ItemPath itemPath, String propName, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-		return evaluatePropertyValue(itemPath, getProperties().get(propName), locker);
-	}
+    public abstract Next addNext(WfVertex vertex);
 
-	public Object evaluatePropertyValue(ItemPath itemPath, Object propValue, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+    /**
+     * 
+     * @param itemPath
+     * @param propName
+     * @param locker
+     * @return evaluated value
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     */
+    public Object evaluateProperty(ItemPath itemPath, String propName, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
+        return evaluatePropertyValue(itemPath, getProperties().get(propName), locker);
+    }
 
-		if (!(propValue instanceof String) || !((String)propValue).contains("//")) //
-			return propValue;
-		String propValString = (String)propValue;
-		DataHelper dataHelper;
-        String[] valueSplit = propValString.split("//");
-
-        if (valueSplit.length != 2) throw new InvalidDataException("Invalid param: "+propValue);
-
-        String pathType = valueSplit[0];
-        String dataPath = valueSplit[1];
-        
-        //derive the parent composite in which the script is running
-        String actContext = getPath();
-        actContext = actContext.substring(0, actContext.lastIndexOf('/'));
-
-        try {
-            dataHelper = getDataHelper(pathType);
-        } catch (ObjectNotFoundException ex) { // No recognized helper, just return the raw value
-            return propValue;
-        }
+    /**
+     * 
+     * @param itemPath
+     * @param propValue
+     * @param locker
+     * @return evaluated value
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     */
+    public Object evaluatePropertyValue(ItemPath itemPath, Object propValue, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
         if (itemPath == null) itemPath = getWf().getItemPath();
 
-        return dataHelper.get(itemPath, actContext, dataPath, locker);
-	}
-	
-	public static DataHelper getDataHelper(String id) throws InvalidDataException, ObjectNotFoundException {
-		Object configHelper = Gateway.getProperties().getObject("DataHelper."+id);
-		if (configHelper != null) {
-			if (configHelper instanceof DataHelper) 
-				return (DataHelper)configHelper;
-			else 
-				throw new InvalidDataException("Property DataHelper."+id+" was not a DataHelper: " +configHelper.toString());
-		}
-		else
-			switch (id) {
-	        case "viewpoint":
-	            return new ViewpointDataHelper();
-	        case "property":
-	        	return new PropertyDataHelper();
-	        case "activity":
-	        	return new ActivityDataHelper();
-			}
-		throw new ObjectNotFoundException("Data helper '"+id+"' unknown");
-	}
-	
-	
-    protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath, Object locker) throws ScriptingEngineException
-    {
-        try {
-            Script script = getScript(scriptName, scriptVersion);
-            HashMap<?, ?> scriptInputParams = script.getAllInputParams();
-            
-            for (KeyValuePair vertexProp : getProperties().getKeyValuePairs()) {
-                if (scriptInputParams.containsKey(vertexProp.getKey())) {
-                    Object value = vertexProp.getValue();
-                    Logger.msg(5,"WfVertex.evaluateScript() - Match found for '"+vertexProp.getKey()+"' => setting value from " + value);
-                    Object inputParam = evaluatePropertyValue(itemPath, value, locker);
-                    Logger.msg(5, "Split.evaluateScript() - Setting param " + vertexProp.getKey() + " to " + inputParam);
-                    script.setInputParamValue(vertexProp.getKey(), inputParam);
-                }
-            }
+        return DataHelperUtility.evaluateValue(itemPath, propValue, getActContext(), locker);
+    }
 
-            if (scriptInputParams.containsKey("item")) {
-                script.setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
-            }
-            if (scriptInputParams.containsKey("agent")) {
-                AgentPath systemAgent = Gateway.getLookup().getAgentPath("system");
-                script.setInputParamValue("agent", Gateway.getProxyManager().getProxy(systemAgent));
-            }
-            Object retVal = script.execute();
-            Logger.msg(2, "Split.evaluateScript() - Script returned "+retVal);
-            if (retVal == null) retVal = "";
-            return retVal;
+    /**
+     * 
+     * 
+     * @param scriptName
+     * @param scriptVersion
+     * @param itemPath
+     * @param locker
+     * @return the value returned by the Script
+     * @throws ScriptingEngineException
+     */
+    protected Object evaluateScript(String scriptName, Integer scriptVersion, ItemPath itemPath, Object locker) throws ScriptingEngineException {
+        try {
+            if (itemPath == null) itemPath = getWf().getItemPath();
+
+            Script script = Script.getScript(scriptName, scriptVersion);
+            return script.evaluate(itemPath, getProperties(), getActContext(), locker);
         }
         catch (Exception e) {
-            Logger.msg(1, "Split.evaluateScript() - Error: Script " + scriptName);
             Logger.error(e);
             throw new ScriptingEngineException(e.getMessage());
         }
     }
 
-    private static Script getScript(String name, Integer version) throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
-    {
-        if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
-        
-        Script script;
-
-        if (version!=null) {
-            script = LocalObjectLoader.getScript(name, version);
-        }
-        else { // empty version: try expression
-            int split = name.indexOf(":");
-            script = new Script(name.substring(0, split), name.substring(split + 1));
-        }
-
-        return script;
-    }
-
-
-    public Workflow getWf()
-    {
+    /**
+     * 
+     * @return the top level CompositeActivity, aka Workflow
+     */
+    public Workflow getWf() {
         return ((CompositeActivity)getParent()).getWf();
     }
 }

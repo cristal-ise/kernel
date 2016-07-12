@@ -88,4 +88,13 @@ public abstract class GraphableEdge extends DirectedEdge
     public void setKeyValuePairs(KeyValuePair[] pairs) {
         mProperties.setKeyValuePairs(pairs);
     }
+    
+    public Object getBuiltInProperty(BuiltInEdgeProperties prop) {
+        return mProperties.get(prop.getName());
+    }
+
+    public void setBuiltInProperty(BuiltInEdgeProperties prop, Object val) {
+        mProperties.put(prop.getName(), val);
+    }
+
 }

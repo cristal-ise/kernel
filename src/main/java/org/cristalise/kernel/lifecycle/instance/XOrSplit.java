@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
+
 import java.util.ArrayList;
 
 import org.cristalise.kernel.common.InvalidDataException;
@@ -52,7 +54,7 @@ public class XOrSplit extends Split
 
         DirectedEdge[] outEdges = getOutEdges();
         for (DirectedEdge outEdge : outEdges) {
-            if (isInTable((String)((Next)outEdge).getProperties().get("Alias"), nextsTab))
+            if (isInTable((String)((Next)outEdge).getBuiltInProperty(ALIAS), nextsTab))
                 nextsToFollow.add(outEdge);
         }
 

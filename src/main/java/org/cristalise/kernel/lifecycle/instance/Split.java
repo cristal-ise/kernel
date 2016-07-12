@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle.instance;
 
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.LAST_NUM;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_EXPR;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_VERSION;
@@ -30,6 +32,7 @@ import java.util.Vector;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
+import org.cristalise.kernel.lifecycle.routingHelpers.DataHelperUtility;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
@@ -52,6 +55,7 @@ public abstract class Split extends WfVertex
         mErrors = new Vector<String>(0, 1);
         setBuiltInProperty(ROUTING_SCRIPT_NAME, "");
         setBuiltInProperty(ROUTING_SCRIPT_VERSION, "");
+        setBuiltInProperty(ROUTING_EXPR, "");
     }
 
     private boolean loopTested;
@@ -82,14 +86,14 @@ public abstract class Split extends WfVertex
         int num = getOutGraphables().length;
 
         try {
-            num = Integer.parseInt((String) getProperties().get("LastNum"));
+            num = Integer.parseInt((String) getBuiltInProperty(LAST_NUM));
         }
         catch (Exception e) {
             Logger.debug(8, "Split::addNext() - Exception:"+e.getMessage());
         }
 
-        nxt.getProperties().put("Alias", String.valueOf(num));
-        getProperties().put("LastNum", String.valueOf(num + 1));
+        nxt.setBuiltInProperty(ALIAS, String.valueOf(num));
+        setBuiltInProperty(LAST_NUM, String.valueOf(num + 1));
         return nxt;
     }
 
@@ -200,35 +204,46 @@ public abstract class Split extends WfVertex
         return loop2;
     }
     
+    /**
+     * 
+     * @param itemPath
+     * @param locker
+     * @return the list of 
+     * @throws InvalidDataException
+     */
     public String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
-    	String nexts;
-		String  scriptName    = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
-		String  expr          = (String) getBuiltInProperty(ROUTING_EXPR);
-		Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(ROUTING_SCRIPT_VERSION));
+        String nexts;
+        String  expr          = (String) getBuiltInProperty(ROUTING_EXPR);
+        String  scriptName    = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
+        Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(ROUTING_SCRIPT_VERSION));
 
-		if ((scriptName != null && scriptName.length() > 0) && (expr == null || expr.length() == 0)) {
-	        try {
-				nexts = this.evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
-			} catch (ScriptingEngineException e) {
-				Logger.error(e);
-				throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
-			}
-		}
-		else if (expr != null && expr.length() > 0){
-			try {
-				nexts = evaluatePropertyValue(itemPath, expr, null).toString();
-			} catch (Exception e) {
-				Logger.error(e);
-				throw new InvalidDataException("XORSplit expression evaulation failed: "+expr+" with "+e.getMessage());
-			}
-		}
-		else
-			throw new InvalidDataException("XORSplit encountered without valid routing script nor expression");
-		
+        if (expr != null && expr.length() > 0) {
+            try {
+                nexts = (String) DataHelperUtility.evaluateValue(itemPath, expr, getActContext(), locker);
+            }
+            catch (Exception e) {
+                Logger.error(e);
+                throw new InvalidDataException("XORSplit expression evaulation failed: "+expr+" with "+e.getMessage());
+            }
+        }
+        else if (scriptName != null && scriptName.length() > 0) {
+            try {
+                nexts = evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
+            }
+            catch (ScriptingEngineException e) {
+                Logger.error(e);
+                throw new InvalidDataException("Error running routing script "+scriptName+" v"+scriptVersion);
+            }
+        }
+        else
+            throw new InvalidDataException("XORSplit encountered without valid routing script nor expression");
+
         StringTokenizer tok = new StringTokenizer(nexts,",");
         String[] nextsTab = new String[tok.countTokens()];
+
         for (int i=0;i<nextsTab.length;i++)
             nextsTab[i] = tok.nextToken();
+        
         return nextsTab;
     }
 

@@ -50,6 +50,8 @@ public enum BuiltInVertexProperties {
      */
     DESCRIPTION("Description"),
 
+    LAST_NUM("LastNum"),
+
     /**
      * String property. It is used in ActivitySlotDef to override the name of the ActivityDef
      */

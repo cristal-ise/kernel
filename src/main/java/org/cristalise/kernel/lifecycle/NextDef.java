@@ -19,12 +19,16 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle;
+
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
+import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.TYPE;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.LAST_NUM;
+
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableEdge;
 import org.cristalise.kernel.lifecycle.instance.Next;
+
 /**
- * @version $Revision: 1.32 $ $Date: 2006/03/03 13:52:21 $
- * @author $Author: abranson $
  */
 public class NextDef extends GraphableEdge
 {
@@ -56,15 +60,14 @@ public class NextDef extends GraphableEdge
 		if (pre instanceof OrSplitDef || pre instanceof XOrSplitDef)
 		{
 			int num = pre.getOutGraphables().length;
-			try
-			{
-				num = Integer.parseInt((String) pre.getProperties().get("LastNum"));
+			try {
+				num = Integer.parseInt((String) pre.getBuiltInProperty(LAST_NUM));
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 			}
-			getProperties().put("Alias", String.valueOf(num));
-			pre.getProperties().put("LastNum", String.valueOf(num + 1));
+
+			setBuiltInProperty(ALIAS, String.valueOf(num));
+			pre.setBuiltInProperty(LAST_NUM, String.valueOf(num + 1));
 		}
 	}
 	@Override
@@ -73,18 +76,18 @@ public class NextDef extends GraphableEdge
 		GraphPoint originPoint = getOriginPoint();
 		GraphPoint terminusPoint = getTerminusPoint();
 		GraphPoint midPoint = new GraphPoint();
-		if (("Broken +".equals(getProperties().get("Type"))))
+		if (("Broken +".equals(getBuiltInProperty(TYPE))))
 		{
 			midPoint.x = (originPoint.x + terminusPoint.x) / 2;
 			midPoint.y = (originPoint.y + terminusPoint.y) / 2;
 		}
-		else if (("Broken -".equals(getProperties().get("Type"))))
+		else if (("Broken -".equals(getBuiltInProperty(TYPE))))
 		{
 			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
 			midPoint.x = arrowOnY ? terminusPoint.x : (originPoint.x + terminusPoint.x) / 2;
 			midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : originPoint.y;
 		}
-		else if (("Broken |".equals(getProperties().get("Type"))))
+		else if (("Broken |".equals(getBuiltInProperty(TYPE))))
 		{
 			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
 			midPoint.x = arrowOnY ? originPoint.x : (originPoint.x + terminusPoint.x) / 2;
