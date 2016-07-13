@@ -42,7 +42,7 @@ abstract public class AbstractMain
 {
     public static boolean isServer = false;
     private static ShutdownHandler shutdownHandler;
-    
+
     public static String MAIN_ARG_NONEWLOGSTREAM = "noNewLogStream";
     public static String MAIN_ARG_CONFIG = "config";
     public static String MAIN_ARG_LOGLEVEL = "logLevel";
@@ -51,27 +51,27 @@ abstract public class AbstractMain
 
 
 
-	/**************************************************************************
-	 * reading and setting input paramaters
-	 ************************************************************************** 
-	 * 
-	 * Known arguments :
-	 * <ul>
-	 * <li>logLevel: the log level 0-9 (+10 to have time, +20 to have only one level)</li>
-	 * <li>logFile: the full path of the target log file. if none, the Logstream is the stdOut</li>
-	 * <li>noNewLogStream: if present no new Logstream is added to the logger (
-	 * considers that the Logger is already configured)</li>
-	 * 
-	 * <li>config</li>
-	 * <li>connect</li>
-	 * <li>LocalCentre</li>
-	 * </ul>
-	 *  
-	 * 
-	 * @param args
-	 * @return
-	 * @throws BadArgumentsException
-	 */
+    /**************************************************************************
+     * reading and setting input paramaters
+     ************************************************************************** 
+     * 
+     * Known arguments :
+     * <ul>
+     * <li>logLevel: the log level 0-9 (+10 to have time, +20 to have only one level)</li>
+     * <li>logFile: the full path of the target log file. if none, the Logstream is the stdOut</li>
+     * <li>noNewLogStream: if present no new Logstream is added to the logger (
+     * considers that the Logger is already configured)</li>
+     * 
+     * <li>config</li>
+     * <li>connect</li>
+     * <li>LocalCentre</li>
+     * </ul>
+     *  
+     * 
+     * @param args
+     * @returnn Properties
+     * @throws BadArgumentsException
+     */
     public static Properties readC2KArgs( String[] args ) throws BadArgumentsException {
         Properties c2kProps;
         Properties argProps = new Properties();
@@ -80,55 +80,55 @@ abstract public class AbstractMain
 
         int i = 0;
         while( i < args.length ) {
-        	if (args[i].startsWith("-") && args[i].length()>1) {
-        		String key = args[i].substring(1);
-        		if (argProps.containsKey(key))
-        			throw new BadArgumentsException("Argument "+args[i]+" given twice");
-        		String value = "";
-        		if (!args[i+1].startsWith("-"))
-        			value = args[++i];
-        		argProps.put(key, value);
-        		i++;
-        	}
-        	else
-        		throw new BadArgumentsException("Bad argument: "+args[i]);
+            if (args[i].startsWith("-") && args[i].length()>1) {
+                String key = args[i].substring(1);
+                if (argProps.containsKey(key))
+                    throw new BadArgumentsException("Argument "+args[i]+" given twice");
+                String value = "";
+                if (!args[i+1].startsWith("-"))
+                    value = args[++i];
+                argProps.put(key, value);
+                i++;
+            }
+            else
+                throw new BadArgumentsException("Bad argument: "+args[i]);
 
         }
-        
+
         if (argProps.containsKey("logFile"))
-			try {
-				logStream = new PrintStream(new FileOutputStream(argProps.getProperty("logFile"), true));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				throw new BadArgumentsException("Logfile "+argProps.getProperty("logFile")+" cannot be created");
-			}
-        
+            try {
+                logStream = new PrintStream(new FileOutputStream(argProps.getProperty("logFile"), true));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                throw new BadArgumentsException("Logfile "+argProps.getProperty("logFile")+" cannot be created");
+            }
 
-		// if the optional arg "noNewLogStream" isn't present => add a
-		// new LogStream
-		boolean wMustAddNewLogStream = !argProps.contains(MAIN_ARG_NONEWLOGSTREAM);
-		if (wMustAddNewLogStream) {
 
-			// Set up log stream
-			if (argProps.containsKey("logLevel"))
-				logLevel = Integer.parseInt(argProps.getProperty("logLevel"));
+        // if the optional arg "noNewLogStream" isn't present => add a
+        // new LogStream
+        boolean wMustAddNewLogStream = !argProps.contains(MAIN_ARG_NONEWLOGSTREAM);
+        if (wMustAddNewLogStream) {
 
-			Logger.addLogStream(logStream, logLevel);
-		}
-		if (wMustAddNewLogStream) Logger.msg(
-				String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
-		
-        
+            // Set up log stream
+            if (argProps.containsKey("logLevel"))
+                logLevel = Integer.parseInt(argProps.getProperty("logLevel"));
+
+            Logger.addLogStream(logStream, logLevel);
+        }
+        if (wMustAddNewLogStream) Logger.msg(
+                String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
+
+
         // Dump params if log high enough
-		
+
         if (Logger.doLog(3)) for (Enumeration<?> e = argProps.propertyNames(); e.hasMoreElements();) {
-        	String next = (String)e.nextElement();
-			System.out.println("AbstractMain: Param "+next+": "+argProps.getProperty(next));
-		}
+            String next = (String)e.nextElement();
+            System.out.println("AbstractMain: Param "+next+": "+argProps.getProperty(next));
+        }
 
         String configPath = argProps.getProperty("config");
         if (configPath == null)
-        	throw new BadArgumentsException("Config file not specified");
+            throw new BadArgumentsException("Config file not specified");
 
 
         // Load config & connect files into c2kprops
@@ -159,21 +159,21 @@ abstract public class AbstractMain
 
         return c2kProps;
     }
-    
+
     public static void setShutdownHandler(ShutdownHandler handler) {
-    	shutdownHandler = handler;
+        shutdownHandler = handler;
     }
-    
+
     public static void shutdown(int errCode) {
-		Bootstrap.abort();
-    	if (shutdownHandler!= null)
-    		shutdownHandler.shutdown(errCode, isServer);
-		try {
-			Gateway.close();
-		} catch (Exception ex) {
-			Logger.error(ex);
-		}
-		throw new ThreadDeath(); // if we get here, we get out
+        Bootstrap.abort();
+        if (shutdownHandler!= null)
+            shutdownHandler.shutdown(errCode, isServer);
+        try {
+            Gateway.close();
+        } catch (Exception ex) {
+            Logger.error(ex);
+        }
+        throw new ThreadDeath(); // if we get here, we get out
 
     }
 }
