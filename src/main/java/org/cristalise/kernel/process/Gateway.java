@@ -115,14 +115,16 @@ public class Gateway
         // the application to be able to configure castor
         try {
             mMarshaller = new CastorXMLUtility(mResource, props, mResource.getKernelResourceURL("mapFiles/"));
-        } catch (MalformedURLException e1) {
+        }
+        catch (MalformedURLException e1) {
             throw new InvalidDataException("Invalid Resource Location");
         }
 
         // init module manager
         try {
             mModules = new ModuleManager(mResource.getModuleDefURLs(), AbstractMain.isServer);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Logger.error(e);
             throw new InvalidDataException("Could not load module definitions.");
         }
@@ -146,10 +148,25 @@ public class Gateway
      * Makes this process capable of creating and managing server entities. Runs the
      * bootstrap to create the root LDAP contexts, initialises the CORBA server and
      * time-out manager.
-     *
-     * @throws InvalidDataException - error initialising
+     * 
+     * @param auth - this is NOT USED
+     * @throws InvalidDataException
+     * @throws CannotManageException
      */
+    @Deprecated
     static public void startServer(Authenticator auth) throws InvalidDataException, CannotManageException {
+        startServer();
+    }
+
+    /**
+     * Makes this process capable of creating and managing server entities. Runs the
+     * bootstrap to create the root LDAP contexts, initialises the CORBA server and
+     * time-out manager.
+     * 
+     * @throws InvalidDataException
+     * @throws CannotManageException
+     */
+    static public void startServer() throws InvalidDataException, CannotManageException {
         try {
             // check top level directory contexts
             if (mLookup instanceof LookupManager) {
@@ -243,9 +260,6 @@ public class Gateway
      * @return an AgentProxy on the requested user
      * @throws InvalidDataException
      * @throws PersistencyException 
-     * @throws ClassNotFoundException 
-     * @throws IllegalAccessException 
-     * @throws InstantiationException 
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
@@ -310,7 +324,7 @@ public class Gateway
 
     /**
      * 
-     * @return
+     * @return Authenticator
      * @throws InvalidDataException
      */
     static public Authenticator getAuthenticator() throws InvalidDataException {
@@ -327,7 +341,7 @@ public class Gateway
      * 
      * @param agentName
      * @param agentPassword
-     * @return
+     * @return AgentProxy
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      * @throws PersistencyException
@@ -344,8 +358,7 @@ public class Gateway
     /**
      * Shuts down all kernel API objects
      */
-    public static void close()
-    {
+    public static void close() {
         // run shutdown module scripts
         if (mModules != null) mModules.runScripts("shutdown");
 
@@ -460,7 +473,8 @@ public class Gateway
     static public String getKernelVersion() {
         try {
             return mResource.getTextResource(null, "textFiles/version.txt");
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             return "No version info found";
         }
 

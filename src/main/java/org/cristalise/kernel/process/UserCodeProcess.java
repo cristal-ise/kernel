@@ -29,7 +29,6 @@ import org.cristalise.kernel.common.InvalidTransitionException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.Job;
-import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.MemberSubscription;
 import org.cristalise.kernel.entity.proxy.ProxyObserver;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
@@ -41,7 +40,6 @@ import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 
-
 /**
  * 
  */
@@ -52,7 +50,6 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     private final int SUSPEND;
     private final int RESUME;
 
-    protected AgentProxy agent = null;
     static boolean active = true;
     ArrayList<String> ignoredPaths = new ArrayList<String>();
     HashMap<String, ErrorInfo> errors = new HashMap<String, ErrorInfo>();

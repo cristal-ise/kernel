@@ -20,54 +20,47 @@
  */
 package org.cristalise.kernel.process;
 
-import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.utils.Logger;
 
 /**************************************************************************
  * Base class for all servers i.e. c2k processes that serve Entities
- *
- * @author $Author: abranson $ $Date: 2005/04/28 13:49:43 $
- * @version $Revision: 1.47 $
  **************************************************************************/
-public class StandardServer extends AbstractMain
-{
+public class StandardServer extends AbstractMain {
     protected static StandardServer server;
 
-   /**************************************************************************
-    * void StandardInitalisation( String[] )
-    *
-    * Set-up calls to ORB, POA and Factorys, both optional and required.
-    **************************************************************************/
-    protected static void standardInitialisation( String[] args )
-        throws Exception
-    {
-    	isServer = true;
-    	
+    /**
+     * Set-up calls to ORB, POA and Factorys, both optional and required.
+     * 
+     * @param args CLI parapeters
+     * @throws Exception
+     */
+    protected static void standardInitialisation( String[] args ) throws Exception {
+        isServer = true;
+
         // read args and init Gateway
-    	Gateway.init(readC2KArgs(args));
+        Gateway.init(readC2KArgs(args));
 
         // connect to LDAP as root
-        Authenticator auth = Gateway.connect();
+        Gateway.connect();
 
         //start console
         Logger.initConsole("ItemServer");
 
         //initialize the server objects
-        Gateway.startServer(auth);
+        Gateway.startServer();
 
         Logger.msg(5, "StandardServer::standardInitialisation - complete.");
-
     }
 
-	public static void main(String[] args) throws Exception 
-    {
-		//initialise everything
+    public static void main(String[] args) throws Exception {
+        //initialise everything
         standardInitialisation( args );
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				AbstractMain.shutdown(0);
-			}
-		});
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                AbstractMain.shutdown(0);
+            }
+        });
     }
 }

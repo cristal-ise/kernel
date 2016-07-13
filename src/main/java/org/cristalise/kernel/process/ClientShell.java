@@ -30,43 +30,41 @@ import org.cristalise.kernel.scripting.ScriptParsingException;
 
 public class ClientShell extends StandardClient {
 
-	AgentProxy user;
-	Script console;
-	
-	public ClientShell(AgentProxy user) throws Exception {
-		this.user = user;
-		console = new Script("javascript", user, System.out);
-	}
-	
-	public void run() {
-		Scanner scan = new Scanner(System.in);
-		System.out.print("> ");
-		while (scan.hasNextLine()) {
-			String command = scan.nextLine();
-			try {
-				console.setScriptData(command);
-	        	Object response = console.execute();
-	        	if (response == null)
-	        		System.out.println("Ok");
-	        	else
-	        		System.out.println(response);
-			} catch (ScriptParsingException e) {
-				System.err.println("Syntax error: "+e.getMessage());
-			} catch (Throwable ex) {
-				ex.printStackTrace();
-			}
-			System.out.print("> ");
-		}
-		scan.close();
-		shutdown(0);
-	}
+    Script console;
 
-	public static void main(String[] args) throws Exception {
-		Gateway.init(readC2KArgs(args));
-		ProxyLogin auth = (ProxyLogin)Gateway.getProperties().getInstance("cli.auth");
-		AgentProxy user = auth.authenticate(Gateway.getProperties().getProperty("Name"));
-		ClientShell shell = new ClientShell(user);
-		shell.run();
-	}
+    public ClientShell(AgentProxy user) throws Exception {
+        agent = user;
+        console = new Script("javascript", user, System.out);
+    }
 
+    public void run() {
+        Scanner scan = new Scanner(System.in);
+        System.out.print("> ");
+        while (scan.hasNextLine()) {
+            String command = scan.nextLine();
+            try {
+                console.setScriptData(command);
+                Object response = console.execute();
+                if (response == null)
+                    System.out.println("Ok");
+                else
+                    System.out.println(response);
+            } catch (ScriptParsingException e) {
+                System.err.println("Syntax error: "+e.getMessage());
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+            }
+            System.out.print("> ");
+        }
+        scan.close();
+        shutdown(0);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Gateway.init(readC2KArgs(args));
+        ProxyLogin auth = (ProxyLogin)Gateway.getProperties().getInstance("cli.auth");
+        AgentProxy user = auth.authenticate(Gateway.getProperties().getProperty("Name"));
+        ClientShell shell = new ClientShell(user);
+        shell.run();
+    }
 }
