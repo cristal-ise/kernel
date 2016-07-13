@@ -26,40 +26,42 @@ import java.util.Scanner;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.process.Gateway;
 
-
 public class ConsoleAuth implements ProxyLogin {
 
-	public ConsoleAuth() {
-	}
+    @Override
+    public void initialize(Properties props) throws Exception {
+    }
 
-	@Override
-	public void initialize(Properties props) throws Exception {
-		
-	}
-	@Override
-	public AgentProxy authenticate(String resource) throws Exception {
-		AgentProxy user = null;
-		if (resource!=null) System.out.println("Please log in"+(resource.length()>0?"to "+resource:""));
-		Scanner scan = new Scanner(System.in);
-		int loginAttempts = 0;
-		while (user == null && loginAttempts++ < 3) {
-			System.out.print("User:");
-			String username = scan.nextLine();
-			System.out.print("Password:");
-			String pass = scan.nextLine();
-			try {
-				user = Gateway.connect(username, pass, resource);
-			} catch (Exception ex) {
-				System.err.println(ex.getMessage());
-			}
-		}
-		
-		if (user == null) {
-			System.err.println("Bye");
-			System.exit(0);
-		}
-		return user;
-			
-	}
+    @Override
+    public AgentProxy authenticate(String resource) throws Exception {
+        AgentProxy user = null;
 
+        if (resource != null) System.out.println("Please log in" + (resource.length() > 0 ? "to " + resource : ""));
+
+        Scanner scan = new Scanner(System.in);
+
+        int loginAttempts = 0;
+
+        while (user == null && loginAttempts++ < 3) {
+            System.out.print("User:");
+            String username = scan.nextLine();
+
+            System.out.print("Password:");
+            String pass = scan.nextLine();
+
+            try {
+                user = Gateway.connect(username, pass, resource);
+            }
+            catch (Exception ex) {
+                System.err.println(ex.getMessage());
+            }
+        }
+        scan.close();
+
+        if (user == null) {
+            System.err.println("Bye");
+            System.exit(0);
+        }
+        return user;
+    }
 }
