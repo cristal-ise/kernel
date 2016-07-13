@@ -20,18 +20,26 @@
  */
 package org.cristalise.kernel.process;
 
+import org.cristalise.kernel.entity.proxy.AgentProxy;
 
-abstract public class StandardClient extends AbstractMain
-{	
 
-	static public void main(String[] args) throws Exception {
-		Gateway.init(readC2KArgs(args));
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				AbstractMain.shutdown(0);
-			}
-		});
-		//AgentProxy user = Gateway.connect("username", "password");
-	}
+abstract public class StandardClient extends AbstractMain {
+    protected AgentProxy agent = null;
+    
+    /**
+     * This method is only provided as an example
+     * 
+     * @param args
+     * @throws Exception
+     */
+    static public void main(String[] args) throws Exception {
+        Gateway.init(readC2KArgs(args));
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                AbstractMain.shutdown(0);
+            }
+        });
+        Gateway.connect("username", "password");
+    }
 }
