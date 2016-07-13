@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
@@ -64,6 +65,8 @@ import org.cristalise.kernel.utils.Logger;
  * 
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject {
+    public static BuiltInCollections[] builtInDependencies = {STATE_MACHINE, SCHEMA, SCRIPT};
+
     private int     mId      = -1;
     private String  mName    = "";
     private Integer mVersion = null;  // null is 'last',previously was -1
@@ -192,13 +195,98 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return act;
     }
 
-    @Override
+    public static BuiltInVertexProperties getNamePropertyOfBuiltInCollection(BuiltInCollections collection) throws InvalidDataException {
+        switch (collection) {
+            case SCHEMA:
+                return SCHEMA_NAME;
+            case SCRIPT:
+                return SCRIPT_NAME;
+            case STATE_MACHINE:
+                return STATE_MACHINE_NAME;
+            default:
+                throw new InvalidDataException("ActivityDef does not handle BuiltInCollection:"+collection);
+        }
+    }
+
+    public static BuiltInVertexProperties getVersionPropertyOfBuiltInCollection(BuiltInCollections collection) throws InvalidDataException {
+        switch (collection) {
+            case SCHEMA:
+                return SCHEMA_VERSION;
+            case SCRIPT:
+                return SCRIPT_VERSION;
+            case STATE_MACHINE:
+                return STATE_MACHINE_VERSION;
+            default:
+                throw new InvalidDataException("ActivityDef does not handle BuiltInCollection:"+collection);
+        }
+    }
+
+    public DescriptionObject getDescriptionObjectOfBuiltInCollection(BuiltInCollections collection) throws InvalidDataException, ObjectNotFoundException {
+        switch (collection) {
+            case SCHEMA:
+                return getSchema();
+            case SCRIPT:
+                return getScript();
+            case STATE_MACHINE:
+                return getStateMachine();
+            default:
+                throw new InvalidDataException("ActivityDef does not handle BuiltInCollection:"+collection);
+        }
+    }
+
     public void configureInstance(WfVertex act) throws InvalidDataException, ObjectNotFoundException {
         super.configureInstance(act);
 
-        configureInstanceProp(act.getProperties(), getSchema(),       SCHEMA_NAME,       SCHEMA_VERSION);
-        configureInstanceProp(act.getProperties(), getScript(),       SCRIPT_NAME,       SCRIPT_VERSION);
-        configureInstanceProp(act.getProperties(), getStateMachine(), STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
+//      configureInstanceProp(act.getProperties(), getSchema(),       SCHEMA_NAME,        SCHEMA_VERSION);
+//      configureInstanceProp(act.getProperties(), getScript(),       SCRIPT_NAME,        SCRIPT_VERSION);
+//      configureInstanceProp(act.getProperties(), getStateMachine(), STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
+
+        try {
+            for (String collName : Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.COLLECTION)) {
+                Logger.msg(5, "ActivityDef.configureInstance("+getName()+") - Processing collection:"+collName);
+
+                BuiltInCollections coll = BuiltInCollections.getValue(collName);
+
+                if(coll != null && coll != ACTIVITY) {
+                    configureInstanceProp( act.getProperties(),  
+                                           getDescriptionObjectOfBuiltInCollection(coll),
+                                           getNamePropertyOfBuiltInCollection(coll), 
+                                           getVersionPropertyOfBuiltInCollection(coll) );
+                }
+                else {
+                    Logger.warning("ActivityDef.configureInstance("+getName()+") - UNIMPLEMENTED collection:"+collName);
+                    /*
+                    Dependency resColl;
+
+                    try {
+                        String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
+                        resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collName + "/" + verStr, null);
+                    }
+                    catch (PersistencyException e) {
+                        Logger.error(e);
+                        throw new InvalidDataException("Error loading collection " + collName);
+                    }
+
+                    for (DependencyMember resMem : resColl.getMembers().list) {
+                        String resUUID = resMem.getChildUUID();
+                        Integer resVer = deriveVersionNumber(resMem.getBuiltInProperty(VERSION));
+                    }
+                    */
+                }
+                
+                //TODO: calling original solution for backward compatibility in case Activity is still using Properties instead of Collections
+                if (actSchema == null)
+                    configureInstanceProp(act.getProperties(), getSchema(),       SCHEMA_NAME,        SCHEMA_VERSION);
+                if(actScript == null)
+                    configureInstanceProp(act.getProperties(), getScript(),       SCRIPT_NAME,        SCRIPT_VERSION);
+                if(actStateMachine == null)
+                    configureInstanceProp(act.getProperties(), getStateMachine(), STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
+            }
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
+        }
     }
 
     @Override
@@ -263,12 +351,13 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collection);
 
         Dependency resColl;
-        String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
-        
+
         try {
+            String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
             resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collection + "/" + verStr, null);
         }
         catch (PersistencyException e) {
+            Logger.error(e);
             throw new InvalidDataException("Error loading description collection " + collection);
         }
 
@@ -296,6 +385,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                     retArr.add(LocalObjectLoader.getActDef(resUUID, resVer));
                     break;
                 default:
+                    throw new InvalidDataException("");
             }
         }
         
@@ -327,6 +417,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                 case STATE_MACHINE_NAME:
                     return LocalObjectLoader.getStateMachine(resName, resVer);
                 default:
+                    throw new InvalidDataException("");
             }
         }
         return null;
@@ -345,12 +436,12 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     public Dependency makeDescCollection(BuiltInCollections collection, DescriptionObject... descs) throws InvalidDataException {
-        //TODO: restrictmembership based on kernel propdef
+        //TODO: restrict membership based on kernel property desc
         Dependency descDep = new Dependency(collection.getName());
         if (mVersion != null && mVersion > -1) {
             descDep.setVersion(mVersion);
         }
-        
+
         for (DescriptionObject thisDesc : descs) {
             if (thisDesc == null) continue;
             try {

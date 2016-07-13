@@ -70,10 +70,10 @@ public class ImportDependency {
     }
 
 	/**
-     * @return
+     * @return Dependency
 	 * @throws ObjectAlreadyExistsException 
      */
-    public org.cristalise.kernel.collection.Dependency create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
+    public Dependency create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
         Dependency newDep = isDescription?new DependencyDescription(name):new Dependency(name);
         if (version!= null) newDep.setVersion(version);
         if (itemDescriptionPath != null && itemDescriptionPath.length()>0) {

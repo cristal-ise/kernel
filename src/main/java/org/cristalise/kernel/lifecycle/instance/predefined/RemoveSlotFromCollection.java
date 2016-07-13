@@ -94,7 +94,7 @@ public class RemoveSlotFromCollection extends PredefinedStep
 
         // load collection
         try {
-			coll = (Collection<? extends CollectionMember>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+            coll = (Collection<? extends CollectionMember>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("RemoveSlotFromCollection: Error loading collection '\"+collName+\"': "+ex.getMessage());

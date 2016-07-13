@@ -122,7 +122,6 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
 	 * Named versions will be stored separately to the current version ('last')
 	 * and should not change once saved.
 	 * 
-	 * @param Integer version
 	 */
 	public void setVersion(Integer mVersion) {
 		this.mVersion = mVersion;
@@ -132,7 +131,7 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
 	 * Get the version name for storage, which is 'last' unless the version 
 	 * number is set. 
 	 * 
-	 * @return 
+	 * @return String
 	 */
 	public String getVersionName() {
 		return mVersion==null?"last":String.valueOf(mVersion);

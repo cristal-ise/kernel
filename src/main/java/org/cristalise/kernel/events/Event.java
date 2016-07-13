@@ -375,24 +375,16 @@ public class Event implements C2KLocalObject
                                now.get(Calendar.SECOND),
                                now.get(Calendar.ZONE_OFFSET) );
     }
-	/**
-	 * @see org.cristalise.kernel.entity.C2KLocalObject#getClusterType()
-	 */
+
 	@Override
 	public String getClusterType() {
 		return ClusterStorage.HISTORY;
 	}
 
-    /**
-     * @return
-     */
     public int getTransition() {
         return mTransition;
     }
 
-    /**
-     * @param i
-     */
     public void setTransition(int i) {
         mTransition = i;
     }

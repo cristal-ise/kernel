@@ -174,7 +174,7 @@ public class GraphModel {
         return mContainingVertex;
     }
     /**
-     * @param parentVertex The mParentVertex to set.
+     * @param vertex The mParentVertex to set.
      */
     public void setContainingVertex(GraphableVertex vertex) {
         mContainingVertex = vertex;

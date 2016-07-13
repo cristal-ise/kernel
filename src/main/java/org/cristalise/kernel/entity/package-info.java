@@ -23,17 +23,18 @@
  * 
  * <p>The CORBA IDLs generate the Item and Agent interfaces and their support 
  * classes in this package. In the kernel source tree, the classes 
- * {@link TraceableEntity} and {@link ItemImplementation} provides the 
+ * {@link org.cristalise.kernel.entity.TraceableEntity} and 
+ * {@link org.cristalise.kernel.entity.ItemImplementation} provides the 
  * implementing object for the Item on the server side, while the Locator class,
- * plus the {@link CorbaServer} handle instantiation and caching of Items (and 
- * Agents) on the server.
+ * plus the {@link org.cristalise.kernel.entity.CorbaServer} 
+ * handle instantiation and caching of Items (and Agents) on the server.
  * 
  * <p>The corresponding implementation for Agents is located in the agent 
  * sub-package.
  * 
- * <p>Also in this package is the {@link C2KLocalObject} interface, which is 
- * implemented by all objects that may be stored in the CRISTAL persistency 
- * mechanism.
+ * <p>Also in this package is the {@link org.cristalise.kernel.entity.C2KLocalObject} 
+ * interface, which is implemented by all objects that may be stored in the CRISTAL 
+ * persistency mechanism.
  */
 
 package org.cristalise.kernel.entity;

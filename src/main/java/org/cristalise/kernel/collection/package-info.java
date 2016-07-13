@@ -18,10 +18,11 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
+
 /**
  * Collections are Item local objects that reference other Items.
  * 
- * @see Collection
+ * @see org.cristalise.kernel.collection.Collection
  */
 
 package org.cristalise.kernel.collection;

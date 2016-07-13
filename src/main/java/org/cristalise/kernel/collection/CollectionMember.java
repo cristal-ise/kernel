@@ -34,8 +34,7 @@ import org.cristalise.kernel.utils.CastorHashMap;
  * including information on the typing of the Item they should point to. 
  * Properties that dictate type information are specified in the ClassProps, and
  * assignment of an Item will fail if those member properties do not match the
- * Property values of the Item attempting to be assigned, throwing a
- * {@link MembershipException} detailing the mismatches. 
+ * Property values of the Item attempting to be assigned, throwing a detailing the mismatches. 
  *
  */
 
@@ -49,7 +48,7 @@ public interface CollectionMember {
 	
 	/**
 	 * Returns the UUID of the currently assigned Item
-	 * @return
+	 * @return UUID
 	 */
 	public String getChildUUID();
 
@@ -57,7 +56,7 @@ public interface CollectionMember {
 	 * Assign the given item to the slot, if it fits
 	 * 
 	 * @param itemPath The item to assign
-	 * @throws MembershipException When the Item Properties don't match the
+	 * @throws InvalidCollectionModification When the Item Properties don't match the
 	 * typing specification in ClassProps and Properties
 	 * @throws InvalidCollectionModification 
 	 */

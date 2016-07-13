@@ -21,9 +21,9 @@
 /**
  * Export and Import of Items.
  * 
- * <p>{@link TransferItem} provides a mechanism for marshalling all of the 
+ * <p>{@link org.cristalise.kernel.entity.transfer.TransferItem} provides a mechanism for marshalling all of the 
  * C2KLocalObjects in an Item to XML and exporting them to disk, and then 
- * importing that Item on another server. {@link TransferSet} can export many 
+ * importing that Item on another server. {@link org.cristalise.kernel.entity.transfer.TransferSet} can export many 
  * Items at a time and preserve their domain paths. 
  * 
  * <p>This package is not currently used, as with the previous system key 

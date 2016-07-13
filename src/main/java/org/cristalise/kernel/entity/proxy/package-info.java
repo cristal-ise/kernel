@@ -45,17 +45,17 @@
  * object is created, it notifies the CRISTAL server that its Item is located
  * on, and it notified of all additions, deletions and modifications of objects
  * within that Item so it can remain up-to-date. Client applications may use 
- * the {@link ProxyObserver} interface to be notified of changes, using 
- * {@link MemberSubscription} instances to set up push subscriptions to cluster
- * contents. It also provides a mechanism for subscribing to directory paths, 
- * so that domain tree browsers can implement asynchronous loading and update
- * themselves when the tree changes.</li>
+ * the {@link org.cristalise.kernel.entity.proxy.ProxyObserver} interface to be 
+ * notified of changes, using {@link org.cristalise.kernel.entity.proxy.MemberSubscription} 
+ * instances to set up push subscriptions to cluster contents. It also provides
+ * a mechanism for subscribing to directory paths, so that domain tree browsers 
+ * can implement asynchronous loading and update themselves when the tree changes.</li>
  * 
  * <li><b>Job querying</b> - Job objects may be retrieved directly from an 
  * ItemProxy, and may also be filtered by Activity name.</li>
  * 
- * <li><b>Job execution</b> - The {@link AgentProxy} provides the main 
- * execution method for Jobs. This method performs outcome validation and 
+ * <li><b>Job execution</b> - The {@link org.cristalise.kernel.entity.proxy.AgentProxy}
+ * provides the main execution method for Jobs. This method performs outcome validation and 
  * executes required CRISTAL Scripts in the client process before the execution 
  * is requested on the server. Additional execution methods to call Predefined
  * Steps are also available.
@@ -70,7 +70,8 @@
  * to create a Proxy object from a Path from the directory, and maintains a
  * connection to the server called the Proxy Update Notification Channel, 
  * through which it subscribes to Items it holds proxies for so it can be 
- * informed of changes to Item data through {@link ProxyMessage} objects.
+ * informed of changes to Item data through 
+ * {@link org.cristalise.kernel.entity.proxy.ProxyMessage} objects.
  * 
  */
 package org.cristalise.kernel.entity.proxy;

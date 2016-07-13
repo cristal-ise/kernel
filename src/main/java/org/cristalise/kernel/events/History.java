@@ -32,19 +32,11 @@ import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.utils.Logger;
 
 
-/**
- * @author Andrew Branson
- *
- * $Revision: 1.20 $
- * $Date: 2004/07/21 09:55:11 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- */
-
 public class History extends RemoteMap<Event> {
 
-	int lastID = -1;
+    private static final long serialVersionUID = 3273324106002587993L;
+
+    int lastID = -1;
 
     public History(ItemPath itemPath, Object locker) {
         super(itemPath, ClusterStorage.HISTORY, locker);

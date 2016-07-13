@@ -18,15 +18,15 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
+
 /**
  * The implementation of Agents, and their Jobs.
  * 
  * <p>This package contains the classes for the implementation of
  * Agents on the CRISTAL server. They correspond to the Item implementations in
  * the parent package.
- * <p>This package also contains the {@link Job} object implementation, as well
- * as the RemoteMap JobList, and the marshallable container JobArrayList.
+ * <p>This package also contains the {@link org.cristalise.kernel.entity.agent.Job} object implementation, as well
+ * as the RemoteMap JobList, and the marshallable container {@link org.cristalise.kernel.entity.agent.JobArrayList}.
  * 
  */
-
 package org.cristalise.kernel.entity.agent;

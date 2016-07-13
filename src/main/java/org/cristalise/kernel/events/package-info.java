@@ -18,12 +18,12 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
+
 /**
  * Events are generated and stored whenever a step in an Item's lifecycle 
  * changes state, and provide a full record of what was done, when, and by whom.
  * 
- * <p>The History object is an instance of {@link RemoteMap} which provides a
- * live view onto the Events of an Item.
+ * <p>The History object is an instance of {@link org.cristalise.kernel.persistency.RemoteMap} 
+ * which provides a live view onto the Events of an Item.
  */
-
 package org.cristalise.kernel.events;

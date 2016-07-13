@@ -183,7 +183,7 @@ public class CorbaServer {
 
     /**
      * @param itemPath
-     * @return
+     * @return TraceableEntity
      */
     public TraceableEntity createItem(ItemPath itemPath) throws CannotManageException, ObjectAlreadyExistsException {
 
