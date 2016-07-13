@@ -20,11 +20,6 @@
  */
 package org.cristalise.kernel.process;
 
-/**
- * @version $Revision: 1.17 $ $Date: 2005/10/12 12:51:54 $
- * @author  $Author: abranson $
- */
-
 import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -50,8 +45,6 @@ import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
 
-
-
 /**************************************************************************
  * The Gateway is the central object of a CRISTAL process. It initializes,
  * maintains and shuts down every other subsystem in both the client and the
@@ -67,27 +60,21 @@ import org.cristalise.kernel.utils.ObjectProperties;
  * <li>CorbaServer - Manages the memory pool of active Entities
  * <li>ORB - the CORBA ORB
  * </ul>
- *
- * @author $Author: abranson $ $Date: 2005/10/12 12:51:54 $
- * @version $Revision: 1.17 $
  **************************************************************************/
-
 public class Gateway
 {
     static private ObjectProperties     mC2KProps = new ObjectProperties();
-    static private ModuleManager   		mModules;
+    static private ModuleManager        mModules;
     static private org.omg.CORBA.ORB    mORB;
-    static private boolean				orbDestroyed = false;
+    static private boolean              orbDestroyed = false;
     static private Lookup               mLookup;
     static private LookupManager        mLookupManager = null;
     static private TransactionManager   mStorage;
-    static private ProxyManager   		mProxyManager;
-    static private ProxyServer			mProxyServer;
+    static private ProxyManager         mProxyManager;
+    static private ProxyServer          mProxyServer;
     static private CorbaServer          mCorbaServer;
-    static private CastorXMLUtility		mMarshaller;
-    static private ResourceLoader		mResource;
-
-
+    static private CastorXMLUtility     mMarshaller;
+    static private ResourceLoader       mResource;
 
     private Gateway() { }
 
@@ -100,9 +87,9 @@ public class Gateway
      * @throws InvalidDataException - invalid properties caused a failure in initialisation
      */
     static public void init(Properties props) throws InvalidDataException {
-    	init(props, null);
+        init(props, null);
     }
-    
+
     /**
      * Initialises the Gateway and all of the client objects it holds, with
      * the exception of the Lookup, which is initialised during connect()
@@ -112,35 +99,33 @@ public class Gateway
      * @param res - ResourceLoader for the kernel to use to resolve all class resource requests
      * such as for bootstrap descriptions and version information
      * @throws InvalidDataException - invalid properties caused a failure in initialisation
-     */    
+     */
     static public void init(Properties props, ResourceLoader res) throws InvalidDataException {
-    	
         // Init properties & resources
         mC2KProps.clear();
-        
+
         orbDestroyed = false;
         mResource = res;
         if (mResource == null) mResource = new Resource();
 
         // report version info
-        Logger.msg("Kernel version: "+getKernelVersion());
+        Logger.msg("Gateway.init() - Kernel version: "+getKernelVersion());
 
-		// load kernel mapfiles giving the resourse loader and the properties of
-		// the application to be able to configure castor
+        // load kernel mapfiles giving the resourse loader and the properties of
+        // the application to be able to configure castor
         try {
-        	mMarshaller = new CastorXMLUtility(mResource, props, mResource.getKernelResourceURL("mapFiles/"));
+            mMarshaller = new CastorXMLUtility(mResource, props, mResource.getKernelResourceURL("mapFiles/"));
         } catch (MalformedURLException e1) {
             throw new InvalidDataException("Invalid Resource Location");
         }
 
-        
         // init module manager
         try {
-			mModules = new ModuleManager(mResource.getModuleDefURLs(), AbstractMain.isServer);
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new InvalidDataException("Could not load module definitions.");
-		}
+            mModules = new ModuleManager(mResource.getModuleDefURLs(), AbstractMain.isServer);
+        } catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("Could not load module definitions.");
+        }
 
         // merge in module props
         Properties moduleProperties = mModules.getAllModuleProperties();
@@ -153,6 +138,7 @@ public class Gateway
         if (props != null) mC2KProps.putAll(props);
 
         // dump properties
+        Logger.msg("Gateway.init() - DONE");
         dumpC2KProps(7);
     }
 
@@ -166,24 +152,25 @@ public class Gateway
     static public void startServer(Authenticator auth) throws InvalidDataException, CannotManageException {
         try {
             // check top level directory contexts
-        	if (mLookup instanceof LookupManager) {
-        		mLookupManager = (LookupManager)mLookup;
-        		mLookupManager.initializeDirectory();
-        	}
-        	else {
-        		throw new CannotManageException("Lookup implementation is not a LookupManager. Cannot write to directory");
-        	}
-            		
+            if (mLookup instanceof LookupManager) {
+                mLookupManager = (LookupManager) mLookup;
+                mLookupManager.initializeDirectory();
+            }
+            else {
+                throw new CannotManageException("Lookup implementation is not a LookupManager. Cannot write to directory");
+            }
+
             // start entity proxy server
             mProxyServer = new ProxyServer(mC2KProps.getProperty("ItemServer.name"));
 
             // Init ORB - set various config 
             String serverName = mC2KProps.getProperty("ItemServer.name");
-            if (serverName != null)
-            	mC2KProps.put("com.sun.CORBA.ORBServerHost", serverName);
+
+            //TODO: externalize this (or replace corba completely)
+            if (serverName != null) mC2KProps.put("com.sun.CORBA.ORBServerHost", serverName);
+
             String serverPort = mC2KProps.getProperty("ItemServer.iiop", "1500");
             mC2KProps.put("com.sun.CORBA.ORBServerPort", serverPort);
-            //TODO: externalize this (or replace corba completely)
             mC2KProps.put("com.sun.CORBA.POA.ORBServerId", "1");
             mC2KProps.put("com.sun.CORBA.POA.ORBPersistentServerPort", serverPort);
             mC2KProps.put("com.sun.CORBA.codeset.charsets", "0x05010001, 0x00010109"); // need to force UTF-8 in the Sun ORB
@@ -192,62 +179,65 @@ public class Gateway
             orbDestroyed = false;
             mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);
 
-            Logger.msg("Gateway.init() - ORB initialised. ORB is " + mORB.getClass().getName() );
+            Logger.msg("Gateway.startServer() - ORB initialised. ORB class:'" + mORB.getClass().getName()+"'" );
 
             // start corba server components
             mCorbaServer = new CorbaServer();
 
             // start checking bootstrap & module items
             Bootstrap.run();
-            System.out.println("Server '"+serverName+"' initialised.");            
-        } catch (Exception ex) {
+            Logger.msg("Gateway.startServer() - Server '"+serverName+"' STARTED.");
+        }
+        catch (Exception ex) {
             Logger.error(ex);
             Logger.die("Exception starting server components. Shutting down.");
         }
-
     }
 
+    /**
+     * Static getter for ModuleManager
+     * 
+     * @return ModuleManager
+     */
     public static ModuleManager getModuleManager() {
-		return mModules;
-	}
+        return mModules;
+    }
 
-	/**
+    /**
      * Connects to the LDAP server in an administrative context - using the admin username and
-     * password given in the LDAP.user and LDAP.password props of the kernel properties.
+     * password given in the LDAP.user and LDAP.password props of the kernel properties. It shall be
+     * used in server processes only.
      *
      * @throws InvalidDataException - bad params
      * @throws PersistencyException - error starting storages
      */
-    static public Authenticator connect()
-        throws InvalidDataException,
-               PersistencyException
-    {
-    	try {
-    		Authenticator auth = getAuthenticator();
-    		if (!auth.authenticate("System"))
-    			throw new InvalidDataException("Server authentication failed");
-    		
-    		if (mLookup != null)
-    			mLookup.close();
-    		
+    static public Authenticator connect() throws InvalidDataException, PersistencyException {
+        try {
+            Authenticator auth = getAuthenticator();
+
+            if (!auth.authenticate("System")) throw new InvalidDataException("Server authentication failed");
+
+            if (mLookup != null) mLookup.close();
+
             mLookup = (Lookup)mC2KProps.getInstance("Lookup");
             mLookup.open(auth);
-            
+
             mStorage = new TransactionManager(auth);
             mProxyManager = new ProxyManager();
-            
+
+            Logger.msg("Gateway.connect() - DONE.");
             return auth;
-    	} catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.error(ex);
             throw new InvalidDataException("Cannot connect server process. Please check config.");
         }
-
-
     }
 
     /**
-     * Logs in with the given username and password, and initialises the lookup, storage and proxy manager.
-     *
+     * Log in with the given username and password, and initialises the {@link Lookup}, {@link TransactionManager} and {@link ProxyManager}.
+     * It shall be uses in client processes only.
+     * 
      * @param agentName - username
      * @param agentPassword - password
      * @return an AgentProxy on the requested user
@@ -258,20 +248,21 @@ public class Gateway
      * @throws InstantiationException 
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
-    throws InvalidDataException, ObjectNotFoundException, PersistencyException
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException
     {
         Authenticator auth = getAuthenticator();
-        if (!auth.authenticate(agentName, agentPassword, resource))
-        	throw new InvalidDataException("Login failed");
-        
+
+        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+
         try {
-    		if (mLookup != null)
-    			mLookup.close();
-        	mLookup = (Lookup)mC2KProps.getInstance("Lookup");
-        } catch (Exception e) {
-			Logger.error(e);
-			throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
-		}  
+            if (mLookup != null) mLookup.close();
+            
+            mLookup = (Lookup)mC2KProps.getInstance("Lookup");
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
+        }
         mLookup.open(auth);
 
         mStorage = new TransactionManager(auth);
@@ -282,73 +273,98 @@ public class Gateway
         AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
         userProxy.setAuthObj(auth);
         ScriptConsole.setUser(userProxy);
-        
+
         // Run module startup scripts. Server does this during bootstrap
         mModules.setUser(userProxy);
         mModules.runScripts("startup");
-        
-		return userProxy;
+
+        Logger.msg("Gateway.connect(agent) - DONE.");
+
+        return userProxy;
     }
-    
+
+    /**
+     * Authenticates the agent using the configured {@link Authenticator}
+     * 
+     * @param agentName the name of the agent
+     * @param agentPassword the password of the agent
+     * @param resource check {@link Authenticator#authenticate(String, String, String)}
+     * @return AgentProxy representing the logged in user/agent
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
-    		throws InvalidDataException, ObjectNotFoundException {
+            throws InvalidDataException, ObjectNotFoundException
+    {
         Authenticator auth = getAuthenticator();
-        if (!auth.authenticate(agentName, agentPassword, resource))
-        	throw new InvalidDataException("Login failed");
-        
+
+        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
         userProxy.setAuthObj(auth);
-        
-		return userProxy;
-    }
-    
-    static public Authenticator getAuthenticator() throws InvalidDataException {
-    	try {
-			return (Authenticator)mC2KProps.getInstance("Authenticator");
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
-		} 
-    }
-    
-    static public AgentProxy connect(String agentName, String agentPassword) 
-    		throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
-    {
-    	return connect(agentName, agentPassword, null);
+
+        return userProxy;
     }
 
     /**
-     * Shuts down all kernel api objects
+     * 
+     * @return
+     * @throws InvalidDataException
+     */
+    static public Authenticator getAuthenticator() throws InvalidDataException {
+        try {
+            return (Authenticator)mC2KProps.getInstance("Authenticator");
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
+        } 
+    }
+
+    /**
+     * 
+     * @param agentName
+     * @param agentPassword
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws ClassNotFoundException
+     */
+    static public AgentProxy connect(String agentName, String agentPassword) 
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
+    {
+        return connect(agentName, agentPassword, null);
+    }
+
+    /**
+     * Shuts down all kernel API objects
      */
     public static void close()
     {
-    	// run shutdown module scripts
-    	if (mModules != null)
-    		mModules.runScripts("shutdown");
+        // run shutdown module scripts
+        if (mModules != null) mModules.runScripts("shutdown");
 
         // shut down servers if running
-        if (mCorbaServer != null)
-            mCorbaServer.close();
+        if (mCorbaServer != null) mCorbaServer.close();
         mCorbaServer = null;
-        
+
         // disconnect from storages
-        if (mStorage != null)
-            mStorage.close();
+        if (mStorage != null) mStorage.close();
         mStorage = null;
 
         // disconnect from ldap
-        if (mLookup != null)
-            mLookup.close();
+        if (mLookup != null) mLookup.close();
         mLookup = null;
         mLookupManager = null;
 
         // shut down proxy manager & server
-        if (mProxyManager != null)
-            mProxyManager.shutdown();
-        if (mProxyServer != null)
-        	mProxyServer.shutdownServer();
+        if (mProxyManager != null) mProxyManager.shutdown();
+        if (mProxyServer != null)  mProxyServer.shutdownServer();
         mProxyManager = null;
         mProxyServer = null;
 
@@ -357,76 +373,73 @@ public class Gateway
 
         // finally, destroy the ORB
         if (!orbDestroyed) {
-        	getORB().destroy();
-        	orbDestroyed = true;
-        	mORB = null;
+            getORB().destroy();
+            orbDestroyed = true;
+            mORB = null;
         }
-        
+
         // clean up remaining objects
         mModules = null;
         mResource = null;
         mMarshaller = null;
         mC2KProps.clear();
-        
+
         // abandon any log streams
         Logger.removeAll();
     }
 
-    static public org.omg.CORBA.ORB getORB()
-    {
-    	if (orbDestroyed) throw new RuntimeException("Gateway has been closed. ORB is destroyed. ");
+    /**
+     * Returns the initialised CORBA ORB Object 
+     * 
+     * @return the CORBA ORB Object
+     */
+    static public org.omg.CORBA.ORB getORB() {
+        if (orbDestroyed) throw new RuntimeException("Gateway has been closed. ORB is destroyed. ");
 
-    	if (mORB == null) {
-    		mC2KProps.put("com.sun.CORBA.codeset.charsets", "0x05010001, 0x00010109"); // need to force UTF-8 in the Sun ORB
-    		mC2KProps.put("com.sun.CORBA.codeset.wcharsets", "0x00010109, 0x05010001");
-    		mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);
-    	}
+        if (mORB == null) {
+            mC2KProps.put("com.sun.CORBA.codeset.charsets", "0x05010001, 0x00010109"); // need to force UTF-8 in the Sun ORB
+            mC2KProps.put("com.sun.CORBA.codeset.wcharsets", "0x00010109, 0x05010001");
+            mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);
+        }
         return mORB;
     }
 
-    static public Lookup getLookup()
-    {
+    static public Lookup getLookup() {
         return mLookup;
     }
 
-    static public LookupManager getLookupManager() throws CannotManageException
-    {
+    static public LookupManager getLookupManager() throws CannotManageException {
         if (mLookupManager == null)
-        	throw new CannotManageException("No Lookup Manager created. Not a server process.");
+            throw new CannotManageException("No Lookup Manager created. Not a server process.");
         else
-        	return mLookupManager;
+            return mLookupManager;
     }
-    
-    static public CorbaServer getCorbaServer()
-    {
+
+    static public CorbaServer getCorbaServer() {
         return mCorbaServer;
     }
 
-    static public TransactionManager getStorage()
-    {
+    static public TransactionManager getStorage() {
         return mStorage;
     }
-    
-    static public CastorXMLUtility getMarshaller()
-    {
+
+    static public CastorXMLUtility getMarshaller() {
         return mMarshaller;
     }
-    
-    static public ResourceLoader getResource()
-    {
-    	return mResource;
+
+    static public ResourceLoader getResource() {
+        return mResource;
     }
 
-    static public ProxyManager getProxyManager()
-    {
+    static public ProxyManager getProxyManager() {
         return mProxyManager;
     }
 
 
-	public static ProxyServer getProxyServer() {
-		return mProxyServer;
-	}
-	
+    public static ProxyServer getProxyServer() {
+        return mProxyServer;
+    }
+
     static public String getCentreId() {
         return getProperties().getString("LocalCentre");
     }
@@ -439,17 +452,17 @@ public class Gateway
         if (!Logger.doLog(logLevel)) return;
         mC2KProps.dumpProps(logLevel);
     }
-    
+
     static public ObjectProperties getProperties() {
-    	return mC2KProps;
+        return mC2KProps;
     }
 
     static public String getKernelVersion() {
-    	try {
-			return mResource.getTextResource(null, "textFiles/version.txt");
-    	} catch (Exception ex) {
-    		return "No version info found";
-    	}
+        try {
+            return mResource.getTextResource(null, "textFiles/version.txt");
+        } catch (Exception ex) {
+            return "No version info found";
+        }
 
     }
 }
