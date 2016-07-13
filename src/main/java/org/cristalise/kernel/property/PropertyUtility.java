@@ -31,66 +31,56 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
 
-
-
-public class PropertyUtility
-{
-    static public String getValue(ArrayList<PropertyDescription> pdlist, String name)
-	{
-		for (PropertyDescription pd : pdlist) {
-			if ( name.equalsIgnoreCase(pd.getName()) )
-				return pd.getDefaultValue();
-		}
-		return null;
-	}
-
-	static public String getNames(ArrayList<PropertyDescription> pdlist)
-	{
-		StringBuffer names = new StringBuffer();
-		for (PropertyDescription value : pdlist)
-			names.append( value.getDefaultValue()).append(" ");
-		return names.toString();
-	}
-
-	static public String getClassIdNames(ArrayList<PropertyDescription> pdlist)
-	{
-		StringBuffer names = new StringBuffer();
-		
-		for (Iterator<PropertyDescription> iter = pdlist.iterator(); iter.hasNext();) {
-			PropertyDescription pd = iter.next();
-			if (pd.getIsClassIdentifier())
-				names.append(pd.getName());
-			if (iter.hasNext())
-				names.append(",");
-		}
-		return names.toString();
-	}
-
-
-	static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException
-	{
-        try
-        {
-            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
-			return (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(outc.getData());
+public class PropertyUtility {
+    static public String getValue(ArrayList<PropertyDescription> pdlist, String name) {
+        for (PropertyDescription pd : pdlist) {
+            if (name.equalsIgnoreCase(pd.getName())) return pd.getDefaultValue();
         }
-        catch (Exception ex)
-        {
-        	Logger.error(ex);
-        	throw new ObjectNotFoundException("Could not fetch PropertyDescription from "+itemPath);
+        return null;
+    }
+
+    static public String getNames(ArrayList<PropertyDescription> pdlist) {
+        StringBuffer names = new StringBuffer();
+
+        for (PropertyDescription value : pdlist)
+            names.append(value.getDefaultValue()).append(" ");
+
+        return names.toString();
+    }
+
+    static public String getClassIdNames(ArrayList<PropertyDescription> pdlist) {
+        StringBuffer names = new StringBuffer();
+
+        for (Iterator<PropertyDescription> iter = pdlist.iterator(); iter.hasNext();) {
+            PropertyDescription pd = iter.next();
+
+            if (pd.getIsClassIdentifier()) names.append(pd.getName());
+            if (iter.hasNext()) names.append(",");
         }
-	}
+        return names.toString();
+    }
 
-	static public CastorHashMap createProperty(PropertyDescriptionList pdList)
-	{
-		CastorHashMap props = new CastorHashMap();
-		for (int i=0; i< pdList.list.size();i++)
-		{
-			PropertyDescription pd = pdList.list.get(i);
-			if (pd.getIsClassIdentifier())
-				props.put(pd.getName(),pd.getDefaultValue());
-		}
-		return props;
-	}
+    static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker)
+            throws ObjectNotFoundException {
+        try {
+            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath,
+                    ClusterStorage.VIEWPOINT + "/PropertyDescription/" + descVer + "/data", locker);
+            return (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(outc.getData());
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new ObjectNotFoundException("Could not fetch PropertyDescription from " + itemPath);
+        }
+    }
 
+    static public CastorHashMap createProperty(PropertyDescriptionList pdList) {
+        CastorHashMap props = new CastorHashMap();
+
+        for (int i = 0; i < pdList.list.size(); i++) {
+            PropertyDescription pd = pdList.list.get(i);
+
+            if (pd.getIsClassIdentifier()) props.put(pd.getName(), pd.getDefaultValue());
+        }
+        return props;
+    }
 }

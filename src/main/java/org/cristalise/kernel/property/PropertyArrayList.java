@@ -24,31 +24,39 @@ import java.util.ArrayList;
 
 import org.cristalise.kernel.utils.CastorArrayList;
 
-
-public class PropertyArrayList extends CastorArrayList<Property>
-{
-    public PropertyArrayList()
-    {
+public class PropertyArrayList extends CastorArrayList<Property> {
+    
+    public PropertyArrayList() {
         super();
     }
 
-    public PropertyArrayList(ArrayList<Property> aList)
-    {
+    /**
+     * Puts all Properties in order, so later ones with the same name overwrite earlier ones
+     * 
+     * @param aList
+     */
+    public PropertyArrayList(ArrayList<Property> aList) {
         super();
-        // put all properties in order, so later ones with the same name overwrite earlier ones
         for (Property property : aList) {
-			put(property);
-		}
+            put(property);
+        }
     }
 
-    /** Overwrite */
     public void put(Property p) {
-    	for (Property thisProp : list) {
-			if (thisProp.getName().equals(p.getName())) {
-				list.remove(thisProp);
-				break;
-			}
-		}
-		list.add(p);
+        //TODO: this shall be based on the contains() of the list
+        remove(p);
+        list.add(p);
+    }
+
+    /**
+     * @param p
+     */
+    private void remove(Property p) {
+        for (Property thisProp : list) {
+            if (thisProp.getName().equals(p.getName())) {
+                list.remove(thisProp);
+                break;
+            }
+        }
     }
 }

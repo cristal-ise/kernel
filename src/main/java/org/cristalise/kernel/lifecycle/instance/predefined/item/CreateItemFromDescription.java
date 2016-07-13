@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.WORKFLOW;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 
 import org.cristalise.kernel.collection.Collection;
@@ -63,25 +64,19 @@ public class CreateItemFromDescription extends PredefinedStep {
     // requestdata is xmlstring
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, 
-            ObjectNotFoundException, 
-            ObjectAlreadyExistsException, 
-            CannotManageException,
-            ObjectCannotBeUpdated, 
-            PersistencyException
+            throws InvalidDataException, ObjectNotFoundException, ObjectAlreadyExistsException,  CannotManageException, ObjectCannotBeUpdated, PersistencyException
     {
         String[] input = getDataList(requestData);
         String newName = input[0];
         String domPath = input[1];
         String descVer = input.length > 2 ? input[2] : "last";
 
-        PropertyArrayList initProps = input.length > 3 ? getInitProperties(input[3]) : new PropertyArrayList();
-
         Logger.msg(1, "CreateItemFromDescription - Starting.");
 
         // check if the path is already taken
         DomainPath context = new DomainPath(new DomainPath(domPath), newName);
         // Logger.debug(8,"context "+context.getItemPath()+" "+context.getPath()+" "+context.getString());
+
         if (context.exists())
             throw new ObjectAlreadyExistsException("The path " + context + " exists already.");
 
@@ -106,6 +101,8 @@ public class CreateItemFromDescription extends PredefinedStep {
         Logger.msg(3, "CreateItemFromDescription - Initializing Item");
 
         try {
+            PropertyArrayList initProps = input.length > 3 ? getInitProperties(input[3]) : new PropertyArrayList();
+
             newItem.initialise(
                     agent.getSystemKey(),
                     Gateway.getMarshaller().marshall(getNewProperties(itemPath, descVer, initProps, newName, agent, locker)),
@@ -162,35 +159,42 @@ public class CreateItemFromDescription extends PredefinedStep {
         return props;
     }
 
-    protected CompositeActivity getNewWorkflow(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException,
-            InvalidDataException, PersistencyException {
-        // find the workflow def for the given description version
-
-        String wfDefName = null;
-        Integer wfDefVer = null;
-
-        Collection<? extends CollectionMember> thisCol = 
-                (Collection<? extends CollectionMember>) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/workflow/" + descVer, locker);
+    /**
+     * Retrieve the Workflow dependency for the given description version, instantiate the 
+     * 
+     * @param itemPath
+     * @param descVer
+     * @param locker
+     * @return the Workflow instance
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     */
+    protected CompositeActivity getNewWorkflow(ItemPath itemPath, String descVer, Object locker)
+            throws ObjectNotFoundException, InvalidDataException, PersistencyException
+    {
+        @SuppressWarnings("unchecked")
+        Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
+                Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
 
         CollectionMember wfMember = thisCol.getMembers().list.get(0);
-        wfDefName = wfMember.resolveItem().getName();
+        String wfDefName = wfMember.resolveItem().getName();
         Object wfVerObj = wfMember.getProperties().getBuiltInProperty(VERSION);
 
         if (wfVerObj == null || String.valueOf(wfVerObj).length() == 0)
             throw new InvalidDataException("Workflow version number not set");
 
         try {
-            wfDefVer = Integer.parseInt(wfVerObj.toString());
-        } catch (NumberFormatException ex) {
-            throw new InvalidDataException("Invalid workflow version number: " + wfVerObj.toString());
-        }
+            Integer wfDefVer = Integer.parseInt(wfVerObj.toString());
 
-        // load workflow def
-        if (wfDefName == null) throw new InvalidDataException("No workflow given or defined");
+            if (wfDefName == null) throw new InvalidDataException("No workflow given or defined");
 
-        try {
+            // load workflow def
             CompositeActivityDef wfDef = (CompositeActivityDef) LocalObjectLoader.getActDef(wfDefName, wfDefVer);
             return (CompositeActivity) wfDef.instantiate();
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("Invalid workflow version number: " + wfVerObj.toString());
         }
         catch (ClassCastException ex) {
             throw new InvalidDataException("Activity def '" + wfDefName + "' was not Composite");
@@ -213,11 +217,12 @@ public class CreateItemFromDescription extends PredefinedStep {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
         String[] collNames = Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.COLLECTION);
-        
+
         for (String collName : collNames) {
+            @SuppressWarnings("unchecked")
             Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
                     Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collName + "/" + descVer, locker);
-            
+
             if (thisCol instanceof CollectionDescription) {
                 CollectionDescription<?> thisDesc = (CollectionDescription<?>) thisCol;
                 colls.put(thisDesc.newInstance());

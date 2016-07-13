@@ -39,7 +39,7 @@ public interface OutcomeInitiator {
     public String initOutcome(Job job) throws InvalidDataException;
 
     /**
-     * Constructsand initialises the Outcome object
+     * Constructs and initialises the Outcome object
      * 
      * @param job the Job containing information about the Outcome to be constructed
      * @return Outcome object

@@ -20,12 +20,6 @@
  */
 package org.cristalise.kernel.collection;
 
-/**
- * The description of a Collection with a graph layout. Each slot is 
- * instantiated empty in the resulting Aggregation, with ClassProps taken from
- * the PropertyDescription outcome of the description slot's referenced Item.
- */
-
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -34,49 +28,49 @@ import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.Logger;
 
+/**
+ * The description of a Collection with a graph layout. Each slot is 
+ * instantiated empty in the resulting Aggregation, with ClassProps taken from
+ * the PropertyDescription outcome of the description slot's referenced Item.
+ */
+public class AggregationDescription extends Aggregation implements CollectionDescription<AggregationMember> {
 
-public class AggregationDescription extends Aggregation implements CollectionDescription<AggregationMember>
-{
-
-    public AggregationDescription()
-    {
-    	setName("AggregationDescription");
+    public AggregationDescription() {
+        setName("AggregationDescription");
     }
 
-    public AggregationDescription(String name)
-    {
-    	setName(name);
+    public AggregationDescription(String name) {
+        setName(name);
     }
 
+    /**
+     * For each  member get the {@lin PropertyDescriptionList} of the member item and look for an explicit version
+     * 
+     */
     @Override
-	public Aggregation newInstance() throws ObjectNotFoundException
-    {
-    	AggregationInstance newInstance = new AggregationInstance(getName());
-    	//for each desc member
-    	for (int i=0; i<size(); i++)
-    	{
-    		AggregationMember mem = mMembers.list.get(i);
-			//get the propdesc of the member item and look for an explicit version
-    		String descVer = getDescVer(mem);
-			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
-			if (pdList!=null)
-			{
-				//create the new props of the member object
+    public Aggregation newInstance() throws ObjectNotFoundException {
+        AggregationInstance newInstance = new AggregationInstance(getName());
+        
+        for (int i = 0; i < size(); i++) {
+            AggregationMember mem = mMembers.list.get(i);
+            // 
+            String descVer = getDescVer(mem);
+            PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
+
+            if (pdList != null) {
+                // create the new props of the member object
                 try {
                     Vertex v = getLayout().getVertexById(mem.getID());
-                    newInstance.addMember(null, PropertyUtility.createProperty(pdList), pdList.getClassProps(),v.getCentrePoint(),v.getWidth(),v.getHeight());
-                } catch (InvalidCollectionModification e) { 
-                } catch (ObjectAlreadyExistsException e) { }
-			}
-			else
-			{
-				Logger.error("AggregationDescription::newInstance() There is no PropertyDescription. Cannot instantiate. " + mem.getItemPath());
-				return null;
-			}
-
-
-    	}
-
-    	return newInstance;
+                    newInstance.addMember(null, PropertyUtility.createProperty(pdList), pdList.getClassProps(), v.getCentrePoint(), v.getWidth(), v.getHeight());
+                }
+                catch (InvalidCollectionModification e) {}
+                catch (ObjectAlreadyExistsException e) {}
+            }
+            else {
+                Logger.error("AggregationDescription::newInstance() There is no PropertyDescription. Cannot instantiate. " + mem.getItemPath());
+                return null;
+            }
+        }
+        return newInstance;
     }
 }

@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.AggregationDescription;
@@ -37,73 +36,67 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class AddNewCollectionDescription extends PredefinedStep
-{
+/**
+ * Generates a new empty collection description. Collection instances should
+ * be added by an Admin, who can do so using AddC2KObject.
+ */
+public class AddNewCollectionDescription extends PredefinedStep {
     /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public AddNewCollectionDescription()
-    {
+     * Constructor for Castor
+     **************************************************************************/
+    public AddNewCollectionDescription() {
         super();
     }
 
-
     /**
-     * Generates a new empty collection description. Collection instances should
-     * be added by an Admin, who can do so using AddC2KObject.
-     * 
-     * Params:
-     * 0 - collection name
-     * 1 - collection type (Aggregation, Dependency)
-     * @throws PersistencyException 
+     * Params: 0 - collection name 1 - collection type (Aggregation, Dependency)
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException {
-    	
-        String collName;
-        String collType;
-
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException
+    {
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "AddNewCollectionDescription: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 2)
-        	throw new InvalidDataException("AddNewCollectionDescription: Invalid parameters "+Arrays.toString(params));
 
-        collName = params[0];
-        collType = params[1];
+        if (Logger.doLog(3))
+            Logger.msg(3, "AddNewCollectionDescription: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        if (params.length != 2)
+            throw new InvalidDataException("AddNewCollectionDescription: Invalid parameters " + Arrays.toString(params));
+
+        String collName = params[0];
+        String collType = params[1];
 
         // check if collection already exists
-		try {
-			Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
-			throw new ObjectAlreadyExistsException("Collection '"+collName+"' already exists");
-		} catch (ObjectNotFoundException ex) {
-			// collection doesn't exist
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new PersistencyException("AddNewCollectionDescription: Error checking for collection '"+collName+"': "+ex.getMessage());
-		}
-        
-        
+        try {
+            Gateway.getStorage().get(item, ClusterStorage.COLLECTION + "/" + collName + "/last", locker);
+            throw new ObjectAlreadyExistsException("Collection '" + collName + "' already exists");
+        }
+        catch (ObjectNotFoundException ex) {
+            // collection doesn't exist
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new PersistencyException("AddNewCollectionDescription: Error checking for collection '" + collName + "': "
+                    + ex.getMessage());
+        }
+
         CollectionDescription<?> newCollDesc;
-        
+
         if (collType.equalsIgnoreCase("Aggregation"))
-        	newCollDesc = new AggregationDescription(collName);
+            newCollDesc = new AggregationDescription(collName);
         else if (collType.equalsIgnoreCase("Dependency"))
-        	newCollDesc = new DependencyDescription(collName);
+            newCollDesc = new DependencyDescription(collName);
         else
-        	throw new InvalidDataException("AddNewCollectionDescription: Invalid collection type specified: '"+collType+"'. Must be Aggregation or Dependency.");
-        
+            throw new InvalidDataException("AddNewCollectionDescription: Invalid collection type specified: '" + collType
+                    + "'. Must be Aggregation or Dependency.");
+
         // store it
-		try {
+        try {
             Gateway.getStorage().put(item, newCollDesc, locker);
-        } catch (PersistencyException e) {
-        	throw new PersistencyException("AddNewCollectionDescription: Error saving new collection '"+collName+"': "+e.getMessage());
+        }
+        catch (PersistencyException e) {
+            throw new PersistencyException("AddNewCollectionDescription: Error saving new collection '" + collName + "': " + e.getMessage());
         }
         return requestData;
     }

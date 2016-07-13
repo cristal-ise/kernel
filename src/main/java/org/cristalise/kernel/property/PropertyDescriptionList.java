@@ -29,13 +29,11 @@ import org.cristalise.kernel.utils.CastorArrayList;
 
 public class PropertyDescriptionList extends CastorArrayList<PropertyDescription>
 {
-    public PropertyDescriptionList()
-    {
+    public PropertyDescriptionList() {
         super();
     }
 
-    public PropertyDescriptionList(ArrayList<PropertyDescription> aList)
-    {
+    public PropertyDescriptionList(ArrayList<PropertyDescription> aList) {
         super(aList);
     }
 
@@ -73,15 +71,21 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
 
     public boolean definesProperty(String name) {
         for (PropertyDescription element : list) {
-            if (element.getName().equals(name))
-                return true;
+            if (element.getName().equals(name)) return true;
         }
         return false;
     }
 
+    /**
+     * Before instantiating checks that supplied initial Properties exist in description list 
+     * 
+     * @param initProps initial list of Properties
+     * @return instantiated PropertyArrayList for Item
+     * @throws InvalidDataException
+     */
     public PropertyArrayList instantiate(PropertyArrayList initProps) throws InvalidDataException {
-        // check that supplied init properties exist in desc list
         HashMap<String, String> validatedInitProps = new HashMap<String, String>();
+
         for (Property initProp : initProps.list) {
             if (!definesProperty(initProp.getName()))
                 throw new InvalidDataException("Property "+initProp.getName()+" has not been declared in the property descriptions");
@@ -90,14 +94,16 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
         }
 
         PropertyArrayList propInst = new PropertyArrayList();
+
         for (int i = 0; i < list.size(); i++) {
             PropertyDescription pd = list.get(i);
+
             String propName = pd.getName();
             String propVal = pd.getDefaultValue();
-            if (validatedInitProps.containsKey(propName))
-                propVal = validatedInitProps.get(propName);
-            boolean isMutable = pd.getIsMutable();
-            propInst.list.add( new Property(propName, propVal, isMutable));
+
+            if (validatedInitProps.containsKey(propName)) propVal = validatedInitProps.get(propName);
+
+            propInst.list.add( new Property(propName, propVal, pd.getIsMutable()));
         }
         return propInst;
     }

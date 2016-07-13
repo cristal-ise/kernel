@@ -212,6 +212,7 @@ public class Outcome implements C2KLocalObject {
         Node field = getNodeByXPath(xpath);
 
         if (field == null) {
+            Logger.error(getData());
             throw new InvalidDataException(xpath);
         }
         else if (field.getNodeType()==Node.ELEMENT_NODE) {
@@ -295,7 +296,7 @@ public class Outcome implements C2KLocalObject {
     /**
      * Parses the outcome into a DOM tree
      * 
-     * @param xmL string to be parsed
+     * @param xml string to be parsed
      * @return the parsed Document
      * @throws SAXException
      * @throws IOException

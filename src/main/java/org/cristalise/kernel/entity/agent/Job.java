@@ -446,28 +446,38 @@ public class Job implements C2KLocalObject
     }
 
     /**
+     * Retrieve the OutcomeInitiator associated with this Job.
      * 
-     * @return
+     * @see BuiltInVertexProperties#OUTCOME_INIT
+     * 
+     * @return OutcomeInitiator
      * @throws InvalidDataException
      */
     public OutcomeInitiator getOutcomeInitiator() throws InvalidDataException {
         String ocInitName = getActPropString(OUTCOME_INIT);
-        OutcomeInitiator ocInit;
-        if (ocInitName.length() > 0) {
+
+        if (ocInitName != null && ocInitName.length() > 0) {
             String ocPropName = OUTCOME_INIT.getName()+"."+ocInitName;
+            OutcomeInitiator ocInit;
+
             synchronized (ocInitCache) {
                 ocInit = ocInitCache.get(ocPropName);
+
                 if (ocInit == null) {
                     Object ocInitObj;
+
                     if (!Gateway.getProperties().containsKey(ocPropName)) {
                         throw new InvalidDataException("Property OutcomeInstantiator "+ocPropName+" isn't defined. Check module.xml");
                     }
+
                     try {
                         ocInitObj = Gateway.getProperties().getInstance(ocPropName);
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         Logger.error(e);
                         throw new InvalidDataException("OutcomeInstantiator "+ocPropName+" couldn't be instantiated");
                     }
+
                     ocInit = (OutcomeInitiator)ocInitObj; // throw runtime class cast if it isn't one
                     ocInitCache.put(ocPropName, ocInit);
                 }
@@ -478,15 +488,22 @@ public class Job implements C2KLocalObject
             return null;
     }
 
-    public String getOutcomeString() throws InvalidDataException
-    {
+    /**
+     * Returns the Outcome string if exists otherwise tries to read the ViewPoint and if that does not exists
+     * it tries to use an OutcomeInitiator.
+     * 
+     * @return the Outcome xml
+     * @throws InvalidDataException
+     */
+    public String getOutcomeString() throws InvalidDataException {
         if (outcomeData == null && transition.hasOutcome(actProps)) {
             try {
                 outcomeData = getLastView();
-            } catch (ObjectNotFoundException ex) { // if no last view found, try to find an OutcomeInitiator
+            }
+            catch (ObjectNotFoundException ex) { // if no last view found, try to find an OutcomeInitiator
                 OutcomeInitiator ocInit = getOutcomeInitiator();
-                if (ocInit != null)
-                    outcomeData = ocInit.initOutcome(this);
+
+                if (ocInit != null) outcomeData = ocInit.initOutcome(this);
             }
             if (outcomeData != null) outcomeSet = true;
         }

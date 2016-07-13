@@ -28,52 +28,53 @@ import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.CastorHashMap;
 
+public class DependencyDescription extends Dependency implements CollectionDescription<DependencyMember> {
 
-public class DependencyDescription extends Dependency implements CollectionDescription<DependencyMember>{
-	
-    public DependencyDescription()
-    {
-    	setName("DependencyDescription");
+    public DependencyDescription() {
+        setName("DependencyDescription");
     }
-	
-    public DependencyDescription(String name)
-    {
-    	setName(name);
-    }
-    
-	@Override
-	public Collection<DependencyMember> newInstance() throws ObjectNotFoundException{
-		String depName = getName().replaceFirst("\'$", ""); // HACK: Knock the special 'prime' off the end for the case of descriptions of descriptions
-		Dependency newDep = new Dependency(depName);
-		if (mMembers.list.size() == 1) { // constrain the members based on the property description
-			DependencyMember mem = mMembers.list.get(0);
-			String descVer = getDescVer(mem);
-			PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
-			if (pdList!=null) {
-				newDep.setProperties(PropertyUtility.createProperty(pdList));
-				newDep.setClassProps(pdList.getClassProps());
-			}
-		}
-		return newDep;
-	}
 
-	
-	@Override
-	public DependencyMember addMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
-		checkMembership();
-		return super.addMember(itemPath);
-	}
-	
-	@Override
-	public DependencyMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
-			throws InvalidCollectionModification, ObjectAlreadyExistsException {
-		checkMembership();
-		return super.addMember(itemPath, props, classProps);
-	}
-	
-	public void checkMembership() throws InvalidCollectionModification {
-		if (mMembers.list.size() > 0)
-			throw new InvalidCollectionModification("Dependency descriptions may not have more than one member.");
-	}
+    public DependencyDescription(String name) {
+        setName(name);
+    }
+
+    @Override
+    public Collection<DependencyMember> newInstance() throws ObjectNotFoundException {
+        // HACK: Knock the special 'prime' off the end for the case of descriptions of descriptions
+        String depName = getName().replaceFirst("\'$", ""); 
+
+        Dependency newDep = new Dependency(depName);
+
+        // constrain the members based on the property description
+        if (mMembers.list.size() == 1) {
+            DependencyMember mem = mMembers.list.get(0);
+            String descVer = getDescVer(mem);
+            PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
+
+            if (pdList != null) {
+                newDep.setProperties(PropertyUtility.createProperty(pdList));
+                newDep.setClassProps(pdList.getClassProps());
+            }
+        }
+        return newDep;
+    }
+
+    @Override
+    public DependencyMember addMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
+        checkMembership();
+        return super.addMember(itemPath);
+    }
+
+    @Override
+    public DependencyMember addMember(ItemPath itemPath, CastorHashMap props, String classProps) throws InvalidCollectionModification,
+            ObjectAlreadyExistsException {
+        checkMembership();
+        return super.addMember(itemPath, props, classProps);
+    }
+
+    public void checkMembership() throws InvalidCollectionModification {
+        if (mMembers.list.size() > 0)
+            throw new InvalidCollectionModification("Dependency descriptions may not have more than one member.");
+    }
 
 }

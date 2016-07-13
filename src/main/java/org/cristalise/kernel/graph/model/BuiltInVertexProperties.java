@@ -50,6 +50,9 @@ public enum BuiltInVertexProperties {
      */
     DESCRIPTION("Description"),
 
+    /**
+     * Used in Splits as a counter to provide unique ID for instances of {@link DirectedEdge}
+     */
     LAST_NUM("LastNum"),
 
     /**
@@ -174,6 +177,9 @@ public enum BuiltInVertexProperties {
         propertyName = n;
     }
 
+    /**
+     * @return kernel defined string value
+     */
     public String getName() {
         return propertyName;
     }

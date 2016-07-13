@@ -23,90 +23,54 @@ package org.cristalise.kernel.property;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterStorage;
 
-
-public class Property implements C2KLocalObject
-{
+//TODO: Implement equals() so contains() can can be used in PropertyArrayList
+public class Property implements C2KLocalObject {
     private String  mName;
     private String  mValue;
     private boolean mMutable = true;
 
-
-   /**************************************************************************
-    *
-    **************************************************************************/
-    public Property()
-    {
+    public Property() {
     }
 
-
-   /**************************************************************************
-    *
-    **************************************************************************/
-    public Property( String name, String value, boolean mutable )
-    {
-        setName( name );
-        setValue( value );
-        setMutable( mutable );
-    }
-    
-    public Property( String name, String value)
-    {
-        setName( name );
-        setValue( value );
+    public Property(String name, String value, boolean mutable) {
+        setName(name);
+        setValue(value);
+        setMutable(mutable);
     }
 
-   /**************************************************************************
-    *
-    **************************************************************************/
+    public Property(String name, String value) {
+        setName(name);
+        setValue(value);
+    }
+
     @Override
-	public void setName(String name)
-    {
+    public void setName(String name) {
         mName = name;
     }
 
+    public boolean isMutable() {
+        return mMutable;
+    }
 
-   public boolean isMutable() {
-	   return mMutable;
-   }
+    public void setMutable(boolean mMutable) {
+        this.mMutable = mMutable;
+    }
 
-
-   public void setMutable(boolean mMutable) {
-	   this.mMutable = mMutable;
-   }
-
-
-/**************************************************************************
-    *
-    **************************************************************************/
     @Override
-	public String getName()
-    {
+    public String getName() {
         return mName;
     }
 
-
-   /**************************************************************************
-    *
-    **************************************************************************/
-    public void setValue( String value )
-    {
+    public void setValue(String value) {
         mValue = value;
     }
 
-
-   /**************************************************************************
-    *
-    **************************************************************************/
-    public String getValue()
-    {
+    public String getValue() {
         return mValue;
     }
-	/**
-	 * @see org.cristalise.kernel.entity.C2KLocalObject#getClusterType()
-	 */
-	@Override
-	public String getClusterType() {
-		return ClusterStorage.PROPERTY;
-	}
 
+    @Override
+    public String getClusterType() {
+        return ClusterStorage.PROPERTY;
+    }
 }
