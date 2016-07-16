@@ -82,11 +82,11 @@ public class Job implements C2KLocalObject
     private String     agentName;
     private AgentPath  delegatePath;
     private String     delegateName;
-    private String     outcomeData;
     private ErrorInfo  error;
     private ItemProxy  item = null;
-    private boolean    outcomeSet;
     private boolean    transitionResolved = false;
+    
+    private Outcome outcome = null;;
 
     /**
      * OutcomeInitiator cache
@@ -199,7 +199,7 @@ public class Job implements C2KLocalObject
 
     public Transition getTransition() {
         if (transition != null && transitionResolved == false) {
-            Logger.msg(5, "Job.getgetTransition() - actProps:"+actProps);
+            Logger.msg(8, "Job.getTransition() - actProps:"+actProps);
             try {
                 String name = getActPropString(STATE_MACHINE_NAME);
                 int version = (Integer)getActProp(STATE_MACHINE_VERSION);
@@ -244,8 +244,7 @@ public class Job implements C2KLocalObject
         delegateName = delegatePath.getAgentName();
     }
 
-    public void setAgentUUID( String uuid ) throws InvalidItemPathException
-    {
+    public void setAgentUUID( String uuid ) throws InvalidItemPathException {
         if (uuid == null || uuid.length() == 0) { 
             agentPath = null; agentName = null;
             delegatePath = null; delegateName = null;
@@ -275,8 +274,7 @@ public class Job implements C2KLocalObject
         return null;
     }
 
-    public String getAgentName()
-    {
+    public String getAgentName() {
         if (agentName == null)
             agentName = (String) actProps.get("Agent Name");
         return agentName;
@@ -288,14 +286,12 @@ public class Job implements C2KLocalObject
         return delegateName;
     }
 
-    public void setAgentName(String agentName) throws ObjectNotFoundException
-    {
+    public void setAgentName(String agentName) throws ObjectNotFoundException {
         this.agentName = agentName;
         agentPath = Gateway.getLookup().getAgentPath(agentName);
     }
 
-    public void setDelegateName(String delegateName) throws ObjectNotFoundException
-    {
+    public void setDelegateName(String delegateName) throws ObjectNotFoundException {
         this.delegateName = delegateName;
         delegatePath = Gateway.getLookup().getAgentPath(delegateName);
     }    
@@ -333,8 +329,7 @@ public class Job implements C2KLocalObject
             return -1;
         }
     }
-    public boolean isOutcomeRequired()
-    {
+    public boolean isOutcomeRequired() {
         return getTransition().hasOutcome(actProps) && getTransition().getOutcome().isRequired();
     }
 
@@ -394,32 +389,26 @@ public class Job implements C2KLocalObject
         return item;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         String desc = (String) actProps.get("Description");
-        if (desc == null)
-            desc = "No Description";
+        if (desc == null) desc = "No Description";
         return desc;
     }
 
-    public void setOutcome(String outcome)
-    {
-        outcomeData = outcome;
-        outcomeSet = !(outcomeData == null);
+    public void setOutcome(String outcomeData) throws InvalidDataException, ObjectNotFoundException {
+        setOutcome(new Outcome(-1, outcomeData, transition.getSchema(actProps)));
     }
 
-    public void setOutcome(Outcome outcome)
-    {
-        outcomeData = outcome.getData();
-        outcomeSet = !(outcomeData == null);
+    public void setOutcome(Outcome o) {
+        outcome = o;
     }
 
-    public void setError(ErrorInfo errors)
-    {
+    public void setError(ErrorInfo errors) {
         error = errors;
         try {
-            outcomeData = Gateway.getMarshaller().marshall(error);
-        } catch (Exception e) {
+            setOutcome(Gateway.getMarshaller().marshall(error));
+        }
+        catch (Exception e) {
             Logger.error("Error marshalling ErrorInfo in job");
             Logger.error(e);
         } 
@@ -457,29 +446,30 @@ public class Job implements C2KLocalObject
         String ocInitName = getActPropString(OUTCOME_INIT);
 
         if (ocInitName != null && ocInitName.length() > 0) {
-            String ocPropName = OUTCOME_INIT.getName()+"."+ocInitName;
+            String ocConfigPropName = OUTCOME_INIT.getName()+"."+ocInitName;
             OutcomeInitiator ocInit;
 
             synchronized (ocInitCache) {
-                ocInit = ocInitCache.get(ocPropName);
+                Logger.msg(5, "Job.getOutcomeInitiator() - ocConfigPropName:"+ocConfigPropName);
+                ocInit = ocInitCache.get(ocConfigPropName);
 
                 if (ocInit == null) {
                     Object ocInitObj;
 
-                    if (!Gateway.getProperties().containsKey(ocPropName)) {
-                        throw new InvalidDataException("Property OutcomeInstantiator "+ocPropName+" isn't defined. Check module.xml");
+                    if (!Gateway.getProperties().containsKey(ocConfigPropName)) {
+                        throw new InvalidDataException("Property OutcomeInstantiator "+ocConfigPropName+" isn't defined. Check module.xml");
                     }
 
                     try {
-                        ocInitObj = Gateway.getProperties().getInstance(ocPropName);
+                        ocInitObj = Gateway.getProperties().getInstance(ocConfigPropName);
                     }
                     catch (Exception e) {
                         Logger.error(e);
-                        throw new InvalidDataException("OutcomeInstantiator "+ocPropName+" couldn't be instantiated");
+                        throw new InvalidDataException("OutcomeInstantiator "+ocConfigPropName+" couldn't be instantiated");
                     }
 
                     ocInit = (OutcomeInitiator)ocInitObj; // throw runtime class cast if it isn't one
-                    ocInitCache.put(ocPropName, ocInit);
+                    ocInitCache.put(ocConfigPropName, ocInit);
                 }
             }
             return ocInit;
@@ -496,23 +486,28 @@ public class Job implements C2KLocalObject
      * @throws InvalidDataException
      */
     public String getOutcomeString() throws InvalidDataException {
-        if (outcomeData == null && transition.hasOutcome(actProps)) {
+        if(outcome != null) { 
+            return outcome.getData();
+        }
+        else if (outcome == null && transition.hasOutcome(actProps)) {
+            String outcomeData = null;
             try {
                 outcomeData = getLastView();
             }
-            catch (ObjectNotFoundException ex) { // if no last view found, try to find an OutcomeInitiator
+            catch (ObjectNotFoundException ex) { 
+                // if no last view found, try to find an OutcomeInitiator
                 OutcomeInitiator ocInit = getOutcomeInitiator();
 
                 if (ocInit != null) outcomeData = ocInit.initOutcome(this);
             }
-            if (outcomeData != null) outcomeSet = true;
+            return outcomeData;
         }
-        return outcomeData;
+        return null;
     }
 
-    public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException
-    {
-        return new Outcome(-1, getOutcomeString(), transition.getSchema(actProps));
+    public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
+        if(outcome == null) outcome = new Outcome(-1, getOutcomeString(), transition.getSchema(actProps));
+        return outcome;
     }
 
     public boolean hasOutcome() {
@@ -524,7 +519,7 @@ public class Job implements C2KLocalObject
     }
 
     public boolean isOutcomeSet() {
-        return outcomeSet;
+        return outcome != null;
     }   
 
     @Override
@@ -605,8 +600,7 @@ public class Job implements C2KLocalObject
         this.actProps = actProps;
     }
 
-    public Object getActProp(String name)
-    {
+    public Object getActProp(String name) {
         return actProps.get(name);
     }
 
@@ -614,14 +608,16 @@ public class Job implements C2KLocalObject
         return getActProp(name.getName());
     }
 
-    public String getActPropString(String name)
-    {
+    public String getActPropString(String name) {
         Object obj = getActProp(name);
         return obj==null?null:String.valueOf(obj);
     }
 
-    public String getActPropString(BuiltInVertexProperties name)
-    {
+    public void setActProp(BuiltInVertexProperties prop, Object value) {
+        actProps.setBuiltInProperty(prop, value);;
+    }
+
+    public String getActPropString(BuiltInVertexProperties name) {
         return getActPropString(name.getName());
     }
 
