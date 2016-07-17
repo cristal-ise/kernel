@@ -84,9 +84,11 @@ public class Outcome implements C2KLocalObject {
         this(id, (Document)null, schema);
         try {
             mDOM = parse(xml);
-        } catch (IOException | SAXException ex) {
+        }
+        catch (IOException | SAXException ex) {
+            Logger.error("INVALID XML - schema:"+mSchema.getName()+"\n"+xml);
             Logger.error(ex);
-            throw new InvalidDataException("XML not valid: "+ex.getMessage());
+            throw new InvalidDataException("XML not valid for schema:"+mSchema+" error:"+ex.getMessage());
         }
     }
 
@@ -209,6 +211,8 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException
      */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
+        //if(data == null) data = "";
+
         Node field = getNodeByXPath(xpath);
 
         if (field == null) {
@@ -234,7 +238,7 @@ public class Outcome implements C2KLocalObject {
             else 
                 throw new InvalidDataException("Element "+xpath+" has too many children");
         }
-        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
+        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)
             field.setNodeValue(data);
         else
             throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
