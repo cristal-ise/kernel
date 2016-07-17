@@ -414,24 +414,31 @@ public class Job implements C2KLocalObject
         } 
     }
 
+    /**
+     * 
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
     public String getLastView() throws InvalidDataException, ObjectNotFoundException {
         String viewName = getActPropString("Viewpoint");
-        if (viewName.length() > 0) {
-            // find schema
-            String schemaName = getSchema().getName();
 
-            try	{
-                Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath,  ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName, null);
-                return view.getOutcome().getData();
-            }
-            catch (PersistencyException e) {
-                Logger.error(e);
-                throw new InvalidDataException("ViewpointOutcomeInitiator: PersistencyException loading viewpoint " 
-                        + ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName+" in item "+itemPath.getUUID());
-            }
+        if(viewName == null || "".equals(viewName)) viewName = "last";
+
+        // find schema
+        String schemaName = getSchema().getName();
+
+        Logger.msg(5, "Job.getLastView() - "+itemPath+"/"+ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
+
+        try	{
+            Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath,  ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName, null);
+            return view.getOutcome().getData();
         }
-        else
-            throw new ObjectNotFoundException();
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new InvalidDataException("ViewpointOutcomeInitiator: PersistencyException loading viewpoint " 
+                    + ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName+" in item "+itemPath.getUUID());
+        }
     }
 
     /**
@@ -494,7 +501,8 @@ public class Job implements C2KLocalObject
             try {
                 outcomeData = getLastView();
             }
-            catch (ObjectNotFoundException ex) { 
+            catch (ObjectNotFoundException ex) {
+                if(Logger.doLog(8)) Logger.error(ex);
                 // if no last view found, try to find an OutcomeInitiator
                 OutcomeInitiator ocInit = getOutcomeInitiator();
 
@@ -502,11 +510,26 @@ public class Job implements C2KLocalObject
             }
             return outcomeData;
         }
+        else {
+            Logger.msg(8, "Job.getOutcomeString() - Job does not require Outcome item:"+itemPath+" step:"+stepName+" trans:"+transition.getName());
+        }
         return null;
     }
 
+    /**
+     * Returns the Outcome instance using the l
+     * 
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
-        if(outcome == null) outcome = new Outcome(-1, getOutcomeString(), transition.getSchema(actProps));
+        if(outcome == null) {
+            String outcomeData = getOutcomeString();
+            if(outcomeData != null && !"".equals(outcomeData)) { 
+                outcome = new Outcome(-1, outcomeData, transition.getSchema(actProps));
+            }
+        }
         return outcome;
     }
 
@@ -610,7 +633,7 @@ public class Job implements C2KLocalObject
 
     public String getActPropString(String name) {
         Object obj = getActProp(name);
-        return obj==null?null:String.valueOf(obj);
+        return obj == null ? null : String.valueOf(obj);
     }
 
     public void setActProp(BuiltInVertexProperties prop, Object value) {
