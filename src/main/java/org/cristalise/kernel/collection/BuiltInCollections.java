@@ -73,7 +73,7 @@ public enum BuiltInCollections {
     WORKFLOW("workflow"),
 
     /**
-     * CollectionDescription of DescriptionFactory (is this correct ???)
+     * CollectionDescription of DescriptionFactory
      */
     WORKFLOW_PRIME("workflow'");
 
