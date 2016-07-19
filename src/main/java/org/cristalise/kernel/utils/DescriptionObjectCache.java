@@ -75,7 +75,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 	        	String resLine = str.nextToken();
 	        	String[] resElem = resLine.split(",");
 	        	if (resElem[0].equals(name) || isBootResource(resElem[1], name)) {
-	        		Logger.msg(3, "Shimming "+getTypeCode()+" "+name+" from bootstrap");
+	        		Logger.msg(3, "DescriptionObjectCache.loadObjectFromBootstrap() - Shimming "+getTypeCode()+" "+name+" from bootstrap");
 	        		String resData = Gateway.getResource().getTextResource(null, "boot/"+resElem[1]+(resElem[1].startsWith("OD")?".xsd":".xml"));
 	        		return buildObject(name, 0, new ItemPath(resElem[0]), resData);
 	        	}
@@ -133,13 +133,13 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 		synchronized(cache) {
 			CacheEntry<D> thisDefEntry = cache.get(name+"_"+version);
 			if (thisDefEntry == null) {
-				Logger.msg(6, name+" v"+version+" not found in cache. Checking id.");
+				Logger.msg(6, "DescriptionObjectCache.get() - "+name+" v"+version+" not found in cache. Checking id.");
 				try {
 					ItemPath defItemPath = findItem(name);
 					String defId = defItemPath.getUUID().toString();
 					thisDefEntry = cache.get(defId+"_"+version);
 					if (thisDefEntry == null) {
-						Logger.msg(6, name+" v"+version+" not found in cache. Loading from database.");
+						Logger.msg(6, "DescriptionObjectCache.get() - "+name+" v"+version+" not found in cache. Loading from database.");
 						ItemProxy defItemProxy = Gateway.getProxyManager().getProxy(defItemPath);
 						if (name.equals(defId)) {
 							String itemName = defItemProxy.getName();
@@ -158,7 +158,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 				}
 			}
 			if (thisDefEntry != null && thisDef == null) {
-				Logger.msg(6, name+" v"+version+" found in cache.");
+				Logger.msg(6, "DescriptionObjectCache.get() - "+name+" v"+version+" found in cache.");
 				thisDef = thisDefEntry.def;
 			}
 		}
@@ -187,7 +187,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 	public void removeObject(String id) {
 		synchronized(cache) {
 		if (cache.keySet().contains(id)) {
-			Logger.msg(7, "ActDefCache: Removing activity def "+id+" from cache");
+			Logger.msg(7, "DescriptionObjectCache.remove() - activityDef:"+id);
 			cache.remove(id);
 			}
 		}
