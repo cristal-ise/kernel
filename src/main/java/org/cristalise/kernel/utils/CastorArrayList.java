@@ -27,7 +27,6 @@ import java.util.ArrayList;
  * as multiple elements, so this class is needed to provide a root element
  * to stop it crashing.
  */
-//
 abstract public class CastorArrayList<E> {
     public ArrayList<E> list;
 
@@ -46,19 +45,14 @@ abstract public class CastorArrayList<E> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj)                  return true;
+        if (obj == null)                  return false;
+        if (getClass() != obj.getClass()) return false;
+
         CastorArrayList<?> other = (CastorArrayList<?>) obj;
-        if (list == null) {
-            if (other.list != null)
-                return false;
-        } else if (!list.equals(other.list))
-            return false;
-        return true;
+
+        if (list == null)  return other.list == null;
+        else               return list.equals(other.list);
     }
 
     public CastorArrayList(ArrayList<E> list) {
