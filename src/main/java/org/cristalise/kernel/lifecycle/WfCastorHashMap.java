@@ -33,15 +33,15 @@ import org.cristalise.kernel.utils.CastorHashMap;
  * 
  */
 public class WfCastorHashMap extends CastorHashMap {
-    
+
     private static final long serialVersionUID = 8700678607957394346L;
 
-	public WfCastorHashMap() {
-	    setBuiltInProperty(DESCRIPTION,  "");
-	    setBuiltInProperty(AGENT_NAME,   "");
-	    setBuiltInProperty(AGENT_ROLE,   "");
-	    setBuiltInProperty(BREAKPOINT,   false);
-	    setBuiltInProperty(VIEW_POINT,   "");
-	    setBuiltInProperty(OUTCOME_INIT, "");
-	}
+    public WfCastorHashMap() {
+        setBuiltInProperty(DESCRIPTION,  "");
+        setBuiltInProperty(AGENT_NAME,   "");
+        setBuiltInProperty(AGENT_ROLE,   "");
+        setBuiltInProperty(BREAKPOINT,   false);
+        setBuiltInProperty(VIEW_POINT,   "");
+        setBuiltInProperty(OUTCOME_INIT, "");
+    }
 }
