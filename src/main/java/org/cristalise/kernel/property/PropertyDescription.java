@@ -20,69 +20,48 @@
  */
 package org.cristalise.kernel.property;
 
-public class PropertyDescription
-{
-    private String mName=null;
-	private String mDefaultValue=null;
-	private boolean mIsClassIdentifier=false;
-	private boolean mIsMutable=false;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
+@Accessors(prefix = "m") @Data
+public class PropertyDescription {
+    private String  mName              = null;
+    private String  mDefaultValue      = null;
+    private boolean mIsClassIdentifier = false;
+    private boolean mIsMutable         = false;
 
-    public PropertyDescription()
-    {
+    public PropertyDescription() {
     }
 
-    public PropertyDescription(String name, String defaultValue, boolean isClassIdentifier, boolean isMutable )
-    {
-    	setName(name);
-    	setDefaultValue(defaultValue);
-    	setIsClassIdentifier(isClassIdentifier);
-    	setIsMutable(isMutable);
+    public PropertyDescription(String name, String defaultValue, boolean isClassIdentifier, boolean isMutable) {
+        setName(name);
+        setDefaultValue(defaultValue);
+        setIsClassIdentifier(isClassIdentifier);
+        setIsMutable(isMutable);
     }
 
-	public void setName(String name)
-	{
-		mName = name;
-	}
+    //Method only kept for backward compatibility, because lombok generates different signature
+    public void setIsClassIdentifier(boolean classId) {
+        mIsClassIdentifier = classId;
+    }
 
-	public void setIsClassIdentifier(boolean classId)
-	{
-		mIsClassIdentifier = classId;
-	}
+    //Method only kept for backward compatibility, because lombok generates different signature
+    public void setIsMutable(boolean mutable) {
+        mIsMutable = mutable;
+    }
 
-	public void setDefaultValue(String defaultValue)
-	{
-		mDefaultValue = defaultValue;
-	}
+    //Method only kept for backward compatibility, because lombok generates different signature
+    public boolean getIsClassIdentifier() {
+        return mIsClassIdentifier;
+    }
 
-	public void setIsMutable(boolean mutable)
-	{
-		mIsMutable = mutable;
-	}
+    //Method only kept for backward compatibility, because lombok generates different signature
+    public boolean getIsMutable() {
+        return mIsMutable;
+    }
 
-	public String getName()
-	{
-		return mName;
-	}
-
-	public boolean getIsClassIdentifier()
-	{
-		return mIsClassIdentifier;
-	}
-
-	public String getDefaultValue()
-	{
-		return mDefaultValue;
-	}
-
-	public boolean getIsMutable()
-	{
-		return mIsMutable;
-	}
-
-	public Property getProperty()
-	{
-		return new Property(mName, mDefaultValue, mIsMutable);
-	}
+    public Property getProperty() {
+        return new Property(mName, mDefaultValue, mIsMutable);
+    }
 
 }

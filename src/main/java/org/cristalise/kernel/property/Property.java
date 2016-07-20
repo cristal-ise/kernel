@@ -20,17 +20,19 @@
  */
 package org.cristalise.kernel.property;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterStorage;
 
-//TODO: Implement equals() so contains() can can be used in PropertyArrayList
+@Accessors(prefix = "m") @Data
 public class Property implements C2KLocalObject {
     private String  mName;
     private String  mValue;
     private boolean mMutable = true;
 
-    public Property() {
-    }
+    public Property() {}
 
     public Property(String name, String value, boolean mutable) {
         setName(name);
@@ -43,30 +45,12 @@ public class Property implements C2KLocalObject {
         setValue(value);
     }
 
-    @Override
-    public void setName(String name) {
-        mName = name;
+    public Property(BuiltInItemProperties name, String value, boolean mutable) {
+        this(name.getName(), value, mutable);
     }
 
-    public boolean isMutable() {
-        return mMutable;
-    }
-
-    public void setMutable(boolean mMutable) {
-        this.mMutable = mMutable;
-    }
-
-    @Override
-    public String getName() {
-        return mName;
-    }
-
-    public void setValue(String value) {
-        mValue = value;
-    }
-
-    public String getValue() {
-        return mValue;
+    public Property(BuiltInItemProperties name, String value) {
+        this(name.getName(), value);
     }
 
     @Override
