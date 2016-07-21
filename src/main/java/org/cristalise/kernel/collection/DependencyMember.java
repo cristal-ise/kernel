@@ -23,6 +23,7 @@ package org.cristalise.kernel.collection;
 import java.util.StringTokenizer;
 
 import org.cristalise.kernel.common.InvalidCollectionModification;
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
@@ -31,8 +32,11 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
+import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -163,4 +167,23 @@ public class DependencyMember implements CollectionMember {
     public void setBuiltInProperty(BuiltInVertexProperties prop, Object val) {
         mProperties.put(prop.getName(), val);
     }
+
+    /**
+     * 
+     * @return Could be any Object but in practice it is either a PropertyArrayList or CastorHashMap
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    protected Object evaluateScript() throws InvalidDataException, ObjectNotFoundException {
+        Script script = LocalObjectLoader.getScript(getProperties());
+
+        try {
+            return script.evaluate(getItemPath(), getProperties(), null, null);
+        }
+        catch (ScriptingEngineException e) {
+            Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
+        }
+    }
+
 }

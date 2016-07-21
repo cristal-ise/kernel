@@ -27,6 +27,7 @@ import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.CollectionDescription;
 import org.cristalise.kernel.collection.CollectionMember;
+import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -43,6 +44,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescriptionList;
@@ -50,21 +52,23 @@ import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2005/10/13 08:13:58 $
- * @version $Revision: 1.47 $
- **************************************************************************/
 public class CreateItemFromDescription extends PredefinedStep {
 
     public CreateItemFromDescription() {
         super();
     }
 
-    // requestdata is xmlstring
+    /**
+     *  requestdata is xmlstring
+     */
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectNotFoundException, ObjectAlreadyExistsException,  CannotManageException, ObjectCannotBeUpdated, PersistencyException
+            throws InvalidDataException,
+                   ObjectNotFoundException,
+                   ObjectAlreadyExistsException,
+                   CannotManageException, 
+                   ObjectCannotBeUpdated,
+                   PersistencyException
     {
         String[] input = getDataList(requestData);
         String newName = input[0];
@@ -75,14 +79,8 @@ public class CreateItemFromDescription extends PredefinedStep {
 
         // check if the path is already taken
         DomainPath context = new DomainPath(new DomainPath(domPath), newName);
-        // Logger.debug(8,"context "+context.getItemPath()+" "+context.getPath()+" "+context.getString());
 
-        if (context.exists())
-            throw new ObjectAlreadyExistsException("The path " + context + " exists already.");
-
-        // get init objects
-
-        /* ITEM CREATION */
+        if (context.exists()) throw new ObjectAlreadyExistsException("The path " + context + " exists already.");
 
         // generate new item path with random uuid
         Logger.msg(6, "CreateItemFromDescription - Requesting new item path");
@@ -91,7 +89,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         // create the Item object
         Logger.msg(3, "CreateItemFromDescription - Creating Item");
         CorbaServer factory = Gateway.getCorbaServer();
-        
+
         if (factory == null) throw new CannotManageException("This process cannot create new Items");
 
         TraceableEntity newItem = factory.createItem(newItemPath);
@@ -101,13 +99,16 @@ public class CreateItemFromDescription extends PredefinedStep {
         Logger.msg(3, "CreateItemFromDescription - Initializing Item");
 
         try {
-            PropertyArrayList initProps = input.length > 3 ? getInitProperties(input[3]) : new PropertyArrayList();
+            PropertyArrayList initProps = input.length > 3 ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
 
-            newItem.initialise(
-                    agent.getSystemKey(),
-                    Gateway.getMarshaller().marshall(getNewProperties(itemPath, descVer, initProps, newName, agent, locker)),
-                    Gateway.getMarshaller().marshall(getNewWorkflow(itemPath, descVer, locker)),
-                    Gateway.getMarshaller().marshall(getNewCollections(itemPath, descVer, locker)));
+            PropertyArrayList   newProps    = instantiateProperties (itemPath, descVer, initProps, newName, agent, locker);
+            CollectionArrayList newColls    = instantiateCollections(itemPath, descVer, newProps, locker);
+            CompositeActivity   newWorkflow = instantiateWorkflow   (itemPath, descVer, locker);
+
+            newItem.initialise( agent.getSystemKey(),
+                                Gateway.getMarshaller().marshall(newProps),
+                                Gateway.getMarshaller().marshall(newWorkflow),
+                                Gateway.getMarshaller().marshall(newColls));
         } 
         catch (PersistencyException e) {
             Logger.error(e);
@@ -126,18 +127,36 @@ public class CreateItemFromDescription extends PredefinedStep {
         return requestData;
     }
 
-    protected PropertyArrayList getInitProperties(String input) throws InvalidDataException {
+    /**
+     * Unmarshalls initial Properties
+     * 
+     * @param initPropString
+     * @return unmarshalled initial PropertyArrayList
+     * @throws InvalidDataException
+     */
+    protected PropertyArrayList unmarshallInitProperties(String initPropString) throws InvalidDataException {
         try {
-            return (PropertyArrayList) Gateway.getMarshaller().unmarshall(input);
+            return (PropertyArrayList) Gateway.getMarshaller().unmarshall(initPropString);
         }
         catch (Exception e) {
             Logger.error(e);
-            throw new InvalidDataException("Initial property parameter was not a marshalled PropertyArrayList: " + input);
+            throw new InvalidDataException("Initial property parameter was not a marshalled PropertyArrayList: " + initPropString);
         }
     }
 
-    protected PropertyArrayList getNewProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, 
-                                                 String newName, AgentPath agent, Object locker)
+    /**
+     * 
+     * @param itemPath
+     * @param descVer
+     * @param initProps
+     * @param newName
+     * @param agent
+     * @param locker
+     * @return props
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     */
+    protected PropertyArrayList instantiateProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent, Object locker)
             throws ObjectNotFoundException, InvalidDataException
     {
         // copy properties -- intend to create from propdesc
@@ -150,17 +169,18 @@ public class CreateItemFromDescription extends PredefinedStep {
             if (prop.getName().equals("Name")) {
                 foundName = true;
                 prop.setValue(newName);
+                break;
             }
         }
 
-        if (!foundName) props.list.add(new Property("Name", newName, true));
+        if (!foundName) props.list.add(new Property(BuiltInItemProperties.NAME, newName, true));
+        props.list.add(new Property(BuiltInItemProperties.CREATOR, agent.getAgentName(), false));
 
-        props.list.add(new Property("Creator", agent.getAgentName(), false));
         return props;
     }
 
     /**
-     * Retrieve the Workflow dependency for the given description version, instantiate the 
+     * Retrieve the Workflow dependency for the given description version, instantiate the loaded CompositeActivityDef
      * 
      * @param itemPath
      * @param descVer
@@ -170,19 +190,20 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @throws InvalidDataException
      * @throws PersistencyException
      */
-    protected CompositeActivity getNewWorkflow(ItemPath itemPath, String descVer, Object locker)
+    protected CompositeActivity instantiateWorkflow(ItemPath itemPath, String descVer, Object locker)
             throws ObjectNotFoundException, InvalidDataException, PersistencyException
     {
         @SuppressWarnings("unchecked")
         Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
                 Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
 
-        CollectionMember wfMember = thisCol.getMembers().list.get(0);
-        String wfDefName = wfMember.resolveItem().getName();
-        Object wfVerObj = wfMember.getProperties().getBuiltInProperty(VERSION);
+        CollectionMember wfMember  = thisCol.getMembers().list.get(0);
+        String           wfDefName = wfMember.resolveItem().getName();
+        Object           wfVerObj  = wfMember.getProperties().getBuiltInProperty(VERSION);
 
-        if (wfVerObj == null || String.valueOf(wfVerObj).length() == 0)
+        if (wfVerObj == null || String.valueOf(wfVerObj).length() == 0) {
             throw new InvalidDataException("Workflow version number not set");
+        }
 
         try {
             Integer wfDefVer = Integer.parseInt(wfVerObj.toString());
@@ -210,9 +231,10 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @return the new collection
      * @throws ObjectNotFoundException
      * @throws PersistencyException
+     * @throws InvalidDataException 
      */
-    protected CollectionArrayList getNewCollections(ItemPath itemPath, String descVer, Object locker) 
-            throws ObjectNotFoundException, PersistencyException
+    protected CollectionArrayList instantiateCollections(ItemPath itemPath, String descVer, PropertyArrayList newProps , Object locker) 
+            throws ObjectNotFoundException, PersistencyException, InvalidDataException
     {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
@@ -224,8 +246,16 @@ public class CreateItemFromDescription extends PredefinedStep {
                     Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
+                Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);
                 CollectionDescription<?> thisDesc = (CollectionDescription<?>) thisCol;
                 colls.put(thisDesc.newInstance());
+            }
+            else if(thisCol instanceof Dependency) {
+                Logger.msg(5,"CreateItemFromDescription - Instantiating Dependency:"+ collName);
+                ((Dependency) thisCol).addToItemProperties(newProps);
+            }
+            else {
+                Logger.warning("CreateItemFromDescription - CANNOT instantiate collection:"+ collName + " class:"+thisCol.getClass().getName());
             }
         }
         return colls;
