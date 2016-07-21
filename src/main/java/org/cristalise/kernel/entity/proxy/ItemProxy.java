@@ -200,7 +200,7 @@ public class ItemProxy
     /**
      * 
      * @param agent
-     * @return
+     * @return array of Jobs
      * @throws AccessRightsException
      * @throws ObjectNotFoundException
      * @throws PersistencyException
@@ -213,7 +213,7 @@ public class ItemProxy
      * 
      * @param actName
      * @param agent
-     * @return
+     * @return Job
      * @throws AccessRightsException
      * @throws ObjectNotFoundException
      * @throws PersistencyException
