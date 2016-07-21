@@ -37,6 +37,7 @@ import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.CastorHashMap;
@@ -192,78 +193,97 @@ public class Dependency extends Collection<DependencyMember> {
     }
 
     /**
+     * Add Dependency specific values to ItemProperties. First checks if there is a Script to be executed,
+     * if no Script defined it will use the default conversion implemented for BuiltInCollections
      * 
-     * @param props
+     * @param props the current list of ItemProperties
      */
     public void addToItemProperties(PropertyArrayList props) throws InvalidDataException, ObjectNotFoundException {
-        Logger.msg(2, "Dependency.addToItemProperties("+getName()+") - itemPath:" + "");
+        Logger.msg(2, "Dependency.addToItemProperties("+getName()+") - Starting ...");
 
-        BuiltInCollections coll = BuiltInCollections.getValue(getName());
+        //convert to BuiltInCollections
+        BuiltInCollections builtInColl = BuiltInCollections.getValue(getName());
 
         for (DependencyMember member : getMembers().list) {
             String memberUUID = member.getChildUUID();
             Integer memberVer = LocalObjectLoader.deriveVersionNumber(member.getBuiltInProperty(VERSION));
 
             if (memberVer == null) {
-                throw new InvalidDataException("Version is null for Collection:" + getName() + ", DependencyMember:" + memberUUID);
+                throw new InvalidDataException("Version is null for Collection:" + getName() + ", MemberUUID:" + memberUUID);
             }
 
-            if (coll != null) {
-                Logger.msg(5, "Dependency.addToItemProperties() - BuiltIn Dependency:"+getName()+" memberUUID:"+memberUUID);
+            //If Script defined it overwrites default behavior which handle BuiltInCollections only
+            if (convertToItemPropertyByScript(props, member) || builtInColl == null) continue;
 
-                switch (coll) {
-                    case SCHEMA:
-                        LocalObjectLoader.getSchema(memberUUID, memberVer);
+            Logger.msg(5, "Dependency.addToItemProperties() - BuiltIn Dependency:"+getName()+" memberUUID:"+memberUUID);
+            //LocalObjectLoader checks if data is valid and loads object to cache
+            switch (builtInColl) {
+                //***************************************************************************************************
+                case SCHEMA:
+                    LocalObjectLoader.getSchema(memberUUID, memberVer);
 
-                        props.put(new Property(SCHEMA_NAME.getName(),    memberUUID));
-                        props.put(new Property(SCHEMA_VERSION.getName(), memberVer.toString()));
-                        break;
-    
-                    case SCRIPT:
-                        LocalObjectLoader.getScript(memberUUID, memberVer);
+                    props.put(new Property(SCHEMA_NAME.getName(),    memberUUID));
+                    props.put(new Property(SCHEMA_VERSION.getName(), memberVer.toString()));
+                    break;
+                //***************************************************************************************************
+                case SCRIPT:
+                    LocalObjectLoader.getScript(memberUUID, memberVer);
 
-                        props.put(new Property(SCRIPT_NAME.getName(),    memberUUID));
-                        props.put(new Property(SCRIPT_VERSION.getName(), memberVer.toString()));
-                        break;
-    
-                    default:
-                        convertToItemPropertyByScript(props, member);
-                        break;
-                }
-            }
-            else {
-                convertToItemPropertyByScript(props, member);
+                    props.put(new Property(SCRIPT_NAME.getName(),    memberUUID));
+                    props.put(new Property(SCRIPT_VERSION.getName(), memberVer.toString()));
+                    break;
+                //***************************************************************************************************
+                case WORKFLOW:
+                    if (Gateway.getProperties().getBoolean("Dependency.addWorkflowToItemProperties", false) ){
+                        LocalObjectLoader.getCompActDef(memberUUID, memberVer);
+
+                        props.put(new Property("Workflow",         memberUUID,           false));
+                        props.put(new Property("WorkflowVersion",  memberVer.toString(), false));
+                    }
+                    break;
+                //***************************************************************************************************
+                default:
+                    Logger.msg(8, "Dependency.addToItemProperties() - Cannot handle BuiltIn Dependency:"+getName());
+                    break;
             }
         }
     }
 
     /**
-     * @param props
-     * @param member
+     * Executes Script if it was defined in the Member properties
+     * 
+     * @param props the current list of ItemProperties
+     * @param member the current DependencyMember
+     * @return true when Script was executed
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
-    private void convertToItemPropertyByScript(PropertyArrayList props, DependencyMember member)  throws InvalidDataException, ObjectNotFoundException {
-        Logger.msg(5, "Dependency.convertToItemPropertyByScript() - Trying to eval Script for Dependency:"+getName()+" memberUUID:"+member.getChildUUID());
+    private boolean convertToItemPropertyByScript(PropertyArrayList props, DependencyMember member)  throws InvalidDataException, ObjectNotFoundException {
+        Logger.msg(5, "Dependency.convertToItemPropertyByScript() - Dependency:"+getName()+" memberUUID:"+member.getChildUUID());
 
         String scriptName = (String)member.getBuiltInProperty(SCRIPT_NAME);
 
         if (scriptName != null && scriptName.length() > 0) {
             PropertyArrayList newProps = (PropertyArrayList)member.evaluateScript();
             props.merge(newProps);
+            return true;
         }
+        return false;
     }
 
     /**
-     * Add Dependency specific values to VertexProperties
+     * Add Dependency specific values to VertexProperties. First checks if there is a Script to be executed,
+     * if no Script defined it will use the default conversion implemented for BuiltInCollections
      * 
-     * @param props
+     * @param props the current list of VertexProperties
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
     public void addToVertexProperties(CastorHashMap props) throws InvalidDataException, ObjectNotFoundException {
+        Logger.msg(2, "Dependency.addToVertexProperties("+getName()+") - Starting ...");
+
         BuiltInCollections coll = BuiltInCollections.getValue(getName());
-        
+
         //FIXME: This is a HACK to skip Activity collections, because they might not be complete, 
         //the Version property is missing from Members when created by Script CompositeActivityDefCollSetter
         if(coll != null && coll == BuiltInCollections.ACTIVITY) return;
@@ -276,90 +296,93 @@ public class Dependency extends Collection<DependencyMember> {
                 throw new InvalidDataException("Version is null for Collection:" + getName() + ", DependencyMember:" + memberUUID);
             }
 
-            if (coll != null) {
-                Logger.msg(5, "Dependency.convertBuiltInCollectionMember() - Dependency:"+getName()+" memberUUID:"+memberUUID);
-                //LocalObjectLoader checks if data is valid and loads object to cache
-                switch (coll) {
-                    case SCHEMA:
-                        try {
-                            LocalObjectLoader.getSchema(memberUUID, memberVer);
-                            props.setBuiltInProperty(SCHEMA_NAME, memberUUID);
-                            props.setBuiltInProperty(SCHEMA_VERSION, memberVer);
-                        }
-                        catch (ObjectNotFoundException e) {
-                            //Schema dependency could be defined in Properties
-                            if(props.containsKey(SCHEMA_NAME)) {
-                                Logger.msg(8, "Dependency.convertBuiltInCollectionMember() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
-                                String uuid = LocalObjectLoader.getSchema(props).getItemPath().getUUID().toString();
-                                props.setBuiltInProperty(SCHEMA_NAME, uuid);
-                            }
-                        }
-                        break;
+            //If Script defined it overwrites default behavior which handle BuiltInCollections only
+            if (convertToVertextPropsByScript(props, member) || coll == null) continue;
 
-                    case SCRIPT:
-                        try {
-                            LocalObjectLoader.getScript(memberUUID, memberVer);
-                            props.setBuiltInProperty(SCRIPT_NAME, memberUUID);
-                            props.setBuiltInProperty(SCRIPT_VERSION, memberVer);
+            Logger.msg(5, "Dependency.addToVertexProperties() - Dependency:"+getName()+" memberUUID:"+memberUUID);
+            //LocalObjectLoader checks if data is valid and loads object to cache
+            switch (coll) {
+                //***************************************************************************************************
+                case SCHEMA:
+                    try {
+                        LocalObjectLoader.getSchema(memberUUID, memberVer);
+                        props.setBuiltInProperty(SCHEMA_NAME, memberUUID);
+                        props.setBuiltInProperty(SCHEMA_VERSION, memberVer);
+                    }
+                    catch (ObjectNotFoundException e) {
+                        //Schema dependency could be defined in Properties
+                        if(props.containsKey(SCHEMA_NAME)) {
+                            Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
+                            String uuid = LocalObjectLoader.getSchema(props).getItemPath().getUUID().toString();
+                            props.setBuiltInProperty(SCHEMA_NAME, uuid);
                         }
-                        catch (ObjectNotFoundException e) {
-                            //Backward compability: Script dependency could be defined in Properties
-                            if(props.containsKey(SCRIPT_NAME)) {
-                                Logger.msg(8, "Dependency.convertBuiltInCollectionMember() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
-                                String uuid = LocalObjectLoader.getScript(props).getItemPath().getUUID().toString();
-                                props.setBuiltInProperty(SCRIPT_NAME, uuid);
-                            }
+                    }
+                    break;
+                //***************************************************************************************************
+                case SCRIPT:
+                    try {
+                        LocalObjectLoader.getScript(memberUUID, memberVer);
+                        props.setBuiltInProperty(SCRIPT_NAME, memberUUID);
+                        props.setBuiltInProperty(SCRIPT_VERSION, memberVer);
+                    }
+                    catch (ObjectNotFoundException e) {
+                        //Backward compability: Script dependency could be defined in Properties
+                        if(props.containsKey(SCRIPT_NAME)) {
+                            Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
+                            String uuid = LocalObjectLoader.getScript(props).getItemPath().getUUID().toString();
+                            props.setBuiltInProperty(SCRIPT_NAME, uuid);
                         }
-                        break;
-
-                    case STATE_MACHINE:
-                        try {
-                            LocalObjectLoader.getStateMachine(memberUUID, memberVer);
-                            props.setBuiltInProperty(STATE_MACHINE_NAME, memberUUID);
-                            props.setBuiltInProperty(STATE_MACHINE_VERSION, memberVer);
+                    }
+                    break;
+                //***************************************************************************************************
+                case STATE_MACHINE:
+                    try {
+                        LocalObjectLoader.getStateMachine(memberUUID, memberVer);
+                        props.setBuiltInProperty(STATE_MACHINE_NAME, memberUUID);
+                        props.setBuiltInProperty(STATE_MACHINE_VERSION, memberVer);
+                    }
+                    catch (ObjectNotFoundException e) {
+                        if(props.containsKey(STATE_MACHINE_NAME)) {
+                            Logger.msg(8, "Dependency.addToVertexProperties() - Dependency '"+getName()+"' is defined in Properties");
+                            String uuid = LocalObjectLoader.getStateMachine(props).getItemPath().getUUID().toString();
+                            props.setBuiltInProperty(STATE_MACHINE_NAME, uuid);
                         }
-                        catch (ObjectNotFoundException e) {
-                            if(props.containsKey(STATE_MACHINE_NAME)) {
-                                Logger.msg(8, "Dependency.convertBuiltInCollectionMember() - Dependency '"+getName()+"' is defined in Properties");
-                                String uuid = LocalObjectLoader.getStateMachine(props).getItemPath().getUUID().toString();
-                                props.setBuiltInProperty(STATE_MACHINE_NAME, uuid);
-                            }
-                        }
-                        break;
-
-                    case ACTIVITY:
-                        ActivityDef actDef = LocalObjectLoader.getActDef(memberUUID, memberVer);
-                        //TODO: a better way is needed set the list of ActDef UUID and Version
-                        props.put("ActivityDefName_"   +actDef.getActName(), memberUUID);
-                        props.put("ActivityDefVersion_"+actDef.getActName(), memberVer);
-                        break;
-
-                    default:
-                        convertToVertextPropsByScript(props, member);
-                        break;
-                }
-            }
-            else {
-                convertToVertextPropsByScript(props, member);
+                    }
+                    break;
+                //***************************************************************************************************
+                case ACTIVITY:
+                    ActivityDef actDef = LocalObjectLoader.getActDef(memberUUID, memberVer);
+                    //TODO: a better way is needed set the list of ActDef UUID and Version
+                    props.put("ActivityDefName_"   +actDef.getActName(), memberUUID);
+                    props.put("ActivityDefVersion_"+actDef.getActName(), memberVer);
+                    break;
+                //***************************************************************************************************
+                default:
+                    Logger.msg(8, "Dependency.addToVertexProperties() - Cannot handle BuiltIn Dependency:"+getName());
+                    break;
             }
         }
     }
 
     /**
+     * Executes Script if it was defined in the Member properties
      * 
-     * @param props
-     * @param member
+     * @param props the current list of VertexProperties
+     * @param member the current DependencyMember
+     * @return true when Script was executed
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
-    private void convertToVertextPropsByScript(CastorHashMap props, DependencyMember member) throws InvalidDataException, ObjectNotFoundException {
-        Logger.msg(5, "Dependency.convertToVertextPropsByScript() - Trying to eval Script for Dependency:"+getName()+" memberUUID:"+member.getChildUUID());
+    private boolean convertToVertextPropsByScript(CastorHashMap props, DependencyMember member) throws InvalidDataException, ObjectNotFoundException {
+        Logger.msg(5, "Dependency.convertToVertextPropsByScript() - Dependency:"+getName()+" memberUUID:"+member.getChildUUID());
 
         String scriptName = (String)member.getBuiltInProperty(SCRIPT_NAME);
 
         if (scriptName != null && scriptName.length() > 0) {
             CastorHashMap newProps = (CastorHashMap)member.evaluateScript();
             props.merge(newProps);
+            return true;
         }
+        return false;
     }
 }

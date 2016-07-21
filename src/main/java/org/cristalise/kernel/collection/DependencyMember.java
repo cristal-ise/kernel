@@ -175,6 +175,7 @@ public class DependencyMember implements CollectionMember {
      * @throws ObjectNotFoundException
      */
     protected Object evaluateScript() throws InvalidDataException, ObjectNotFoundException {
+        Logger.msg(5, "DependencyMember.evaluateScript() - memberUUID:"+getChildUUID());
         Script script = LocalObjectLoader.getScript(getProperties());
 
         try {
@@ -185,5 +186,4 @@ public class DependencyMember implements CollectionMember {
             throw new InvalidDataException(e.getMessage());
         }
     }
-
 }
