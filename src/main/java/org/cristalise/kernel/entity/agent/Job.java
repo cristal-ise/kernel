@@ -21,8 +21,6 @@
 package org.cristalise.kernel.entity.agent;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,9 +199,7 @@ public class Job implements C2KLocalObject
         if (transition != null && transitionResolved == false) {
             Logger.msg(8, "Job.getTransition() - actProps:"+actProps);
             try {
-                String name = getActPropString(STATE_MACHINE_NAME);
-                int version = (Integer)getActProp(STATE_MACHINE_VERSION);
-                StateMachine sm = LocalObjectLoader.getStateMachine(name, version);
+                StateMachine sm = LocalObjectLoader.getStateMachine(actProps);
                 transition = sm.getTransition(transition.getId());
                 transitionResolved = true;
             }
@@ -415,8 +411,9 @@ public class Job implements C2KLocalObject
     }
 
     /**
+     * Returns the 'last' Viepoint of the Outcome associated with this Job
      * 
-     * @return
+     * @return XML data of the last version of Outcome
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
@@ -486,7 +483,7 @@ public class Job implements C2KLocalObject
     }
 
     /**
-     * Returns the Outcome string if exists otherwise tries to read the ViewPoint and if that does not exists
+     * Returns the Outcome string if exists otherwise tries to read the ViewPoint as well. If that does not exists
      * it tries to use an OutcomeInitiator.
      * 
      * @return the Outcome xml
@@ -517,9 +514,9 @@ public class Job implements C2KLocalObject
     }
 
     /**
-     * Returns the Outcome instance using the l
+     * Returns the Outcome instance. It is based on {@link Job#getOutcomeString()}
      * 
-     * @return
+     * @return the Otucome object
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
