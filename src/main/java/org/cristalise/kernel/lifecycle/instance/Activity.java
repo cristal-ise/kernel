@@ -24,8 +24,6 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_NA
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_ROLE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.BREAKPOINT;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DESCRIPTION;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import java.util.ArrayList;
@@ -97,13 +95,10 @@ public class Activity extends WfVertex
 	{
 		super();
 		setProperties(new WfCastorHashMap());
+
 		mErrors = new Vector<String>(0, 1);
 		mStateDate = new GTimeStamp();
 		DateUtility.setToNow(mStateDate);
-	}
-
-	protected String getDefaultSMName() {
-		return "Default";
 	}
 
 	/**
@@ -124,28 +119,16 @@ public class Activity extends WfVertex
 	
 	public StateMachine getStateMachine() throws InvalidDataException {
 		if (machine == null) {
-			String name = (String)getBuiltInProperty(STATE_MACHINE_NAME);
-			Integer version = deriveVersionNumber(getBuiltInProperty(STATE_MACHINE_VERSION));
-			// Use default if not defined
-			if (name == null || name.length() == 0) {
-				name = getDefaultSMName();
-				if (version == null) version = 0;
-			}
-			else if(version == null) {
-			    throw new InvalidDataException("Activity property StateMachineVersion is null");
-			}
-			
-			// Try to load the state machine
-			try {
-				machine = LocalObjectLoader.getStateMachine(name, version);
-			} catch (ObjectNotFoundException ex) {
-				Logger.error(ex);
-				throw new InvalidDataException("Could not load state machine '"+name+"' v"+version);
-			}
+		    try {
+		        machine = LocalObjectLoader.getStateMachine(getProperties());
+		    }
+		    catch (ObjectNotFoundException e) {
+		        throw new InvalidDataException(e.getMessage());
+		    }
 		}
 		return machine;
 	}
-	
+
 	/**
 	 * @return The current State of the Statemachine (Used in Serialisation)
 	 * @throws InvalidDataException

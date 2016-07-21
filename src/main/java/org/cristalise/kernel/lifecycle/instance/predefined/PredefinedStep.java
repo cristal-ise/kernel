@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance.predefined;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 
 import java.io.StringReader;
 
@@ -66,6 +67,7 @@ public abstract class PredefinedStep extends Activity
 	
 	public PredefinedStep() {
 		super();
+		setBuiltInProperty(STATE_MACHINE_NAME, "PredefinedStep");
 		setBuiltInProperty(SCHEMA_NAME, "PredefinedStepOutcome");
 		setBuiltInProperty(SCHEMA_VERSION, "0");
 	}
@@ -79,12 +81,6 @@ public abstract class PredefinedStep extends Activity
 			return super.getActive();
 	}
 	
-
-
-	@Override
-	protected String getDefaultSMName() {
-		return "PredefinedStep";
-	}
 
 	@Override
 	public String getErrors()

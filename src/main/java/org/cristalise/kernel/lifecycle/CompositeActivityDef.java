@@ -23,6 +23,7 @@ package org.cristalise.kernel.lifecycle;
 import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ABORTABLE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.REPEAT_WHEN;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,21 @@ import org.cristalise.kernel.utils.Logger;
 public class CompositeActivityDef extends ActivityDef {
     private ArrayList<ActivityDef> refChildActDef = new ArrayList<ActivityDef>();
 
+    public CompositeActivityDef() {
+        super();
+        setBuiltInProperty(ABORTABLE, false);
+        setBuiltInProperty(REPEAT_WHEN, false);
+        setBuiltInProperty(STATE_MACHINE_NAME, "CompositeActivity");
+
+        try {
+            setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
+        }
+        catch (InvalidDataException e) {
+        } // shouldn't happen with an empty one
+
+        setIsComposite(true);
+    }
+
     public ArrayList<ActivityDef> getRefChildActDef() {
         return refChildActDef;
     }
@@ -80,25 +96,6 @@ public class CompositeActivityDef extends ActivityDef {
 
     public TypeNameAndConstructionInfo[] getEdgeTypeNameAndConstructionInfo() {
         return mEdgeTypeNameAndConstructionInfo;
-    }
-
-    public CompositeActivityDef() {
-        super();
-        setBuiltInProperty(ABORTABLE, false);
-        setBuiltInProperty(REPEAT_WHEN, false);
-
-        try {
-            setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
-        }
-        catch (InvalidDataException e) {
-        } // shouldn't happen with an empty one
-
-        setIsComposite(true);
-    }
-
-    @Override
-    protected String getDefaultSMName() {
-        return "CompositeActivity";
     }
 
     /**

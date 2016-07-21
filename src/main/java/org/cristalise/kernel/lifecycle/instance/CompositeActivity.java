@@ -22,6 +22,7 @@ package org.cristalise.kernel.lifecycle.instance;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ABORTABLE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.REPEAT_WHEN;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 
 import java.util.ArrayList;
 
@@ -62,16 +63,13 @@ public class CompositeActivity extends Activity
         super();
         setBuiltInProperty(ABORTABLE, false);
         setBuiltInProperty(REPEAT_WHEN, false);
+        setBuiltInProperty(STATE_MACHINE_NAME, "CompositeActivity");
+
         try {
 			setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
 		} catch (InvalidDataException e) { } // shouldn't happen with an empty one
         setIsComposite(true);
     }
-
-	@Override
-	protected String getDefaultSMName() {
-		return "CompositeActivity";
-	}
 
 	@Override
 	public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
@@ -392,7 +390,6 @@ public class CompositeActivity extends Activity
         }
         super.runNext(agent, itemPath, locker);
     }
-
 
     /**
      * 

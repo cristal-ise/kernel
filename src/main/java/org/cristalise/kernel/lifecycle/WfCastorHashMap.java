@@ -25,6 +25,8 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_RO
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.BREAKPOINT;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DESCRIPTION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import org.cristalise.kernel.utils.CastorHashMap;
@@ -43,5 +45,9 @@ public class WfCastorHashMap extends CastorHashMap {
         setBuiltInProperty(BREAKPOINT,   false);
         setBuiltInProperty(VIEW_POINT,   "");
         setBuiltInProperty(OUTCOME_INIT, "");
+
+        //Default StateMachine name and version is defined
+        setBuiltInProperty(STATE_MACHINE_NAME, "Default");
+        setBuiltInProperty(STATE_MACHINE_VERSION, "0");
     }
 }
