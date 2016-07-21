@@ -20,9 +20,17 @@
  */
 package org.cristalise.kernel.utils;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_VERSION;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
@@ -32,80 +40,181 @@ import org.cristalise.kernel.scripting.Script;
 
 
 public class LocalObjectLoader {
-	private static ActDefCache actCache = new ActDefCache(null);
-	private static ActDefCache compActCache = new ActDefCache(true);
-	private static ActDefCache elemActCache = new ActDefCache(false);
-	private static StateMachineCache smCache = new StateMachineCache();
-	private static SchemaCache schCache = new SchemaCache();
-	private static ScriptCache scrCache = new ScriptCache();
-	
-	/**
-	 * Retrieves a named version of a script from the database
-	 *
-	 * @param scriptName - script name
-	 * @param scriptVersion - integer script version
-	 * @return Script
-	 * @throws ObjectNotFoundException - When script or version does not exist
-	 * @throws InvalidDataException - When the stored script data was invalid
-	 * 
-	 */	
-	static public Script getScript(String scriptName, int scriptVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading script "+scriptName+" v"+scriptVersion);
-		return scrCache.get(scriptName, scriptVersion);
-	}
+    private static ActDefCache actCache     = new ActDefCache(null);
+    private static ActDefCache compActCache = new ActDefCache(true);
+    private static ActDefCache elemActCache = new ActDefCache(false);
+    private static StateMachineCache smCache = new StateMachineCache();
+    private static SchemaCache schCache = new SchemaCache();
+    private static ScriptCache scrCache = new ScriptCache();
 
-	/**
-	 * Retrieves a named version of a schema from the database
-	 *
-	 * @param schemaName - schema name
-	 * @param schemaVersion - integer schema version
-	 * @return Schema
-	 * @throws ObjectNotFoundException - When schema or version does not exist
-	 * @throws InvalidDataException - When the stored schema data was invalid
-	 */
-	static public Schema getSchema(String schemaName, int schemaVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading schema "+schemaName+" v"+schemaVersion);
-	    // don't bother if this is the Schema schema - for bootstrap esp.
-	    if (schemaName.equals("Schema") && schemaVersion == 0)
-	        return new Schema(schemaName, schemaVersion, new ItemPath(new SystemKey(0, 5)), "");
-		return schCache.get(schemaName, schemaVersion);
-	}
+    /**
+     * Retrieves a named version of a script from the database
+     *
+     * @param scriptName - script name
+     * @param scriptVersion - integer script version
+     * @return Script
+     * @throws ObjectNotFoundException - When script or version does not exist
+     * @throws InvalidDataException - When the stored script data was invalid
+     * 
+     */	
+    static public Script getScript(String scriptName, int scriptVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getScript("+scriptName+" v"+scriptVersion+")");
+        return scrCache.get(scriptName, scriptVersion);
+    }
 
-	/**
-	 * Retrieves a named version of activity def from the database
-	 *
-	 * @param actName - activity name
-	 * @param version - integer activity version
-	 * @return ActivityDef
-	 * @throws ObjectNotFoundException - When activity or version does not exist
-	 * @throws InvalidDataException - When the stored script data was invalid
-	 */
-	static public ActivityDef getActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
-		return actCache.get(actName, actVersion);
-	}
-	
-	static public CompositeActivityDef getCompActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
-		return (CompositeActivityDef)compActCache.get(actName, actVersion);
-	}
-	
-	static public ActivityDef getElemActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading activity def "+actName+" v"+actVersion);
-		return elemActCache.get(actName, actVersion);
-	}
-	
-	/**
-	 * Retrieves a named version of a state machine from the database
-	 *
-	 * @param smName - state machine name
-	 * @param smVersion - integer state machine version
-	 * @return StateMachine
-	 * @throws ObjectNotFoundException - When state machine or version does not exist
-	 * @throws InvalidDataException - When the stored state machine data was invalid
-	 */	
-	static public StateMachine getStateMachine(String smName, int smVersion) throws ObjectNotFoundException, InvalidDataException {
-		Logger.msg(5, "Loading activity state machine "+smName+" v"+smVersion);
-		return smCache.get(smName, smVersion);
-	}
+    /**
+     * 
+     * @param properties
+     * @return Script
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    static public Script getScript(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
+        return (Script)getDescObjectByProperty(properties, SCRIPT_NAME, SCRIPT_VERSION);
+    }
+
+    /**
+     * Retrieves a named version of a schema from the database
+     *
+     * @param schemaName - schema name
+     * @param schemaVersion - integer schema version
+     * @return Schema
+     * @throws ObjectNotFoundException - When schema or version does not exist
+     * @throws InvalidDataException - When the stored schema data was invalid
+     */
+    static public Schema getSchema(String schemaName, int schemaVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getSchema("+schemaName+" v"+schemaVersion+")");
+
+        // don't bother if this is the Schema schema - for bootstrap especially
+        if (schemaName.equals("Schema") && schemaVersion == 0)
+            return new Schema(schemaName, schemaVersion, new ItemPath(new SystemKey(0, 5)), "");
+        
+        return schCache.get(schemaName, schemaVersion);
+    }
+
+    /**
+     * 
+     * @param properties
+     * @return Schema
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    static public Schema getSchema(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
+        return (Schema)getDescObjectByProperty(properties, SCHEMA_NAME, SCHEMA_VERSION);
+    }
+
+    /**
+     * Retrieves a named version of ActivityDef from the database
+     *
+     * @param actName - activity name
+     * @param actVersion - integer activity version
+     * @return ActivityDef
+     * @throws ObjectNotFoundException - When activity or version does not exist
+     * @throws InvalidDataException - When the stored script data was invalid
+     */
+    static public ActivityDef getActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getActDef("+actName+" v"+actVersion+")");
+        return actCache.get(actName, actVersion);
+    }
+
+    /**
+     * Retrieves a named version of CompositeActivityDef from the database
+     *
+     * @param actName - activity name
+     * @param actVersion - integer activity version
+     * @return ActivityDef
+     * @throws ObjectNotFoundException - When activity or version does not exist
+     * @throws InvalidDataException - When the stored script data was invalid
+     */
+    static public CompositeActivityDef getCompActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getCompActDef("+actName+" v"+actVersion+")");
+        return (CompositeActivityDef)compActCache.get(actName, actVersion);
+    }
+
+    /**
+     * Retrieves a named version of ActivityDef from the database
+     *
+     * @param actName - activity name
+     * @param actVersion - integer activity version
+     * @return ActivityDef
+     * @throws ObjectNotFoundException - When activity or version does not exist
+     * @throws InvalidDataException - When the stored script data was invalid
+     */
+    static public ActivityDef getElemActDef(String actName, int actVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getElemActDef("+actName+" v"+actVersion+")");
+        return elemActCache.get(actName, actVersion);
+    }
+
+    /**
+     * Retrieves a named version of a StateMachine from the database
+     *
+     * @param smName - state machine name
+     * @param smVersion - integer state machine version
+     * @return StateMachine
+     * @throws ObjectNotFoundException - When state machine or version does not exist
+     * @throws InvalidDataException - When the stored state machine data was invalid
+     */	
+    static public StateMachine getStateMachine(String smName, int smVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getStateMachine("+smName+" v"+smVersion+")");
+        return smCache.get(smName, smVersion);
+    }
+
+    static public StateMachine getStateMachine(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
+        return (StateMachine)getDescObjectByProperty(properties, STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
+    }
+
+    /**
+     * 
+     * @param properties
+     * @param nameProp
+     * @param verProp
+     * @return DescriptionObject
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    private static DescriptionObject getDescObjectByProperty(CastorHashMap properties, BuiltInVertexProperties nameProp, BuiltInVertexProperties verProp)
+            throws InvalidDataException, ObjectNotFoundException
+    {
+        String resName = (String) properties.getBuiltInProperty(nameProp);
+
+        if (!(properties.isAbstract(nameProp)) && resName != null && resName.length() > 0) {
+            Integer resVer = deriveVersionNumber(properties.getBuiltInProperty(verProp));
+
+            Logger.msg(5, "LocalObjectLoader.getDescObjectByProperty() - "+nameProp+":"+resName+" v"+resVer+")");
+
+            if (resVer == null && !(properties.isAbstract(verProp))) {
+                throw new InvalidDataException("Invalid version property '" + resVer + "' in " + verProp);
+            }
+
+            switch (nameProp) {
+                case SCHEMA_NAME:        return getSchema(resName, resVer);
+                case SCRIPT_NAME:        return getScript(resName, resVer);
+                case STATE_MACHINE_NAME: return getStateMachine(resName, resVer);
+                default:
+                    throw new InvalidDataException("LocalObjectLoader CANNOT handle BuiltInVertexPropertie:"+nameProp);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts Object to an Integer representing a version number.
+     * 
+     * @param value the Object containing a version number
+     * @return the converted Version number. Set to null if value was null or-1
+     * @throws InvalidDataException
+     */
+    public static Integer deriveVersionNumber(Object value) throws InvalidDataException {
+        if (value == null || "".equals(value)) return null;
+
+        try {
+            Integer version = Integer.valueOf(value.toString());
+
+            if(version == -1) return null;
+            return            version;
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("Invalid version number : "+value.toString());
+        }
+    }
 }

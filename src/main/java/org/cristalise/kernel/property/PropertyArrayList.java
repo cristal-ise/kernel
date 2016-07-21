@@ -59,4 +59,13 @@ public class PropertyArrayList extends CastorArrayList<Property> {
             }
         }
     }
+
+    /**
+     * @param newProps
+     */
+    public void merge(PropertyArrayList newProps) {
+        for (Property newProp : newProps.list) {
+            put(newProp);
+        }
+    }
 }

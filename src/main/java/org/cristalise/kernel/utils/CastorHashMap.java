@@ -80,11 +80,9 @@ public class CastorHashMap extends HashMap<String, Object> {
 
     public void setKeyValuePair(KeyValuePair keyValuePair) {
         put(keyValuePair.getKey(), keyValuePair.getValue());
-        
-        if (keyValuePair.isAbstract())
-            abstractPropNames.add(keyValuePair.getKey());
-        else
-            abstractPropNames.remove(keyValuePair.getKey());
+
+        if (keyValuePair.isAbstract()) abstractPropNames.add(keyValuePair.getKey());
+        else                           abstractPropNames.remove(keyValuePair.getKey());
     }
 
     public ArrayList<String> getAbstract() {
@@ -94,6 +92,7 @@ public class CastorHashMap extends HashMap<String, Object> {
     public boolean isAbstract(BuiltInVertexProperties prop) {
         return isAbstract(prop.getName());
     }
+
     public boolean isAbstract(String propName) {
         return abstractPropNames.contains(propName);
     }
@@ -113,13 +112,23 @@ public class CastorHashMap extends HashMap<String, Object> {
     public void put(String key, Object value, boolean isAbstract) {
         super.put(key, value);
 
-        if (isAbstract)
-            abstractPropNames.add(key);
-        else
-            abstractPropNames.remove(key);
+        if (isAbstract) abstractPropNames.add(key);
+        else            abstractPropNames.remove(key);
     }
 
     public Object evaluateProperty(ItemPath itemPath, String propName, String actContext, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
         return DataHelperUtility.evaluateValue(itemPath, get(propName), actContext, locker);
+    }
+
+    /**
+     * Merging existing entries with these new ones. New velues overwrite existing ones
+     * 
+     * @param newProps the properties to be merged
+     */
+    public void merge(CastorHashMap newProps) {
+        //FIXME: optimise code, this solution traverses twice the newProps
+        for (KeyValuePair kvPair : newProps.getKeyValuePairs()) {
+            setKeyValuePair(kvPair);
+        }
     }
 }
