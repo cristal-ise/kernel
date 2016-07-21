@@ -29,22 +29,45 @@ import org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDe
  */
 public enum BuiltInItemProperties {
     /**
+     * Store the Agent name used used to call the {@link CreateItemFromDescription} predefined Step.
+     * 
+     */
+    CREATOR("Creator"),
+
+    /**
      * The name or ID of the Item, specified by the Factory usually and sent as the first parameter in the
      * {@link CreateItemFromDescription} predefined Step. It will be automatically added even if it was not defined.
      */
     NAME("Name"),
-    
+
     /**
      * The type of the Item, used in Dev module, but it is a good practice to set it as an immutable, fixed value 
      * Property. It is convenient to use in lookup searches for Description Items.
      */
     TYPE("Type"),
-    
+
     /**
-     * Store the Agent name used used to call the {@link CreateItemFromDescription} predefined Step.
-     * 
+     * The UUID of the Schema Item and its Version number separated by colon ':'. It is created during 
+     * instantiation of the Schema Dependency.
      */
-    CREATOR("Creator");
+    SCHEMA_URN("SchemaURN"),
+
+    /**
+     * The UUID of the Script Item and its Version number separated by colon ':'. It is created during 
+     * instantiation of the Script Dependency.
+     */
+    SCRIPT_URN("ScriptURN"),
+
+    /**
+     * The UUID of the StateMachine Item and its Version number separated by colon ':'. It is created during 
+     * instantiation of the StateMachine Dependency.
+     */
+    STATE_MACHINE_URN("StateMachineURN"),
+
+    /**
+     * The UUID of the Workflow Item and its Version number separated by colon ':'
+     */
+    WORKFLOW_URN("WorkflowURN");
 
     private String propName;
 

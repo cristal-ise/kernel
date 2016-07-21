@@ -27,6 +27,10 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_V
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.property.BuiltInItemProperties.SCHEMA_URN;
+import static org.cristalise.kernel.property.BuiltInItemProperties.SCRIPT_URN;
+import static org.cristalise.kernel.property.BuiltInItemProperties.STATE_MACHINE_URN;
+import static org.cristalise.kernel.property.BuiltInItemProperties.WORKFLOW_URN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -221,24 +225,25 @@ public class Dependency extends Collection<DependencyMember> {
                 //***************************************************************************************************
                 case SCHEMA:
                     LocalObjectLoader.getSchema(memberUUID, memberVer);
-
-                    props.put(new Property(SCHEMA_NAME.getName(),    memberUUID));
-                    props.put(new Property(SCHEMA_VERSION.getName(), memberVer.toString()));
+                    props.put(new Property(SCHEMA_URN, memberUUID+":"+memberVer));
                     break;
                 //***************************************************************************************************
                 case SCRIPT:
                     LocalObjectLoader.getScript(memberUUID, memberVer);
-
-                    props.put(new Property(SCRIPT_NAME.getName(),    memberUUID));
-                    props.put(new Property(SCRIPT_VERSION.getName(), memberVer.toString()));
+                    props.put(new Property(SCRIPT_URN, memberUUID+":"+memberVer));
+                    break;
+                //***************************************************************************************************
+                case STATE_MACHINE:
+                    if (Gateway.getProperties().getBoolean("Dependency.addStateMachineURN", false) ) {
+                        LocalObjectLoader.getScript(memberUUID, memberVer);
+                        props.put(new Property(STATE_MACHINE_URN, memberUUID+":"+memberVer));
+                    }
                     break;
                 //***************************************************************************************************
                 case WORKFLOW:
-                    if (Gateway.getProperties().getBoolean("Dependency.addWorkflowToItemProperties", false) ){
+                    if (Gateway.getProperties().getBoolean("Dependency.addWorkflowURN", false) ) {
                         LocalObjectLoader.getCompActDef(memberUUID, memberVer);
-
-                        props.put(new Property("Workflow",         memberUUID,           false));
-                        props.put(new Property("WorkflowVersion",  memberVer.toString(), false));
+                        props.put(new Property(WORKFLOW_URN, memberUUID+":"+memberVer));
                     }
                     break;
                 //***************************************************************************************************
