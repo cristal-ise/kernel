@@ -287,11 +287,11 @@ public class Dependency extends Collection<DependencyMember> {
     public void addToVertexProperties(CastorHashMap props) throws InvalidDataException, ObjectNotFoundException {
         Logger.msg(2, "Dependency.addToVertexProperties("+getName()+") - Starting ...");
 
-        BuiltInCollections coll = BuiltInCollections.getValue(getName());
+        BuiltInCollections builtInColl = BuiltInCollections.getValue(getName());
 
         //FIXME: This is a HACK to skip Activity collections, because they might not be complete, 
         //the Version property is missing from Members when created by Script CompositeActivityDefCollSetter
-        if(coll != null && coll == BuiltInCollections.ACTIVITY) return;
+        if(builtInColl != null && builtInColl == BuiltInCollections.ACTIVITY) return;
 
         for (DependencyMember member : getMembers().list) {
             String memberUUID = member.getChildUUID();
@@ -302,11 +302,11 @@ public class Dependency extends Collection<DependencyMember> {
             }
 
             //If Script defined it overwrites default behavior which handle BuiltInCollections only
-            if (convertToVertextPropsByScript(props, member) || coll == null) continue;
+            if (convertToVertextPropsByScript(props, member) || builtInColl == null) continue;
 
             Logger.msg(5, "Dependency.addToVertexProperties() - Dependency:"+getName()+" memberUUID:"+memberUUID);
             //LocalObjectLoader checks if data is valid and loads object to cache
-            switch (coll) {
+            switch (builtInColl) {
                 //***************************************************************************************************
                 case SCHEMA:
                     try {
