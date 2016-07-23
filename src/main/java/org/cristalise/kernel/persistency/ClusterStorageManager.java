@@ -35,7 +35,6 @@ import org.cristalise.kernel.entity.proxy.ProxyMessage;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
@@ -209,13 +208,16 @@ public class ClusterStorageManager {
     }
 
     /** 
-     * Internal get method. Retrieves clusters from ClusterStorages & maintains the memory cache
+     * Internal get method. Retrieves clusters from ClusterStorages & maintains the memory cache.
+     * <br>
+     * There is a special case for Viewpoint. When path ends with /data it returns referenced Outcome instead of Viewpoint.
      */
     public C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException, ObjectNotFoundException {
         C2KLocalObject result = null;
         // check cache first
         Map<String, C2KLocalObject> sysKeyMemCache = null;
         sysKeyMemCache = memoryCache.get(itemPath);
+        
         if (sysKeyMemCache != null) {
             synchronized(sysKeyMemCache) {
                 C2KLocalObject obj = sysKeyMemCache.get(path);
@@ -226,27 +228,24 @@ public class ClusterStorageManager {
             }
         }
 
-        // special case - loading viewpoint contents
+        // special case for Viewpoint- When path ends with /data it returns referenced Outcome instead of Viewpoint
         if (path.startsWith(ClusterStorage.VIEWPOINT) && path.endsWith("/data")) {
             StringTokenizer tok = new StringTokenizer(path,"/");
             if (tok.countTokens() == 4) { // to not catch viewpoints called 'data'
-                Outcome data = null;
                 Viewpoint view = (Viewpoint)get(itemPath, path.substring(0, path.lastIndexOf("/")));
-                if (view != null)
-                    data = view.getOutcome();
-                return data;
+
+                if (view != null) view.getOutcome();
+                else              return null;
             }
         }
 
         // deal out top level remote maps
         if (path.indexOf('/') == -1) {
-            if (path.equals(ClusterStorage.HISTORY))
-                result = new History(itemPath, null);
-            if (path.equals(ClusterStorage.JOB))
-                if (itemPath instanceof AgentPath)
-                    result =  new JobList((AgentPath)itemPath, null);
-                else
-                    throw new ObjectNotFoundException("ClusterStorageManager.get() - Items do not have job lists");
+            if (path.equals(ClusterStorage.HISTORY)) result = new History(itemPath, null);
+            if (path.equals(ClusterStorage.JOB)) {
+                if (itemPath instanceof AgentPath) result = new JobList((AgentPath)itemPath, null);
+                else                               throw new ObjectNotFoundException("Items do not have job lists");
+            }
         }
 
         if (result == null) {
@@ -257,33 +256,40 @@ public class ClusterStorageManager {
                     result = thisReader.get(itemPath, path);
                     Logger.msg(7, "ClusterStorageManager.get() - reading "+path+" from "+thisReader.getName() + " for item " + itemPath);
                     if (result != null) break; // got it!
-                } catch (PersistencyException e) {
-                    Logger.msg(7, "ClusterStorageManager.get() - reader " + thisReader.getName() + " could not retrieve " + itemPath +
-                            "/" + path + ": " + e.getMessage());
+                }
+                catch (PersistencyException e) {
+                    Logger.msg(7, "ClusterStorageManager.get() - reader "+thisReader.getName()+" could not retrieve "+itemPath+"/"+ path+": "+e.getMessage());
                 }
             }
         }
 
-        if (result == null)
-            throw new ObjectNotFoundException("ClusterStorageManager.get() - Path " + path + " not found in " + itemPath);
-        else {
-            // got it! store it in the cache
-            if (sysKeyMemCache == null) { // create cache if needed
-                boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
-                Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
-                sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
-                synchronized (memoryCache) {
-                    memoryCache.put(itemPath, sysKeyMemCache);
-                }
-            }
-            synchronized(sysKeyMemCache) {
-                sysKeyMemCache.put(path, result);
-            }
-            // then return it
-            return result;
+        //No result was found after reading the list of ClusterStorages
+        if (result == null) {
+            throw new ObjectNotFoundException("ClusterStorageManager.get() - Path "+path+" not found in "+itemPath);
         }
+
+        // got it! store it in the cache
+        if (sysKeyMemCache == null) { // create cache if needed
+            boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
+            Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
+            sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
+
+            synchronized (memoryCache) {
+                memoryCache.put(itemPath, sysKeyMemCache);
+            }
+        }
+        synchronized(sysKeyMemCache) {
+            sysKeyMemCache.put(path, result);
+        }
+        return result;
     }
 
+    /**
+     * 
+     * @param itemPath
+     * @param obj
+     * @throws PersistencyException
+     */
     public void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException {
         put(itemPath, obj, null);
     }
