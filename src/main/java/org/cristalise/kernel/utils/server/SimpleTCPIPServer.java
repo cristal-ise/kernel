@@ -33,27 +33,25 @@ import org.cristalise.kernel.utils.Logger;
 
 
 
-public class SimpleTCPIPServer implements Runnable
-{
-    int                 port            = 0;
-    int                 maxConn         = 10;
-    Thread              listener        = null;
-    Class<?>               handlerClass    = null;
-    ServerSocket        serverSocket    = null;
-    boolean            keepListening   = true;
-    ArrayList<SocketHandler>           currentHandlers = new ArrayList<SocketHandler>();
-    static short       noServers = 0;
+public class SimpleTCPIPServer implements Runnable {
 
-    public SimpleTCPIPServer(int port, Class<?> handlerClass, int maxConnections)
-    {
+    int                      port            = 0;
+    int                      maxConn         = 10;
+    Thread                   listener        = null;
+    Class<?>                 handlerClass    = null;
+    ServerSocket             serverSocket    = null;
+    boolean                  keepListening   = true;
+    ArrayList<SocketHandler> currentHandlers = new ArrayList<SocketHandler>();
+    static short             numberOfServers = 0;
+
+    public SimpleTCPIPServer(int port, Class<?> handlerClass, int maxConnections) {
         this.port         = port;
         this.handlerClass = handlerClass;
         this.maxConn      = maxConnections;
-        noServers++;
+        numberOfServers++;
     }
 
-    public void startListening()
-    {
+    public void startListening() {
         if(listener != null) return;
         keepListening = true;
 
@@ -61,72 +59,77 @@ public class SimpleTCPIPServer implements Runnable
         listener.start();
     }
 
-    public void stopListening()
-    {
-        Logger.msg("SimpleTCPIPServer: Closing server for " + handlerClass.getName() +" on port "+ port);
+    public void stopListening() {
+        Logger.msg("SimpleTCPIPServer.stopListening() - Closing server for " + handlerClass.getName() +" on port "+ port);
+
         keepListening = false;
         for (SocketHandler thisHandler : currentHandlers) {
             thisHandler.shutdown();
         }
         try {
-			if (serverSocket!=null) serverSocket.close();
-		} catch (IOException e) { }
+            if (serverSocket!=null) serverSocket.close();
+        }
+        catch (IOException e) { }
     }
 
     @Override
-	public void run()
-    {
-        Thread.currentThread().setName("TCP/IP Server for "+handlerClass.getName());
-        Socket       connectionSocket = null;
+	public void run() {
+        Thread.currentThread().setName("TCP/IP Server for class "+handlerClass.getName());
+        Socket connectionSocket = null;
 
         try {
             serverSocket = new ServerSocket(port);
-            if (port == 0)
-                port = serverSocket.getLocalPort();
-            Logger.msg("SimpleTCPIPServer: Created server for " + handlerClass.getName()+" on port "+port);
+            if (port == 0) port = serverSocket.getLocalPort();
+
+            Logger.msg("SimpleTCPIPServer.run() - Created server for " + handlerClass.getName()+" on port "+port);
+
             serverSocket.setSoTimeout(500);
             SocketHandler freeHandler = null;
+
             while(keepListening) {
                 if (freeHandler == null || freeHandler.isBusy()) {
                     ListIterator<SocketHandler> i = currentHandlers.listIterator();
                     try {
                         do {
                             freeHandler = i.next();
-                        } while (freeHandler.isBusy());
-                    } catch (NoSuchElementException e) {
+                        }
+                        while (freeHandler.isBusy());
+                    }
+                    catch (NoSuchElementException e) {
                         // create new one
                         if (currentHandlers.size() < maxConn) {
                             freeHandler = (SocketHandler)handlerClass.newInstance();
                             currentHandlers.add(freeHandler);
                         }
                         else { // max handlers are created. wait for a while, then look again
-                            Logger.warning("No free handlers left for "+handlerClass.getName()+" on port "+ port + "!");
+                            Logger.warning("No free handlers left for "+handlerClass.getName()+" on port "+ port + "! Sleeping 2s.");
                             Thread.sleep(2000);
                             continue;
                         }
                     }
                 }
+
                 try {
                     connectionSocket = serverSocket.accept();
                     if (keepListening) {
-                        Logger.msg("SimpleTCPIPServer: Connection to "+freeHandler.getName()+" from "+
-                            connectionSocket.getInetAddress());
+                        Logger.msg("SimpleTCPIPServer: Connection to "+freeHandler.getName()+" from "+ connectionSocket.getInetAddress());
+
                         freeHandler.setSocket(connectionSocket);
                         new Thread(freeHandler).start();
                     }
-                } catch (SocketTimeoutException ex1) { // timeout just to check if we've been told to die
-            	} catch (SocketException ex1) { } // we were closed during shutdown
+                } 
+                catch (SocketTimeoutException ex1) { }// timeout just to check if we've been told to die
+                catch (SocketException ex1)        { } // we were closed during shutdown
             }
             serverSocket.close();
             Logger.msg("SimpleTCPIPServer: Server closed for " + handlerClass.getName() +" on port "+ port);
-        } catch(Exception ex) {
-            Logger.error(ex);
+        }
+        catch(Exception ex) {
             Logger.error("SimpleTCPIPServer.run(): Fatal Error. Listener for '"+handlerClass.getName()+"' will stop.");
-            listener = null; --noServers;
-            return;
+            Logger.error(ex);
         }
         listener = null;
-        Logger.msg("SimpleTCPIPServer - Servers still running: "+--noServers);
+        Logger.msg("SimpleTCPIPServer - Servers still running: "+--numberOfServers);
     }
 
     public int getPort() {
