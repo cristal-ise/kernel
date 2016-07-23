@@ -71,7 +71,13 @@ public class PropertyUtility {
         }
     }
 
-    static public CastorHashMap createProperty(PropertyDescriptionList pdList) {
+    /**
+     * Creates VertexProperties from PropertyDescriptions which are ClassIndentifiers
+     * 
+     * @param pdList the PropertyDescriptions to be used
+     * @return the VertexProperties 
+     */
+    static public CastorHashMap createClassProperty(PropertyDescriptionList pdList) {
         CastorHashMap props = new CastorHashMap();
 
         for (int i = 0; i < pdList.list.size(); i++) {
