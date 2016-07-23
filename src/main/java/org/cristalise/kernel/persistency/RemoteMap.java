@@ -50,7 +50,9 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> implements C2KLocalObject  {
 
-	private int mID=-1;
+    private static final long serialVersionUID = -2356840109407419763L;
+
+    private int mID=-1;
 	private String mName;
 	protected ItemPath mItemPath;
 	private String mPath = "";
@@ -219,7 +221,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 	/**
 	 * @see java.util.Map#get(Object)
 	 */
-	@Override
+    @Override
 	public synchronized V get(Object objKey) {
 		loadKeys();
 		String key;

@@ -55,8 +55,10 @@ public class Schema implements DescriptionObject, ErrorHandler {
 	public org.exolab.castor.xml.schema.Schema som;
 	
 	/**
-	 * @param docType
-	 * @param docVersion
+	 * 
+	 * @param name
+	 * @param version
+	 * @param itemPath
 	 * @param schema
 	 */
 	public Schema(String name, int version, ItemPath itemPath, String schema) {

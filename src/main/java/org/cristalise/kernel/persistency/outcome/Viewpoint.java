@@ -162,8 +162,9 @@ public class Viewpoint implements C2KLocalObject {
 	}
 
 	/**
-	 * Sets the sysKey.
-	 * @param sysKey The sysKey to set
+     * Sets the sysKey.
+     * 
+	 * @param itemPath
 	 */
 	public void setItemPath(ItemPath itemPath) {
 		this.itemPath = itemPath;

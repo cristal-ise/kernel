@@ -61,17 +61,14 @@ public class ObjectProperties extends Properties {
     /**
      * ogattaz proposal
      * 
-     * @param aPropertyName
+     * @param propName
      *            the name of the property
      * @param defaultValue
      *            the default value.
      * @return the object value of the property. Returns the default value if the property
      *         doesn't exist or if the properties of the gateway is null.
-     * @return
      */
-    public Object getObject(String propName,
-            Object defaultValue) {
-
+    public Object getObject(String propName, Object defaultValue) {
         Object wValue = get(propName);
         if (wValue == null) {
             return defaultValue;
@@ -82,7 +79,7 @@ public class ObjectProperties extends Properties {
     /**
      * ogattaz proposal
      * 
-     * @param propName
+     * @param aPropertyName
      *            the name of the paroperty
      * @return the boolean value of the property. Returns false if the property
      *         doesn't exist or if the value is not a String or a Boolean
@@ -95,7 +92,7 @@ public class ObjectProperties extends Properties {
     /**
      * ogattaz proposal
      * 
-     * @param propName
+     * @param aPropertyName
      *            the name of the parameter stored in the clc file
      * @param defaultValue
      *            the default value
@@ -103,9 +100,7 @@ public class ObjectProperties extends Properties {
      *         the property doesn't exist or if the value is not a String or a
      *         Boolean instance
      */
-    public boolean getBoolean(String aPropertyName,
-            boolean defaultValue) {
-
+    public boolean getBoolean(String aPropertyName, boolean defaultValue) {
         Object wValue = getObject(aPropertyName, Boolean.valueOf(defaultValue));
         if (wValue instanceof Boolean) {
             return ((Boolean) wValue).booleanValue();
@@ -121,7 +116,7 @@ public class ObjectProperties extends Properties {
     /**
      * ogattaz proposal
      * 
-     * @param propName
+     * @param aPropertyName
      *            the name of the property
      * @return the int value of the property. Returns -1 if the property doesn't
      *         exist or if the value is not a String or an Integer instance
@@ -133,7 +128,7 @@ public class ObjectProperties extends Properties {
     /**
      * ogattaz proposal
      * 
-     * @param propName
+     * @param aPropertyName
      *            the name of the property
      * @param defaultValue
      *            the default value
@@ -142,7 +137,6 @@ public class ObjectProperties extends Properties {
      *         Integer instance
      */
     public int getInt(String aPropertyName, int defaultValue) {
-
         Object wValue = getObject(aPropertyName, Integer.valueOf(defaultValue));
         if (wValue instanceof Integer) {
             return ((Integer) wValue).intValue();

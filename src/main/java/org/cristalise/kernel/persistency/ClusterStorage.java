@@ -185,11 +185,9 @@ public abstract class ClusterStorage {
 	public abstract String getId();
 
 	/**
-	 * Utility method to find the cluster for a particular Local Object (the
-	 * first part of its path)
+	 * Utility method to find the cluster for a particular Local Object (the first part of its path)
 	 * 
-	 * @param Local
-	 *            object path
+	 * @param path object path
 	 * @return The cluster to which it belongs
 	 */
 	protected static String getClusterType(String path) {
@@ -210,7 +208,7 @@ public abstract class ClusterStorage {
 	/**
 	 * Gives the path for a local object. Varies by Cluster.
 	 * 
-	 * @param C2KLocalObject
+	 * @param obj C2KLocalObject
 	 * @return Its path
 	 */
 	public static String getPath(C2KLocalObject obj) {
