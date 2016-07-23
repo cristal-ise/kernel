@@ -115,18 +115,19 @@ public class ClusterStorageManager {
             try {
                 try {
                     newStorage = (ClusterStorage)(Class.forName(newStorageClass).newInstance());
-                } catch (ClassNotFoundException ex2) {
+                }
+                catch (ClassNotFoundException ex2) {
                     newStorage = (ClusterStorage)(Class.forName("org.cristalise.storage."+newStorageClass).newInstance());
                 }
-            } catch (ClassNotFoundException ex) {
-                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class " + newStorageClass +
-                        " could not be found.");
-            } catch (InstantiationException ex) {
-                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class " + newStorageClass +
-                        " could not be instantiated.");
-            } catch (IllegalAccessException ex) {
-                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class " + newStorageClass +
-                        " was not allowed to be instantiated.");
+            }
+            catch (ClassNotFoundException ex) {
+                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" could not be found.");
+            }
+            catch (InstantiationException ex) {
+                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" could not be instantiated.");
+            }
+            catch (IllegalAccessException ex) {
+                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" was not allowed to be instantiated.");
             }
             rootStores.add(newStorage);
         }
@@ -234,7 +235,7 @@ public class ClusterStorageManager {
             if (tok.countTokens() == 4) { // to not catch viewpoints called 'data'
                 Viewpoint view = (Viewpoint)get(itemPath, path.substring(0, path.lastIndexOf("/")));
 
-                if (view != null) view.getOutcome();
+                if (view != null) return view.getOutcome();
                 else              return null;
             }
         }
