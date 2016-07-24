@@ -22,37 +22,45 @@
 
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-	<xs:element name="AllProperties">
-		<xs:annotation>
-			<xs:documentation>Defines the properties that will exist in instances of this description when initially created.</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="PropertyDescription" maxOccurs="unbounded">
-					<xs:complexType>
-						<xs:attribute name="Name" type="xs:string" use="required">
-							<xs:annotation>
-								<xs:documentation>The name of the new property.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="IsClassIdentifier" type="xs:boolean" use="required">
-							<xs:annotation>
-								<xs:documentation>Whether this property is used to identify the class of this item. Properties flagged as 'true' here are used to check type when these items are assigned to collections.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="DefaultValue" type="xs:string" use="optional">
-							<xs:annotation>
-								<xs:documentation>The initial value of the property when it is created.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="IsMutable" type="xs:boolean" use="optional">
-							<xs:annotation>
-								<xs:documentation>Whether or not the property can have its value changed once it has been created.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-					</xs:complexType>
-				</xs:element>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
+    <xs:element name="AllProperties">
+        <xs:annotation>
+            <xs:documentation>Defines the properties that will exist in instances of this description when initially
+                created.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="PropertyDescription" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="Name" type="xs:string" use="required">
+                            <xs:annotation>
+                                <xs:documentation>The name of the new property.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="IsClassIdentifier" type="xs:boolean" use="required">
+                            <xs:annotation>
+                                <xs:documentation>Whether this property is used to identify the class of this item. Such properties are used to check type when these items are assigned to collections.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="DefaultValue" type="xs:string" use="optional">
+                            <xs:annotation>
+                                <xs:documentation>The initial value of the property when it is created.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="IsMutable" type="xs:boolean" use="optional">
+                            <xs:annotation>
+                                <xs:documentation>Whether or not the property can have its value changed once it has been created.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Transitive" type="xs:boolean" use="optional">
+                            <xs:annotation>
+                                <xs:documentation>Whether or not the property is converted to vertex properties during the instantiation of collections. ClassIdentifier are transitive by default.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

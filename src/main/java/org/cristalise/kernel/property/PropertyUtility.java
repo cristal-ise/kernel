@@ -72,18 +72,18 @@ public class PropertyUtility {
     }
 
     /**
-     * Creates VertexProperties from PropertyDescriptions which are ClassIndentifiers
+     * Converts transitive PropertyDescriptions to VertexProprties (CastorHashMap). ClassIdentifiers are transitive by default.
      * 
      * @param pdList the PropertyDescriptions to be used
-     * @return the VertexProperties 
+     * @return the initialised CastorHashMap
      */
-    static public CastorHashMap createClassProperty(PropertyDescriptionList pdList) {
+    static public CastorHashMap convertTransitiveProperties(PropertyDescriptionList pdList) {
         CastorHashMap props = new CastorHashMap();
 
         for (int i = 0; i < pdList.list.size(); i++) {
             PropertyDescription pd = pdList.list.get(i);
 
-            if (pd.getIsClassIdentifier()) props.put(pd.getName(), pd.getDefaultValue());
+            if (pd.isTransitive()) props.put(pd.getName(), pd.getDefaultValue());
         }
         return props;
     }

@@ -61,7 +61,7 @@ public class AggregationDescription extends Aggregation implements CollectionDes
                 // create the new props of the member object
                 try {
                     Vertex v = getLayout().getVertexById(mem.getID());
-                    newInstance.addMember(null, PropertyUtility.createClassProperty(pdList), pdList.getClassProps(), v.getCentrePoint(), v.getWidth(), v.getHeight());
+                    newInstance.addMember(null, PropertyUtility.convertTransitiveProperties(pdList), pdList.getClassProps(), v.getCentrePoint(), v.getWidth(), v.getHeight());
                 }
                 catch (InvalidCollectionModification e) {}
                 catch (ObjectAlreadyExistsException e) {}

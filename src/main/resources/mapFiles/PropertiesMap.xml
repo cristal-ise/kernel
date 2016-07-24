@@ -22,50 +22,50 @@
 
 -->
 <mapping>
-	<class name="org.cristalise.kernel.property.Property">
-		<map-to xml="Property"/>
-		<field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
-			<bind-xml name="name" node="attribute"/>
-		</field>
-		<field name="mMutable" type="boolean" direct="false" get-method="isMutable" set-method="setMutable">
-			<bind-xml name="mutable" node="attribute"/>
-		</field>		
-		<field name="mValue" type="string" direct="false" get-method="getValue" set-method="setValue">
-			<bind-xml node="text"/>
-		</field>
-	</class>
+    <class name="org.cristalise.kernel.property.Property">
+        <map-to xml="Property" />
+        <field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="mMutable" type="boolean" direct="false" get-method="isMutable" set-method="setMutable">
+            <bind-xml name="mutable" node="attribute" />
+        </field>
+        <field name="mValue" type="string" direct="false" get-method="getValue" set-method="setValue">
+            <bind-xml node="text" />
+        </field>
+    </class>
 
-	<class name="org.cristalise.kernel.property.PropertyDescription">
-		<map-to xml="PropertyDescription"/>
-		<field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
-			<bind-xml name="Name" node="attribute"/>
-		</field>
-		<field name="mIsClassIdentifier" type="boolean" direct="false" get-method="getIsClassIdentifier" set-method="setIsClassIdentifier">
-			<bind-xml name="IsClassIdentifier" node="attribute"/>
-		</field>
-		<field name="mDefaultValue" type="string" direct="false" get-method="getDefaultValue" set-method="setDefaultValue">
-			<bind-xml name="DefaultValue" node="attribute"/>
-		</field>
-		<field name="mIsMutable" type="boolean" direct="false" get-method="getIsMutable" set-method="setIsMutable">
-			<bind-xml name="IsMutable" node="attribute"/>
-		</field>
-	</class>
-
+    <class name="org.cristalise.kernel.property.PropertyDescription">
+        <map-to xml="PropertyDescription" />
+        <field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
+            <bind-xml name="Name" node="attribute" />
+        </field>
+        <field name="mIsClassIdentifier" type="boolean" direct="false" get-method="getIsClassIdentifier"
+            set-method="setIsClassIdentifier">
+            <bind-xml name="IsClassIdentifier" node="attribute" />
+        </field>
+        <field name="mDefaultValue" type="string" direct="false" get-method="getDefaultValue" set-method="setDefaultValue">
+            <bind-xml name="DefaultValue" node="attribute" />
+        </field>
+        <field name="mIsMutable" type="boolean" direct="false" get-method="getIsMutable" set-method="setIsMutable">
+            <bind-xml name="IsMutable" node="attribute" />
+        </field>
+        <field name="mTransitive" type="boolean" direct="false" get-method="isTransitive" set-method="setTransitive">
+            <bind-xml name="Transitive" node="attribute" />
+        </field>
+    </class>
 
     <class name="org.cristalise.kernel.property.PropertyDescriptionList">
-    	<map-to xml="AllProperties"/>
-    	<field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.property.PropertyDescription">
-			<bind-xml name="PropertyDescription" node="element"/>
-	    </field>	
-   	</class>    
+        <map-to xml="AllProperties" />
+        <field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.property.PropertyDescription">
+            <bind-xml name="PropertyDescription" node="element" />
+        </field>
+    </class>
 
     <class name="org.cristalise.kernel.property.PropertyArrayList">
-    	<map-to xml="PropertyList"/>
-    	<field name="list" 
-    		   collection="arraylist" 
-    		   direct="true" 
-    		   type="org.cristalise.kernel.property.Property">    		   
-			<bind-xml name="Property" node="element"/>
-    	</field>
-   	</class>       	   	 
+        <map-to xml="PropertyList" />
+        <field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.property.Property">
+            <bind-xml name="Property" node="element" />
+        </field>
+    </class>
 </mapping>

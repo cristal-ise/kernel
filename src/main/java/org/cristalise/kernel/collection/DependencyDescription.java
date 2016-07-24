@@ -52,7 +52,7 @@ public class DependencyDescription extends Dependency implements CollectionDescr
             PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
 
             if (pdList != null) {
-                newDep.setProperties(PropertyUtility.createClassProperty(pdList));
+                newDep.setProperties(PropertyUtility.convertTransitiveProperties(pdList));
                 newDep.setClassProps(pdList.getClassProps());
             }
         }

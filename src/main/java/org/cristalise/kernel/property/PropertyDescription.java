@@ -23,14 +23,42 @@ package org.cristalise.kernel.property;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+/**
+ * 
+ *
+ */
 @Accessors(prefix = "m") @Data
 public class PropertyDescription {
-    private String  mName              = null;
-    private String  mDefaultValue      = null;
+    /**
+     * 
+     */
+    private String  mName = null;
+
+    /**
+     * 
+     */
+    private String  mDefaultValue = null;
+
+    /**
+     * 
+     */
     private boolean mIsClassIdentifier = false;
-    private boolean mIsMutable         = false;
+
+    /**
+     * 
+     */
+    private boolean mIsMutable = false;
+
+    /**
+     * Transitive Properties are converted to VertexProperties. ClassIdentifiers are Transitive as well
+     */
+    private boolean mTransitive = false;
 
     public PropertyDescription() {
+    }
+
+    public boolean isTransitive() {
+        return mTransitive || mIsClassIdentifier;
     }
 
     public PropertyDescription(String name, String defaultValue, boolean isClassIdentifier, boolean isMutable) {
@@ -41,8 +69,8 @@ public class PropertyDescription {
     }
 
     //Method only kept for backward compatibility, because lombok generates different signature
-    public void setIsClassIdentifier(boolean classId) {
-        mIsClassIdentifier = classId;
+    public void setIsClassIdentifier(boolean flag) {
+        mIsClassIdentifier = flag;
     }
 
     //Method only kept for backward compatibility, because lombok generates different signature
@@ -63,5 +91,4 @@ public class PropertyDescription {
     public Property getProperty() {
         return new Property(mName, mDefaultValue, mIsMutable);
     }
-
 }
