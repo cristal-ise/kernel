@@ -31,37 +31,33 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 
 public interface ResourceLoader {
 
-	public URL getKernelBaseURL();
+    public URL getKernelBaseURL();
 
-	public URL getKernelResourceURL(String resName)
-			throws MalformedURLException;
+    public URL getKernelResourceURL(String resName) throws MalformedURLException;
 
-	public void addModuleBaseURL(String ns, URL newBaseURL);
+    public void addModuleBaseURL(String ns, URL newBaseURL);
 
-	public void addModuleBaseURL(String ns, String newBaseURL)
-			throws InvalidDataException;
+    public void addModuleBaseURL(String ns, String newBaseURL) throws InvalidDataException;
 
-	public HashMap<String, URL> getModuleBaseURLs();
+    public HashMap<String, URL> getModuleBaseURLs();
 
-	public URL getModuleResourceURL(String ns, String resName)
-			throws MalformedURLException;
+    public URL getModuleResourceURL(String ns, String resName) throws MalformedURLException;
 
-	/**************************************************************************
-	 * Gets any text resource files
-	 **************************************************************************/
 
-	public String findTextResource(String resName);
+    //**************************************************************************
+    // Gets any text resource files
+    //**************************************************************************
 
-	public HashMap<String, String> getAllTextResources(String resName);
+    public String findTextResource(String resName);
 
-	public String getTextResource(String ns, String resName)
-			throws ObjectNotFoundException;
-	
-	public Class<?> getClassForName(String name)
-			throws ClassNotFoundException;
-	
-	public ClassLoader getClassLoader(String className);
+    public HashMap<String, String> getAllTextResources(String resName);
 
-	public Enumeration<URL> getModuleDefURLs() throws Exception;
+    public String getTextResource(String ns, String resName) throws ObjectNotFoundException;
+
+    public Class<?> getClassForName(String name) throws ClassNotFoundException;
+
+    public ClassLoader getClassLoader(String className);
+
+    public Enumeration<URL> getModuleDefURLs() throws Exception;
 
 }

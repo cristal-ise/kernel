@@ -35,92 +35,96 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 
 public class DefaultResourceImportHandler implements ResourceImportHandler {
 
-	String schemaName;
-	String typeRoot;
-	DomainPath typeRootPath;
-	String wfDef;
-	PropertyDescriptionList props;
-	
-	public DefaultResourceImportHandler(String resType) throws Exception {
-    	if (resType.equals("CA")) {
-    		schemaName = "CompositeActivityDef";
-    		typeRoot = "/desc/ActivityDesc";
-    		wfDef = "ManageCompositeActDef";
-    	}
-    	else if (resType.equals("EA")) {
-    		schemaName = "ElementaryActivityDef";
-    		typeRoot = "/desc/ActivityDesc";
-    		wfDef = "ManageElementaryActDef";
-    	}
-    	else if (resType.equals("OD")) {
-    		schemaName = "Schema";
-    		typeRoot = "/desc/OutcomeDesc";
-    		wfDef = "ManageSchema";
-    	}
-    	else if (resType.equals("SC")) {
-    		schemaName = "Script";
-    		typeRoot = "/desc/Script";
-    		wfDef = "ManageScript";
-    	}
-    	else if (resType.equals("SM")) {
-    		schemaName = "StateMachine";
-    		typeRoot = "/desc/StateMachine";
-    		wfDef = "ManageStateMachine";
-    	}
-    	else throw new Exception("Unknown bootstrap item type: "+resType);
-    	typeRootPath = new DomainPath(typeRoot);
-		props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
-	}
-	
-	@Override
-	public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception {
-		
-		if (schemaName.endsWith("ActivityDef")) {
-			String actData = Gateway.getResource().getTextResource(ns, location);
-			ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
-			actDef.setVersion(version);
-			return actDef.makeDescCollections();
-		}
-		else if (schemaName.equals("Script")) {
-			Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
-			return thisScript.makeDescCollections();
-		}
-			return new CollectionArrayList();
-	}
+    String schemaName;
+    String typeRoot;
+    DomainPath typeRootPath;
+    String wfDef;
+    PropertyDescriptionList props;
 
-	@Override
-	public DomainPath getTypeRoot() {
-		return typeRootPath;
-	}
-	
-	@Override
-	public String getName() {
-		return schemaName;
-	}
+    public DefaultResourceImportHandler(String resType) throws Exception {
+        if (resType.equals("CA")) {
+            schemaName = "CompositeActivityDef";
+            typeRoot = "/desc/ActivityDesc";
+            wfDef = "ManageCompositeActDef";
+        }
+        else if (resType.equals("EA")) {
+            schemaName = "ElementaryActivityDef";
+            typeRoot = "/desc/ActivityDesc";
+            wfDef = "ManageElementaryActDef";
+        }
+        else if (resType.equals("OD")) {
+            schemaName = "Schema";
+            typeRoot = "/desc/OutcomeDesc";
+            wfDef = "ManageSchema";
+        }
+        else if (resType.equals("SC")) {
+            schemaName = "Script";
+            typeRoot = "/desc/Script";
+            wfDef = "ManageScript";
+        }
+        else if (resType.equals("SM")) {
+            schemaName = "StateMachine";
+            typeRoot = "/desc/StateMachine";
+            wfDef = "ManageStateMachine";
+        }
+        else 
+            throw new Exception("Unknown bootstrap item type: "+resType);
 
-	@Override
-	public DomainPath getPath(String name, String ns) throws Exception {
-		return new DomainPath(typeRoot+"/system/"+(ns==null?"kernel":ns)+'/'+name);
-	}
+        typeRootPath = new DomainPath(typeRoot);
 
-	@Override
-	public Set<Outcome> getResourceOutcomes(String name, String ns, String location, Integer version) throws Exception {
-		HashSet<Outcome> retArr = new HashSet<Outcome>();
-		String data = Gateway.getResource().getTextResource(ns, location);
-        if (data == null)
-            throw new Exception("No data found for "+schemaName+" "+name);
-		Outcome resOutcome = new Outcome(0, data, LocalObjectLoader.getSchema(schemaName, 0));
-		retArr.add(resOutcome);
-		return retArr;
-	}
-	
+        props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
+    }
+
+    @Override
+    public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception {
+
+        if (schemaName.endsWith("ActivityDef")) {
+            String actData = Gateway.getResource().getTextResource(ns, location);
+            ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
+            actDef.setVersion(version);
+            return actDef.makeDescCollections();
+        }
+        else if (schemaName.equals("Script")) {
+            Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
+            return thisScript.makeDescCollections();
+        }
+        return new CollectionArrayList();
+    }
+
+    @Override
+    public DomainPath getTypeRoot() {
+        return typeRootPath;
+    }
+
+    @Override
+    public String getName() {
+        return schemaName;
+    }
+
+    @Override
+    public DomainPath getPath(String name, String ns) throws Exception {
+        return new DomainPath(typeRoot+"/system/"+(ns == null ? "kernel" : ns)+'/'+name);
+    }
+
+    @Override
+    public Set<Outcome> getResourceOutcomes(String name, String ns, String location, Integer version) throws Exception {
+        HashSet<Outcome> retArr = new HashSet<Outcome>();
+        String data = Gateway.getResource().getTextResource(ns, location);
+
+        if (data == null) throw new Exception("No data found for "+schemaName+" "+name);
+
+        Outcome resOutcome = new Outcome(0, data, LocalObjectLoader.getSchema(schemaName, 0));
+        retArr.add(resOutcome);
+        return retArr;
+    }
+
     @Override
     public PropertyDescriptionList getPropDesc() throws Exception {
-    	return props;
-	}
+        return props;
+    }
 
-	@Override
-	public String getWorkflowName() throws Exception {
-		return wfDef;
-	}
+    @Override
+    public String getWorkflowName() throws Exception {
+        return wfDef;
+    }
 }

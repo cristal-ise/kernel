@@ -29,50 +29,68 @@ import org.cristalise.kernel.property.PropertyDescriptionList;
 
 
 public interface ResourceImportHandler {
+    /**
+     * Returns the DomainPath for a specific resource
+     * 
+     * @param ns - module namespace
+     * @param name - resource name
+     * @return DomainPath initialised
+     */
+    public DomainPath getPath(String name, String ns) throws Exception;
 
-	
-	/** Returns the DomainPath for a specific resource
-	 * @param ns - module namespace
-	 * @param name - resource name
-	 * @return 
-	 */
-	public DomainPath getPath(String name, String ns) throws Exception;
-	
-	/** Generates the outcomes that the resource should contain.
-	 * @param res - the module resource definition
-	 * @return a set of outcomes to be synced with the resource item.
-	 * @throws Exception - if the supplied resources are not valid
-	 */
-	public Set<Outcome> getResourceOutcomes(String name, String ns, String location, Integer version) throws Exception;
-	
-	/** Gives the CompActDef name to instantiate to provide the workflow for this type of resource. 
-	 * Should be found in the CA typeroot (/desc/ActivityDesc/)
-	 * @return String workflow name
-	 * @throws Exception
-	 */
-	public String getWorkflowName() throws Exception; 
-	
-	/** Should return all of the Properties the resource Item
-	 * will have on creation. The Property 'Name' will be created and populated automatically, even if not declared.
-	 * @return a PropertyDescriptionList - an arraylist of PropertyDescriptions
-	 * @throws Exception
-	 */
-	public PropertyDescriptionList getPropDesc() throws Exception;
-	
-	/** The directory context to search for existing resources. The name of the resource must be unique below this point.
-	 * @return Root path
-	 */
-	public DomainPath getTypeRoot();
-	
-	
-	/** Returns any collections that this Resource Item should contain.
-	 * 
-	 * @return CollectionArrayList
-	 * @throws Exception
-	 */
-	public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception;
-	
-	
-	public String getName();
+    /**
+     * Generates the outcomes that the resource should contain.
+     * 
+     * @param name the name of the resource 
+     * @param ns the namespace defined in the module
+     * @param location
+     * @param version
+     * @return a set of outcomes to be synced with the resource item.
+     * @throws Exception - if the supplied resources are not valid
+     */
+    public Set<Outcome> getResourceOutcomes(String name, String ns, String location, Integer version) throws Exception;
+
+    /** 
+     * Gives the CompActDef name to instantiate to provide the workflow for this type of resource. 
+     * Should be found in the CA typeroot (/desc/ActivityDesc/)
+     * 
+     * @return String workflow name
+     * @throws Exception
+     */
+    public String getWorkflowName() throws Exception; 
+
+    /**
+     * Should return all of the Properties the resource Item will have on creation. 
+     * The Property 'Name' will be created and populated automatically, even if not declared.
+     * 
+     * @return a PropertyDescriptionList - an arraylist of PropertyDescriptions
+     * @throws Exception
+     */
+    public PropertyDescriptionList getPropDesc() throws Exception;
+
+    /**
+     * The directory context to search for existing resources. The name of the resource must
+     * be unique below this point.
+     * 
+     * @return Root DomainPath
+     */
+    public DomainPath getTypeRoot();
+
+
+    /**
+     * Returns any collections that this Resource Item should contain.
+     * 
+     * @return CollectionArrayList
+     * @throws Exception
+     */
+    public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception;
+
+
+    /**
+     * The name of the imported resource managed by the handler
+     * 
+     * @return The name of the imported resource managed by the handler
+     */
+    public String getName();
 
 }
