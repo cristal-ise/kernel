@@ -29,10 +29,7 @@ import java.util.UUID;
 
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
-import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.ObjectAlreadyExistsException;
-import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
@@ -70,10 +67,8 @@ import org.custommonkey.xmlunit.XMLUnit;
 
 
 /**
- * @version $Revision: 1.25 $ $Date: 2006/01/10 09:48:32 $
- * @author  $Author: abranson $
+ * Bootstrap loads all Items defined in the kernel resource XMLs and the module XML 
  */
-
 public class Bootstrap
 {
     static DomainPath thisServerPath;
@@ -82,73 +77,96 @@ public class Bootstrap
     public static boolean shutdown = false;
     static StateMachine predefSM;
 
-	/**
-	 * Run everything without timing-out the service wrapper
-	 */
-	public static void run() throws Exception {
-		predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
-		// check for system agents
-		checkAdminAgents();
+    public static StateMachine getPredefSM() {
+        return predefSM;
+    }
 
-		// create the server's mother item
-		createServerItem();
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-		        try {
+    /**
+     * Run everything without timing-out the service wrapper
+     * 
+     * @throws Exception
+     */
+    public static void run() throws Exception {
+        predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
+        // check for system agents
+        checkAdminAgents();
+
+        // create the server's mother item
+        createServerItem();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
                     Thread.currentThread().setName("Bootstrapper");
-                    
+
                     ClassLoader wClassLoader = Bootstrap.class.getClassLoader();
                     Logger.msg(String.format("Bootstrap.run() setContextClassLoader=[%s]",wClassLoader));
                     Thread.currentThread().setContextClassLoader(wClassLoader);
 
-					// make sure all of the boot items are up-to-date
+                    // make sure all of the boot items are up-to-date
                     if (!shutdown) {
-                    	Logger.msg("Bootstrap.run() - Verifying kernel boot data items");
-                    	verifyBootDataItems();
+                        Logger.msg("Bootstrap.run() - Verifying kernel boot data items");
+                        verifyBootDataItems();
                     }
 
-					// verify the server item's wf
+                    // verify the server item's wf
                     if (!shutdown) {
-                    	Logger.msg("Bootstrap.run() - Initialising Server Item Workflow");
-                    	initServerItemWf();
-                    }
-                    
-                    if (!shutdown) {
-                    	Gateway.getModuleManager().setUser(systemAgents.get("system"));
-                    	Gateway.getModuleManager().registerModules();
+                        Logger.msg("Bootstrap.run() - Initialising Server Item Workflow");
+                        initServerItemWf();
                     }
 
-					if (!shutdown) {
-						Logger.msg("Bootstrap.run() - Bootstrapping complete");
-						Gateway.getModuleManager().runScripts("initialized");
-					}	
-					
-				} catch (Throwable e) {
-					Logger.error(e);
-					Logger.die("Exception performing bootstrap. Check that everything is OK.");
-				}
-			}
-		}).start();
-	}
-	
-	public static void abort() {
-		shutdown = true;
-	}
+                    if (!shutdown) {
+                        Gateway.getModuleManager().setUser(systemAgents.get("system"));
+                        Gateway.getModuleManager().registerModules();
+                    }
 
-    /**************************************************************************
-     * Checks all kernel descriptions, stored in resources
-     **************************************************************************/
-    public static void verifyBootDataItems() throws Exception {
-    	String bootItems;
-    	Logger.msg(1, "Verifying kernel boot items");
-    	bootItems = FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/allbootitems.txt"));
-    	verifyBootDataItems(bootItems, null, true);
-    	Logger.msg(1, "Boot data items complete");
+                    if (!shutdown) {
+                        Logger.msg("Bootstrap.run() - Bootstrapping complete");
+                        Gateway.getModuleManager().runScripts("initialized");
+                    }
+                }
+                catch (Throwable e) {
+                    Logger.error(e);
+                    Logger.die("Exception performing bootstrap. Check that everything is OK.");
+                }
+            }
+        }).start();
     }
 
+    /**
+     * Set flag for the thread to abort gracefully
+     */
+    public static void abort() {
+        shutdown = true;
+    }
+
+    /**
+     * Checks all kernel descriptions stored in resources and create or update them if they were changed
+     * 
+     * @throws Exception
+     */
+    public static void verifyBootDataItems() throws Exception {
+        String bootItems;
+        Logger.msg(1, "Bootstrap.verifyBootDataItems() - Start checking kernel descriptions ...");
+
+        bootItems = FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/allbootitems.txt"));
+
+        verifyBootDataItems(bootItems, null, true);
+
+        Logger.msg(1, "Bootstrap.verifyBootDataItems() - DONE.");
+    }
+
+    /**
+     * 
+     * @param bootList
+     * @param ns
+     * @param reset
+     * @throws InvalidItemPathException
+     */
     private static void verifyBootDataItems(String bootList, String ns, boolean reset) throws InvalidItemPathException {
         StringTokenizer str = new StringTokenizer(bootList, "\n\r");
+
         while (str.hasMoreTokens() && !shutdown) {
             String thisItem = str.nextToken();
             String[] idFilename = thisItem.split(",");
@@ -156,37 +174,41 @@ public class Bootstrap
             ItemPath itemPath = new ItemPath(id);
             String[] fileParts = filename.split("/");
             String itemType = fileParts[0], itemName = fileParts[1];
+
             try {
                 String location = "boot/"+filename+(itemType.equals("OD")?".xsd":".xml");
                 verifyResource(ns, itemName, 0, itemType, itemPath, location, reset);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Logger.error(e);
                 Logger.die("Error importing bootstrap items. Unsafe to continue.");
             }
         }
     }
 
-    
-	/**
-	* Create a resource item from its module definition. The item should not already exist.
-	* 
-	* @param ns
-	* @param itemName
-	* @param version
-	* @param itemType
-	* @param outcomes
-	* @param reset
-	* @return
-	* @throws Exception
-	*/
-	public static DomainPath createResource(String ns, String itemName, int version, String itemType, Set<Outcome> outcomes, boolean reset)
-			throws Exception
-	{
-		return verifyResource(ns, itemName, version, itemType, null, outcomes, null, reset);
-	}
 
     /**
-     * Verify a resource item against a module version, using a ResourceImportHandler configured to find outcomes at the given dataLocation
+     * Create a resource item from its module definition. The item should not already exist.
+     * 
+     * @param ns
+     * @param itemName
+     * @param version
+     * @param itemType
+     * @param outcomes
+     * @param reset
+     * @return Path of the newly created Resource
+     * @throws Exception
+     */
+    public static DomainPath createResource(String ns, String itemName, int version, String itemType, Set<Outcome> outcomes, boolean reset)
+            throws Exception
+    {
+        return verifyResource(ns, itemName, version, itemType, null, outcomes, null, reset);
+    }
+
+    /**
+     * Verify a resource item against a module version, using a ResourceImportHandler configured 
+     * to find outcomes at the given dataLocation
+     * 
      * @param ns
      * @param itemName
      * @param version
@@ -194,18 +216,18 @@ public class Bootstrap
      * @param itemPath
      * @param dataLocation
      * @param reset
-     * @return
+     * @return the Path of the resource either created or initialised from existing data
      * @throws Exception
      */
-    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, 
-            String dataLocation, boolean reset)
-                    throws Exception
+    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, String dataLocation, boolean reset)
+            throws Exception
     {
         return verifyResource(ns, itemName, version, itemType, itemPath, null, dataLocation, reset);
     }
 
     /**
-     * Verify a resource item against a module version, but supplies the resource outcomes directly instead of through a 
+     * Verify a resource item against a module version, but supplies the resource outcomes directly 
+     * instead of through a location lookup
      * 
      * @param ns
      * @param itemName
@@ -214,12 +236,11 @@ public class Bootstrap
      * @param itemPath
      * @param outcomes
      * @param reset
-     * @return
+     * @return the Path of the resource either created or initialised from existing data
      * @throws Exception
      */
-    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, 
-            Set<Outcome> outcomes, boolean reset)
-                    throws Exception
+    public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, boolean reset)
+            throws Exception
     {
         return verifyResource(ns, itemName, version, itemType, itemPath, outcomes, null, reset);
     }
@@ -234,108 +255,98 @@ public class Bootstrap
      * @param outcomes
      * @param dataLocation
      * @param reset
-     * @return
+     * @return the Path of the resource either created or initialised from existing data
      * @throws Exception
      */
-    private static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath,
-            Set<Outcome> outcomes, String dataLocation, boolean reset)
-                    throws Exception {
-		ResourceImportHandler typeImpHandler = getHandler(itemType);
+    private static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, String dataLocation, boolean reset)
+            throws Exception
+    {
+        ResourceImportHandler typeImpHandler = getHandler(itemType);
 
-		Logger.msg(1, "Bootstrap.verifyResource() - Verifying "+ typeImpHandler.getName() +" "+ itemName + " v"+version);
+        Logger.msg(1, "Bootstrap.verifyResource() - Verifying "+typeImpHandler.getName()+" "+ itemName+" v"+version);
 
-		// Find or create Item for Resource
-		ItemProxy thisProxy;
-		DomainPath modDomPath = typeImpHandler.getPath(itemName, ns);
+        // Find or create Item for Resource
+        ItemProxy thisProxy;
+        DomainPath modDomPath = typeImpHandler.getPath(itemName, ns);
 
-		Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
+        Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
 
-		if (en.hasNext()) {
-			Logger.msg(3, "Bootstrap.verifyResource() - Found "
-					+ typeImpHandler.getName() + " " + itemName + ".");
+        if (en.hasNext()) {
+            Logger.msg(3, "Bootstrap.verifyResource() - Found "+typeImpHandler.getName()+" "+itemName + ".");
 
-			thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName,
-					itemPath, modDomPath, (DomainPath) en.next());
-		} 
-		else {
-			if (itemPath == null)
-				itemPath = new ItemPath();
-		
-			Logger.msg("Bootstrap.verifyResource() - " 
-					+ typeImpHandler.getName() + " " + itemName + " not found. Creating new.");
+            thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName, itemPath, modDomPath, (DomainPath) en.next());
+        } 
+        else {
+            if (itemPath == null) itemPath = new ItemPath();
 
-			thisProxy = createResourceItem(typeImpHandler, itemName, ns, itemPath);
-		}
+            Logger.msg("Bootstrap.verifyResource() - "+typeImpHandler.getName()+" "+itemName+" not found. Creating new.");
 
-		// Verify/Import Outcomes, creating events and views as necessary
-		if (outcomes == null || outcomes.size() == 0) {
-			outcomes = typeImpHandler.getResourceOutcomes(itemName, ns,
-					dataLocation, version);
-		}
+            thisProxy = createResourceItem(typeImpHandler, itemName, ns, itemPath);
+        }
 
-		if (outcomes.size() == 0)
-			Logger.warning("Bootstrap.verifyResource() - no Outcome found therefore nothing stored!");
+        // Verify/Import Outcomes, creating events and views as necessary
+        if (outcomes == null || outcomes.size() == 0) {
+            outcomes = typeImpHandler.getResourceOutcomes(itemName, ns, dataLocation, version);
+        }
 
-		for (Outcome newOutcome : outcomes) {
-			if (checkToStoreOutcomeVersion(thisProxy, newOutcome, version,
-					reset)) {
-				// validate it (but not for kernel objects because we need those
-				// to validate the rest)
-				if (ns != null) {
-					String error = newOutcome.validate();
-					if (error != null && error.length() > 0) {
-						Logger.error("Outcome not valid: \n " + error);
-						throw new InvalidDataException(error);
-					}
-				}
+        if (outcomes.size() == 0) Logger.warning("Bootstrap.verifyResource() - no Outcome found therefore nothing stored!");
 
-				storeOutcomeEventAndViews(thisProxy, newOutcome, version);
-			}
-		}
+        for (Outcome newOutcome : outcomes) {
+            if (checkToStoreOutcomeVersion(thisProxy, newOutcome, version, reset)) {
+                // validate it (but not for kernel objects because we need those to validate the rest
+                if (ns != null) {
+                    String error = newOutcome.validate();
+                    if (error != null && error.length() > 0) {
+                        Logger.error("Outcome not valid: \n " + error);
+                        throw new InvalidDataException(error);
+                    }
+                }
 
-		CollectionArrayList cols = typeImpHandler.getCollections(itemName, ns, dataLocation, version);
-		for (Collection<?> col : cols.list) {
-			Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
-			Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
-			col.setVersion(null);
-			Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
-		}
-		Gateway.getStorage().commit(thisProxy);
-		return modDomPath;
-	}
+                storeOutcomeEventAndViews(thisProxy, newOutcome, version);
+            }
+        }
+
+        CollectionArrayList cols = typeImpHandler.getCollections(itemName, ns, dataLocation, version);
+
+        for (Collection<?> col : cols.list) {
+            Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+            Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
+            col.setVersion(null);
+            Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+        }
+        Gateway.getStorage().commit(thisProxy);
+        return modDomPath;
+    }
 
     /**
      * Verify module property and location
      * 
      * @param ns
+     * @param itemType
      * @param itemName
      * @param itemPath
-     * @param lookupManager
-     * @param thisProxy
      * @param modDomPath
      * @param path
-     * @throws PersistencyException
-     * @throws ObjectCannotBeUpdated
-     * @throws ObjectAlreadyExistsException
-     * @throws CannotManageException 
+     * @return the ItemProxy either create or initialised for existing
+     * @throws Exception
      */
-    private static ItemProxy verifyPathAndModuleProperty(String ns, String itemType, String itemName, ItemPath itemPath,
-                                                         DomainPath modDomPath, DomainPath path) throws Exception {
-    	
+    private static ItemProxy verifyPathAndModuleProperty(String ns, String itemType, String itemName, ItemPath itemPath, DomainPath modDomPath, DomainPath path) 
+            throws Exception
+    {
         LookupManager lookupManager = Gateway.getLookupManager();
         ItemProxy thisProxy = Gateway.getProxyManager().getProxy(path);
 
         if (itemPath != null && !path.getItemPath().equals(itemPath)) {
-        	Logger.warning("Resource "+itemType+"/"+itemName+" should have path "+itemPath+" but was found with path "+path.getItemPath());
+            Logger.warning("Resource "+itemType+"/"+itemName+" should have path "+itemPath+" but was found with path "+path.getItemPath());
             itemPath = path.getItemPath();
         }
-        
+
         if (itemPath == null) itemPath = path.getItemPath();
-	          	
+
         String moduleName = (ns==null?"kernel":ns);
         String itemModule;
         try {
-        	itemModule = thisProxy.getProperty("Module");
+            itemModule = thisProxy.getProperty("Module");
             if (itemModule != null && !itemModule.equals("") && !itemModule.equals("null") && !moduleName.equals(itemModule)) {
                 String error = "Module clash! Resource '"+itemName+"' included in module "+moduleName+" but is assigned to '"+itemModule + "'.";
                 Logger.error(error);
@@ -343,29 +354,27 @@ public class Bootstrap
             }
         }
         catch (ObjectNotFoundException ex) {
-           	itemModule = "";
+            itemModule = "";
         }
-	            
+
         if (!modDomPath.equals(path)) {	 // move item to module subtree
-           	Logger.msg("Module item "+itemName+" found with path "+path.toString()+". Moving to "+modDomPath.toString());
-           	modDomPath.setItemPath(itemPath);
-            
+            Logger.msg("Module item "+itemName+" found with path "+path.toString()+". Moving to "+modDomPath.toString());
+            modDomPath.setItemPath(itemPath);
+
             if (!modDomPath.exists()) lookupManager.add(modDomPath);
-	            	lookupManager.delete(path);
-	    }
+            lookupManager.delete(path);
+        }
         return thisProxy;
     }
-            
+
     /**
-     * @param itemName
-     * @param version
-     * @param itemPath
-     * @param typeImpHandler
-     * @param thisProxy
+     * 
+     * @param item
      * @param newOutcome
+     * @param version
      * @throws PersistencyException
-     * @throws InvalidDataException 
-     * @throws ObjectNotFoundException 
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
      */
     private static void storeOutcomeEventAndViews(ItemProxy item, Outcome newOutcome, int version)
             throws PersistencyException, ObjectNotFoundException, InvalidDataException
@@ -394,80 +403,91 @@ public class Bootstrap
      * @param newOutcome
      * @param version
      * @param reset
-     * @return
+     * @return true i the data was changed, since the last Bootstrap run
      * @throws PersistencyException
      * @throws InvalidDataException
      * @throws ObjectNotFoundException 
      */
     private static boolean checkToStoreOutcomeVersion(ItemProxy item, Outcome newOutcome, int version, boolean reset)
             throws PersistencyException, InvalidDataException, ObjectNotFoundException
- {
-    	Schema schema = newOutcome.getSchema();
-		try {
-			Viewpoint currentData = (Viewpoint) item.getObject(ClusterStorage.VIEWPOINT + "/"
-							+ newOutcome.getSchema().getName() + "/" + version);
-			Outcome oldData = currentData.getOutcome();
-			
-			XMLUnit.setIgnoreWhitespace(true);
-			XMLUnit.setIgnoreComments(true);
-			Diff xmlDiff = new Diff(newOutcome.getDOM(), oldData.getDOM());
-			if (xmlDiff.identical()) {
-				Logger.msg(5,
-						"Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
-				return false;
-			} else {
-				StringBuffer diffDetails = new StringBuffer();
-				diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item: ").
-					append(item.getName()).append(" syskey:").append(item.getPath());
-				xmlDiff.appendMessage(diffDetails);
-				Logger.msg(diffDetails.toString());
-				if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
-					Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
-					return false;
-				}
-			}
-		} catch (ObjectNotFoundException ex) {
-			Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - " + schema.getName() + " " + item.getName()
-					+ " v" + version + " not found! Attempting to insert new.");
-		}
-		return true;
-	}
-    
-    public static StateMachine getPredefSM() {
-    	return predefSM;
-    }
-    
-    private static ResourceImportHandler getHandler(String resType) throws Exception {
-    	if (resHandlerCache.containsKey(resType))
-    		return resHandlerCache.get(resType);
-    	ResourceImportHandler handler = null;
-    	if (Gateway.getProperties().containsKey("ResourceImportHandler."+resType)) {
-    		try {
-    			handler = (ResourceImportHandler) Gateway.getProperties().getInstance("ResourceImportHandler."+resType);
-    		} catch (Exception ex) {
-    			Logger.error(ex);
-    			Logger.error("Exception loading ResourceHandler for "+resType+". Using default.");
-    		}
-    	}
-    	
-    	if (handler == null) 
-    		handler = new DefaultResourceImportHandler(resType);
-    	
-    	resHandlerCache.put(resType, handler);
-    	return handler;
+    {
+        Schema schema = newOutcome.getSchema();
+        try {
+            Viewpoint currentData = (Viewpoint) item.getObject(ClusterStorage.VIEWPOINT+"/"+newOutcome.getSchema().getName()+"/"+version);
+            Outcome oldData = currentData.getOutcome();
+
+            XMLUnit.setIgnoreWhitespace(true);
+            XMLUnit.setIgnoreComments(true);
+            Diff xmlDiff = new Diff(newOutcome.getDOM(), oldData.getDOM());
+            if (xmlDiff.identical()) {
+                Logger.msg(5, "Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
+                return false;
+            } 
+            else {
+                StringBuffer diffDetails = new StringBuffer();
+                diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item: ").append(item.getName()).append(" syskey:").append(item.getPath());
+                xmlDiff.appendMessage(diffDetails);
+                Logger.msg(diffDetails.toString());
+                
+                if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
+                    Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
+                    return false;
+                }
+            }
+        }
+        catch (ObjectNotFoundException ex) {
+            Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - "+schema.getName()+" "+item.getName()+" v"+version+" not found! Attempting to insert new.");
+        }
+        return true;
     }
 
-	/**
-     * @param itemType
-     * @param itemName
-     * @param data
+    /**
+     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
+     * or falls back to the default one provided in the kernel
+     * 
+     * @param resType the type o the Resource
+     * @return the initialised ResourceImportHandler
+     * @throws Exception
      */
-    private static ItemProxy createResourceItem(ResourceImportHandler impHandler, String itemName, String ns, ItemPath itemPath) throws Exception {
+    private static ResourceImportHandler getHandler(String resType) throws Exception {
+        if (resHandlerCache.containsKey(resType)) return resHandlerCache.get(resType);
+
+        ResourceImportHandler handler = null;
+
+        if (Gateway.getProperties().containsKey("ResourceImportHandler."+resType)) {
+            try {
+                handler = (ResourceImportHandler) Gateway.getProperties().getInstance("ResourceImportHandler."+resType);
+            }
+            catch (Exception ex) {
+                Logger.error(ex);
+                Logger.error("Exception loading ResourceHandler for "+resType+". Using default.");
+            }
+        }
+
+        if (handler == null) handler = new DefaultResourceImportHandler(resType);
+
+        resHandlerCache.put(resType, handler);
+
+        return handler;
+    }
+
+    /**
+     * 
+     * @param impHandler
+     * @param itemName
+     * @param ns
+     * @param itemPath
+     * @return the ItemProxy representing the newly create Item
+     * @throws Exception
+     */
+    private static ItemProxy createResourceItem(ResourceImportHandler impHandler, String itemName, String ns, ItemPath itemPath) 
+            throws Exception
+    {
         // create props
         PropertyDescriptionList pdList = impHandler.getPropDesc();
         PropertyArrayList props = new PropertyArrayList();
         LookupManager lookupManager = Gateway.getLookupManager();
-        
+
         for (int i = 0; i < pdList.list.size(); i++) {
             PropertyDescription pd = pdList.list.get(i);
             String propName = pd.getName();
@@ -476,15 +496,15 @@ public class Bootstrap
             if (propName.equals("Module")) propVal = ns==null?"kernel":ns;
             props.list.add(new Property(propName, propVal, pd.getIsMutable()));
         }
-        
-        CompositeActivity ca = new CompositeActivity();
-       	try {
-       		ca = (CompositeActivity) ((CompositeActivityDef)LocalObjectLoader.getActDef(impHandler.getWorkflowName(), 0)).instantiate();
-       	} catch (ObjectNotFoundException ex) {
-       		Logger.error(ex);
-       		Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
-       	}
 
+        CompositeActivity ca = new CompositeActivity();
+        try {
+            ca = (CompositeActivity) ((CompositeActivityDef)LocalObjectLoader.getActDef(impHandler.getWorkflowName(), 0)).instantiate();
+        }
+        catch (ObjectNotFoundException ex) {
+            Logger.error(ex);
+            Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
+        }
 
         Gateway.getCorbaServer().createItem(itemPath);
         lookupManager.add(itemPath);
@@ -496,68 +516,81 @@ public class Bootstrap
         return newItemProxy;
     }
 
-    /**************************************************************************
-     * Checks for the existence of the admin users so you can use Cristal
-     **************************************************************************/
-     private static AgentProxy checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
-    	 
-         Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' user.");
-         LookupManager lookup = Gateway.getLookupManager();
-         
-         try {
-        	 AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(lookup.getAgentPath(name));
-             systemAgents.put(name, agentProxy);
-             Logger.msg(3, "Bootstrap.checkAgent() - User '"+name+"' found.");
-             return agentProxy;
-         } catch (ObjectNotFoundException ex) { }
-         
-         Logger.msg("Bootstrap.checkAgent() - User '"+name+"' not found. Creating.");
+    /**
+     * Checks for the existence of a users so it can be used
+     * 
+     * @param name
+     * @param pass
+     * @param rolePath
+     * @param uuid
+     * @return the Proxy representing the Agent
+     * @throws Exception
+     */
+    private static AgentProxy checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
+        Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' user.");
+        LookupManager lookup = Gateway.getLookupManager();
 
-         try {
-             AgentPath agentPath = new AgentPath(new ItemPath(uuid), name);
-             agentPath.setPassword(pass);
-             Gateway.getCorbaServer().createAgent(agentPath);
-             lookup.add(agentPath);
+        try {
+            AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(lookup.getAgentPath(name));
+            systemAgents.put(name, agentProxy);
+            Logger.msg(3, "Bootstrap.checkAgent() - User '"+name+"' found.");
+            return agentProxy;
+        }
+        catch (ObjectNotFoundException ex) { }
 
-             // assign admin role
-             Logger.msg("Bootstrap.checkAgent() - Assigning role '"+rolePath.getName()+"'");
-             Gateway.getLookupManager().addRole(agentPath, rolePath);
-             Gateway.getStorage().put(agentPath, new Property("Name", name, true), null);
-             Gateway.getStorage().put(agentPath, new Property("Type", "Agent", false), null);
-             AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
-             //TODO: properly init agent here with wf, props and colls
-             //agentProxy.initialise(agentId, itemProps, workflow, colls);
-             systemAgents.put(name, agentProxy);
-             return agentProxy;
-         } catch (Exception ex) {
-             Logger.error("Unable to create "+name+" user.");
-             throw ex;
-         }
-     }
+        Logger.msg("Bootstrap.checkAgent() - User '"+name+"' not found. Creating.");
+
+        try {
+            AgentPath agentPath = new AgentPath(new ItemPath(uuid), name);
+            agentPath.setPassword(pass);
+            Gateway.getCorbaServer().createAgent(agentPath);
+            lookup.add(agentPath);
+
+            // assign admin role
+            Logger.msg("Bootstrap.checkAgent() - Assigning role '"+rolePath.getName()+"'");
+            Gateway.getLookupManager().addRole(agentPath, rolePath);
+            Gateway.getStorage().put(agentPath, new Property("Name", name, true), null);
+            Gateway.getStorage().put(agentPath, new Property("Type", "Agent", false), null);
+            AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
+            //TODO: properly init agent here with wf, props and colls
+            //agentProxy.initialise(agentId, itemProps, workflow, colls);
+            systemAgents.put(name, agentProxy);
+            return agentProxy;
+        }
+        catch (Exception ex) {
+            Logger.error("Unable to create "+name+" user.");
+            throw ex;
+        }
+    }
 
     /**
-     *
+     * 
+     * @throws Exception
      */
     public static void checkAdminAgents() throws Exception {
-    	
+
         // check for administrative user & admin role
-    	RolePath rootRole = new RolePath();
-    	if (!rootRole.exists()) Gateway.getLookupManager().createRole(rootRole);
-    	RolePath adminRole = new RolePath(rootRole, "Admin", false);
-    	if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
-    	
+        RolePath rootRole = new RolePath();
+        if (!rootRole.exists()) Gateway.getLookupManager().createRole(rootRole);
+        RolePath adminRole = new RolePath(rootRole, "Admin", false);
+        if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
+
         // check for import user
-    	AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 0).toString());
-    	ScriptConsole.setUser(system);
-    	
+        AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 0).toString());
+        ScriptConsole.setUser(system);
+
         // check for local usercode user & role
-    	RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
-    	if (!usercodeRole.exists()) Gateway.getLookupManager().createRole(usercodeRole);
+        RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
+        if (!usercodeRole.exists()) Gateway.getLookupManager().createRole(usercodeRole);
         checkAgent(InetAddress.getLocalHost().getHostName(), "uc", usercodeRole, UUID.randomUUID().toString());
     }
 
+    /**
+     * 
+     * @throws Exception
+     */
     public static void createServerItem() throws Exception {
-    	LookupManager lookupManager = Gateway.getLookupManager();
+        LookupManager lookupManager = Gateway.getLookupManager();
         String serverName = Gateway.getProperties().getString("ItemServer.name", InetAddress.getLocalHost().getHostName());
         thisServerPath = new DomainPath("/servers/"+serverName);
         ItemPath serverItem;
@@ -576,15 +609,18 @@ public class Bootstrap
         Gateway.getStorage().put(serverItem, new Property("KernelVersion", Gateway.getKernelVersion(), true), null);
         int proxyPort = Gateway.getProperties().getInt("ItemServer.Proxy.port", 1553);
         Gateway.getStorage().put(serverItem,
-                    new Property("ProxyPort", String.valueOf(proxyPort), false), null);
+                new Property("ProxyPort", String.valueOf(proxyPort), false), null);
         Gateway.getStorage().put(serverItem,
-                    new Property("ConsolePort", String.valueOf(Logger.getConsolePort()), true), null);
+                new Property("ConsolePort", String.valueOf(Logger.getConsolePort()), true), null);
         Gateway.getProxyManager().connectToProxyServer(serverName, proxyPort);
-
     }
 
+    /**
+     * 
+     * @throws Exception
+     */
     public static void initServerItemWf() throws Exception {
-    	CompositeActivityDef serverWfCa = (CompositeActivityDef)LocalObjectLoader.getActDef("ServerItemWorkflow", 0);
+        CompositeActivityDef serverWfCa = (CompositeActivityDef)LocalObjectLoader.getActDef("ServerItemWorkflow", 0);
         Workflow wf = new Workflow((CompositeActivity)serverWfCa.instantiate(), new ServerPredefinedStepContainer());
         wf.initialise(thisServerPath.getItemPath(), systemAgents.get("system").getPath(), null);
         Gateway.getStorage().put(thisServerPath.getItemPath(), wf, null);

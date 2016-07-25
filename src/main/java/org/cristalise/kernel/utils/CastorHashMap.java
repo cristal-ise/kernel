@@ -42,6 +42,9 @@ public class CastorHashMap extends HashMap<String, Object> {
         clear();
     }
 
+    /**
+     * Abstract properties must be overridden in slots, and instantiation will fail if they are not
+     */
     ArrayList<String> abstractPropNames = new ArrayList<String>();
 
     public KeyValuePair[] getKeyValuePairs() {
