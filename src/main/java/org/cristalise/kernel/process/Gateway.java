@@ -120,9 +120,12 @@ public class Gateway
             throw new InvalidDataException("Invalid Resource Location");
         }
 
+        Properties allModuleProperties;
+
         // init module manager
         try {
-            mModules = new ModuleManager(mResource.getModuleDefURLs(), AbstractMain.isServer);
+            mModules = new ModuleManager(AbstractMain.isServer);
+            allModuleProperties = mModules.loadModules(mResource.getModuleDefURLs());
         }
         catch (Exception e) {
             Logger.error(e);
@@ -130,10 +133,9 @@ public class Gateway
         }
 
         // merge in module props
-        Properties moduleProperties = mModules.getAllModuleProperties();
-        for (Enumeration<?> e = moduleProperties.propertyNames(); e.hasMoreElements();) {
+        for (Enumeration<?> e = allModuleProperties.propertyNames(); e.hasMoreElements();) {
             String propName = (String)e.nextElement();
-            mC2KProps.put(propName, moduleProperties.get(propName));
+            mC2KProps.put(propName, allModuleProperties.get(propName));
         }
 
         // Overwrite with argument props
