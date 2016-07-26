@@ -30,87 +30,103 @@ import org.cristalise.kernel.utils.server.SimpleTCPIPServer;
 
 public class ProxyServer implements Runnable {
 
-    // server objects
     ArrayList<ProxyClientConnection> proxyClients;
     SimpleTCPIPServer proxyListener = null;
+
     String serverName = null;
     boolean keepRunning = true;
     LinkedBlockingQueue<ProxyMessage> messageQueue;
     
-	public ProxyServer(String serverName) {
-        Logger.msg(5, "ProxyManager::initServer - Starting.....");
-        int port = Gateway.getProperties().getInt("ItemServer.Proxy.port", 0);
-        this.serverName = serverName;
-        this.proxyClients = new ArrayList<ProxyClientConnection>();
-        this.messageQueue = new LinkedBlockingQueue<ProxyMessage>();
-        
+    int port = 0;
+
+    public ProxyServer(String serverName) {
+        Logger.msg(5, "ProxyServer(serverName:"+serverName+") - Starting.....");
+
+        port = Gateway.getProperties().getInt("ItemServer.Proxy.port", 0);
+
         if (port == 0) {
             Logger.error("ItemServer.Proxy.port not defined in connect file. Remote proxies will not be informed of changes.");
             return;
         }
 
-        // set up the proxy server
+        this.serverName = serverName;
+        this.proxyClients = new ArrayList<ProxyClientConnection>();
+        this.messageQueue = new LinkedBlockingQueue<ProxyMessage>();
+
+        // start the message queue delivery thread
+        new Thread(this).start();
+    }
+
+    @Override
+    public void run() {
+        Thread.currentThread().setName("ProxyServer");
+
         try {
             Logger.msg(5, "ProxyManager::initServer - Initialising proxy informer on port "+port);
             proxyListener = new SimpleTCPIPServer(port, ProxyClientConnection.class, 200);
             proxyListener.startListening();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.error("Error setting up Proxy Server. Remote proxies will not be informed of changes.");
             Logger.error(ex);
         }
-        // start the message queue delivery thread
-        new Thread(this).start();
-	}
-	
-	@Override
-	public void run() {
-		Thread.currentThread().setName("Proxy Server");
-		while(keepRunning) {
-			ProxyMessage message = messageQueue.poll();
-			if (message != null) {
-	            synchronized(proxyClients) {
-	                for (ProxyClientConnection client : proxyClients) {
-	                    client.sendMessage(message);
-	                }
-	            }
-			} else
-				try {
-					synchronized(this) {
-						if (messageQueue.isEmpty()) wait(); 
-					}
-				} catch (InterruptedException e) { }
-		}
 
-	}
+        while(keepRunning) {
+            ProxyMessage message = messageQueue.poll();
+            if (message != null) {
+                synchronized(proxyClients) {
+                    for (ProxyClientConnection client : proxyClients) {
+                        client.sendMessage(message);
+                    }
+                }
+            }
+            else {
+                try {
+                    synchronized(this) {
+                        if (messageQueue.isEmpty()) wait(); 
+                    }
+                }
+                catch (InterruptedException e) { }
+            }
+        }
+    }
 
-	public String getServerName() {
-		return serverName;
-	}
+    public String getServerName() {
+        return serverName;
+    }
 
     public void sendProxyEvent(ProxyMessage message) {
-		try {
-			synchronized(this) { 
-				messageQueue.put(message);
-				notify(); 
-			}
-		} catch (InterruptedException e) { }
+        try {
+            synchronized(this) { 
+                messageQueue.put(message);
+                notify(); 
+            }
+        }
+        catch (InterruptedException e) { }
     }
 
     public void reportConnections(int logLevel) {
         synchronized(proxyClients) {
             Logger.msg(logLevel, "Currently connected proxy clients:");
-            for (ProxyClientConnection client : proxyClients) {
-                Logger.msg(logLevel, "   "+client);
-            }
+
+            for (ProxyClientConnection client : proxyClients) Logger.msg(logLevel, "   "+client);
         }
     }
 
     public void shutdownServer() {
         Logger.msg(1, "ProxyManager: Closing Server.");
+
         proxyListener.stopListening();
+
+        synchronized(proxyClients) {
+            for (ProxyClientConnection client : proxyClients) {
+                client.shutdown();
+            }
+        }
+
         synchronized(this) { 
-        	keepRunning = false; 
-        	notify();
+            keepRunning = false; 
+            notify();
         }
     }
 
@@ -125,5 +141,4 @@ public class ProxyServer implements Runnable {
             proxyClients.remove(client);
         }
     }
-
 }
