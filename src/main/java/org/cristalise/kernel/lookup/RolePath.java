@@ -105,13 +105,11 @@ public class RolePath extends Path
 
 	@Override
 	public String getRoot() {
-		// TODO Auto-generated method stub
 		return "role";
 	}
 
 	@Override
 	public ItemPath getItemPath() throws ObjectNotFoundException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
