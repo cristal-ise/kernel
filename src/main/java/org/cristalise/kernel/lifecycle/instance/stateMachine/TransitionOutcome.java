@@ -21,7 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
 
-public class TransitionOutcome extends TransitionResource {
+public class TransitionOutcome {
 	
 	// schema properties
 	String schemaName, schemaVersion; // Name & version of the schema of the data required for this transition. 

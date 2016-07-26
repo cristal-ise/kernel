@@ -21,7 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
 
-public class TransitionScript extends TransitionResource {
+public class TransitionScript {
 
 	// script properties
 	String scriptName, scriptVersion; // Name & version of the script to be run by the agent during this transition
