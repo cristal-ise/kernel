@@ -27,52 +27,69 @@ import org.cristalise.kernel.entity.imports.ImportItem;
 import org.cristalise.kernel.entity.imports.ImportRole;
 import org.cristalise.kernel.utils.CastorArrayList;
 
-
+/**
+ * Wrapper class to handle the resources by type declared in the Module
+ *
+ */
 public class ModuleImports extends CastorArrayList<ModuleImport> {
 
-    public ModuleImports()
-    {
+    public ModuleImports() {
         super();
     }
 
-    public ModuleImports(ArrayList<ModuleImport> aList)
-    {
+    public ModuleImports(ArrayList<ModuleImport> aList) {
         super(aList);
     }
-    
+
+    /**
+     * Returns all pure Resources defined in Module
+     * @return all pure Resources defined in Module
+     */
     public ArrayList<ModuleResource> getResources() {
-    	ArrayList<ModuleResource> subset = new ArrayList<ModuleResource>();
-    	for (ModuleImport imp : list) {
-			if (imp instanceof ModuleResource)
-				subset.add((ModuleResource)imp);
-		}
-    	return subset;
+        ArrayList<ModuleResource> subset = new ArrayList<ModuleResource>();
+
+        for (ModuleImport imp : list) {
+            if (imp instanceof ModuleResource) subset.add((ModuleResource)imp);
+        }
+        return subset;
     }
-    
+
+    /**
+     * Returns all Items defined in Module
+     * @return all Items defined in Module
+     */
     public ArrayList<ImportItem> getItems() {
-    	ArrayList<ImportItem> subset = new ArrayList<ImportItem>();
-    	for (ModuleImport imp : list) {
-			if (imp instanceof ImportItem)
-				subset.add((ImportItem)imp);
-		}
-    	return subset;
+        ArrayList<ImportItem> subset = new ArrayList<ImportItem>();
+
+        for (ModuleImport imp : list) {
+            if (imp instanceof ImportItem) subset.add((ImportItem)imp);
+        }
+        return subset;
     }
-    
+
+    /**
+     * Returns all Agents defined in Module
+     * @return all Agents defined in Module
+     */
     public ArrayList<ImportAgent> getAgents() {
-    	ArrayList<ImportAgent> subset = new ArrayList<ImportAgent>();
-    	for (ModuleImport imp : list) {
-			if (imp instanceof ImportAgent)
-				subset.add((ImportAgent)imp);
-		}
-    	return subset;
+        ArrayList<ImportAgent> subset = new ArrayList<ImportAgent>();
+
+        for (ModuleImport imp : list) {
+            if (imp instanceof ImportAgent) subset.add((ImportAgent)imp);
+        }
+        return subset;
     }
-    
+
+    /**
+     * Returns all Roles defined in Module
+     * @return all Roles defined in Module
+     */
     public ArrayList<ImportRole> getRoles() {
-    	ArrayList<ImportRole> subset = new ArrayList<ImportRole>();
-    	for (ModuleImport imp : list) {
-			if (imp instanceof ImportRole)
-				subset.add((ImportRole)imp);
-		}
-    	return subset;
+        ArrayList<ImportRole> subset = new ArrayList<ImportRole>();
+
+        for (ModuleImport imp : list) {
+            if (imp instanceof ImportRole) subset.add((ImportRole)imp);
+        }
+        return subset;
     }
 }
