@@ -39,22 +39,23 @@ import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.SoftCache;
 
-
-
-public class ProxyManager
-{
-    SoftCache<ItemPath, ItemProxy>       proxyPool     = new SoftCache<ItemPath, ItemProxy>(50);
-    HashMap<DomainPathSubscriber, DomainPath>         treeSubscribers = new HashMap<DomainPathSubscriber, DomainPath>();
-    HashMap<String, ProxyServerConnection>         connections = new HashMap<String, ProxyServerConnection>();
+/**
+ * Manager of pool of Proxies and their subscribers
+ *
+ */
+public class ProxyManager {
+    SoftCache<ItemPath, ItemProxy>             proxyPool       = new SoftCache<ItemPath, ItemProxy>(50);
+    HashMap<DomainPathSubscriber, DomainPath>  treeSubscribers = new HashMap<DomainPathSubscriber, DomainPath>();
+    HashMap<String, ProxyServerConnection>     connections     = new HashMap<String, ProxyServerConnection>();
 
     /**
      * Create a proxy manager to listen for proxy events and reap unused proxies
      */
-    public ProxyManager()
-    {
-        Logger.msg(5, "ProxyManager - Starting.....");
+    public ProxyManager() {
+        Logger.msg(5, "ProxyManager() - Starting.....");
 
         Iterator<Path> servers = Gateway.getLookup().search(new DomainPath("/servers"), new Property(TYPE, "Server", false));
+
         while(servers.hasNext()) {
             Path thisServerResult = servers.next();
             try {
@@ -63,8 +64,8 @@ public class ProxyManager
                 String portStr = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/ProxyPort", null)).getValue();
                 int remotePort = Integer.parseInt(portStr);
                 connectToProxyServer(remoteServer, remotePort);
-
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 Logger.error("Exception retrieving proxy server connection data for "+thisServerResult);
                 Logger.error(ex);
             }
@@ -73,17 +74,17 @@ public class ProxyManager
 
     public void connectToProxyServer(String name, int port) {
         ProxyServerConnection oldConn = connections.get(name);
-        if (oldConn != null)
-            oldConn.shutdown();
+
+        if (oldConn != null) oldConn.shutdown();
+
         connections.put(name, new ProxyServerConnection(name, port, this));
     }
-
 
     protected void resubscribe(ProxyServerConnection conn) {
         synchronized (proxyPool) {
             for (ItemPath key : proxyPool.keySet()) {
                 ProxyMessage sub = new ProxyMessage(key, ProxyMessage.ADDPATH, false);
-                Logger.msg(5, "Subscribing to item "+key);
+                Logger.msg(5, "ProxyManager.resubscribe() - item:"+key);
                 conn.sendMessage(sub);
             }
         }
@@ -96,7 +97,6 @@ public class ProxyManager
         for (ProxyServerConnection element : connections.values()) {
             element.sendMessage(sub);
         }
-
     }
 
     public void shutdown() {
@@ -112,21 +112,26 @@ public class ProxyManager
         if (thisMessage.getPath().equals(ProxyMessage.PINGPATH)) // ping response
             return;
 
-        if (thisMessage.getItemPath() == null) // must be domain path info
+        if (thisMessage.getItemPath() == null) {
+            // must be domain path info
             informTreeSubscribers(thisMessage.getState(), thisMessage.getPath());
+        }
         else {
             // proper proxy message
-            Logger.msg(5, "Received proxy message: "+thisMessage.toString());
+            Logger.msg(5, "ProxyManager.processMessage() - Received proxy message: "+thisMessage.toString());
             ItemProxy relevant = proxyPool.get(thisMessage.getItemPath());
-            if (relevant == null)
+            if (relevant == null) {
                 Logger.warning("Received proxy message for sysKey "+thisMessage.getItemPath()+" which we don't have a proxy for.");
-            else
+            }
+            else {
                 try {
                     relevant.notify(thisMessage);
-                } catch (Throwable ex) {
+                }
+                catch (Throwable ex) {
                     Logger.error("Error caught notifying proxy listener "+relevant.toString()+" of "+thisMessage.toString());
                     Logger.error(ex);
                 }
+            }
         }
     }
 
@@ -135,19 +140,18 @@ public class ProxyManager
         DomainPath parent; boolean first = true;
         synchronized(treeSubscribers) {
             while((parent = last.getParent()) != null) {
-            	ArrayList<DomainPathSubscriber> currentKeys = new ArrayList<DomainPathSubscriber>();
-            	currentKeys.addAll(treeSubscribers.keySet());
+                ArrayList<DomainPathSubscriber> currentKeys = new ArrayList<DomainPathSubscriber>();
+                currentKeys.addAll(treeSubscribers.keySet());
                 for (DomainPathSubscriber sub : currentKeys) {
                     DomainPath interest = treeSubscribers.get(sub);
+
                     if (interest!= null && interest.equals(parent)) {
-                        if (state == ProxyMessage.ADDED)
-                            sub.pathAdded(last);
-                        else if (first)
-                            sub.pathRemoved(last);
+                        if (state == ProxyMessage.ADDED) sub.pathAdded(last);
+                        else if (first)                  sub.pathRemoved(last);
                     }
                 }
-            last = parent;
-            first = false;
+                last = parent;
+                first = false;
             }
         }
     }
@@ -164,17 +168,10 @@ public class ProxyManager
         }
     }
 
-   /**************************************************************************
-    *
-    **************************************************************************/
-    private ItemProxy createProxy( org.omg.CORBA.Object ior,
-                                              ItemPath itemPath)
-        throws ObjectNotFoundException
-    {
-
+    private ItemProxy createProxy( org.omg.CORBA.Object ior, ItemPath itemPath) throws ObjectNotFoundException {
         ItemProxy newProxy = null;
 
-        Logger.msg(5, "ProxyManager::creating proxy on Item " + itemPath);
+        Logger.msg(5, "ProxyManager.createProxy() - Item:" + itemPath);
 
         if( itemPath instanceof AgentPath ) {
             newProxy = new AgentProxy(ior, (AgentPath)itemPath);
@@ -188,25 +185,24 @@ public class ProxyManager
         sendMessage(sub);
         reportCurrentProxies(9);
         return ( newProxy );
-   }
+    }
 
-   protected void removeProxy( ItemPath itemPath )
-   {
-       ProxyMessage sub = new ProxyMessage(itemPath, ProxyMessage.DELPATH, true);
-       Logger.msg(5,"ProxyManager.removeProxy() - Unsubscribing to proxy informer for "+itemPath);
-       sendMessage(sub);
-   }
+    protected void removeProxy( ItemPath itemPath ) {
+        ProxyMessage sub = new ProxyMessage(itemPath, ProxyMessage.DELPATH, true);
+        Logger.msg(5,"ProxyManager.removeProxy() - Unsubscribing to proxy informer for "+itemPath);
+        sendMessage(sub);
+    }
 
 
-   /**************************************************************************
-    * Called by the other GetProxy methods. Fills in either the ior or the
-    * SystemKey
-    **************************************************************************/
-    private ItemProxy getProxy( org.omg.CORBA.Object ior,
-    							            ItemPath itemPath)
-        throws ObjectNotFoundException
-    {
-
+    /**
+     * Called by the other GetProxy methods. Fills in either the IOR or the SystemKey
+     * 
+     * @param ior
+     * @param itemPath
+     * @return the ItemProx
+     * @throws ObjectNotFoundException
+     */
+    private ItemProxy getProxy( org.omg.CORBA.Object ior, ItemPath itemPath) throws ObjectNotFoundException {
         synchronized(proxyPool) {
             ItemProxy newProxy;
             // return it if it exists
@@ -217,62 +213,45 @@ public class ProxyManager
                 proxyPool.put(itemPath, newProxy);
             }
             return newProxy;
-
         }
     }
 
-   /**************************************************************************
-    * ItemProxy getProxy( String )
-    *
-    * Proxy from Alias
-    **************************************************************************/
-    public ItemProxy getProxy( Path path )
-        throws ObjectNotFoundException
-    {
-    	ItemPath itemPath;
-    	if (path instanceof ItemPath) itemPath = (ItemPath)path;
-    	else itemPath = path.getItemPath();
+    public ItemProxy getProxy( Path path ) throws ObjectNotFoundException {
+        ItemPath itemPath;
+        if (path instanceof ItemPath) itemPath = (ItemPath)path;
+        else itemPath = path.getItemPath();
         Logger.msg(8,"ProxyManager::getProxy(" + path.toString() + ")");
         return getProxy( itemPath.getIOR(), itemPath );
 
     }
-    
-    public AgentProxy getAgentProxy( AgentPath path )
-    	throws ObjectNotFoundException
-    {
-    	return (AgentProxy) getProxy(path);
+
+    public AgentProxy getAgentProxy( AgentPath path ) throws ObjectNotFoundException {
+        return (AgentProxy) getProxy(path);
     }
 
-   /**************************************************************************
-    * void reportCurrentProxies()
-    *
-    * A utility to Dump the current proxies loaded
-    **************************************************************************/
-    public void reportCurrentProxies(int logLevel)
-    {
+    /**
+     * A utility to Dump the current proxies loaded
+     * 
+     * @param logLevel
+     */
+    public void reportCurrentProxies(int logLevel) {
         if (!Logger.doLog(logLevel)) return;
         Logger.msg(logLevel, "Current proxies: ");
         try {
             synchronized(proxyPool) {
                 Iterator<ItemPath> i = proxyPool.keySet().iterator();
 
-                for( int count=0; i.hasNext(); count++ )
-                {
+                for( int count=0; i.hasNext(); count++ ) {
                     ItemPath nextProxy = i.next();
                     ItemProxy thisProxy = proxyPool.get(nextProxy);
-                    if (thisProxy != null)
-                        Logger.msg(logLevel,
-                            "" + count + ": "
-                            + proxyPool.get(nextProxy).getClass().getName()
-                            + ": " + nextProxy);
+                    if (thisProxy != null) {
+                        Logger.msg(logLevel, ""+count + ": "+proxyPool.get(nextProxy).getClass().getName()+": "+nextProxy);
+                    }
                 }
             }
-        } catch (ConcurrentModificationException ex) {
+        }
+        catch (ConcurrentModificationException ex) {
             Logger.msg(logLevel, "Proxy cache modified. Aborting.");
         }
     }
-
-
-    
 }
-
