@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.entity.imports;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
+
 import java.util.ArrayList;
 
 import org.cristalise.kernel.common.CannotManageException;
@@ -59,8 +62,8 @@ public class ImportAgent extends ModuleImport {
         ActiveEntity newAgentEnt = Gateway.getCorbaServer().createAgent(newAgent);
         Gateway.getLookupManager().add(newAgent);
         // assemble properties
-        properties.add(new Property("Name", name, true));
-        properties.add(new Property("Type", "Agent", false));
+        properties.add(new Property(NAME, name, true));
+        properties.add(new Property(TYPE, "Agent", false));
         try {
             newAgentEnt.initialise(agentPath.getSystemKey(), Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), null, null);
         } catch (Exception ex) {

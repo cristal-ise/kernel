@@ -34,17 +34,23 @@ public enum BuiltInItemProperties {
      */
     CREATOR("Creator"),
 
+    KERNEL_VERSION("KernelVersion"),
+
     /**
      * The name or ID of the Item, specified by the Factory usually and sent as the first parameter in the
      * {@link CreateItemFromDescription} predefined Step. It will be automatically added even if it was not defined.
      */
     NAME("Name"),
 
+    NAMESPACE("Namespace"),
+
     /**
      * The type of the Item, used in Dev module, but it is a good practice to set it as an immutable, fixed value 
      * Property. It is convenient to use in lookup searches for Description Items.
      */
     TYPE("Type"),
+
+    VERSION("Version"),
 
     /**
      * The UUID of the Schema Item and its Version number separated by colon ':'. It is created during 

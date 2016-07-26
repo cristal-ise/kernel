@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
+
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -52,7 +54,7 @@ public class ProxyManager
     {
         Logger.msg(5, "ProxyManager - Starting.....");
 
-        Iterator<Path> servers = Gateway.getLookup().search(new DomainPath("/servers"), new Property("Type", "Server", false));
+        Iterator<Path> servers = Gateway.getLookup().search(new DomainPath("/servers"), new Property(TYPE, "Server", false));
         while(servers.hasNext()) {
             Path thisServerResult = servers.next();
             try {

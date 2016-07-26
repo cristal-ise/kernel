@@ -21,6 +21,8 @@
 package org.cristalise.kernel.entity.imports;
 
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+
 import java.util.ArrayList;
 
 import org.cristalise.kernel.collection.Aggregation;
@@ -132,7 +134,7 @@ public class ImportItem extends ModuleImport {
         }
         
         // set the name property
-        properties.add(new Property("Name", name, true));
+        properties.add(new Property(NAME, name, true));
 
         // find workflow def
         CompositeActivityDef compact;

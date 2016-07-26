@@ -20,6 +20,10 @@
  */
 package org.cristalise.kernel.process;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.KERNEL_VERSION;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
+
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -384,8 +388,10 @@ public class Bootstrap
         History hist = new History( item.getPath(), item);
         String viewName = String.valueOf(version);
 
-        int eventID = hist.addEvent( systemAgents.get("system").getPath(), null, "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
-                newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName).getID();
+        int eventID = hist.addEvent( systemAgents.get("system").getPath(), null, 
+                                     "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
+                                     newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName
+                                   ).getID();
 
         newOutcome.setID(eventID);
 
@@ -549,8 +555,8 @@ public class Bootstrap
             // assign admin role
             Logger.msg("Bootstrap.checkAgent() - Assigning role '"+rolePath.getName()+"'");
             Gateway.getLookupManager().addRole(agentPath, rolePath);
-            Gateway.getStorage().put(agentPath, new Property("Name", name, true), null);
-            Gateway.getStorage().put(agentPath, new Property("Type", "Agent", false), null);
+            Gateway.getStorage().put(agentPath, new Property(NAME, name, true), null);
+            Gateway.getStorage().put(agentPath, new Property(TYPE, "Agent", false), null);
             AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
             //TODO: properly init agent here with wf, props and colls
             //agentProxy.initialise(agentId, itemProps, workflow, colls);
@@ -596,7 +602,8 @@ public class Bootstrap
         ItemPath serverItem;
         try {
             serverItem = thisServerPath.getItemPath();
-        } catch (ObjectNotFoundException ex) {
+        }
+        catch (ObjectNotFoundException ex) {
             Logger.msg("Creating server item "+thisServerPath);
             serverItem = new ItemPath();
             Gateway.getCorbaServer().createItem(serverItem);
@@ -604,14 +611,15 @@ public class Bootstrap
             thisServerPath.setItemPath(serverItem);
             lookupManager.add(thisServerPath);
         }
-        Gateway.getStorage().put(serverItem, new Property("Name", serverName, false), null);
-        Gateway.getStorage().put(serverItem, new Property("Type", "Server", false), null);
-        Gateway.getStorage().put(serverItem, new Property("KernelVersion", Gateway.getKernelVersion(), true), null);
+        
         int proxyPort = Gateway.getProperties().getInt("ItemServer.Proxy.port", 1553);
-        Gateway.getStorage().put(serverItem,
-                new Property("ProxyPort", String.valueOf(proxyPort), false), null);
-        Gateway.getStorage().put(serverItem,
-                new Property("ConsolePort", String.valueOf(Logger.getConsolePort()), true), null);
+
+        Gateway.getStorage().put(serverItem, new Property(NAME,            serverName,                              false), null);
+        Gateway.getStorage().put(serverItem, new Property(TYPE,            "Server",                                false), null);
+        Gateway.getStorage().put(serverItem, new Property(KERNEL_VERSION,  Gateway.getKernelVersion(),              true),  null);
+        Gateway.getStorage().put(serverItem, new Property("ProxyPort",     String.valueOf(proxyPort),               false), null);
+        Gateway.getStorage().put(serverItem, new Property("ConsolePort",   String.valueOf(Logger.getConsolePort()), true),  null);
+
         Gateway.getProxyManager().connectToProxyServer(serverName, proxyPort);
     }
 
