@@ -31,12 +31,23 @@ import org.cristalise.kernel.entity.proxy.AgentProxy;
  * synchronize Agents with an external user library, such as Active Directory.
  * Implementations are expected to set up the Gateway process and its
  * authenticated components itself.
- * 
  */
 public interface ProxyLogin {
 
-	public void initialize(Properties props) throws Exception;
+    /**
+     * Intialiase the connection with the system used for authentication
+     * 
+     * @param props Properties needed for the initialisation
+     * @throws Exception
+     */
+    public void initialize(Properties props) throws Exception;
 
-	public AgentProxy authenticate(String resource) throws Exception;
-
+    /**
+     * Authenticate the Agent
+     * 
+     * @param resource additional data required by the system used for authentication
+     * @return the authenticated Agent
+     * @throws Exception
+     */
+    public AgentProxy authenticate(String resource) throws Exception;
 }
