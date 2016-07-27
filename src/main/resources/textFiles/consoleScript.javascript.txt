@@ -5,9 +5,8 @@ function log(level) {
 	org.cristalise.kernel.utils.Logger.addLogStream(output, level);
 }
 function help() { 
-	var help = Gateway.getResource().getAllTextResources("textFiles/consoleHelp.txt").values().iterator();
-	while (help.hasNext())
-		println(help.next());
+	var help = Gateway.getResource().getTextResource(null, "textFiles/consoleHelp.txt");
+    println(help);
 }
 function version() { 
 	print("Kernel version: "+Gateway.getKernelVersion()); 

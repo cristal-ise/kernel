@@ -146,19 +146,20 @@ public class Script implements DescriptionObject {
         context.setWriter(output);
         context.setErrorWriter(output);
 
-        HashMap<String, String> consoleScripts = Gateway.getResource().getAllTextResources("textFiles/consoleScript."+lang+".txt");
-        
-        for (String ns : consoleScripts.keySet()) {
-            try {
-                engine.put(ScriptEngine.FILENAME, ns+" init script");
-                engine.eval(consoleScripts.get(ns));
-            } catch (ScriptException ex) {
-                out.println("Exception parsing console script for "+(ns==null?"kernel":ns+" module"));
-                ex.printStackTrace(out);
-            }
-        }
-        addOutput(null, Object.class);
+        String scriptText = Gateway.getResource().getTextResource(null, "textFiles/consoleScript."+lang+".txt");
 
+        try {
+            Logger.msg(8, "Script() - Loaded consoleScript");
+            Logger.msg(8, scriptText);
+            engine.put(ScriptEngine.FILENAME, "consoleScript init script");
+            engine.eval(scriptText);
+        }
+        catch (ScriptException ex) {
+            //out.println("Exception parsing console script for " + (ns == null ? "kernel" : ns + " module"));
+            ex.printStackTrace(out);
+        }
+
+        addOutput(null, Object.class);
     }
 
     /**
@@ -370,7 +371,6 @@ public class Script implements DescriptionObject {
 
         //add parameter to hashtable
         mAllInputParams.put(inputParam.getName(), inputParam);
-
     }
 
     /**
