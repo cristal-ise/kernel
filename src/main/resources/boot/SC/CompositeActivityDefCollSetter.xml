@@ -21,36 +21,46 @@
 
 -->
 <cristalscript>
-	<param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy"/>
-	<param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy"/>
-	<param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
-    <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
+    <param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy" />
+    <param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy" />
+    <param name="job" type="org.cristalise.kernel.entity.agent.Job" />
+    <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo" />
     <script language="javascript" name="CompositeActivityDefCollSetter"><![CDATA[
-	var actDef = agent.unmarshall(job.getOutcomeString());
-	var newDescColl = actDef.makeActDefCollection();	
+    importClass(org.cristalise.kernel.utils.CastorHashMap);
 
-	var oldDescColl;
-	try {
-		oldDescColl = item.getObject("/Collection/Activity/last");
-	} catch (e) {
-		throw "/Collection/Activity/last does not exist!";
-	}
+    var actDef = agent.unmarshall(job.getOutcomeString());
+    var newDescColl = actDef.makeActDefCollection();	
 
-	var newMemIter = oldDescColl.compare(newDescColl).iterator();
-	var params = new Array(2);
-	params[0] = "Activity";
-	while (newMemIter.hasNext()) {
-		params[1] = newMemIter.next().getItemPath();
-		agent.execute(item, "AddMemberToCollection", params);
-	}
+    var oldDescColl;
+    try {
+        oldDescColl = item.getObject("/Collection/Activity/last");
+    }
+    catch (e) {
+        throw "/Collection/Activity/last does not exist!";
+    }
 
-	params = new Array(3);
-	params[0] = "Activity";
-	params[1] = -1;
-	var oldMemIter = newDescColl.compare(oldDescColl).iterator();
-	while (oldMemIter.hasNext()) {
-		params[2] = oldMemIter.next().getItemPath();
-		agent.execute(item, "RemoveSlotFromCollection", params);
-	}
-	]]></script>
+    var props = new CastorHashMap();
+    var newMemIter = oldDescColl.compare(newDescColl).iterator();
+    var params = new Array(3);
+    params[0] = "Activity";
+
+    while (newMemIter.hasNext()) {
+        var member = newMemIter.next();
+        props.put("Version", member.getProperties().get("Version"), true);
+
+        params[1] = member.getItemPath();
+        params[2] = agent.marshall(props);;
+        agent.execute(item, "AddMemberToCollection", params);
+    }
+
+    params = new Array(3);
+    params[0] = "Activity";
+    params[1] = -1;
+    var oldMemIter = newDescColl.compare(oldDescColl).iterator();
+
+    while (oldMemIter.hasNext()) {
+        params[2] = oldMemIter.next().getItemPath();
+        agent.execute(item, "RemoveSlotFromCollection", params);
+    }
+    ]]></script>
 </cristalscript>
