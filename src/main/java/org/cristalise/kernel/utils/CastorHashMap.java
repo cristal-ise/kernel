@@ -134,4 +134,16 @@ public class CastorHashMap extends HashMap<String, Object> {
             setKeyValuePair(kvPair);
         }
     }
+    
+    public void dump() {
+        if(Logger.doLog(5)) {
+            StringBuffer sb = new StringBuffer();
+
+            sb.append("{ ");
+            for(Entry<String, Object> e : entrySet())  sb.append(e.getKey() + ":" + e.getValue()+" ");
+            sb.append("}");
+
+            Logger.msg("CastorHashMap : " + sb);
+        }
+    }
 }
