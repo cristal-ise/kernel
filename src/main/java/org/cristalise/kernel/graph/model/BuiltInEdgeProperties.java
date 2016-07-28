@@ -45,4 +45,11 @@ public enum BuiltInEdgeProperties {
     public String toString() {
         return getName();
     }
+
+    public static BuiltInEdgeProperties getValue(String propName) {
+        for (BuiltInEdgeProperties prop : BuiltInEdgeProperties.values()) {
+            if(prop.getName().equals(propName) || prop.name().equals(propName)) return prop;
+        }
+        return null;
+    }
 }

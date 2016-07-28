@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.graph.model;
 
+
 /**
  * Enumeration to define all Vertex properties which are used by collection and lifecycle packages
  *
@@ -29,6 +30,11 @@ public enum BuiltInVertexProperties {
      * Boolean property. Makes CompositeActitivy abortable, i.e. it can be finished even if it has active children.
      */
     ABORTABLE("Abortable"),
+
+    ACTIVITY_DEF_NAME("ActivityDefName"),
+    ACTIVITY_DEF_VERSION("ActivityDefName"),
+
+    ACTIVITY_DEF_URN("ActivityDefURN"),
 
     /**
      * String property. The name of the Agent associated with Activities. Can be null or undefined.
@@ -187,4 +193,12 @@ public enum BuiltInVertexProperties {
     public String toString() {
         return getName();
     }
+
+    public static BuiltInVertexProperties getValue(String propName) {
+        for (BuiltInVertexProperties prop : BuiltInVertexProperties.values()) {
+            if(prop.getName().equals(propName) || prop.name().equals(propName)) return prop;
+        }
+        return null;
+    }
+
 }
