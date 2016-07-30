@@ -23,36 +23,39 @@
 -->
 <cristalscript>
     <include name="DescriptionCollVersionLib" version="0"/>
-	<param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy" />
-	<param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy" />
-	<param name="job" type="org.cristalise.kernel.entity.agent.Job" />
-	<output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo" />
-	<script language="javascript" name="CreateNewNumberedVersionFromLast"><![CDATA[
-		var viewName = job.getActPropString("ViewName");
-		
-		if (viewName.equals("")) 
-			throw "ViewName not specified. Cannot create new version.";
-			
-		var lastView = -1;
-		var existingViews = item.getContents("/ViewPoint/"+viewName);
-		for (i=0; i<existingViews.length; i++) {
-			var thisView = parseInt(existingViews[i]);
-			if (thisView!=NaN && lastView < thisView) lastView = thisView;
-		}
-		lastView++;
-		try {
-			var existingLast = agent.unmarshall(item.queryData("/ViewPoint/"+viewName+"/last"));
-		} catch (e) {
-			throw "No data found for '/ViewPoint/"+viewName+"/last'. You must submit at least one version before executing this activity.";
-		}
-		
-		var params = new Array(3);
-		params[0] = viewName;
-		params[1] = lastView;
-		params[2] = existingLast.getEventId();
-		agent.execute(item, "WriteViewpoint", params);
-		
-		updateDescColls(viewName, lastView);
+    <param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy" />
+    <param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy" />
+    <param name="job" type="org.cristalise.kernel.entity.agent.Job" />
+    <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo" />
+    <script language="javascript" name="CreateNewNumberedVersionFromLast"><![CDATA[
+var viewName = job.getActPropString("ViewName");
 
-		]]></script>
+if (viewName.equals("")) throw "ViewName not specified. Cannot create new version.";
+
+var lastView = -1;
+var existingViews = item.getContents("/ViewPoint/"+viewName);
+
+for (i=0; i<existingViews.length; i++) {
+    var thisView = parseInt(existingViews[i]);
+
+    if (thisView != NaN && lastView < thisView) lastView = thisView;
+}
+lastView++;
+
+try {
+    var existingLast = agent.unmarshall(item.queryData("/ViewPoint/"+viewName+"/last"));
+}
+catch (e) {
+    throw "No data found for '/ViewPoint/"+viewName+"/last'. You must submit at least one outcome!";
+}
+
+var params = new Array(3);
+params[0] = viewName;
+params[1] = lastView;
+params[2] = existingLast.getEventId();
+
+agent.execute(item, "WriteViewpoint", params);
+
+updateDescColls(viewName, lastView);
+    ]]></script>
 </cristalscript>
