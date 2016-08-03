@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
@@ -35,49 +39,61 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-/**
- * @author Andrew Branson
- *
- * $Revision: 1.3 $
- * $Date: 2006/09/14 14:13:26 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- */
-
+@Getter @Setter
 public class Schema implements DescriptionObject, ErrorHandler {
-    private String name;
-    private Integer version;
+    private String       name;
+    private Integer      version;
     private final String schemaData;
-    private ItemPath itemPath;
-	protected StringBuffer errors = null;
-	
-	public org.exolab.castor.xml.schema.Schema som;
-	
-	/**
-	 * 
-	 * @param name
-	 * @param version
-	 * @param itemPath
-	 * @param schema
-	 */
-	public Schema(String name, int version, ItemPath itemPath, String schema) {
-		super();
-		this.name = name;
-		this.version = version;
-		this.itemPath = itemPath;
-		this.schemaData = schema;
-	}
-	
-	protected Schema(String schema) {
-		this.schemaData = schema;
-		name = "Schema";
-		version = 0;
-	}
-	
-	public synchronized String validate() throws IOException {
-		errors = new StringBuffer();
-		InputSource schemaSource = new InputSource(new StringReader(schemaData));
+    private ItemPath     itemPath;
+
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
+    protected StringBuffer errors = null;
+
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
+    public org.exolab.castor.xml.schema.Schema som;
+
+    /**
+     * 
+     * @param name
+     * @param version
+     * @param itemPath
+     * @param schema
+     */
+    public Schema(String name, int version, ItemPath itemPath, String schema) {
+        super();
+        this.name = name;
+        this.version = version;
+        this.itemPath = itemPath;
+        this.schemaData = schema;
+    }
+
+    public Schema(String name, int version, String schema) {
+        super();
+        this.name = name;
+        this.version = version;
+        this.schemaData = schema;
+        this.itemPath = null;
+    }
+
+    /**
+     * 
+     * @param schema
+     */
+    protected Schema(String schema) {
+        this.schemaData = schema;
+        name = "Schema";
+        version = 0;
+    }
+
+    /**
+     * Validates the schemaData (XML)
+     * 
+     * @return errors in String format
+     * @throws IOException
+     */
+    public synchronized String validate() throws IOException {
+        errors = new StringBuffer();
+        InputSource schemaSource = new InputSource(new StringReader(schemaData));
         SchemaReader mySchemaReader = new SchemaReader(schemaSource);
 
         mySchemaReader.setErrorHandler(this);
@@ -85,84 +101,62 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
         som = mySchemaReader.read();
         return errors.toString();
-	}
-	
-	@Override
-	public String getItemID() {
-		return itemPath.getUUID().toString();
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
+    }
 
-	@Override
-	public Integer getVersion() {
-		return version;
-	}
-	
-	public String getSchemaData() {
-		return schemaData;
-	}
-
-	@Override
-	public ItemPath getItemPath() {
-		return itemPath;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public void setVersion(Integer version) {
-		this.version = version;
-	}
-
-	@Override
-	public void setItemPath(ItemPath path) {
-		itemPath = path;
-	}
+    @Override
+    public String getItemID() {
+        return itemPath.getUUID().toString();
+    }
 
     /**
      * ErrorHandler for validation
+     * 
+     * @param level
+     * @param ex
      */
     private void appendError(String level, Exception ex) {
         errors.append(level);
         String message = ex.getMessage();
-        if (message == null || message.length()==0)
-            message = ex.getClass().getName();
+
+        if (message == null || message.length() == 0) message = ex.getClass().getName();
+
         errors.append(message);
         errors.append("\n");
     }
+
     @Override
-	public void error(SAXParseException ex) throws SAXException {
+    public void error(SAXParseException ex) throws SAXException {
         appendError("ERROR: ", ex);
     }
+
     @Override
-	public void fatalError(SAXParseException ex) throws SAXException {
+    public void fatalError(SAXParseException ex) throws SAXException {
         appendError("FATAL: ", ex);
     }
+
     @Override
-	public void warning(SAXParseException ex) throws SAXException {
+    public void warning(SAXParseException ex) throws SAXException {
         appendError("WARNING: ", ex);
     }
 
-	@Override
-	public CollectionArrayList makeDescCollections() {
-		return new CollectionArrayList();
-	}
-	
-	@Override
-	public void export(Writer imports, File dir) throws IOException {
-		FileStringUtility.string2File(new File(new File(dir, "OD"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), schemaData);
-		if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
-				+(getItemPath()==null?"":"id=\""+getItemID()+"\"")
-				+(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-				+"type=\"OD\">boot/OD/"+getName()
-				+(getVersion()==null?"":"_"+getVersion())
-				+".xsd</Resource>\n");
-	}
+    @Override
+    public CollectionArrayList makeDescCollections() {
+        return new CollectionArrayList();
+    }
+
+    @Override
+    public void export(Writer imports, File dir) throws IOException {
+        String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xsd";
+
+        FileStringUtility.string2File(new File(new File(dir, "OD"), fileName), schemaData);
+
+        if (imports != null) {
+            imports.write( "<Resource "
+                          + "name='"+getName()+"' "
+                          + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                          + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                          + "type='OD'>boot/OD/"+fileName
+                          + "</Resource>\n");
+        }
+    }
 }
