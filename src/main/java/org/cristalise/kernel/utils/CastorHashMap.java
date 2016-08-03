@@ -135,8 +135,8 @@ public class CastorHashMap extends HashMap<String, Object> {
         }
     }
     
-    public void dump() {
-        if(Logger.doLog(5)) {
+    public void dump(int logLevel) {
+        if(Logger.doLog(logLevel)) {
             StringBuffer sb = new StringBuffer();
 
             sb.append("{ ");
