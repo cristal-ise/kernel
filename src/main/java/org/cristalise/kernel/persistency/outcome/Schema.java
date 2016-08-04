@@ -67,6 +67,12 @@ public class Schema implements DescriptionObject, ErrorHandler {
         this.schemaData = schema;
     }
 
+    /**
+     * 
+     * @param name
+     * @param version
+     * @param schema
+     */
     public Schema(String name, int version, String schema) {
         super();
         this.name = name;
@@ -76,13 +82,23 @@ public class Schema implements DescriptionObject, ErrorHandler {
     }
 
     /**
+     * Sets schema name to 'Schema' and version to 0
      * 
-     * @param schema
+     * @param schema the XSD string
      */
     protected Schema(String schema) {
         this.schemaData = schema;
         name = "Schema";
         version = 0;
+    }
+
+    /**
+     * Returns the XSD string. Convenience method
+     * 
+     * @return the XSD string
+     */
+    public String getXSD() {
+        return getSchemaData();
     }
 
     /**
