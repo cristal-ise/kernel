@@ -20,57 +20,20 @@
  */
 package org.cristalise.kernel.graph.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
+@Accessors(prefix = "m") @Getter @Setter
+public abstract class DirectedEdge {
 
-
-public abstract class DirectedEdge 
-{
-    // Persistent data
-    private int        mId               = -1;
+    private int        mID               = -1;
     private GraphPoint mOriginPoint      = new GraphPoint(0, 0);
     private GraphPoint mTerminusPoint    = new GraphPoint(0, 0);
     private int        mOriginVertexId   = -1;
     private int        mTerminusVertexId = -1;
 
-
-    public void setID(int id)
-    {
-        mId = id;
-    }
-
-
-    public int getID()
-    {
-        return mId;
-    }
-
-
-    public void setOriginPoint(GraphPoint p)
-    {
-        mOriginPoint = p;
-    }
-
-
-    public GraphPoint getOriginPoint()
-    {
-        return mOriginPoint;
-    }
-
-
-    public void setTerminusPoint(GraphPoint p)
-    {
-        mTerminusPoint = p;
-    }
-
-
-    public GraphPoint getTerminusPoint()
-    {
-        return mTerminusPoint;
-    }
-
-
-    public boolean containsPoint(GraphPoint p)
-    {
+    public boolean containsPoint(GraphPoint p) {
         int midX = mOriginPoint.x + (mTerminusPoint.x - mOriginPoint.x)/2;
         int midY = mOriginPoint.y + (mTerminusPoint.y - mOriginPoint.y)/2;
         int minX = midX - 10;
@@ -81,38 +44,6 @@ public abstract class DirectedEdge
         return (p.x >= minX) && (p.x <= maxX) && (p.y >= minY) && (p.y <= maxY);
     }
 
-
-    public void setOriginVertexId(int id)
-    {
-        mOriginVertexId = id;
-    }
-
-
-    public int getOriginVertexId()
-    {
-        return mOriginVertexId;
-    }
-
-
-    public void setTerminusVertexId(int id)
-    {
-        mTerminusVertexId = id;
-    }
-
-
-    public int getTerminusVertexId()
-    {
-        return mTerminusVertexId;
-    }
-
-
-    public void setName(String name)
-    {
-    }
-
-
-    public String getName()
-    {
-        return null;
-    }
+    public void   setName(String name) {}
+    public String getName() { return null; }
 }
