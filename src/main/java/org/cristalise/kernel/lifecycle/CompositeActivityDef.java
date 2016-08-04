@@ -29,11 +29,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
@@ -43,6 +46,7 @@ import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -225,19 +229,57 @@ public class CompositeActivityDef extends ActivityDef {
     public WfVertex instantiate(String name) throws ObjectNotFoundException, InvalidDataException {
         CompositeActivity caInstance = new CompositeActivity();
 
+        Logger.msg(1, "CompositeActivityDef.instantiate(name:"+name+") - Starting.");
+
         caInstance.setName(name);
 
         configureInstance(caInstance);
 
         if (getItemPath() != null) caInstance.setType(getItemID());
 
-        caInstance.getChildrenGraphModel().setStartVertexId(   getChildrenGraphModel().getStartVertexId() );
-        caInstance.getChildrenGraphModel().setVertices(        intantiateVertices(caInstance)             );
-        caInstance.getChildrenGraphModel().setEdges(           instantiateEdges(caInstance)               );
-        caInstance.getChildrenGraphModel().setNextId(          getChildrenGraphModel().getNextId()        );
+        caInstance.getChildrenGraphModel().setStartVertexId( getChildrenGraphModel().getStartVertexId() );
+        caInstance.getChildrenGraphModel().setVertices(      intantiateVertices(caInstance)             );
+        caInstance.getChildrenGraphModel().setEdges(         instantiateEdges(caInstance)               );
+        caInstance.getChildrenGraphModel().setNextId(        getChildrenGraphModel().getNextId()        );
+
         caInstance.getChildrenGraphModel().resetVertexOutlines();
 
+        propagateCollectionProperties(caInstance);
+
         return caInstance;
+    }
+
+    /**
+     * Reading collections during configureInstance() the properties of CAInstance can be updated to
+     * contain CastorHashMaps, which contain properties to be propagated to the Vertices of CAInstance.
+     * 
+     * @param caInstance the CompAct instance beeing instantiated
+     * @throws InvalidDataException 
+     */
+    private void propagateCollectionProperties(CompositeActivity caInstance) throws InvalidDataException {
+        //Propagate now properties to Vertices 
+        CastorHashMap caProps = caInstance.getProperties();
+        List<String> keysToDelete = new ArrayList<String>();
+
+        for (Entry<String, Object> aCAProp: caProps.entrySet()) {
+            if(aCAProp.getValue() instanceof CastorHashMap) {
+                for (Vertex vertex : caInstance.getChildrenGraphModel().getVertices()) {
+                    CastorHashMap propsToPropagate = (CastorHashMap)aCAProp.getValue();
+                    propsToPropagate.dump(8);
+                    BuiltInVertexProperties builtInProp = BuiltInVertexProperties.getValue(aCAProp.getKey());
+
+                    if(builtInProp == null) {
+                        ((GraphableVertex)vertex).updatePropertiesFromCollection(aCAProp.getKey(), propsToPropagate);
+                    }
+                    else {
+                        ((GraphableVertex)vertex).updatePropertiesFromCollection(builtInProp, propsToPropagate);
+                    }
+                }
+                keysToDelete.add(aCAProp.getKey());
+            }
+        }
+
+        for(String key : keysToDelete) caProps.remove(key);
     }
 
     /**
@@ -286,6 +328,12 @@ public class CompositeActivityDef extends ActivityDef {
         return retArr;
     }
 
+    /**
+     * Used in Script CompositeActivityDefCollSetter
+     * 
+     * @return the Dependency collection created from the list of child ActDefs of this class
+     * @throws InvalidDataException
+     */
     public Dependency makeActDefCollection() throws InvalidDataException {
         return makeDescCollection(ACTIVITY, refChildActDef.toArray(new ActivityDef[refChildActDef.size()]));
     }

@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.collection;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ACTIVITY_DEF_URN;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_NAME;
@@ -125,17 +126,16 @@ public class Dependency extends Collection<DependencyMember> {
     }
 
     /**
-     * Returns all ItemPaths that are members of the other collection but not members of this one.
+     * Returns all DependencyMember that are members of the other collection but not members of this one.
      * 
      * @param other - The collection to compare
-     * @return List of ItemPaths
+     * @return List of Member
      */
-    public List<ItemPath> compare(Dependency other) {
-        ArrayList<ItemPath> newMembers = new ArrayList<ItemPath>();
+    public List<DependencyMember> compare(Dependency other) {
+        ArrayList<DependencyMember> newMembers = new ArrayList<DependencyMember>();
         for (DependencyMember thisMember : other.getMembers().list) {
-            ItemPath thisPath = thisMember.getItemPath();
-            if (!contains(thisPath)) {
-                newMembers.add(thisPath);
+            if (!contains(thisMember.getItemPath())) {
+                newMembers.add(thisMember);
             }
         }
         return newMembers;
@@ -216,7 +216,9 @@ public class Dependency extends Collection<DependencyMember> {
                 throw new InvalidDataException("Version is null for Collection:" + getName() + ", MemberUUID:" + memberUUID);
             }
 
-            //If Script defined it overwrites default behavior which handle BuiltInCollections only
+            //Do not process this member further
+            //  - if Script has done the job already
+            //  - or this is not a BuiltInCollection
             if (convertToItemPropertyByScript(props, member) || builtInColl == null) continue;
 
             Logger.msg(5, "Dependency.addToItemProperties() - BuiltIn Dependency:"+getName()+" memberUUID:"+memberUUID);
@@ -277,8 +279,8 @@ public class Dependency extends Collection<DependencyMember> {
     }
 
     /**
-     * Add Dependency specific values to VertexProperties. First checks if there is a Script to be executed,
-     * if no Script defined it will use the default conversion implemented for BuiltInCollections
+     * Add Dependency specific values to VertexProperties (CastorHashMap). First checks if there is a Script 
+     * to be executed, if no Script defined it will use the default conversion implemented for BuiltInCollections
      * 
      * @param props the current list of VertexProperties
      * @throws InvalidDataException
@@ -289,10 +291,6 @@ public class Dependency extends Collection<DependencyMember> {
 
         BuiltInCollections builtInColl = BuiltInCollections.getValue(getName());
 
-        //FIXME: This is a HACK to skip Activity collections, because they might not be complete, 
-        //the Version property is missing from Members when created by Script CompositeActivityDefCollSetter
-        if(builtInColl != null && builtInColl == BuiltInCollections.ACTIVITY) return;
-
         for (DependencyMember member : getMembers().list) {
             String memberUUID = member.getChildUUID();
             Integer memberVer = LocalObjectLoader.deriveVersionNumber(member.getBuiltInProperty(VERSION));
@@ -301,7 +299,9 @@ public class Dependency extends Collection<DependencyMember> {
                 throw new InvalidDataException("Version is null for Collection:" + getName() + ", DependencyMember:" + memberUUID);
             }
 
-            //If Script defined it overwrites default behavior which handle BuiltInCollections only
+            //Do not process this member further
+            //  - if Script has done the job already
+            //  - or this is not a BuiltInCollection
             if (convertToVertextPropsByScript(props, member) || builtInColl == null) continue;
 
             Logger.msg(5, "Dependency.addToVertexProperties() - Dependency:"+getName()+" memberUUID:"+memberUUID);
@@ -357,9 +357,19 @@ public class Dependency extends Collection<DependencyMember> {
                 //***************************************************************************************************
                 case ACTIVITY:
                     ActivityDef actDef = LocalObjectLoader.getActDef(memberUUID, memberVer);
-                    //TODO: a better way is needed set the list of ActDef UUID and Version
-                    props.put("ActivityDefName_"   +actDef.getActName(), memberUUID);
-                    props.put("ActivityDefVersion_"+actDef.getActName(), memberVer);
+                    CastorHashMap chm = null;
+
+                    if(props.containsKey(ACTIVITY_DEF_URN)) {
+                        chm = (CastorHashMap)props.getBuiltInProperty(ACTIVITY_DEF_URN);
+                    }
+                    else {
+                        chm = new CastorHashMap();
+                        props.setBuiltInProperty(ACTIVITY_DEF_URN, chm);
+                    }
+
+                    Logger.msg(8, "Dependency.addToVertexProperties("+getName()+") ----++++---- "+actDef.getActName());
+
+                    chm.put(actDef.getActName(), memberUUID+"~"+memberVer);
                     break;
                 //***************************************************************************************************
                 default:

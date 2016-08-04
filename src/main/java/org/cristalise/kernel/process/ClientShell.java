@@ -37,34 +37,52 @@ public class ClientShell extends StandardClient {
         console = new Script("javascript", user, System.out);
     }
 
-    public void run() {
+    public void run() throws Exception {
         Scanner scan = new Scanner(System.in);
-        System.out.print("> ");
-        while (scan.hasNextLine()) {
-            String command = scan.nextLine();
+        scan.reset();
+        String command = "";
+
+        while (scan.hasNextLine() && !command.equals("exit")) {
+            System.out.print("> ");
+            command = scan.nextLine();
+
             try {
                 console.setScriptData(command);
                 Object response = console.execute();
-                if (response == null)
-                    System.out.println("Ok");
-                else
-                    System.out.println(response);
-            } catch (ScriptParsingException e) {
-                System.err.println("Syntax error: "+e.getMessage());
-            } catch (Throwable ex) {
-                ex.printStackTrace();
+
+                if (response == null) System.out.println("Command executed, no response");
+                else                  System.out.println(response);
             }
-            System.out.print("> ");
+            catch (ScriptParsingException e) {
+                System.err.println("Syntax error: "+e.getMessage());
+            }
+            catch (Throwable ex) {
+                ex.printStackTrace();
+                command = "exit";
+            }
         }
+
+        System.out.println("ClientShell is exiting!");
+
         scan.close();
         shutdown(0);
     }
 
     public static void main(String[] args) throws Exception {
         Gateway.init(readC2KArgs(args));
+        
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                AbstractMain.shutdown(0);
+            }
+        });
+
         ProxyLogin auth = (ProxyLogin)Gateway.getProperties().getInstance("cli.auth");
-        AgentProxy user = auth.authenticate(Gateway.getProperties().getProperty("Name"));
-        ClientShell shell = new ClientShell(user);
+        auth.initialize(Gateway.getProperties());
+
+        ClientShell shell = new ClientShell( auth.authenticate(Gateway.getProperties().getProperty("Name")) );
+
         shell.run();
     }
 }

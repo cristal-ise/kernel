@@ -20,16 +20,16 @@
  */
 package org.cristalise.kernel.graph.model;
 
-/**
-* @version $Revision: 1.24 $ $Date: 2005/10/05 07:39:37 $
-* @author  $Author: abranson $
-*/
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ACTIVITY_DEF_URN;
+
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
+import org.cristalise.kernel.utils.Logger;
 
-public abstract class GraphableVertex extends Vertex
-{
+public abstract class GraphableVertex extends Vertex {
+
 //	public static final String NAME = "Name";
 	private CastorHashMap mProperties = null;
 	private boolean mIsLayoutable;
@@ -285,4 +285,45 @@ public abstract class GraphableVertex extends Vertex
 	    mProperties.put(prop.getName(), val);
 	}
 
+    public void updatePropertiesFromCollection(BuiltInVertexProperties vertexProp, CastorHashMap newProps) throws InvalidDataException {
+        switch (vertexProp) {
+            case ACTIVITY_DEF_URN:
+                if(this instanceof Activity) {
+                    Object value = null;
+                    Activity thisAct = (Activity)this;
+
+                    if      (newProps.containsKey(thisAct.getID()))       value = newProps.get(thisAct.getID());
+                    else if (newProps.containsKey(thisAct.getTypeName())) value = newProps.get(thisAct.getTypeName());
+
+                    if(value == null) {
+                        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SKIPPING activity typeName:" + thisAct.getTypeName()+" id:"+thisAct.getID());
+                        return;
+                    }
+
+                    Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - UPDATING typeName:"+thisAct.getTypeName()+" id:"+thisAct.getID());
+                    mProperties.setBuiltInProperty(ACTIVITY_DEF_URN, value);
+                }
+                break;
+
+            default:
+                throw new InvalidDataException("Cannot handle BuiltInVertexProperty:"+vertexProp);
+        }
+    }
+
+    public void updatePropertiesFromCollection(String vertexProp, CastorHashMap newProps)  throws InvalidDataException {
+        Object value = null;
+
+        if      (newProps.containsKey(getID()))   value = newProps.get(getID());
+        else if (newProps.containsKey(getName())) value = newProps.get(getName());
+
+        if(value == null) {
+            Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SKIPPING name:" + getName() + " id:" + getID());
+            return;
+        }
+
+        String[] params = ((String)value).split("~");
+        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SETTING key:" + params[0] + " value:" + params[1]);
+
+        mProperties.put(params[0], params[1]);
+    }
 }

@@ -170,7 +170,8 @@ public class DependencyMember implements CollectionMember {
 
     /**
      * 
-     * @return Could be any Object but in practice it is either a PropertyArrayList or CastorHashMap
+     * @return either PropertyArrayList or CastorHashMap
+     * 
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
@@ -179,6 +180,12 @@ public class DependencyMember implements CollectionMember {
         Script script = LocalObjectLoader.getScript(getProperties());
 
         try {
+            script.setInputParamValue("dependencyMember", this);
+
+            script.setInputParamValue("storage", Gateway.getStorage());
+            script.setInputParamValue("proxy", Gateway.getProxyManager());
+            script.setInputParamValue("lookup", Gateway.getLookup());
+
             return script.evaluate(getItemPath(), getProperties(), null, null);
         }
         catch (ScriptingEngineException e) {
