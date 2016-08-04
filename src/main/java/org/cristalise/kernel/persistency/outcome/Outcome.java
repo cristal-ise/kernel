@@ -178,16 +178,21 @@ public class Outcome implements C2KLocalObject {
         if (field == null) {
             throw new InvalidDataException(xpath);
         }
-        else if (field.getNodeType()==Node.TEXT_NODE || field.getNodeType()==Node.CDATA_SECTION_NODE)
+        else if (field.getNodeType() == Node.TEXT_NODE || 
+                 field.getNodeType() == Node.CDATA_SECTION_NODE ||
+                 field.getNodeType() == Node.ATTRIBUTE_NODE)
+        {
             return field.getNodeValue();
-
+        }
         else if (field.getNodeType()==Node.ELEMENT_NODE) {
             NodeList fieldChildren = field.getChildNodes();
-            if (fieldChildren.getLength() == 0) 
-                throw new InvalidDataException("No child node for element");
 
+            if (fieldChildren.getLength() == 0) {
+                throw new InvalidDataException("No child node for element");
+            }
             else if (fieldChildren.getLength() == 1) {
                 Node child = fieldChildren.item(0);
+
                 if (child.getNodeType()==Node.TEXT_NODE || child.getNodeType()==Node.CDATA_SECTION_NODE)
                     return child.getNodeValue();
                 else
@@ -196,8 +201,6 @@ public class Outcome implements C2KLocalObject {
             else 
                 throw new InvalidDataException("Element "+xpath+" has too many children");
         }
-        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)		
-            return field.getNodeValue();
         else
             throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
     }
