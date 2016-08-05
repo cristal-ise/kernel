@@ -56,6 +56,8 @@ public class NextDef extends GraphableEdge
 	/** create and initialize a link between an Activities */
 	public NextDef(WfVertexDef pre, WfVertexDef nex)
 	{
+	    super();
+
 		setParent(pre.getParent());
 		if (pre instanceof OrSplitDef || pre instanceof XOrSplitDef)
 		{

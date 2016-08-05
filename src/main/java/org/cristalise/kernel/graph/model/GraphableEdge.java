@@ -35,7 +35,8 @@ public abstract class GraphableEdge extends DirectedEdge
 
 	public GraphableEdge()
 	{
-			mProperties = new CastorHashMap();
+	    super();
+		mProperties = new CastorHashMap();
 	}
 
 	public GraphableEdge(GraphableVertex pre, GraphableVertex nex)
