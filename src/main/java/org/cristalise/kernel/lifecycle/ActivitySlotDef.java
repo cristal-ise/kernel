@@ -21,10 +21,11 @@
 package org.cristalise.kernel.lifecycle;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.instance.Activity;
@@ -34,25 +35,21 @@ import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-/**
- * @version $Revision: 1.46 $ $Date: 2005/10/05 07:39:36 $
- * @author $Author: abranson $
- */
 public class ActivitySlotDef extends WfVertexDef
 {
 	private String activityDef;
 	private ActivityDef theActivityDef;
 
 	public ActivitySlotDef() {
-		
 	}
+
 	/**
 	 * @see java.lang.Object#Object()
 	 */
 	public ActivitySlotDef(String name, ActivityDef actDef)
 	{
 		setName(name);
-		setBuiltInProperty(BuiltInVertexProperties.NAME, name);
+		setBuiltInProperty(NAME, name);
 		setTheActivityDef(actDef);
 	}
 
@@ -87,7 +84,7 @@ public class ActivitySlotDef extends WfVertexDef
 					Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - Collection childUUID:"+childUUID+" of ActSlotDef:"+getName());
 					if (childUUID.equals(getActivityDef()) || thisActDef.getName().equals(getActivityDef())) {
 						ActivityDef currentActDef = (ActivityDef)thisActDef;
-						Integer requiredVersion = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.VERSION));
+						Integer requiredVersion = deriveVersionNumber(getBuiltInProperty(VERSION));
 						if (currentActDef.getVersion() != requiredVersion) // collection indicated a different version - get the right one
 							setTheActivityDef(LocalObjectLoader.getActDef(childUUID, requiredVersion));
 						else // use the existing one
@@ -99,7 +96,7 @@ public class ActivitySlotDef extends WfVertexDef
 
 			if (theActivityDef == null) { // try to load from property
 			    Logger.msg(5, "ActivitySlotDef.getTheActivityDef() - try to load from property of ActSlotDef:"+getName());
-				Integer version = deriveVersionNumber(getBuiltInProperty(BuiltInVertexProperties.VERSION));
+				Integer version = deriveVersionNumber(getBuiltInProperty(VERSION));
 				if (version == null) throw new InvalidDataException("No version defined in ActivityDefSlot "+getName());
 				setTheActivityDef(LocalObjectLoader.getActDef(getActivityDef(), version));
 			}
@@ -107,11 +104,11 @@ public class ActivitySlotDef extends WfVertexDef
 		
 		return theActivityDef;
 	}
-		
+
 	public void setTheActivityDef(ActivityDef actDef) {
 		theActivityDef = actDef;
 		activityDef = actDef.getItemID();
-		setBuiltInProperty(BuiltInVertexProperties.VERSION, actDef.getVersion());
+		setBuiltInProperty(VERSION, actDef.getVersion());
 		if (actDef instanceof CompositeActivityDef)
 			mIsComposite = true;
 
@@ -153,12 +150,12 @@ public class ActivitySlotDef extends WfVertexDef
 		}
 		
 		Vertex[] allSiblings = getParent().getChildrenGraphModel().getVertices();
-		String thisName = (String)getBuiltInProperty(BuiltInVertexProperties.NAME);
+		String thisName = (String)getBuiltInProperty(NAME);
 		if (thisName == null || thisName.length()==0) mErrors.add("Slot name is empty");
 		else for (Vertex v : allSiblings) {
 			if (v instanceof ActivitySlotDef && v.getID()!=getID()) {
 				ActivitySlotDef otherSlot = (ActivitySlotDef)v;
-				String otherName = (String)otherSlot.getBuiltInProperty(BuiltInVertexProperties.NAME);
+				String otherName = (String)otherSlot.getBuiltInProperty(NAME);
 				if (otherName != null && otherName.equals(thisName)) {
 					mErrors.add("Duplicate slot name");
 					err = false;
@@ -229,7 +226,7 @@ public class ActivitySlotDef extends WfVertexDef
 
 	public String getActName()
 	{
-		return (String) getBuiltInProperty(BuiltInVertexProperties.NAME);
+		return (String) getBuiltInProperty(NAME);
 	}
 
 	@Override

@@ -57,11 +57,10 @@ import org.cristalise.kernel.utils.Logger;
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject {
 
-    private int     mId      = -1;
-    private String  mName    = "";
+    //FIXME: ActivityDef should not extend WfVertexDef because is not part of the graph (check ActivitySlotDef instead)
     private Integer mVersion = null;  // null is 'last',previously was -1
     public boolean  changed  = false;
-    
+
     ItemPath        itemPath;
 
     Schema          actSchema;
@@ -76,13 +75,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     @Override
     public void setID(int id) {
-        mId = id;
-        if (mName.equals("")) setName(String.valueOf(id));
-    }
-
-    @Override
-    public int getID() {
-        return mId;
+        super.setID(id);
+        if (getName() == null || "".equals(getName())) setName(String.valueOf(id));
     }
 
     @Override
@@ -90,54 +84,26 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return itemPath.getUUID().toString();
     }
 
-    /**
-     * @see org.cristalise.kernel.graph.model.Vertex#setName(java.lang.String)
-     */
-    @Override
-    public void setName(String n) {
-        mName = n;
-    }
-
-    /**
-     * @see org.cristalise.kernel.graph.model.Vertex#getName()
-     */
-    @Override
-    public String getName() {
-        return mName;
-    }
-
     @Override
     public void setVersion(Integer v) {
         mVersion = v;
     }
 
-    /**
-     * @see org.cristalise.kernel.graph.model.Vertex#getName()
-     */
     @Override
     public Integer getVersion() {
         return mVersion;
     }
 
-    /**
-     * @see org.cristalise.kernel.lifecycle.WfVertexDef#getErrors()
-     */
     @Override
     public String getErrors() {
         return super.getErrors();
     }
 
-    /**
-     * @see org.cristalise.kernel.lifecycle.WfVertexDef#verify()
-     */
     @Override
     public boolean verify() {
         return true;
     }
 
-    /**
-     * @see org.cristalise.kernel.entity.C2KLocalObject#getClusterType()
-     */
     @Override
     public String getClusterType() {
         return null;
