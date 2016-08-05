@@ -169,50 +169,34 @@ public class CompositeActivityDef extends ActivityDef {
             throws ObjectNotFoundException, InvalidDataException
     {
         changed = true;
+        boolean wasAdded = false;
         WfVertexDef child;
-        if (Type.equals("Or")) {
-            child = new OrSplitDef();
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
-        }
-        else if (Type.equals("XOr")) {
-            child = new XOrSplitDef();
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
-        }
-        else if (Type.equals("And")) {
-            child = new AndSplitDef();
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
-        }
-        else if (Type.equals("Loop")) {
-            child = new LoopDef();
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
+        
+        if (Type.equals("Or"))        child = new OrSplitDef();
+        else if (Type.equals("XOr"))  child = new XOrSplitDef();
+        else if (Type.equals("And"))  child = new AndSplitDef();
+        else if (Type.equals("Loop")) child = new LoopDef();
+        else if (Type.equals("Join") || Type.equals("Route")) {
+            child = new JoinDef();
+            child.getProperties().put("Type", Type);
         }
         else if (Type.equals("Atomic") || Type.equals("Composite")) {
             ActivityDef act = Type.equals("Atomic") ? LocalObjectLoader.getElemActDef(Name, version) : LocalObjectLoader.getCompActDef(Name, version);
             child = addExistingActivityDef(act.getActName(), act, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
+            wasAdded = true;
         }
         else if (Type.equals("AtomicLocal") || Type.equals("CompositeLocal")) {
             child = addLocalActivityDef(Name, Type, location);
-        }
-        else if (Type.equals("Join")) {
-            child = new JoinDef();
-            child.getProperties().put("Type", "Join");
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
-        }
-        else if (Type.equals("Route")) {
-            child = new JoinDef();
-            child.getProperties().put("Type", "Route");
-            addChild(child, location);
-            Logger.msg(5, Type + " " + child.getID() + " added to " + this.getID());
+            wasAdded = true;
         }
         else {
             throw new InvalidDataException("Unknown child type: " + Type);
         }
+
+        if(!wasAdded) addChild(child, location);
+
+        Logger.msg(5, "CompositeActivityDef.newChild() - Type:"+Type + " ID:" + child.getID() + " added to ID:" + this.getID());
+
         return child;
     }
 
