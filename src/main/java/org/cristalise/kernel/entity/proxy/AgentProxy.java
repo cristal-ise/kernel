@@ -111,22 +111,26 @@ public class AgentProxy extends ItemProxy {
      * @throws ScriptErrorException
      * @throws InvalidCollectionModification
      */
-    public String execute(Job job) throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
-            PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification {
+    public String execute(Job job)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
+            PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+    {
         ItemProxy item = Gateway.getProxyManager().getProxy(job.getItemPath());
         Date startTime = new Date();
-        Logger.msg(3, "AgentProxy - executing " + job.getStepPath() + " for " + mAgentPath.getAgentName());
-        // get the outcome validator if present
 
+        Logger.msg(3, "AgentProxy.execute() - executing " + job.getStepPath() + " for " + mAgentPath.getAgentName());
+
+        // get the outcome validator if present
         if (job.hasScript()) {
             Logger.msg(3, "AgentProxy - executing script");
             try {
                 // pre-validate outcome from script if there is one
                 if (job.hasOutcome() || job.isOutcomeSet()) {
-                    Logger.msg(5, "AgentProxy - validating outcome before script execution");
+                    Logger.msg(5, "AgentProxy.execute() - validating outcome before script execution");
                     String error = job.getOutcome().validate();
                     if (error.length() > 0) {
                         Logger.error("Outcome not valid: \n " + error);
+                        Logger.error(job.getOutcome().getData());
                         throw new InvalidDataException(error);
                     }
                 }
@@ -135,9 +139,10 @@ public class AgentProxy extends ItemProxy {
                 ErrorInfo scriptErrors = (ErrorInfo) callScript(item, job);
                 String errorString = scriptErrors.toString();
                 if (scriptErrors.getFatal()) {
-                    Logger.msg(3, "AgentProxy - fatal script error");
+                    Logger.error("AgentProxy.execute() - fatal script error");
                     throw new ScriptErrorException(scriptErrors);
                 }
+                
                 if (errorString.length() > 0) Logger.warning("Script errors: " + errorString);
             }
             catch (ScriptingEngineException ex) {
@@ -156,12 +161,12 @@ public class AgentProxy extends ItemProxy {
         }
 
         job.setAgentPath(mAgentPath);
-        Logger.msg(3, "AgentProxy - submitting job to item proxy");
+        Logger.msg(3, "AgentProxy.execute() - submitting job to item proxy");
         String result = item.requestAction(job);
         if (Logger.doLog(3)) {
             Date timeNow = new Date();
             long secsNow = (timeNow.getTime() - startTime.getTime()) / 1000;
-            Logger.msg(3, "Execution took " + secsNow + " seconds");
+            Logger.msg(3, "AgentProxy.execute() - execution DONE in " + secsNow + " seconds");
         }
 
         return result;
