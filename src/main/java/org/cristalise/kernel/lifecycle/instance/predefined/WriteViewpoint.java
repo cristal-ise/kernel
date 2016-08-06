@@ -38,59 +38,66 @@ import org.cristalise.kernel.utils.Logger;
 
 public class WriteViewpoint extends PredefinedStep {
 
-	public WriteViewpoint() {
-		super();
-	}
+    public WriteViewpoint() {
+        super();
+    }
 
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException {
-		
-		String schemaName;
-		String viewName;
-		int evId;
-
+    /**
+     * Outcometype, name and event Id. Event and Outcome should be checked so schema version should be discovered.
+     */
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException
+    {
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "WriteViewpoint: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
 
-        // outcometype, name and evId. Event and Outcome should be checked so schema version should be discovered.
-        if (params.length != 3)
+        if (params.length != 3) {
             throw new InvalidDataException("WriteViewpoint: Invalid parameters "+Arrays.toString(params));
-        
-        schemaName = params[0];
-        viewName = params[1];
+        }
+
+        String schemaName = params[0];
+        String viewName = params[1];
+        int evId;
 
         try {
-        	evId = Integer.parseInt(params[2]);
-        } catch (NumberFormatException ex) {
-        	throw new InvalidDataException("WriteViewpoint: Parameter 3 (EventId) must be an integer");
+            evId = Integer.parseInt(params[2]);
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("WriteViewpoint: Parameter 3 (EventId) must be an integer");
         }
 
         // Find event
-        
         Event ev;
-       	try {
-			ev = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+evId, locker);
-		} catch (PersistencyException e) {
-			Logger.error(e);
-			throw new PersistencyException("WriteViewpoint: Could not load event "+evId);
-		}
-        if (ev.getSchemaName() == null || ev.getSchemaName().length() == 0)
-        	throw new InvalidDataException("Event "+evId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
-        // Write new viewpoint
-       	Schema thisSchema = LocalObjectLoader.getSchema(schemaName, ev.getSchemaVersion());
-
-       	if (!ev.getSchemaName().equals(thisSchema.getItemID()))
-       		throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
-
-       	Viewpoint newView = new Viewpoint(item, thisSchema, viewName, evId);
         try {
-			Gateway.getStorage().put(item, newView, locker);
-		} catch (PersistencyException e) {
-			Logger.error(e);
-			throw new PersistencyException("WriteViewpoint: Could not store new viewpoint");
-		}
-        return requestData;
-	}
+            ev = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+evId, locker);
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new PersistencyException("WriteViewpoint: Could not load event "+evId);
+        }
 
+        if (ev.getSchemaName() == null || ev.getSchemaName().length() == 0) {
+            throw new InvalidDataException("Event "+evId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
+        }
+
+        // Write new viewpoint
+        Schema thisSchema = LocalObjectLoader.getSchema(schemaName, ev.getSchemaVersion());
+
+        if (!ev.getSchemaName().equals(thisSchema.getItemID())) { 
+            throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
+        }
+
+        Viewpoint newView = new Viewpoint(item, thisSchema, viewName, evId);
+
+        try {
+            Gateway.getStorage().put(item, newView, locker);
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new PersistencyException("WriteViewpoint: Could not store new viewpoint");
+        }
+
+        return requestData;
+    }
 }
