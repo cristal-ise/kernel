@@ -56,6 +56,9 @@ params[2] = existingLast.getEventId();
 
 agent.execute(item, "WriteViewpoint", params);
 
-updateDescColls(viewName, lastView);
+//this was the old code, based on hardcoded collections
+//updateDescColls(viewName, lastView); 
+
+updateDependenciesVersion(lastView);
     ]]></script>
 </cristalscript>

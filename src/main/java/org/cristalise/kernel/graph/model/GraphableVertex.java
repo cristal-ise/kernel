@@ -295,13 +295,12 @@ public abstract class GraphableVertex extends Vertex {
                     if      (newProps.containsKey(thisAct.getID()))       value = newProps.get(thisAct.getID());
                     else if (newProps.containsKey(thisAct.getTypeName())) value = newProps.get(thisAct.getTypeName());
 
-                    if(value == null) {
-                        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SKIPPING activity typeName:" + thisAct.getTypeName()+" id:"+thisAct.getID());
-                        return;
+                    if(value != null) {
+                        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - UPDATING typeName:"+thisAct.getTypeName()+" id:"+thisAct.getID());
+                        mProperties.setBuiltInProperty(ACTIVITY_DEF_URN, value);
                     }
-
-                    Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - UPDATING typeName:"+thisAct.getTypeName()+" id:"+thisAct.getID());
-                    mProperties.setBuiltInProperty(ACTIVITY_DEF_URN, value);
+                    else
+                        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SKIPPING typeName:" + thisAct.getTypeName()+" id:"+thisAct.getID());
                 }
                 break;
 
@@ -310,20 +309,13 @@ public abstract class GraphableVertex extends Vertex {
         }
     }
 
-    public void updatePropertiesFromCollection(String vertexProp, CastorHashMap newProps)  throws InvalidDataException {
-        Object value = null;
-
-        if      (newProps.containsKey(getID()))   value = newProps.get(getID());
-        else if (newProps.containsKey(getName())) value = newProps.get(getName());
-
-        if(value == null) {
-            Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SKIPPING name:" + getName() + " id:" + getID());
-            return;
+    public void updatePropertiesFromCollection(int slotID, CastorHashMap newProps)  throws InvalidDataException {
+        if (getID() == slotID) {
+            Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection(slotID:"+slotID+") - MERGING properties for name:" + getName() + " id:" + getID());
+            newProps.dump(5);
+            mProperties.merge(newProps);
         }
-
-        String[] params = ((String)value).split("~");
-        Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection("+vertexProp+") - SETTING key:" + params[0] + " value:" + params[1]);
-
-        mProperties.put(params[0], params[1]);
+        else
+            Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection(slotID:"+slotID+") - SKIPPING name:" + getName() + " id:" + getID());
     }
 }

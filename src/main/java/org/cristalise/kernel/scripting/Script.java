@@ -480,7 +480,7 @@ public class Script implements DescriptionObject {
 
             if (retVal == null) retVal = "";
 
-            Logger.msg(2, "Split.evaluateScript("+getName()+") - Script returned:'"+retVal+"'");
+            Logger.msg(2, "Script.evaluate("+getName()+") - Script returned:'"+retVal+"'");
 
             return retVal;
         }
@@ -505,26 +505,30 @@ public class Script implements DescriptionObject {
      * @throws ScriptingEngineException - input parameters weren't set, there was an error executing the script, or the output was invalid
      */
     public Object execute() throws ScriptingEngineException {
-        //TODO: Split Script.execute() to several logically independent methods to make it easier to maintain check input params
+        //TODO: Split Script.execute() to several logically independent methods to make it easier to maintain
         StringBuffer missingParams = new StringBuffer();
+        
+        //check input params
         for (Parameter thisParam : mInputParams.values()) {
             if (!thisParam.getInitialised())
                 missingParams.append(thisParam.getName()).append("\n");
         }
         // croak if any missing
-        if (missingParams.length() > 0)
+        if (missingParams.length() > 0) {
             throw new ScriptingEngineException("Execution aborted, the following declared parameters were not set: \n" + missingParams.toString());
+        }
 
         for (Parameter outputParam : mOutputParams.values()) {
             //If the name is null then it's the return type. don't pre-register it
             if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
 
             Logger.msg(8, "Script.execute() - Initialising output bean '" + outputParam.getName() + "'");
-            
+
             Object emptyObject;
             try {
                 emptyObject = outputParam.getType().newInstance();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 emptyObject = null;
             }
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
@@ -541,20 +545,19 @@ public class Script implements DescriptionObject {
         // run the script
         Object returnValue = null;
         try {
-            Logger.msg(7, "Script.execute() - Executing script");
-            if (Logger.doLog(8)) Logger.msg(8, "Script:\n"+mScript);
+            Logger.msg(7, "Script.execute() - Executing script:"+getName());
+            if (Logger.doLog(8)) Logger.msg("Script:\n"+mScript);
 
-            if (engine == null)
+            if (engine == null) {
                 throw new ScriptingEngineException("Script engine not set. Cannot execute scripts.");
+            }
 
             engine.put(ScriptEngine.FILENAME, mName);
 
-            if (mCompScript != null) 
-                returnValue = mCompScript.eval(context);
-            else
-                returnValue = engine.eval(mScript);
+            if (mCompScript != null) returnValue = mCompScript.eval(context);
+            else                     returnValue = engine.eval(mScript);
 
-            Logger.msg(7, "Script.execute() - script returned \"" + returnValue + "\"");
+            Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
         }
         catch (Throwable ex) {
             Logger.error(ex);
@@ -575,26 +578,26 @@ public class Script implements DescriptionObject {
 
             if (outputName == null || outputName.length()==0)
                 outputValue = returnValue;
-            else
+            else 
                 outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
-            if (outputValue!=null || outputName != null)
+            if (outputValue!=null || outputName != null) {
                 Logger.msg(4, "Script.execute() - Output parameter "+(outputName==null ? "" : outputName+" ")+"= "+(outputValue==null?"null":outputValue.toString()));
+            }
 
             // check the class
-            if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))
-                throw new ScriptingEngineException(
-                        "Script output "+outputName+" was not null or instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+            if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))  {
+                throw new ScriptingEngineException("Script output "+outputName+" was not null or instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+            }
 
             Logger.msg(8, "Script.execute() - output "+outputValue);
 
             if (mOutputParams.size() == 1) {
-                Logger.msg(6, "Script.execute() - only one parameter, returning "+(outputValue==null?"null":outputValue.toString()));
+                Logger.msg(6, "Script.execute() - only one parameter, returning '"+(outputValue==null ? "null" : outputValue.toString())+"'");
                 return outputValue;
             }
             outputs.put(outputParam.getName(), outputValue);
         }
-
         return outputs;
     }
 

@@ -253,7 +253,7 @@ public class CompositeActivityDef extends ActivityDef {
                     BuiltInVertexProperties builtInProp = BuiltInVertexProperties.getValue(aCAProp.getKey());
 
                     if(builtInProp == null) {
-                        ((GraphableVertex)vertex).updatePropertiesFromCollection(aCAProp.getKey(), propsToPropagate);
+                        ((GraphableVertex)vertex).updatePropertiesFromCollection(Integer.parseInt(aCAProp.getKey()), propsToPropagate);
                     }
                     else {
                         ((GraphableVertex)vertex).updatePropertiesFromCollection(builtInProp, propsToPropagate);

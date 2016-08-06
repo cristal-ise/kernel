@@ -218,6 +218,7 @@ public class CreateItemFromDescription extends PredefinedStep {
             throw new InvalidDataException("Invalid workflow version number: " + wfVerObj.toString());
         }
         catch (ClassCastException ex) {
+            Logger.error(ex);
             throw new InvalidDataException("Activity def '" + wfDefName + "' was not Composite");
         }
     }

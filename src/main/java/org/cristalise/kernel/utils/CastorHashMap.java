@@ -140,7 +140,7 @@ public class CastorHashMap extends HashMap<String, Object> {
             StringBuffer sb = new StringBuffer();
 
             sb.append("{ ");
-            for(Entry<String, Object> e : entrySet())  sb.append(e.getKey() + ":" + e.getValue()+" ");
+            for(Entry<String, Object> e : entrySet())  sb.append(e.getKey() + ":'" + e.getValue()+"',");
             sb.append("}");
 
             Logger.msg("CastorHashMap : " + sb);

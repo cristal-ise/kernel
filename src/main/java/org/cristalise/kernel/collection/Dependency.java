@@ -367,7 +367,7 @@ public class Dependency extends Collection<DependencyMember> {
                         props.setBuiltInProperty(ACTIVITY_DEF_URN, chm);
                     }
 
-                    Logger.msg(8, "Dependency.addToVertexProperties("+getName()+") ----++++---- "+actDef.getActName());
+                    Logger.msg(8, "Dependency.addToVertexProperties("+getName()+") - actDef:"+actDef.getActName());
 
                     chm.put(actDef.getActName(), memberUUID+"~"+memberVer);
                     break;

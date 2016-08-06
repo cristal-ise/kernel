@@ -642,16 +642,22 @@ public class Job implements C2KLocalObject
     }
 
     /**
-     * Searches Activity property names using Regular Expressions
+     * Searches Activity property names using {@link String#startsWith(String)} method
      * 
-     * @param regex the pattern to be mathced
+     * @param pattern the pattern to be matched
      * @return Map of property name and value
      */
-    public Map<String, Object> matchActPropNames(String regex) {
+    public Map<String, Object> matchActPropNames(String pattern) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         for(String propName : actProps.keySet()) {
-            if(propName.matches(regex)) result.put(propName, actProps.get(propName));
+            if(propName.startsWith("/")) result.put(propName, actProps.get(propName));
+            //if(propName.matches(pattern)) result.put(propName, actProps.get(propName));
+        }
+
+        if(result.size() == 0) {
+            Logger.msg(5, "Job.matchActPropNames() - NO properties were found for propName.startsWith(pattern:'"+pattern+"')");
+            actProps.dump(8);
         }
 
         return result;
