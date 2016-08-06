@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.test.persistency;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Properties;
 
 import org.cristalise.kernel.persistency.outcome.Outcome;
@@ -35,6 +38,7 @@ import org.w3c.dom.NodeList;
 public class OutcomeTest {
 
     Outcome testOc;
+    Outcome complexTestOc;
 
     @Before
     public void setup() throws Exception {
@@ -43,6 +47,9 @@ public class OutcomeTest {
         Gateway.init(props);
         String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
         testOc = new Outcome("/Outcome/Script/0/0", ocData);
+
+        ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/complexOutcomeTest.xml"));
+        complexTestOc = new Outcome("/Outcome/Script/0/0", ocData);
     }
 
     @Test
@@ -71,5 +78,39 @@ public class OutcomeTest {
     public void testValidation() throws Exception {
     	String errors = testOc.validate();
     	assert errors.contains("Cannot find the declaration of element 'TestOutcome'.") : "Validation failed";
+    }
+
+    @Test
+    public void testComplexXpath() throws Exception {
+        String slotID = complexTestOc.getNodeByXPath("/Fields/@slotID").getNodeValue();
+
+        assertEquals("1",  slotID);
+
+        NodeList fields = complexTestOc.getNodesByXPath("//Field");
+
+        for(int i = 0; i < fields.getLength(); i++) {
+            NodeList children = fields.item(i).getChildNodes();
+
+            //There are actually 5 nodes, becuase of the text nodes
+            //assertEquals(2,  children.getLength());
+
+            String fieldName  = "";
+            String fieldValue = "";
+
+            for(int j = 0; j < children.getLength(); j++) {
+                if(children.item(j).getNodeType() == Node.ELEMENT_NODE) {
+                    if      (children.item(j).getNodeName().equals("FieldName"))  fieldName  = children.item(j).getTextContent().trim();
+                    else if (children.item(j).getNodeName().equals("FieldValue")) fieldValue = children.item(j).getTextContent().trim();
+                }
+                else  {
+                    Logger.msg("Script:XPathOutcomeInitTest_DetailsInstantiator - SKIPPING nodeName:"+children.item(j).getNodeName()+" nodeType:"+children.item(j).getNodeType());
+                }
+            }
+
+            assertNotNull(fieldName, "fieldName shall not be null");
+            assertNotNull(fieldValue, "fieldValue shall not be null");
+
+            Logger.msg("Script:XPathOutcomeInitTest_DetailsInstantiator - slotID:"+slotID+" fieldName:"+fieldName+" fieldValue:"+fieldValue);
+        }
     }
 }
