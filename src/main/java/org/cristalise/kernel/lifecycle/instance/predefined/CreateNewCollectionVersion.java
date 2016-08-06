@@ -34,77 +34,71 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class CreateNewCollectionVersion extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public CreateNewCollectionVersion()
-    {
+public class CreateNewCollectionVersion extends PredefinedStep {
+
+    /**
+     * Constructor for Castor
+     */
+    public CreateNewCollectionVersion() {
         super();
     }
 
 
     /**
-     * Generates a new snapshot of a collection from its current state. The 
-     * new version is given the next available number, starting at 0.
-     * 
+     * Generates a new snapshot of a collection from its current state. 
+     * The new version is given the next available number, starting at 0.
+     * <pre>
      * Params:
      * 0 - Collection name
-     * @throws InvalidDataException 
-     * @throws PersistencyException 
-     *  
-     * @throws ObjectNotFoundException when there is no collection present with
-     * that name 
+     * 1 - Version (optional)
+     * </pre>
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException 
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker) 
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException 
     {
-        String collName;
-
         // extract parameters
         String[] params = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "CreateNewCollectionVersion: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length == 0 || params.length > 2)
-        	throw new InvalidDataException("CreateNewCollectionVersion: Invalid parameters "+Arrays.toString(params));
 
-        collName = params[0];
+        if (params.length == 0 || params.length > 2) { 
+            throw new InvalidDataException("CreateNewCollectionVersion: Invalid parameters "+Arrays.toString(params));
+        }
+
+        String collName = params[0];
         Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
         int newVersion;
-        
+
         if (params.length > 1) {
-        	newVersion = Integer.valueOf(params[1]);
+            newVersion = Integer.valueOf(params[1]);
         }
         else {
-	        // find last numbered version
-	        String[] versions = Gateway.getStorage().getClusterContents(item, ClusterStorage.COLLECTION+"/"+collName);
-	        int lastVer = -1;
-	        for (String thisVerStr : versions) {
-				try {
-					int thisVer = Integer.parseInt(thisVerStr);
-					if (thisVer > lastVer) lastVer = thisVer;
-				} catch (NumberFormatException ex) { } // ignore non-integer versions
-			}
-	        newVersion = lastVer + 1;
+            // find last numbered version
+            String[] versions = Gateway.getStorage().getClusterContents(item, ClusterStorage.COLLECTION+"/"+collName);
+            int lastVer = -1;
+
+            for (String thisVerStr : versions) {
+                try {
+                    int thisVer = Integer.parseInt(thisVerStr);
+                    if (thisVer > lastVer) lastVer = thisVer;
+                }
+                catch (NumberFormatException ex) { } // ignore non-integer versions
+            }
+            newVersion = lastVer + 1;
         }
-        
+
         // Remove it from the cache before we change it
         Gateway.getStorage().clearCache(item, ClusterStorage.COLLECTION+"/"+collName+"/last");
-        // Set the version
-        coll.setVersion(newVersion);
-        
-        // store it
-		try {
+
+        // Set the version & store it
+        try {
+            coll.setVersion(newVersion);
             Gateway.getStorage().put(item, coll, locker);
-        } catch (PersistencyException e) {
-        	throw new PersistencyException("CreateNewCollectionVersion: Error saving new collection '"+collName+"': "+e.getMessage());
         }
+        catch (PersistencyException e) {
+            throw new PersistencyException("CreateNewCollectionVersion: Error saving new collection '"+collName+"': "+e.getMessage());
+        }
+
         return requestData;
     }
 }
