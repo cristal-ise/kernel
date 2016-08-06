@@ -26,78 +26,81 @@
     <param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
     <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
     <script language="javascript" name="DescriptionCollectionSetter"><![CDATA[
-    importClass(org.cristalise.kernel.utils.Logger);
-    importClass(org.cristalise.kernel.utils.LocalObjectLoader);
-    importClass(org.cristalise.kernel.utils.CastorHashMap);
-    importClass(org.cristalise.kernel.lookup.DomainPath);
-    importClass(org.cristalise.kernel.process.Gateway);
-    importClass(org.cristalise.kernel.property.Property);
+importClass(org.cristalise.kernel.utils.Logger);
+importClass(org.cristalise.kernel.utils.LocalObjectLoader);
+importClass(org.cristalise.kernel.utils.CastorHashMap);
+importClass(org.cristalise.kernel.lookup.DomainPath);
+importClass(org.cristalise.kernel.process.Gateway);
+importClass(org.cristalise.kernel.property.Property);
 
-    var objType = job.getActPropString("ObjectType");
+var objType = job.getActPropString("ObjectType");
 
-    if (objType == null || objType.isEmpty()) 
-    throw "Script:DescriptionCollectionSetter - ObjectType not specified in ActProps of Job.";
+if (objType == null || objType.isEmpty()) 
+throw "Script:DescriptionCollectionSetter - ObjectType not specified in ActProps of Job.";
 
-    var descColl;
+var descColl;
+try {
+    descColl = item.getObject("/Collection/"+objType+"/last");
+} catch (e) {
+    throw "Script:DescriptionCollectionSetter - Collection/"+objType+"/last does not exist!";
+}
+
+var newObj;
+var objName = job.getOutcome().getField("ObjectID");
+var objVer  = job.getOutcome().getField("Version");
+var uuid;
+
+if (objName != null && !objName.isEmpty()) {
     try {
-        descColl = item.getObject("/Collection/"+objType+"/last");
-    } catch (e) {
-        throw "Script:DescriptionCollectionSetter - Collection/"+objType+"/last does not exist!";
-    }
+        if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
+        else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
+        else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
+        else {
+            var searchProps = new Array(2);
 
-    var newObj;
-    var objName = job.getOutcome().getField("ObjectID");
-    var objVer  = job.getOutcome().getField("Version");
-    var uuid;
+            searchProps[0] = new Property("Name", objName);
+            searchProps[1] = new Property("Type", objType);
 
-    if (objName != null && !objName.isEmpty()) {
-        try {
-            if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
-            else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
-            else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
-            else {
-           	    var searchProps = new Array(2);
+            var foundItems = Gateway.getLookup().search(new DomainPath("/"), searchProps);
 
-                searchProps[0] = new Property("Name", objName);
-                searchProps[1] = new Property("Type", objType);
-
-                var foundItems = Gateway.getLookup().search(new DomainPath("/"), searchProps);
-
-                if(foundItems.hasNext()) {
-                    uuid = foundItems.next().getItemPath().getUUID();
-                    if(foundItems.hasNext())
-                        throw "Script:DescriptionCollectionSetter - Umbiguous Lookup.search(props Name:"+objName+", Type:"+objType+")";
-                }
-                else
-                    throw "Script:DescriptionCollectionSetter - Nothing found for Lookup.search(props Name:"+objName+", Type:"+objType+")";
+            if(foundItems.hasNext()) {
+                uuid = foundItems.next().getItemPath().getUUID();
+                if(foundItems.hasNext())
+                    throw "Script:DescriptionCollectionSetter - Umbiguous Lookup.search(props Name:"+objName+", Type:"+objType+")";
             }
-
-            var params = new Array(2);
-            params[0] = objType;
-
-            if (descColl.size() > 0) {
-                Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member first");
-                params[1] = descColl.getMembers().list.iterator().next().getID();
-                agent.execute(item, "RemoveSlotFromCollection", params);
-            }
-
-            Logger.msg(5, "Script:DescriptionCollectionSetter - Adding new member");
-            var props = new CastorHashMap();
-            props.put("Version", objVer, true);
-
-            params = new Array(3);
-            params[0] = objType;
-            params[2] = agent.marshall(props);
-
-            if(newObj != null) params[1] = newObj.getItemID();
-            else               params[1] = uuid;
-
-            agent.execute(item, "AddMemberToCollection", params);
+            else
+                throw "Script:DescriptionCollectionSetter - Nothing found for Lookup.search(props Name:"+objName+", Type:"+objType+")";
         }
-        catch (e) {
-            Logger.error(e);
-            throw e;
+
+        var params = new Array(2);
+        params[0] = objType;
+
+        //TODO: implement multiplicity check (could be based on a property) instead of hardcoded value
+        if ((objType.equals("Schema") || objType.equals("Script") || objType.equals("StateMachine")) && descColl.size() > 0) {
+            Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member for Schema/Script/StateMachine");
+
+            params[1] = descColl.getMembers().list.iterator().next().getID();
+            agent.execute(item, "RemoveSlotFromCollection", params);
         }
+
+        var props = new CastorHashMap();
+        props.put("Version", objVer, true);
+
+        params = new Array(3);
+        params[0] = objType;
+        params[2] = agent.marshall(props);
+
+        if(newObj != null) params[1] = newObj.getItemID();
+        else               params[1] = uuid;
+
+        Logger.msg(5, "Script:DescriptionCollectionSetter - Adding new member:"+params);
+
+        agent.execute(item, "AddMemberToCollection", params);
     }
+    catch (e) {
+        Logger.error(e);
+        throw e;
+    }
+}
     ]]></script>
 </cristalscript>
