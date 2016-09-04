@@ -20,12 +20,36 @@
  */
 package org.cristalise.kernel.process;
 
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
+import org.cristalise.kernel.utils.Logger;
 
 
 abstract public class StandardClient extends AbstractMain {
     protected AgentProxy agent = null;
     
+	protected void login(String agentName, String agentPass, String resource) throws InvalidDataException {
+		// login - try for a while in case server hasn't imported our user yet
+        for (int i=1; i < 6; i++) {
+            try {
+                Logger.msg("Login attempt "+i+" of 5");
+                agent = Gateway.connect(agentName, agentPass, resource);
+                break;
+            }
+            catch (Exception ex) {
+                Logger.error("Could not log in.");
+                Logger.error(ex);
+
+                try {
+                    Thread.sleep(5000);
+                }
+                catch (InterruptedException ex2) { }
+            }
+        }
+        
+        if(agent == null) throw new InvalidDataException("Could not login agent:"+agentName);
+	}
+
     /**
      * This method is only provided as an example
      * 

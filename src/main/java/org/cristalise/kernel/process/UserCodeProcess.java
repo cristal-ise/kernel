@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.InvalidTransitionException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
@@ -56,7 +57,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     final HashMap<String, C2KLocalObject> jobs = new HashMap<String, C2KLocalObject>();
 
     public UserCodeProcess(String agentName, String agentPass, String resource) 
-            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException
+            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException, InvalidDataException
     {
         //TODO: make this configurable from properties
         StateMachine sm = (StateMachine)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/SM/Default.xml"));
@@ -67,23 +68,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         SUSPEND  = sm.getTransitionID("Suspend");
         RESUME   = sm.getTransitionID("Resume");
 
-        // login - try for a while in case server hasn't imported our user yet
-        for (int i=1; i < 6; i++) {
-            try {
-                Logger.msg("Login attempt "+i+" of 5");
-                agent = Gateway.connect(agentName, agentPass, resource);
-                break;
-            }
-            catch (Exception ex) {
-                Logger.error("Could not log in.");
-                Logger.error(ex);
-
-                try {
-                    Thread.sleep(5000);
-                }
-                catch (InterruptedException ex2) { }
-            }
-        }
+        login(agentName, agentPass, resource);
         System.out.println(getDesc()+" initialised for " + agentName);
     }
 
@@ -247,7 +232,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     public static UserCodeProcess getInstance() 
-            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException
+            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException, InvalidDataException
     {
         return new UserCodeProcess(InetAddress.getLocalHost().getHostName(), "uc", Gateway.getProperties().getString("AuthResource", "Cristal"));
     }
