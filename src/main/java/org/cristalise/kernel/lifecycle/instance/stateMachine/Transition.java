@@ -268,9 +268,8 @@ public class Transition {
 		else if (reservation.equals("clear"))
 			reservedAgent = "";
 		return reservedAgent;
-			
 	}
-	
+
 	private static String resolveValue(String key, CastorHashMap props) {
 		if (key==null) return null;
 		String result = key;
@@ -279,20 +278,23 @@ public class Transition {
 		while (propMatcher.find()) {			
 			String propName = propMatcher.group(1);
 			Object propValue = props.get(propName);
-			Logger.msg(8, "Replacing Property "+propName+" as "+propValue);
-			String propValString = propValue==null?"":propValue.toString();
+
+			Logger.msg(8, "Transition.resolveValue() - Replacing Property "+propName+" as "+propValue);
+
+			String propValString = propValue == null ? "" : propValue.toString();
 			result = result.replace("${"+propName+"}", propValString);
 		}
+        Logger.msg(8, "Transition.resolveValue() - returning key '"+key+"' as '"+result+"'");
 		return result;
 	}
-	
+
 	public boolean isEnabled(Activity act) throws ObjectNotFoundException {
 	    
 	    if (enabledProp == null || "".equals(enabledProp)) return true;
 
 		try {
 		    Object propValue = act.evaluateProperty(null, enabledProp, null);
-	        return new Boolean(propValue.toString());
+		    return new Boolean(propValue.toString());
 		}
 		catch (Exception e) {
 			Logger.error(e);
