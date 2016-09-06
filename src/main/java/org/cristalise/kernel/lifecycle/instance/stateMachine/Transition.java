@@ -278,13 +278,10 @@ public class Transition {
 		while (propMatcher.find()) {			
 			String propName = propMatcher.group(1);
 			Object propValue = props.get(propName);
-
-			Logger.msg(8, "Transition.resolveValue() - Replacing Property "+propName+" as "+propValue);
-
 			String propValString = propValue == null ? "" : propValue.toString();
 			result = result.replace("${"+propName+"}", propValString);
 		}
-        Logger.msg(8, "Transition.resolveValue() - returning key '"+key+"' as '"+result+"'");
+		Logger.msg(8, "Transition.resolveValue() - returning key '"+key+"' as '"+result+"'");
 		return result;
 	}
 
