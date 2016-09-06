@@ -624,8 +624,17 @@ public class Job implements C2KLocalObject
         return actProps.get(name);
     }
 
+    public Object getActProp(String name, Object defaultValue) {
+        Object value = getActProp(name);
+        return (value == null) ? defaultValue : value;
+    }
+
     public Object getActProp(BuiltInVertexProperties name) {
         return getActProp(name.getName());
+    }
+
+    public Object getActProp(BuiltInVertexProperties name, Object defaultValue) {
+        return getActProp(name.getName(), defaultValue);
     }
 
     public String getActPropString(String name) {
