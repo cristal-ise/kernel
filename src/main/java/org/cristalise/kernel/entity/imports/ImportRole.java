@@ -33,7 +33,7 @@ import org.cristalise.kernel.process.module.ModuleImport;
 
 public class ImportRole extends ModuleImport {
 
-	private boolean jobList;
+	public boolean jobList;
 	
 	public ImportRole() {}
 	
@@ -54,9 +54,5 @@ public class ImportRole extends ModuleImport {
 
 	public boolean hasJobList() {
 		return jobList;
-	}
-
-	public void setJobList(boolean jobList) {
-		this.jobList = jobList;
 	}
 }
