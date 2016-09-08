@@ -67,8 +67,8 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
     {
         String[] input = getDataList(requestData);
         if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agentPath+" on "+itemPath+" with parameters "+Arrays.toString(input));
-        if (input.length < 3 || input.length > 4) 
-            throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
+        //if (input.length < 3 || input.length > 4) 
+        //    throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
 
         String newName = input[0];
         String domPath = input[1];
