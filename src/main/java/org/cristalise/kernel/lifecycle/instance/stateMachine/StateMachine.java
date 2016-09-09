@@ -145,6 +145,8 @@ public class StateMachine implements DescriptionObject
 		stateCodes.clear();		
 		transitionCodes.clear();
 		isCoherent = true;
+
+		Logger.msg(6, "StateMachine.validate() - name:'"+name+"'");
 		
 		for (State state : states) {
 			Logger.debug(6, "State "+state.id+": "+state.name);

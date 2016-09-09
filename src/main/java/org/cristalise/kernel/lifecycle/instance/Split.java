@@ -89,7 +89,7 @@ public abstract class Split extends WfVertex
             num = Integer.parseInt((String) getBuiltInProperty(LAST_NUM));
         }
         catch (Exception e) {
-            Logger.debug(8, "Split::addNext() - Exception:"+e.getMessage());
+            Logger.msg(8, "Split::addNext() - Exception:"+e.getMessage());
         }
 
         nxt.setBuiltInProperty(ALIAS, String.valueOf(num));

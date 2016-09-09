@@ -86,13 +86,10 @@ public class XMLClusterStorage extends ClusterStorage {
             String filePath = getFilePath(itemPath, path)+".xml";
             String objString = FileStringUtility.file2String(filePath);
             if (objString.length() == 0) return null;
-            Logger.debug(9, objString);
-            if (type.equals("Outcome"))
-                return new Outcome(path, objString);
-            else {
-                C2KLocalObject obj = (C2KLocalObject)Gateway.getMarshaller().unmarshall(objString);
-                return obj;
-            }
+            Logger.debug(9, "XMLClusterStorage.get() - objString:" + objString);
+
+            if (type.equals("Outcome")) return new Outcome(path, objString);
+            else                        return (C2KLocalObject)Gateway.getMarshaller().unmarshall(objString);
 
         } catch (Exception e) {
             Logger.msg(3,"XMLClusterStorage.get() - The path "+path+" from "+itemPath+" does not exist.: "+e.getMessage());
@@ -105,7 +102,7 @@ public class XMLClusterStorage extends ClusterStorage {
 	public void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException {
         try {
             String filePath = getFilePath(itemPath, getPath(obj)+".xml");
-            Logger.msg(7, "Writing "+filePath);
+            Logger.msg(7, "XMLClusterStorage.put() - Writing "+filePath);
             String data = Gateway.getMarshaller().marshall(obj);
 
             String dir = filePath.substring(0, filePath.lastIndexOf('/'));
@@ -130,7 +127,10 @@ public class XMLClusterStorage extends ClusterStorage {
             filePath = getFilePath(itemPath, path);
             success = FileStringUtility.deleteDir(filePath, true, true);
             if (success) return;
-        } catch(Exception e) { }
+        } catch(Exception e) {
+            Logger.error(e);
+            throw new PersistencyException("XMLClusterStorage.delete() - Failure deleting path "+path+" in "+itemPath + " Error: "+e.getMessage());
+        }
         throw new PersistencyException("XMLClusterStorage.delete() - Failure deleting path "+path+" in "+itemPath);
     }
 

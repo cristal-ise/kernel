@@ -58,65 +58,63 @@ public class XmlElementParser {
 		int taille = pathTokens.countTokens();
 		String[] pathElements = new String[taille];
 		int i = taille;
-		while (pathTokens.hasMoreElements())
-			pathElements[--i] = pathTokens.nextToken();
+
+		while (pathTokens.hasMoreElements())  pathElements[--i] = pathTokens.nextToken();
 
 		if (Logger.doLog(6)) {
-			Logger.msg(6, "Path elements:");
-			for (String pathElement : pathElements)
-				Logger.debug(6, pathElement);
+		    StringBuffer sb = new StringBuffer("\n");
+			for (String pathElement : pathElements) sb.append("  "+ pathElement+"\n");
+
+			Logger.msg("XmlElementParser.parse() - Path elements:" + sb);
 		}
 
-		Logger.msg(6, "Looking for attribute " + pathElements[0] + " in "
-				+ pathElements[1]);
+		Logger.msg(6, "XmlElementParser.parse() - Looking for attribute " + pathElements[0] + " in " + pathElements[1]);
+		
 		NodeList nl = doc.getElementsByTagName(pathElements[1]);
 		for (int j = 0; j < nl.getLength(); j++) {
-			Logger.msg(6, "Found one");
+			Logger.msg(6, "XmlElementParser.parse() - Found one");
 			Element e = (Element) nl.item(j);
 			boolean match = true;
 			Node child = e;
 			for (int k = 2; k < taille && match; k++) {
-				Logger.msg(6, "Checking parent " + pathElements[k]);
+				Logger.msg(6, "XmlElementParser.parse() - Checking parent " + pathElements[k]);
 				child = child.getParentNode();
 				if (!child.getNodeName().equals(pathElements[k])) {
-					Logger.msg(6, "No match for " + child.getNodeName());
+					Logger.msg(6, "XmlElementParser.parse() - No match for " + child.getNodeName());
 					match = false;
 				} else
-					Logger.msg(6, "Match");
+					Logger.msg(6, "XmlElementParser.parse() - Match");
 			}
 			if (match && e.hasAttribute(pathElements[0])) {
-				Logger.msg(
-						6,
-						"Matching Attribute " + pathElements[0] + "="
-								+ e.getAttribute(pathElements[0]));
+				Logger.msg(6,"XmlElementParser.parse() - Matching Attribute " + pathElements[0] + "="+ e.getAttribute(pathElements[0]));
 				returnData.add(e.getAttribute(pathElements[0]));
 			}
 		}
 
-		Logger.msg(6, "Looking for element " + pathElements[0]);
+		Logger.msg(6, "XmlElementParser.parse() - Looking for element " + pathElements[0]);
 		nl = doc.getElementsByTagName(pathElements[0]);
 		for (int j = 0; j < nl.getLength(); j++) {
-			Logger.msg(6, "Found one");
+			Logger.msg(6, "XmlElementParser.parse() - Found one");
 			Element e = (Element) nl.item(j);
 			boolean match = true;
 			Node child = e;
 			for (int k = 1; k < taille && match; k++) {
-				Logger.msg(6, "Checking parent " + pathElements[k]);
+				Logger.msg(6, "XmlElementParser.parse() - Checking parent " + pathElements[k]);
 				child = child.getParentNode();
 				if (!child.getNodeName().equals(pathElements[k])) {
-					Logger.msg(6, "No match for " + child.getNodeName());
+					Logger.msg(6, "XmlElementParser.parse() - No match for " + child.getNodeName());
 					match = false;
 				} else
-					Logger.msg(6, "Match");
+					Logger.msg(6, "XmlElementParser.parse() - Match");
 			}
 			if (match) {
 				String s = e.getFirstChild().getNodeValue();
-				Logger.msg(6, "Found Element " + pathElements[0] + "=" + s);
+				Logger.msg(6, "XmlElementParser.parse() - Found Element " + pathElements[0] + "=" + s);
 				if (s != null)
 					returnData.add(s);
 			}
 		}
-		Logger.msg(3, returnData.size() + " values found for " + xpath);
+		Logger.msg(3, "XmlElementParser.parse() - " + returnData.size() + " values found for " + xpath);
 		returnArray = new String[returnData.size()];
 		for (int j = 0; j < returnArray.length; j++)
 			returnArray[j] = returnData.get(j);

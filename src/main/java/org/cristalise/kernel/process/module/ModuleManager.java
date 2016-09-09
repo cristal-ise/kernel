@@ -107,7 +107,7 @@ public class ModuleManager {
                     throw new ModuleException("Module "+newModule.getName()+" requires kernel version "+reqKernelVer +" or higher.");
                 }
 
-                Logger.debug(4, "ModuleManager.loadModules() - Module ns:"+newModule.getNamespace()+" name:"+newModule.getName());
+                Logger.msg(4, "ModuleManager.loadModules() - Module ns:"+newModule.getNamespace()+" name:"+newModule.getName());
 
                 loadedModules.add(newModule.getName());
                 moduleNs.add(newModule.getNamespace());
@@ -231,7 +231,7 @@ public class ModuleManager {
             throw new ModuleException("Cannot find local server name.");
         }
 
-        Logger.debug(3, "ModuleManager.registerModules() - Registering modules");
+        Logger.msg(3, "ModuleManager.registerModules() - Registering modules");
 
         boolean reset = Gateway.getProperties().getBoolean("Module.reset", false);
 

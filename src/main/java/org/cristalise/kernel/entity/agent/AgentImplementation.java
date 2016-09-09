@@ -78,7 +78,7 @@ public class AgentImplementation extends ItemImplementation implements
             // merge new jobs in
             for (Object name : newJobList.list) {
                 Job newJob = (Job)name;
-                Logger.msg(6, "Adding job for "+newJob.getItemPath()+"/"+newJob.getStepPath()+":"+newJob.getTransition().getId());
+                Logger.msg(6, "AgentImplementation.refreshJobList() - Adding job:"+newJob.getItemPath()+"/"+newJob.getStepPath()+":"+newJob.getTransition().getName());
                 currentJobs.addJob(newJob);
             }
 

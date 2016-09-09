@@ -190,6 +190,7 @@ public class Activity extends WfVertex
 		if (transition.hasOutcome(getProperties())) {
 			schema = transition.getSchema(getProperties());
 			viewName = (String)getBuiltInProperty(VIEW_POINT);
+
 			if (requestData != null && requestData.length()>0)
 				storeOutcome = true;
 			else if (transition.getOutcome().isRequired()) 
@@ -218,7 +219,7 @@ public class Activity extends WfVertex
 				newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), 
 						getStateMachine(), transitionID);
 			
-			Logger.msg(7, "Activity::auditEvent() - Event:" + newEvent.getName() + " was added to the AuditTrail");
+			Logger.msg(7, "Activity::request() - Event:" + newEvent.getName() + " was added to the AuditTrail");
 	
 			if (storeOutcome) {
 				Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema);
@@ -237,7 +238,8 @@ public class Activity extends WfVertex
 				Gateway.getStorage().put(itemPath, currentView, locker);
 			}
 			Gateway.getStorage().commit(locker);
-		} catch (PersistencyException ex) {
+		}
+		catch (PersistencyException ex) {
 			Logger.error(ex);
 			Gateway.getStorage().abort(locker);
 			throw ex;
@@ -254,19 +256,18 @@ public class Activity extends WfVertex
 		String agentRole = getCurrentAgentRole();
 		if (agentRole != null && agentRole.length()>0) {
 	        try {
-	        	RolePath myRole = Gateway.getLookup().getRolePath(agentRole);
-	        	pushJobsToAgents(itemPath, myRole);
-	        } catch (ObjectNotFoundException ex) { // non-existent role
-	    		Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '"+agentRole+" not found.");
-	    	}
+	            RolePath myRole = Gateway.getLookup().getRolePath(agentRole);
+	            pushJobsToAgents(itemPath, myRole);
+	        }
+	        catch (ObjectNotFoundException ex) { // non-existent role
+	            Logger.msg(7, "Activity.request() - Activity role '"+agentRole+" not found.");
+	        }
 		}
-		
-		
 		return outcome;
 	}
 
-	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData, Object locker) throws 
+	protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
+		throws 
 			InvalidDataException, 
 			InvalidCollectionModification, 
 			ObjectAlreadyExistsException, 
@@ -353,7 +354,7 @@ public class Activity extends WfVertex
 					hasNoNext = true;
 					out = true;
 				}
-			Logger.debug(8, Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
+			//Logger.msg(8, Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
 			if (!hasNoNext)
 				 ((WfVertex) outVertices[0]).run(agent, itemPath, locker);
 			else
@@ -416,7 +417,7 @@ public class Activity extends WfVertex
 	@Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
-		Logger.debug(8, "Activity::run() path:" + getPath() + " state:" + getState());
+		Logger.msg(8, "Activity.run() path:" + getPath() + " state:" + getState());
 
 		if (!getActive()) setActive(true);
 		boolean finished = getStateMachine().getState(getState()).isFinished();
@@ -436,7 +437,7 @@ public class Activity extends WfVertex
 	@Override
 	public void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
 	{
-		Logger.debug(8, getPath() + " runfirst");
+		Logger.msg(8, "Activity.runFirst() - path:"+getPath());
 		run(agent, itemPath, locker);
 	}
 	/**
@@ -486,27 +487,27 @@ public class Activity extends WfVertex
 	public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
 	{
 		return calculateJobsBase(agent, itemPath, false);
-	} //
+	}
+	
 	public ArrayList<Job> calculateAllJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
 	{
 		return calculateJobsBase(agent, itemPath, true);
 	}
 	private ArrayList<Job> calculateJobsBase(AgentPath agent, ItemPath itemPath, boolean includeInactive) throws ObjectNotFoundException, InvalidDataException, InvalidAgentPathException
 	{
-		Logger.msg(7, "calculateJobs - " + getPath());
+		Logger.msg(7, "Activity.calculateJobsBase() - act:" + getPath());
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		Map<Transition, String> transitions;
 		if ((includeInactive || getActive()) && !getName().equals("domain")) {
 			transitions = getStateMachine().getPossibleTransitions(this, agent);
-			Logger.msg(7, "Activity.calculateJobs() - Got " + transitions.size() + " transitions.");
+			Logger.msg(7, "Activity.calculateJobsBase() - Got " + transitions.size() + " transitions.");
 			for (Transition transition : transitions.keySet()) {
-				Logger.msg(7, "Creating Job object for transition " + transition);
+				Logger.msg(7, "Activity.calculateJobsBase() - Creating Job object for transition " + transition.getName());
 				jobs.add(new Job(this, itemPath, transition, agent, transitions.get(transition)));
 			}
 		}
 		return jobs;
 	}
-
 
 	protected void pushJobsToAgents(ItemPath itemPath) {
 		String agentRole = getCurrentAgentRole();
@@ -524,27 +525,27 @@ public class Activity extends WfVertex
 			Logger.error("Activity.pushJobsToAgents() - Problem loading state machine '"+getProperties().get("StateMachineName")+"' for Job distribution.");
 		}
 	}
-	
+
 	private void pushJobsToAgents(ItemPath itemPath, String role) {
         try {
-        	RolePath myRole = Gateway.getLookup().getRolePath(role);
-        	pushJobsToAgents(itemPath, myRole);
-        } catch (ObjectNotFoundException ex) { // non-existent role
-    		Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '"+role+" not found.");
-    	}
+            RolePath myRole = Gateway.getLookup().getRolePath(role);
+            pushJobsToAgents(itemPath, myRole);
+        }
+        catch (ObjectNotFoundException ex) { // non-existent role
+            Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '"+role+" not found.");
+        }
 	}
 	
-	private void pushJobsToAgents(ItemPath itemPath, RolePath role)
-	{
-		if (role.hasJobList())
-			new JobPusher(this, itemPath, role).start();
+	private void pushJobsToAgents(ItemPath itemPath, RolePath role) {
+		if (role.hasJobList()) new JobPusher(this, itemPath, role).start();
+
 		Iterator<Path> childRoles = role.getChildren();
 		while (childRoles.hasNext()) {
 			RolePath childRole = (RolePath)childRoles.next();
 			pushJobsToAgents(itemPath, childRole);
 		}
     }
-	
+
 	/**
 	   * Returns the startDate.
 	   *
@@ -553,7 +554,7 @@ public class Activity extends WfVertex
 	public GTimeStamp getStateDate()
 	{
 		return mStateDate;
-	} 
+	}
 	public void setStateDate(GTimeStamp startDate)
 	{
 		mStateDate = startDate;
@@ -593,10 +594,10 @@ public class Activity extends WfVertex
 		return mTypeName;
 	}
 	/**
-	   * Sets the type.
-	   *
-	   * @param type The type to set
-	   */
+	 * Sets the type.
+	 *
+	 * @param type The type to set
+	 */
 	public void setType(String type)
 	{
 		mType = type;

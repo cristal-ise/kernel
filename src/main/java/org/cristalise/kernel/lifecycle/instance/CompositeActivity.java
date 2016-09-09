@@ -297,9 +297,10 @@ public class CompositeActivity extends Activity
     @Override
 	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
     {
-        Logger.debug(8, getPath() + "CompositeActivity::run() state: " + getState());
+        Logger.msg(8, "CompositeActivity.run() path:" + getPath() + " state:" + getState());
 
         super.run(agent, itemPath, locker);
+
         State currentState = getStateMachine().getState(state);
         if (getChildrenGraphModel().getStartVertex() != null && !currentState.isFinished())
         {

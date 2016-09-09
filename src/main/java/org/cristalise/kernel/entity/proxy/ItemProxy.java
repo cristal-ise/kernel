@@ -298,9 +298,9 @@ public class ItemProxy
     /** 
      * Finds the first finishing job with the given name for the given Agent in the workflow.
      * 
-     * @param actName The activity name to look for
+     * @param actName the name of the Activity to look for
      * @param agent The agent to fetch jobs for
-     * @return the JOB object
+     * @return the JOB object or null if nothing was found
      * @throws AccessRightsException
      * @throws ObjectNotFoundException
      * @throws PersistencyException Error loading the relevant objects
@@ -310,11 +310,30 @@ public class ItemProxy
     }
 
     /**
+     * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
+     * 
+     * @param actName the name of the Activity to look for
+     * @param transName the name of the Transition to look for
+     * @param agentPath The agent to fetch jobs for
+     * @return the JOB object or null if nothing was found
+     * @throws AccessRightsException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     */
+    public Job getJobByTransitionName(String actName, String transName, AgentPath agentPath) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
+        for (Job job : getJobList(agentPath, true)) {
+            if (job.getStepName().equals(actName) && job.getTransition().getName().equals(transName))
+                return job;
+        }
+        return null;
+    }
+
+    /**
      * If this is reaped, clear out the cache for it too.
      */
     @Override
     protected void finalize() throws Throwable {
-        Logger.msg(7, "Proxy "+mItemPath+" reaped");
+        Logger.msg(7, "ItemProxy.finalize() - caches are reaped for item:"+mItemPath);
         Gateway.getStorage().clearCache(mItemPath, null);
         Gateway.getProxyManager().removeProxy(mItemPath);
         super.finalize();

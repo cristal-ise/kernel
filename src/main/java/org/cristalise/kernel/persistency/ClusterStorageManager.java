@@ -272,7 +272,7 @@ public class ClusterStorageManager {
         // got it! store it in the cache
         if (sysKeyMemCache == null) { // create cache if needed
             boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
-            Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
+            Logger.msg(7,"ClusterStorageManager.get() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
             sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
 
             synchronized (memoryCache) {
