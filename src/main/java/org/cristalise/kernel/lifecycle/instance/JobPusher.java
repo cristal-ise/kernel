@@ -43,9 +43,10 @@ final class JobPusher extends Thread {
 
     @Override
     public void run() {
-        Thread.currentThread().setName("Agent job pusher for "+itemPath+":"+activity.getName()+" to role "+myRole);
+        String tName = "Agent job pusher for "+itemPath+":"+activity.getPath()+" to role "+myRole;
+        Thread.currentThread().setName(tName);
 
-        Logger.msg(7, "JobPusher.run() - Thread started for role:"+myRole+" activity:"+activity.getPath()+" item:"+itemPath);
+        Logger.msg(7, "JobPusher.run() - Started:"+tName);
 
         try {
             for (AgentPath nextAgent: Gateway.getLookup().getAgents(myRole)) {
@@ -76,5 +77,6 @@ final class JobPusher extends Thread {
         catch (ObjectNotFoundException e) {
             Logger.warning("JobPusher cannot push jobs, it did not find any agents for role:"+myRole);
         }
+        Logger.msg(7, "JobPusher.run() - FINISHED:"+tName);
     }
 }

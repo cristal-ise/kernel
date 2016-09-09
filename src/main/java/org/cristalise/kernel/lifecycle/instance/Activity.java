@@ -27,7 +27,6 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DESCRIPT
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;

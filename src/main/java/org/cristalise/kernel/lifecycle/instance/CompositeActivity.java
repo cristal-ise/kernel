@@ -51,48 +51,36 @@ import org.cristalise.kernel.utils.Logger;
  * @version $Revision: 1.86 $ $Date: 2005/10/05 07:39:37 $
  * @author $Author: abranson $
  */
-public class CompositeActivity extends Activity
-{
-	/*
-     * --------------------------------------------
-     * ----------------CONSTRUCTOR-----------------
-     * --------------------------------------------
-     */
-    public CompositeActivity()
-    {
+public class CompositeActivity extends Activity {
+    
+    public CompositeActivity() {
         super();
         setBuiltInProperty(ABORTABLE, false);
         setBuiltInProperty(REPEAT_WHEN, false);
         setBuiltInProperty(STATE_MACHINE_NAME, "CompositeActivity");
 
         try {
-			setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
-		} catch (InvalidDataException e) { } // shouldn't happen with an empty one
+            setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
+        } catch (InvalidDataException e) { } // shouldn't happen with an empty one
         setIsComposite(true);
     }
 
-	@Override
-	public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
-		super.setChildrenGraphModel(childrenGraph);
-		childrenGraph.setVertexOutlineCreator(new WfVertexOutlineCreator());
-	}
-    /**
-     * @see org.cristalise.kernel.lifecycle.instance.WfVertex#verify()
-     */
-    /*
-     * -------------------------------------------- --------------Other
-     * Functions--------------- --------------------------------------------
-     */
-    /** launch the verification of the subprocess() */
     @Override
-	public boolean verify()
-    {
+    public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
+        super.setChildrenGraphModel(childrenGraph);
+        childrenGraph.setVertexOutlineCreator(new WfVertexOutlineCreator());
+    }
+
+    /**
+     * launch the verification of the subprocess()
+     */
+    @Override
+    public boolean verify() {
         boolean err = super.verify();
         GraphableVertex[] vChildren = getChildren();
-        for (int i = 0; i < vChildren.length; i++)
-        {
-            if (!((WfVertex) vChildren[i]).verify())
-            {
+        
+        for (int i = 0; i < vChildren.length; i++) {
+            if (!((WfVertex) vChildren[i]).verify()) {
                 mErrors.add("error in children");
                 return false;
             }
@@ -107,8 +95,7 @@ public class CompositeActivity extends Activity
      * @param first if true, the Waiting state will be one of the first launched by the parent activity
      * @param point
      */
-    public void initChild(WfVertex vertex, boolean first, GraphPoint point)
-    {
+    public void initChild(WfVertex vertex, boolean first, GraphPoint point) {
         safeAddChild(vertex, point);
         if (first) setFirstVertex(vertex.getID());
     }
@@ -143,8 +130,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return  child vertex
      */
-    public WfVertex newExistingChild(Activity child, String Name, GraphPoint point)
-    {
+    public WfVertex newExistingChild(Activity child, String Name, GraphPoint point) {
         child.setName(Name);
         safeAddChild(child, point);
         return child;
@@ -158,8 +144,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return WfVertex
      */
-    public WfVertex newChild(String Name, String Type, GraphPoint point)
-    {
+    public WfVertex newChild(String Name, String Type, GraphPoint point) {
         WfVertex v = newChild(Type, point);
         v.setName(Name);
         return v;
@@ -172,8 +157,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return WfVertex
      */
-    public WfVertex newChild(String vertexTypeId, GraphPoint point)
-    {
+    public WfVertex newChild(String vertexTypeId, GraphPoint point) {
         return newChild(Types.valueOf(vertexTypeId), "False id", false, point);
     }
 
@@ -195,7 +179,7 @@ public class CompositeActivity extends Activity
             case LoopSplit: return newSplitChild(name, "Loop", first, point);
             case Join:      return newJoinChild(name, "Join",  first, point);
             case Route:     return newJoinChild(name, "Route", first, point);
-    
+
             default:
                 throw new IllegalArgumentException("Unhandled enum value of WfVertex.Type:" + type.name());
         }
@@ -210,8 +194,7 @@ public class CompositeActivity extends Activity
      * @return CompositeActivity Create an initialize a composite Activity
      *         attached to the current activity
      */
-    public CompositeActivity newCompChild(String id, boolean first, GraphPoint point)
-    {
+    public CompositeActivity newCompChild(String id, boolean first, GraphPoint point) {
         CompositeActivity act = new CompositeActivity();
         initChild(act, first, point);
         act.setName(id);
@@ -228,8 +211,7 @@ public class CompositeActivity extends Activity
      *         current activity
      *
      */
-    public Activity newAtomChild(String id, boolean first, GraphPoint point)
-    {
+    public Activity newAtomChild(String id, boolean first, GraphPoint point) {
         Activity act = new Activity();
         initChild(act, first, point);
         act.setName(id);
@@ -243,8 +225,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return Split
      */
-    public Split newSplitChild(String name, String Type, boolean first, GraphPoint point)
-    {
+    public Split newSplitChild(String name, String Type, boolean first, GraphPoint point) {
         Split split = null;
 
         if      (Type.equals("Or"))   { split = new OrSplit(); } 
@@ -264,8 +245,7 @@ public class CompositeActivity extends Activity
      * @param point
      * @return Join
      */
-    public Join newJoinChild(String name, String type, boolean first, GraphPoint point)
-    {
+    public Join newJoinChild(String name, String type, boolean first, GraphPoint point) {
         Join join = new Join();
         join.getProperties().put("Type", type);
         initChild(join, first, point);
@@ -281,7 +261,7 @@ public class CompositeActivity extends Activity
         safeAddChild(join, point);
         return join;
     }
-    */
+     */
 
     /**
      * None recursive search by id
@@ -289,105 +269,121 @@ public class CompositeActivity extends Activity
      * @param id
      * @return WfVertex
      */
-    WfVertex search(int id)
-    {
+    WfVertex search(int id) {
         return (WfVertex)getChildrenGraphModel().resolveVertex(id);
     }
 
+    /**
+     * 
+     * @param agent
+     * @param currentState
+     * @return
+     * @throws InvalidDataException
+     */
+    private Transition getAutoStart(AgentPath agent, State currentState) throws InvalidDataException {
+        if (getChildrenGraphModel().getStartVertex() != null && !currentState.isFinished()) {
+            if (getStateMachine().getInitialStateCode() == state) {
+                Transition autoStart = null;
+                //see if there's only one that isn't terminating
+                try {
+                    for (Transition transition : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
+                        if (!transition.isFinishing()) {
+                            if (autoStart == null)
+                                autoStart = transition;
+                            else {
+                                autoStart = null;
+                                break;
+                            }
+                        }
+                    }
+                    Logger.msg(8, "CompositeActivity.getAutoStart() path:" + getPath() + " trans:" + autoStart.getName());
+                    return autoStart;
+                }
+                catch (ObjectNotFoundException e) {
+                    Logger.error(e);
+                    throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
-	public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
-    {
+    public void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
         Logger.msg(8, "CompositeActivity.run() path:" + getPath() + " state:" + getState());
 
         super.run(agent, itemPath, locker);
 
-        State currentState = getStateMachine().getState(state);
-        if (getChildrenGraphModel().getStartVertex() != null && !currentState.isFinished())
-        {
-        	
-        	if (getStateMachine().getInitialStateCode() == state) {
-        		Transition autoStart = null;
-        		//see if there's only one that isn't terminating
-    			try {
-					for (Transition transition : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
-						if (!transition.isFinishing()) {
-							if (autoStart == null)
-								autoStart = transition;
-							else {
-								autoStart = null;
-								break;
-							}
-						}
-					}
-				} catch (ObjectNotFoundException e) {
-					Logger.error(e);
-					throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
-				}
-        		if (autoStart != null) {
-					try {
-						request(agent, null, itemPath, autoStart.getId(), null, locker);
-					} catch (RuntimeException e) {
-						throw e;
-					} catch (AccessRightsException e) { // Agent didn't have permission to start the activity, so leave it waiting
-						Logger.error(e);
-						return;
-					} catch (Exception e) {
-						throw new InvalidDataException("Problem initializing composite activity: "+e.getMessage());
-					}
-					WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
-					first.run(agent, itemPath, locker);
-        		}
-        	}
+        Transition autoStart = getAutoStart(agent, getStateMachine().getState(state));
+
+        if (autoStart != null) {
+            try {
+                request(agent, null, itemPath, autoStart.getId(), null, locker);
+            }
+            catch (RuntimeException e) {
+                throw e;
+            }
+            catch (AccessRightsException e) { 
+                Logger.warning("Agent:"+agent+" didn't have permission to start the activity:"+getPath()+", so leave it waiting");
+                return;
+            }
+            catch (Exception e) {
+                Logger.error(e);
+                throw new InvalidDataException("Problem initializing composite activity: " + e.getMessage());
+            }
+            WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
+            first.run(agent, itemPath, locker);
         }
     }
 
     @Override
-	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
-    {
+    public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException  {
         if (!getStateMachine().getState(state).isFinished()) {
-        	Transition trans = null;
-        	try {
-				for (Transition possTran : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
-					// Find the next transition for automatic procedure. A non-finishing transition will override a finishing one, 
-					// but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point. 
+            Transition trans = null;
+            try {
+                for (Transition possTran : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
+                    // Find the next transition for automatic procedure. A non-finishing transition will override a finishing one, 
+                    // but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point. 
 
-					if (trans == null || (trans.isFinishing() && !possTran.isFinishing()))
-						trans = possTran;
-					else if (trans.isFinishing() == possTran.isFinishing()) {
-						Logger.warning("Unclear choice of transition possible from current state for Composite Activity '"+getName()+"'. Cannot automatically proceed.");
-						setActive(true);
-						return;
-					}		
-				}
-			} catch (ObjectNotFoundException e) {
-				Logger.error(e);
-				throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
-			}
-        	
-        	if (trans == null) { // current agent can't proceed
-        		Logger.msg(3, "Not possible for the current agent to proceed with the Composite Activity '"+getName()+"'.");
-        		setActive(true);
-        		return;
-        	}
+                    if (trans == null || (trans.isFinishing() && !possTran.isFinishing()))
+                        trans = possTran;
+                    else if (trans.isFinishing() == possTran.isFinishing()) {
+                        Logger.warning("Unclear choice of transition possible from current state for Composite Activity '"+getName()+"'. Cannot automatically proceed.");
+                        setActive(true);
+                        return;
+                    }
+                }
+            }
+            catch (ObjectNotFoundException e) {
+                Logger.error(e);
+                throw new InvalidDataException("Problem calculating possible transitions for agent "+agent.toString());
+            }
 
-        	// automatically execute the next outcome if it doesn't require an outcome.
-        	if (trans != null) {
-        		if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
-	        		Logger.msg(3, "Composite activity '"+getName()+"' has script or schema defined. Cannot proceed automatically.");
-	        		setActive(true);
-	        		return;
-	        	}
-        		
-				try {
-					request(agent, null, itemPath, trans.getId(), null, locker);
-					if (!trans.isFinishing()) // don't run next if we didn't finish
-						return;
-				} catch (Exception e) {
-					Logger.error(e);
-					setActive(true);
-					throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
-				}
-        	}
+            if (trans == null) { // current agent can't proceed
+                Logger.msg(3, "Not possible for the current agent to proceed with the Composite Activity '"+getName()+"'.");
+                setActive(true);
+                return;
+            }
+
+            // automatically execute the next outcome if it doesn't require an outcome.
+            if (trans != null) {
+                if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
+                    Logger.msg(3, "Composite activity '"+getName()+"' has script or schema defined. Cannot proceed automatically.");
+                    setActive(true);
+                    return;
+                }
+
+                try {
+                    request(agent, null, itemPath, trans.getId(), null, locker);
+                    if (!trans.isFinishing()) // don't run next if we didn't finish
+                        return;
+                }
+                catch (Exception e) {
+                    Logger.error(e);
+                    setActive(true);
+                    throw new InvalidDataException("Problem completing composite activity: "+e.getMessage());
+                }
+            }
         }
         super.runNext(agent, itemPath, locker);
     }
@@ -396,35 +392,39 @@ public class CompositeActivity extends Activity
      * 
      */
     @Override
-	public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 
+    public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse)
+            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
     {
         ArrayList<Job> jobs = new ArrayList<Job>();
         boolean childActive = false;
         if (recurse)
             for (int i = 0; i < getChildren().length; i++)
-                if (getChildren()[i] instanceof Activity)
-                {
+                if (getChildren()[i] instanceof Activity) {
                     Activity child = (Activity) getChildren()[i];
                     jobs.addAll(child.calculateJobs(agent, itemPath, recurse));
                     childActive |= child.active;
                 }
-        if (!childActive)
-            jobs.addAll(super.calculateJobs(agent, itemPath, recurse));
+        
+        if (!childActive) jobs.addAll(super.calculateJobs(agent, itemPath, recurse));
+        
         return jobs;
     }
 
     @Override
-	public ArrayList<Job> calculateAllJobs(AgentPath agent, ItemPath itemPath, boolean recurse) throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 
+    public ArrayList<Job> calculateAllJobs(AgentPath agent, ItemPath itemPath, boolean recurse)
+            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 
     {
         ArrayList<Job> jobs = new ArrayList<Job>();
+
         if (recurse)
             for (int i = 0; i < getChildren().length; i++)
-                if (getChildren()[i] instanceof Activity)
-                {
+                if (getChildren()[i] instanceof Activity) {
                     Activity child = (Activity) getChildren()[i];
                     jobs.addAll(child.calculateAllJobs(agent, itemPath, recurse));
                 }
+
         jobs.addAll(super.calculateAllJobs(agent, itemPath, recurse));
+
         return jobs;
     }
 
@@ -435,8 +435,7 @@ public class CompositeActivity extends Activity
      * @param terminus
      * @return Next
      */
-    public Next addNext(WfVertex origin, WfVertex terminus)
-    {
+    public Next addNext(WfVertex origin, WfVertex terminus) {
         return new Next(origin, terminus);
     }
 
@@ -447,8 +446,7 @@ public class CompositeActivity extends Activity
      * @param terminusID
      * @return Next
      */
-    public Next addNext(int originID, int terminusID)
-    {
+    public Next addNext(int originID, int terminusID) {
         return addNext(search(originID), search(terminusID));
     }
 
@@ -457,17 +455,15 @@ public class CompositeActivity extends Activity
      *
      * @return boolean
      */
-    public boolean hasGoodNumberOfActivity()
-    {
+    public boolean hasGoodNumberOfActivity() {
         int endingAct = 0;
-        for (int i = 0; i < getChildren().length; i++)
-        {
+        for (int i = 0; i < getChildren().length; i++) {
             WfVertex vertex = (WfVertex) getChildren()[i];
-            if (getChildrenGraphModel().getOutEdges(vertex).length == 0)
-                endingAct++;
+
+            if (getChildrenGraphModel().getOutEdges(vertex).length == 0) endingAct++;
         }
-        if (endingAct > 1)
-            return false;
+        if (endingAct > 1) return false;
+
         return true;
     }
 
@@ -475,8 +471,7 @@ public class CompositeActivity extends Activity
      * @see org.cristalise.kernel.lifecycle.instance.Activity#getType()
      */
     @Override
-	public String getType()
-    {
+    public String getType() {
         return super.getType();
     }
 
@@ -485,68 +480,69 @@ public class CompositeActivity extends Activity
      *
      */
     @Override
-	public void reinit(int idLoop) throws InvalidDataException
-    {
+    public void reinit(int idLoop) throws InvalidDataException {
         super.reinit(idLoop);
         if (getChildrenGraphModel().getStartVertex() != null && !getStateMachine().getState(state).isFinished())
             ((WfVertex) getChildrenGraphModel().getStartVertex()).reinit(idLoop);
     }
-    
+
     @Override
-	public void abort() {
+    public void abort() {
         GraphableVertex[] vChildren = getChildren();
         for (int i = 0; i < vChildren.length; i++)
         {
             ((WfVertex) vChildren[i]).abort();
         }
-	}
-    
+    }
+
     public boolean hasActive() {
-    	GraphableVertex[] vChildren = getChildren();
-    	for (int i = 0; i < vChildren.length; i++) {
-    		if (!(vChildren[i] instanceof Activity))
-    			continue;
-    		Activity childAct = (Activity)vChildren[i];
-    		if (childAct.getActive())
-    				return true; // if a child activity is active
-    		if (childAct instanceof CompositeActivity && 
-    				((CompositeActivity)vChildren[i]).hasActive())
-    				return true; // if a child composite has active children
-    	}
-    	return false; // don't include own active status
+        GraphableVertex[] vChildren = getChildren();
+
+        for (int i = 0; i < vChildren.length; i++) {
+            if (!(vChildren[i] instanceof Activity)) continue;
+
+            Activity childAct = (Activity)vChildren[i];
+
+            if (childAct.getActive())
+                return true; // if a child activity is active
+
+            if (childAct instanceof CompositeActivity &&  ((CompositeActivity)vChildren[i]).hasActive())
+                return true; // if a child composite has active children
+        }
+        return false; // don't include own active status
     }
 
     @Override
-	public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker) throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+    public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker)
+            throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         Transition trans = getStateMachine().getTransition(transitionID);
         if (trans.isFinishing() && hasActive()) {
-        	if ((Boolean)getBuiltInProperty(ABORTABLE))
-        		abort();
-        	else
-        		throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
+
+            if ((Boolean)getBuiltInProperty(ABORTABLE)) abort();
+            else                                        throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
         }
-        
+
         if (getStateMachine().getTransition(transitionID).reinitializes()) {
-        	int preserveState = state;
-        	reinit(getID());
-        	setState(preserveState);
+            int preserveState = state;
+            reinit(getID());
+            setState(preserveState);
         }
-        
-        if (getChildrenGraphModel().getStartVertex() != null && (getStateMachine().getState(state).equals(getStateMachine().getInitialState())
-        		|| getStateMachine().getTransition(transitionID).reinitializes()))
-        	((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
-        
+
+        if (getChildrenGraphModel().getStartVertex() != null
+                && (getStateMachine().getState(state).equals(getStateMachine().getInitialState()) || getStateMachine().getTransition(transitionID).reinitializes()))
+        {
+            ((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
+        }
+
         return super.request(agent, delegator, itemPath, transitionID, requestData, locker);
     }
-    
-	public void refreshJobs(ItemPath itemPath)
-    {
+
+    public void refreshJobs(ItemPath itemPath) {
         GraphableVertex[] children = getChildren();
-        for (GraphableVertex element : children)
-			if (element instanceof CompositeActivity)
-                ((CompositeActivity) element).refreshJobs(itemPath);
-            else if (element instanceof Activity)
-                ((Activity) element).pushJobsToAgents(itemPath);
+        for (GraphableVertex element : children) {
+            if (element instanceof CompositeActivity) ((CompositeActivity) element).refreshJobs(itemPath);
+            else if (element instanceof Activity)     ((Activity)          element).pushJobsToAgents(itemPath);
+        }
     }
 }
