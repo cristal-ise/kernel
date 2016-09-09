@@ -83,9 +83,7 @@ public class JobList extends RemoteMap<Job> {
 
         Logger.msg(3, "JobList.removeJobsForStep() - removing " + staleJobs.size());
 
-        for (String jid : staleJobs) {
-            remove(jid);
-        }
+        for (String jid : staleJobs) remove(jid);
 
         Logger.msg(5, "JobList::removeJobsForStep() - " + itemPath + " DONE.");
     }
@@ -104,5 +102,24 @@ public class JobList extends RemoteMap<Job> {
         Logger.msg(5, "JobList::getJobsOfSysKey() - returning " + jobs.size() + " Jobs.");
 
         return jobs;
+    }
+
+    public void dump(int logLevel) {
+        if (!Logger.doLog(logLevel)) return;
+
+        StringBuffer sb = new StringBuffer("{ ");
+
+        Iterator<String> jobIter = keySet().iterator();
+
+        while (jobIter.hasNext()) {
+            String jid = jobIter.next();
+            Job j = get(jid);
+            sb.append("[id:"+jid+" ");
+            sb.append("step:"+j.getStepName()+" ");
+            sb.append("role:"+j.getAgentRole()+" ");
+            sb.append("trans:"+j.getTransition().getName()+"] ");
+        }
+        sb.append("}");
+        Logger.msg("Joblist "+sb);
     }
 }
