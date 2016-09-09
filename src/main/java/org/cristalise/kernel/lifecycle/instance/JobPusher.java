@@ -30,7 +30,6 @@ import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 final class JobPusher extends Thread {
     private final Activity activity;
     private final RolePath myRole;
@@ -43,40 +42,37 @@ final class JobPusher extends Thread {
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         Thread.currentThread().setName("Agent job pusher for "+itemPath+":"+activity.getName()+" to role "+myRole);
 
-        try
-        {
-            for (AgentPath nextAgent: Gateway.getLookup().getAgents(myRole))
-            {
-                Logger.msg(7, "Activity.JobPusher() - Calculating jobs for " + nextAgent);
-                try
-                {
+        Logger.msg(7, "JobPusher.run() - Thread started for role:"+myRole+" activity:"+activity.getPath()+" item:"+itemPath);
+
+        try {
+            for (AgentPath nextAgent: Gateway.getLookup().getAgents(myRole)) {
+                Logger.msg(7, "JobPusher.run() - Calculating jobs for agent:" + nextAgent);
+
+                try {
                     // get joblist for user
                     JobArrayList jobList = new JobArrayList(this.activity.calculateJobs(nextAgent, itemPath, false));
-                    Logger.msg(7, "Activity.pushJobsToAgents() - User will receive " + jobList.list.size() + " jobs");
-                    String stringJobs = Gateway.getMarshaller().marshall(jobList);
-                    // push it to the agent
-                    org.omg.CORBA.Object agentIOR = nextAgent.getIOR();
-                    Agent thisAgent = AgentHelper.narrow(agentIOR);
-                    Logger.msg(7, "Calling agent "+thisAgent.getSystemKey()+" from "+activity.getPath());
-                    thisAgent.refreshJobList(itemPath.getSystemKey(), activity.getPath(), stringJobs);
+                    if (jobList.list.size() !=  0) {
+                        // push it to the agent
+                        String stringJobs = Gateway.getMarshaller().marshall(jobList);
+                        Agent thisAgent = AgentHelper.narrow( nextAgent.getIOR() );
+
+                        Logger.msg(7, "JobPusher.run() - Calling refreshJobList() with "+jobList.list.size()+" jobs for agent "+nextAgent+" from "+activity.getPath());
+                        thisAgent.refreshJobList(itemPath.getSystemKey(), activity.getPath(), stringJobs);
+                    }
+                    else {
+                        Logger.msg(7, "JobPusher.run() - NO jobs to send to agent "+nextAgent+" from "+activity.getPath());
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Logger.error(
-                        "Agent "
-                            + nextAgent
-                            + " of role "
-                            + myRole
-                            + " could not be found to be informed of a change in "
-                            + itemPath);
+                catch (Exception ex) {
+                    Logger.error("JobPusher.run() - Agent " + nextAgent + " of role " + myRole
+                        + " could not be found to be informed of a change in " + itemPath);
                     Logger.error(ex);
                 }
             }
-        } 
+        }
         catch (ObjectNotFoundException e) {
             Logger.warning("JobPusher cannot push jobs, it did not find any agents for role:"+myRole);
         }
