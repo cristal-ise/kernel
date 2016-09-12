@@ -274,10 +274,11 @@ public class CompositeActivity extends Activity {
     }
 
     /**
+     * Returns the Transition that can be started automatically.
      * 
-     * @param agent
-     * @param currentState
-     * @return
+     * @param agent performing Agent
+     * @param currentState he actual State of the activity
+     * @return the Transition that can be started automatically
      * @throws InvalidDataException
      */
     private Transition getAutoStart(AgentPath agent, State currentState) throws InvalidDataException {
@@ -331,8 +332,6 @@ public class CompositeActivity extends Activity {
                 Logger.error(e);
                 throw new InvalidDataException("Problem initializing composite activity: " + e.getMessage());
             }
-            WfVertex first = (WfVertex) getChildrenGraphModel().getStartVertex();
-            first.run(agent, itemPath, locker);
         }
     }
 
@@ -514,7 +513,8 @@ public class CompositeActivity extends Activity {
 
     @Override
     public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker)
-            throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+            throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
+                   ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         Transition trans = getStateMachine().getTransition(transitionID);
         if (trans.isFinishing() && hasActive()) {
@@ -530,7 +530,9 @@ public class CompositeActivity extends Activity {
         }
 
         if (getChildrenGraphModel().getStartVertex() != null
-                && (getStateMachine().getState(state).equals(getStateMachine().getInitialState()) || getStateMachine().getTransition(transitionID).reinitializes()))
+            && (getStateMachine().getState(state).equals(getStateMachine().getInitialState()) 
+                || getStateMachine().getTransition(transitionID).reinitializes())
+           )
         {
             ((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
         }
