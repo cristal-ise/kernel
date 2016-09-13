@@ -45,27 +45,25 @@ import org.cristalise.kernel.utils.Logger;
  * client API. The server implementation only manages the Agent's data: its roles
  * and persistent Jobs.
  */
-public class AgentImplementation extends ItemImplementation implements
-		AgentOperations {
+public class AgentImplementation extends ItemImplementation implements AgentOperations {
 
-	private JobList currentJobs;
-	private final AgentPath mAgentPath;
-	
-	public AgentImplementation(AgentPath path) {
-		super(path);
-		mAgentPath = path;
-	}
+    private JobList currentJobs;
+    private final AgentPath mAgentPath;
 
+    public AgentImplementation(AgentPath path) {
+        super(path);
+        mAgentPath = path;
+    }
 
-	/**
-	 * Updates an Agent's list of Jobs relating to a particular activity. Only
-	 * Activities that are assigned to a Role that is flagged to push Jobs do this.
-	 * 
-	 */
+    /**
+     * Updates an Agent's list of Jobs relating to a particular activity. Only
+     * Activities that are assigned to a Role that is flagged to push Jobs do this.
+     * 
+     */
     @Override
-	public synchronized void refreshJobList(SystemKey sysKey, String stepPath, String newJobs) {
+    public synchronized void refreshJobList(SystemKey sysKey, String stepPath, String newJobs) {
         try {
-        	ItemPath itemPath = new ItemPath(sysKey);
+            ItemPath itemPath = new ItemPath(sysKey);
             JobArrayList newJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(newJobs);
 
             // get our joblist
@@ -81,12 +79,11 @@ public class AgentImplementation extends ItemImplementation implements
                 Logger.msg(6, "AgentImplementation.refreshJobList() - Adding job:"+newJob.getItemPath()+"/"+newJob.getStepPath()+":"+newJob.getTransition().getName());
                 currentJobs.addJob(newJob);
             }
-
-        } catch (Throwable ex) {
+        }
+        catch (Throwable ex) {
             Logger.error("Could not refresh job list.");
             Logger.error(ex);
         }
-
     }
 
     /** Adds the given Role to this Agent. Called from the SetAgentRoles
@@ -98,11 +95,12 @@ public class AgentImplementation extends ItemImplementation implements
      * 
      */
     @Override
-	public void addRole(String roleName) throws CannotManageException, ObjectNotFoundException {
+    public void addRole(String roleName) throws CannotManageException, ObjectNotFoundException {
         RolePath newRole = Gateway.getLookup().getRolePath(roleName);
         try {
             Gateway.getLookupManager().addRole(mAgentPath, newRole);
-        } catch (ObjectCannotBeUpdated ex) {
+        }
+        catch (ObjectCannotBeUpdated ex) {
             throw new CannotManageException("Could not update role");
         }
     }
@@ -114,11 +112,12 @@ public class AgentImplementation extends ItemImplementation implements
      * @param roleName
      */
     @Override
-	public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {
+    public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {
         RolePath rolePath = Gateway.getLookup().getRolePath(roleName);
         try {
-        	Gateway.getLookupManager().removeRole(mAgentPath, rolePath);
-        } catch (ObjectCannotBeUpdated ex) {
+            Gateway.getLookupManager().removeRole(mAgentPath, rolePath);
+        }
+        catch (ObjectCannotBeUpdated ex) {
             throw new CannotManageException("Could not update role");
         }
     }
@@ -130,8 +129,8 @@ public class AgentImplementation extends ItemImplementation implements
      * 
      * @see org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefinedStepContainer
      */
-	@Override
-	protected PredefinedStepContainer getNewPredefStepContainer() {
-		return new AgentPredefinedStepContainer();
-	}
+    @Override
+    protected PredefinedStepContainer getNewPredefStepContainer() {
+        return new AgentPredefinedStepContainer();
+    }
 }
