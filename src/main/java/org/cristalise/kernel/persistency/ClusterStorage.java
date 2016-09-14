@@ -56,239 +56,240 @@ import org.cristalise.kernel.utils.Logger;
  */
 public abstract class ClusterStorage {
 
-	/**
-	 * Constant to return from {@link #queryClusterSupport(String)} for Cluster
-	 * types this storage does not support.
-	 */
-	public static final short NONE = 0;
-	/**
-	 * Constant to return from {@link #queryClusterSupport(String)} for Cluster
-	 * types this storage can read from a database but not write. An example
-	 * would be pre-existing data in a database that is mapped to Items in some
-	 * way.
-	 */
-	public static final short READ = 1;
-	/**
-	 * Constant to return from {@link #queryClusterSupport(String)} for Cluster
-	 * types this storage can write to a database but not read. An example would
-	 * be a realtime database export of data, which is transformed in an
-	 * unrecoverable way for use in other systems.
-	 */
-	public static final short WRITE = 2;
-	/**
-	 * Constant to return from {@link #queryClusterSupport(String)} for data
-	 * stores that CRISTAL may use for both reading and writing for the given
-	 * Cluster type.
-	 */
-	public static final short READWRITE = 3;
+    /**
+     * Constant to return from {@link #queryClusterSupport(String)} for Cluster
+     * types this storage does not support.
+     */
+    public static final short NONE = 0;
+    /**
+     * Constant to return from {@link #queryClusterSupport(String)} for Cluster
+     * types this storage can read from a database but not write. An example
+     * would be pre-existing data in a database that is mapped to Items in some
+     * way.
+     */
+    public static final short READ = 1;
+    /**
+     * Constant to return from {@link #queryClusterSupport(String)} for Cluster
+     * types this storage can write to a database but not read. An example would
+     * be a realtime database export of data, which is transformed in an
+     * unrecoverable way for use in other systems.
+     */
+    public static final short WRITE = 2;
+    /**
+     * Constant to return from {@link #queryClusterSupport(String)} for data
+     * stores that CRISTAL may use for both reading and writing for the given
+     * Cluster type.
+     */
+    public static final short READWRITE = 3;
 
-	// Cluster types
-	/**
-	 * The defined path of the root of the CRISTAL Kernel object cluster tree. A
-	 * zero-length string.
-	 */
-	public static final String ROOT = "";
-	/**
-	 * The root of the Property object cluster. All Property paths start with
-	 * this. Defined as "Property". Properties are stored underneath according
-	 * to their name e.g. "Property/Name"
-	 */
-	public static final String PROPERTY = "Property";
-	/**
-	 * The root of the Collection object cluster. All Collection paths start
-	 * with this. Defined as "Collection". Collections are stored underneath by
-	 * name e.g. "Collection/Composition"
-	 */
-	public static final String COLLECTION = "Collection";
-	/**
-	 * The cluster which holds the Item workflow. Defined as "LifeCycle". Holds
-	 * the workflow inside, which is named "workflow", hence
-	 * "LifeCycle/workflow".
-	 * 
-	 * @see org.cristalise.kernel.lifecycle.instance.Workflow
-	 */
-	public static final String LIFECYCLE = "LifeCycle";
-	/**
-	 * This cluster holds all outcomes of this Item. The path to each outcome is
-	 * "Outcome/<i>Schema Name</i>/<i>Schema Version</i>/<i>Event ID</i>"
-	 */
-	public static final String OUTCOME = "Outcome";
-	/**
-	 * This is the cluster that contains all event for this Item. This cluster
-	 * may be instantiated in a client as a History, which is a RemoteMap.
-	 * Events are stored with their ID: "/AuditTrail/<i>Event ID</i>"
-	 */
-	public static final String HISTORY = "AuditTrail";
-	/**
-	 * This cluster contains all viewpoints. Its name is defined as "ViewPoint".
-	 * The paths of viewpoint objects stored here follow this pattern:
-	 * "ViewPoint/<i>Schema Name</i>/<i>Viewpoint Name</i>"
-	 */
-	public static final String VIEWPOINT = "ViewPoint";
-	/**
-	 * Agents store their persistent jobs in this cluster that have been pushed
-	 * to them by activities configured to do so. The name is defined as "Job"
-	 * and each new job received is assigned an integer ID one more than the
-	 * highest already present.
-	 */
-	public static final String JOB = "Job";
+    // Cluster types
+    /**
+     * The defined path of the root of the CRISTAL Kernel object cluster tree. A
+     * zero-length string.
+     */
+    public static final String ROOT = "";
+    /**
+     * The root of the Property object cluster. All Property paths start with
+     * this. Defined as "Property". Properties are stored underneath according
+     * to their name e.g. "Property/Name"
+     */
+    public static final String PROPERTY = "Property";
+    /**
+     * The root of the Collection object cluster. All Collection paths start
+     * with this. Defined as "Collection". Collections are stored underneath by
+     * name e.g. "Collection/Composition"
+     */
+    public static final String COLLECTION = "Collection";
+    /**
+     * The cluster which holds the Item workflow. Defined as "LifeCycle". Holds
+     * the workflow inside, which is named "workflow", hence
+     * "LifeCycle/workflow".
+     * 
+     * @see org.cristalise.kernel.lifecycle.instance.Workflow
+     */
+    public static final String LIFECYCLE = "LifeCycle";
+    /**
+     * This cluster holds all outcomes of this Item. The path to each outcome is
+     * "Outcome/<i>Schema Name</i>/<i>Schema Version</i>/<i>Event ID</i>"
+     */
+    public static final String OUTCOME = "Outcome";
+    /**
+     * This is the cluster that contains all event for this Item. This cluster
+     * may be instantiated in a client as a History, which is a RemoteMap.
+     * Events are stored with their ID: "/AuditTrail/<i>Event ID</i>"
+     */
+    public static final String HISTORY = "AuditTrail";
+    /**
+     * This cluster contains all viewpoints. Its name is defined as "ViewPoint".
+     * The paths of viewpoint objects stored here follow this pattern:
+     * "ViewPoint/<i>Schema Name</i>/<i>Viewpoint Name</i>"
+     */
+    public static final String VIEWPOINT = "ViewPoint";
+    /**
+     * Agents store their persistent jobs in this cluster that have been pushed
+     * to them by activities configured to do so. The name is defined as "Job"
+     * and each new job received is assigned an integer ID one more than the
+     * highest already present.
+     */
+    public static final String JOB = "Job";
 
-	/**
-	 * An array of all currently supported cluster types, for iterative
-	 * purposes.
-	 */
-	public static final String[] allClusterTypes = { PROPERTY, COLLECTION,
-			LIFECYCLE, OUTCOME, HISTORY, VIEWPOINT, JOB };
+    /**
+     * An array of all currently supported cluster types, for iterative
+     * purposes.
+     */
+    public static final String[] allClusterTypes = { PROPERTY, COLLECTION, LIFECYCLE, OUTCOME, HISTORY, VIEWPOINT, JOB };
 
-	/**
-	 * Connects to the storage. It must be possible to retrieve CRISTAL local
-	 * objects after this method returns.
-	 * 
-	 * @param auth
-	 *            The Authenticator instance that the user or server logged in
-	 *            with.
-	 * @throws PersistencyException
-	 *             If storage initialization failed
-	 */
-	public abstract void open(Authenticator auth)
-			throws PersistencyException;
+    /**
+     * Connects to the storage. It must be possible to retrieve CRISTAL local
+     * objects after this method returns.
+     * 
+     * @param auth
+     *            The Authenticator instance that the user or server logged in
+     *            with.
+     * @throws PersistencyException
+     *             If storage initialization failed
+     */
+    public abstract void open(Authenticator auth)
+            throws PersistencyException;
 
-	/**
-	 * Shuts down the storage. Data must be completely written to disk before
-	 * this method returns, so the process can exit. No further gets or puts
-	 * should follow.
-	 * 
-	 * @throws PersistencyException
-	 *             If closing failed
-	 */
-	public abstract void close() throws PersistencyException;
+    /**
+     * Shuts down the storage. Data must be completely written to disk before
+     * this method returns, so the process can exit. No further gets or puts
+     * should follow.
+     * 
+     * @throws PersistencyException
+     *             If closing failed
+     */
+    public abstract void close() throws PersistencyException;
 
-	/**
-	 * Declares whether or not this ClusterStorage can read or write a
-	 * particular CRISTAL local object type.
-	 * 
-	 * @param clusterType
-	 *            The Cluster type requested. Must be one of the Cluster type
-	 *            constants from this class.
-	 * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
-	 */
-	public abstract short queryClusterSupport(String clusterType);
+    /**
+     * Declares whether or not this ClusterStorage can read or write a
+     * particular CRISTAL local object type.
+     * 
+     * @param clusterType
+     *            The Cluster type requested. Must be one of the Cluster type
+     *            constants from this class.
+     * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
+     */
+    public abstract short queryClusterSupport(String clusterType);
 
-	/**
-	 * @return A full name of this storage for logging
-	 */
-	public abstract String getName();
+    /**
+     * @return A full name of this storage for logging
+     */
+    public abstract String getName();
 
-	/**
-	 * @return A short code for this storage for reference
-	 */
-	public abstract String getId();
+    /**
+     * @return A short code for this storage for reference
+     */
+    public abstract String getId();
 
-	/**
-	 * Utility method to find the cluster for a particular Local Object (the first part of its path)
-	 * 
-	 * @param path object path
-	 * @return The cluster to which it belongs
-	 */
-	protected static String getClusterType(String path) {
-		try {
-			if (path == null || path.length() == 0)
-				return ClusterStorage.ROOT;
-			int start = path.charAt(0) == '/' ? 1 : 0;
-			int end = path.indexOf('/', start + 1);
-			if (end == -1)
-				end = path.length();
-			return path.substring(start, end);
-		} catch (Exception ex) {
-			Logger.error(ex);
-			return ClusterStorage.ROOT;
-		}
-	}
+    /**
+     * Utility method to find the cluster for a particular Local Object (the first part of its path)
+     * 
+     * @param path object path
+     * @return The cluster to which it belongs
+     */
+    protected static String getClusterType(String path) {
+        try {
+            if (path == null || path.length() == 0) return ClusterStorage.ROOT;
 
-	/**
-	 * Gives the path for a local object. Varies by Cluster.
-	 * 
-	 * @param obj C2KLocalObject
-	 * @return Its path
-	 */
-	public static String getPath(C2KLocalObject obj) {
-		String root = obj.getClusterType();
-		if (root == null)
-			return null; // no storage allowed
-		if (obj instanceof Outcome) {
-			Outcome oc = (Outcome) obj;
-			return root + "/" + oc.getSchema().getName() + "/"
-					+ oc.getSchema().getVersion() + "/" + oc.getName();
-		} else if (obj instanceof Viewpoint) {
-			Viewpoint vp = (Viewpoint) obj;
-			return root + "/" + vp.getSchemaName() + "/" + vp.getName();
-		} else if (obj instanceof Collection) {
-			Collection<?> coll = (Collection<?>) obj;
-			return root + "/" + coll.getName() + "/" +coll.getVersionName();
-		}
-			return root + "/" + obj.getName();
-	}
+            int start = path.charAt(0) == '/' ? 1 : 0;
+            int end = path.indexOf('/', start + 1);
+            
+            if (end == -1) end = path.length();
 
-	/* object manipulation */
+            return path.substring(start, end);
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            return ClusterStorage.ROOT;
+        }
+    }
 
-	// retrieve object by path
-	/**
-	 * Fetches a CRISTAL local object from storage
-	 * 
-	 * @param itemPath
-	 *            The ItemPath of the containing Item
-	 * @param path
-	 *            The path of the local object
-	 * @return The C2KLocalObject, or null if the object was not found
-	 * @throws PersistencyException
-	 *             when retrieval failed
-	 */
-	public abstract C2KLocalObject get(ItemPath itemPath, String path)
-			throws PersistencyException;
+    /**
+     * Gives the path for a local object. Varies by Cluster.
+     * 
+     * @param obj C2KLocalObject
+     * @return Its path
+     */
+    public static String getPath(C2KLocalObject obj) {
+        String root = obj.getClusterType();
 
-	/**
-	 * Stores a CRISTAL local object. The path is automatically generated.
-	 * 
-	 * @param itemPath
-	 *            The Item that the object will be stored under
-	 * @param obj
-	 *            The C2KLocalObject to store
-	 * @throws PersistencyException
-	 *             When storage fails
-	 */
-	public abstract void put(ItemPath itemPath, C2KLocalObject obj)
-			throws PersistencyException;
+        if (root == null) return null; // no storage allowed
 
-	/**
-	 * Remove a CRISTAL local object from storage. This should be used sparingly
-	 * and responsibly, as it violated traceability. Objects removed in this way
-	 * are not expected to be recoverable.
-	 * 
-	 * @param itemPath
-	 *            The containing Item
-	 * @param path
-	 *            The path of the object to be removed
-	 * @throws PersistencyException
-	 *             When deletion fails or is not allowed
-	 */
-	public abstract void delete(ItemPath itemPath, String path)
-			throws PersistencyException;
+        if (obj instanceof Outcome) {
+            Outcome oc = (Outcome) obj;
+            return root + "/" + oc.getSchema().getName() + "/" + oc.getSchema().getVersion() + "/" + oc.getName();
+        }
+        else if (obj instanceof Viewpoint) {
+            Viewpoint vp = (Viewpoint) obj;
+            return root + "/" + vp.getSchemaName() + "/" + vp.getName();
+        }
+        else if (obj instanceof Collection) {
+            Collection<?> coll = (Collection<?>) obj;
+            return root + "/" + coll.getName() + "/" +coll.getVersionName();
+        }
 
-	// directory listing
-	/**
-	 * Queries the local path below the given root and returns the possible next
-	 * elements.
-	 * 
-	 * @param itemPath
-	 *            The Item to query
-	 * @param path
-	 *            The path within that Item to query. May be ClusterStorage.ROOT
-	 *            (empty String)
-	 * @return A String array of the possible next path elements
-	 * @throws PersistencyException
-	 *             When an error occurred during the query
-	 */
-	public abstract String[] getClusterContents(ItemPath itemPath, String path)
-			throws PersistencyException;
+        return root + "/" + obj.getName();
+    }
+
+    /**
+     * Fetches a CRISTAL local object from storage
+     * 
+     * @param itemPath
+     *            The ItemPath of the containing Item
+     * @param path
+     *            The path of the local object
+     * @return The C2KLocalObject, or null if the object was not found
+     * @throws PersistencyException
+     *             when retrieval failed
+     */
+    public abstract C2KLocalObject get(ItemPath itemPath, String path)
+            throws PersistencyException;
+
+    /**
+     * Stores a CRISTAL local object. The path is automatically generated.
+     * 
+     * @param itemPath
+     *            The Item that the object will be stored under
+     * @param obj
+     *            The C2KLocalObject to store
+     * @throws PersistencyException
+     *             When storage fails
+     */
+    public abstract void put(ItemPath itemPath, C2KLocalObject obj)
+            throws PersistencyException;
+
+    /**
+     * Remove a CRISTAL local object from storage. This should be used sparingly
+     * and responsibly, as it violated traceability. Objects removed in this way
+     * are not expected to be recoverable.
+     * 
+     * @param itemPath
+     *            The containing Item
+     * @param path
+     *            The path of the object to be removed
+     * @throws PersistencyException
+     *             When deletion fails or is not allowed
+     */
+    public abstract void delete(ItemPath itemPath, String path)
+            throws PersistencyException;
+
+    // directory listing
+    /**
+     * Queries the local path below the given root and returns the possible next
+     * elements.
+     * 
+     * @param itemPath
+     *            The Item to query
+     * @param path
+     *            The path within that Item to query. May be ClusterStorage.ROOT
+     *            (empty String)
+     * @return A String array of the possible next path elements
+     * @throws PersistencyException
+     *             When an error occurred during the query
+     */
+    public abstract String[] getClusterContents(ItemPath itemPath, String path)
+            throws PersistencyException;
 
 }
