@@ -66,7 +66,6 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
     Object mLocker;
 
     public RemoteMap(ItemPath itemPath, String path, Object locker) {
-
         super(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
@@ -104,6 +103,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
             @Override
             public void add(V obj) {
                 synchronized (this) {
+                    Logger.msg(7, "RemoteMap:ProxyObserver.add() - id:"+obj.getName());
                     putLocal(obj.getName(), obj);
                 }
             }
@@ -111,6 +111,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
             @Override
             public void remove(String id) {
                 synchronized (this) {
+                    Logger.msg(7, "RemoteMap:ProxyObserver.remove() - id:"+id);
                     removeLocal(id);
                 }
             }
