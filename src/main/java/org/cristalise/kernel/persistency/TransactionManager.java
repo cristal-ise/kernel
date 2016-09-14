@@ -104,28 +104,67 @@ public class TransactionManager {
     }
 
     /**
-     * Public put method. Manages the transaction table keyed by the object 'locker'.
-     * If this object is null, transaction support is bypassed (so long as no lock exists on that object).
+     * 
+     * @param itemPath
+     * @param obj
+     * @param locker
+     * @throws PersistencyException
      */
     public void put(ItemPath itemPath, C2KLocalObject obj, Object locker) throws PersistencyException {
-        Object tempLocker = null;
-        ArrayList<TransactionEntry> lockerTransaction;
+        ArrayList<TransactionEntry> lockingTransaction = getLockingTransaction(itemPath, locker);
 
+        if (lockingTransaction == null) {
+            storage.put(itemPath, obj);
+            locks.remove(itemPath);
+        }
+        else
+            createTransactionEntry(itemPath, obj, null, lockingTransaction);
+    }
+
+    /**
+     * Uses the put method, with null as the object value.
+     * 
+     * @param itemPath
+     * @param path
+     * @param locker
+     * @throws PersistencyException
+     */
+    public void remove(ItemPath itemPath, String path, Object locker) throws PersistencyException {
+        ArrayList<TransactionEntry> lockingTransaction = getLockingTransaction(itemPath, locker);
+
+        if (lockingTransaction == null) {
+            storage.remove(itemPath, path);
+            locks.remove(itemPath);
+        }
+        else
+            createTransactionEntry(itemPath, null, path, lockingTransaction);
+    }
+
+    /**
+     * Manages the transaction table keyed by the object 'locker'.
+     * If this object is null, transaction support is bypassed (so long as no lock exists on that object).
+     * 
+     * @param itemPath
+     * @param locker
+     * @return
+     * @throws PersistencyException
+     */
+    private ArrayList<TransactionEntry> getLockingTransaction(ItemPath itemPath, Object locker) throws PersistencyException {
+        ArrayList<TransactionEntry> lockerTransaction;
         synchronized(locks) {
             // look to see if this object is already locked
             if (locks.containsKey(itemPath)) {
                 // if it's this locker, get the transaction list
                 Object thisLocker = locks.get(itemPath);
+                
                 if (thisLocker.equals(locker)) // retrieve the transaction list
                     lockerTransaction = pendingTransactions.get(locker);
                 else // locked by someone else
-                    throw new PersistencyException("ClusterStorageManager.get() - Access denied: Object " + itemPath +
-                            " has been locked for writing by " + thisLocker);
+                    throw new PersistencyException("Access denied: '"+itemPath+"' has been locked for writing by "+thisLocker);
             }
             else { // no locks for this item
-                if (locker == null) { // lock the item until the non-transactional put is complete :/
-                    tempLocker = new Object();
-                    locks.put(itemPath, tempLocker);
+                if (locker == null) { // lock the item until the non-transactional put/remove is complete :/
+                    locks.put(itemPath, new Object());
                     lockerTransaction = null;
                 }
                 else { // initialise the transaction
@@ -135,70 +174,29 @@ public class TransactionManager {
                 }
             }
         }
-
-        if (tempLocker != null) { // non-locking put/delete
-            storage.put(itemPath, obj);
-            locks.remove(itemPath);
-            return;
-        }
-
-        // create the new entry in the transaction table
-        TransactionEntry newEntry = new TransactionEntry(itemPath, obj);
-        /* equals() in TransactionEntry only compares sysKey and path, so we can use
-         * contains() in ArrayList to looks for preexisting entries for this cluster
-         * and overwrite them.
-         */
-        if (lockerTransaction.contains(newEntry))
-            lockerTransaction.remove(newEntry);
-        lockerTransaction.add(newEntry);
+        return lockerTransaction;
     }
 
-    /** Public delete method. Uses the put method, with null as the object value.
+    /**
+     * Create the new entry in the transaction table.
+     * equals() in TransactionEntry only compares sysKey and path, so we can use contains()
+     * in ArrayList to look for existing entries for this cluster and overwrite them.
+     * 
+     * @param itemPath
+     * @param obj
+     * @param lockerTransaction
+     * @throws PersistencyException 
      */
-    public void remove(ItemPath itemPath, String path, Object locker) throws PersistencyException {
-        ArrayList<TransactionEntry> lockerTransaction;
-        Object tempLocker = null;
-        synchronized(locks) {
-            // look to see if this object is already locked
-            if (locks.containsKey(itemPath)) {
-                // if it's this locker, get the transaction list
-                Object thisLocker = locks.get(itemPath);
-                if (thisLocker.equals(locker)) // retrieve the transaction list
-                    lockerTransaction = pendingTransactions.get(locker);
-                else // locked by someone else
-                    throw new PersistencyException("ClusterStorageManager.get() - Access denied: Object " + itemPath +
-                            " has been locked for writing by " + thisLocker);
-            }
-            else { // either we are the locker, or there is no locker
-                if (locker == null) { // non-locking put/delete
-                    tempLocker = new Object();
-                    locks.put(itemPath, tempLocker);
-                    lockerTransaction = null;
-                }
-                else {// initialise the transaction
-                    locks.put(itemPath, locker);
-                    lockerTransaction = new ArrayList<TransactionEntry>();
-                    pendingTransactions.put(locker, lockerTransaction);
-                }
-            }
-        }
+    private void createTransactionEntry(ItemPath itemPath, C2KLocalObject obj, String  path, ArrayList<TransactionEntry> lockerTransaction) throws PersistencyException {
+        TransactionEntry newEntry;
 
-        if (tempLocker != null) {
-            storage.remove(itemPath, path);
-            locks.remove(itemPath);
-            return;
-        }
+        if (obj != null)      newEntry = new TransactionEntry(itemPath, obj);
+        else if(path != null) newEntry = new TransactionEntry(itemPath, path);
+        else                  throw new PersistencyException("");
 
-        // create the new entry in the transaction table
-        TransactionEntry newEntry = new TransactionEntry(itemPath, path);
-        /* equals() in TransactionEntry only compares sysKey and path, so we can use
-         * contains() in ArrayList to looks for preexisting entries for this cluster
-         * and overwrite them.
-         */
-        if (lockerTransaction.contains(newEntry))
-            lockerTransaction.remove(newEntry);
+        if (lockerTransaction.contains(newEntry)) lockerTransaction.remove(newEntry);
+
         lockerTransaction.add(newEntry);
-
     }
 
     /**
@@ -211,13 +209,13 @@ public class TransactionManager {
      * @throws PersistencyException - when deleting fails
      */
     public void removeCluster(ItemPath itemPath, String path, Object locker) throws PersistencyException {
-
         String[] children = getClusterContents(itemPath, path);
+        
         for (String element : children)
             removeCluster(itemPath, path+(path.length()>0?"/":"")+element, locker);
+        
         if (children.length==0 && path.indexOf("/") > -1)
             remove(itemPath, path, locker);
-
     }
     /**
      * Writes all pending changes to the backends.
