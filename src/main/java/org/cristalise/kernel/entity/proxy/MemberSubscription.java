@@ -111,21 +111,21 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
         if (path.equals(interest)) // refresh contents
             loadChildren();
         else {
-            String name = path.substring(interest.length());
+            String name = path.substring(interest.length()+1);
             if (deleted) {
-                Logger.msg(4, "MemberSubscription.update() - Removing "+path);
+                Logger.msg(7, "MemberSubscription.update() - Removing path:"+path+" name:"+name);
                 contents.remove(name);
                 observer.remove(name);
             }
             else {
                 try {
                     C newMember = (C)subject.getObject(path);
-                    Logger.msg(4, "MemberSubscription.update() - Adding "+path);
+                    Logger.msg(7, "MemberSubscription.update() - Adding path:"+path+" name:"+name);
                     contents.add(name);
                     observer.add(newMember);
                 }
                 catch (ObjectNotFoundException e) {
-                    Logger.error("MemberSubscription: could not load "+path);
+                    Logger.error("MemberSubscription could not load path:"+path);
                     Logger.error(e);
                 }
             }

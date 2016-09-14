@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity.agent;
 
+import java.util.List;
+
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -67,18 +69,19 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
             JobArrayList newJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(newJobs);
 
             // get our joblist
-            if (currentJobs == null)
-                currentJobs = new JobList( mAgentPath, null);
+            if (currentJobs == null) currentJobs = new JobList( mAgentPath, null);
 
-            // remove old jobs for this item
-            currentJobs.removeJobsForStep( itemPath, stepPath );
+            List<String> keysToRemove = currentJobs.getKeysForStep(itemPath, stepPath);
 
-            // merge new jobs in
+            // merge new jobs in first, so the RemoteMap.getLastId() used during addJob() returns the next unique id
             for (Object name : newJobList.list) {
                 Job newJob = (Job)name;
                 Logger.msg(6, "AgentImplementation.refreshJobList() - Adding job:"+newJob.getItemPath()+"/"+newJob.getStepPath()+":"+newJob.getTransition().getName());
                 currentJobs.addJob(newJob);
             }
+
+            // remove old jobs for this item0
+            for(String key: keysToRemove) currentJobs.remove(key);
         }
         catch (Throwable ex) {
             Logger.error("Could not refresh job list.");

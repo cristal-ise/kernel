@@ -22,6 +22,7 @@ package org.cristalise.kernel.entity.agent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.cristalise.kernel.lookup.AgentPath;
@@ -71,15 +72,31 @@ public class JobList extends RemoteMap<Job> {
         Logger.msg(5, "JobList::removeJobsWithSysKey() - " + itemPath + " DONE.");
     }
 
-    public void removeJobsForStep(ItemPath itemPath, String stepPath) {
-        ArrayList<String> staleJobs = new ArrayList<String>();
+    /**
+     * 
+     * @param itemPath
+     * @param stepPath
+     * @return
+     */
+    public List<String> getKeysForStep(ItemPath itemPath, String stepPath) {
+        List<String> jobKeys = new ArrayList<String>();
         Iterator<String> jobIter = keySet().iterator();
 
         while (jobIter.hasNext()) {
             String jid = jobIter.next();
             Job j = get(jid);
-            if (j.getItemPath().equals(itemPath) && j.getStepPath().equals(stepPath)) staleJobs.add(jid);
+            if (j.getItemPath().equals(itemPath) && j.getStepPath().equals(stepPath)) jobKeys.add(jid);
         }
+        return jobKeys;
+    }
+
+    /**
+     * 
+     * @param itemPath
+     * @param stepPath
+     */
+    public void removeJobsForStep(ItemPath itemPath, String stepPath) {
+        List<String> staleJobs = getKeysForStep(itemPath, stepPath);
 
         Logger.msg(3, "JobList.removeJobsForStep() - removing " + staleJobs.size());
 
