@@ -76,7 +76,6 @@ public class Job implements C2KLocalObject
     private GTimeStamp     creationDate;
 
     // Non-persistent fields
-    private String     name;
     private String     agentName;
     private AgentPath  delegatePath;
     private String     delegateName;
@@ -142,7 +141,6 @@ public class Job implements C2KLocalObject
 
     public void setId(int id) {
         this.id = id;
-        name = String.valueOf(id);
     } 
 
     public ItemPath getItemPath() {
@@ -271,14 +269,12 @@ public class Job implements C2KLocalObject
     }
 
     public String getAgentName() {
-        if (agentName == null)
-            agentName = (String) actProps.get("Agent Name");
+        if (agentName == null) agentName = (String) actProps.get("Agent Name");
         return agentName;
     }
 
     public String getDelegateName() {
-        if (delegateName == null && delegatePath != null)
-            delegateName = delegatePath.getAgentName();
+        if (delegateName == null && delegatePath != null) delegateName = delegatePath.getAgentName();
         return delegateName;
     }
 
@@ -362,21 +358,14 @@ public class Job implements C2KLocalObject
         actProps.setKeyValuePairs(pairs);
     }
 
-    // Non-persistent fields
-
     @Override
     public String getName() {
-        return name;
+        return Integer.toString(id);
     }
 
     @Override
     public void setName(String name) {
-        this.name = name;
-        try {
-            id = Integer.parseInt(name);
-        } catch (NumberFormatException ex) {
-            id = -1;
-        }
+        id = Integer.parseInt(name);
     }
 
     public ItemProxy getItemProxy() throws ObjectNotFoundException, InvalidItemPathException {
