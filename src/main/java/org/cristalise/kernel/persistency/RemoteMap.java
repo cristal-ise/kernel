@@ -40,6 +40,8 @@ import org.cristalise.kernel.utils.Logger;
 
 /**
  * Maps a storage cluster onto a java.util.Map
+ *
+ * @param <V> the C2KLocalObject stored by this Map
  */
 public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> implements C2KLocalObject  {
 

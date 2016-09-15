@@ -104,6 +104,8 @@ public class Bootstrap
                 try {
                     Thread.currentThread().setName("Bootstrapper");
 
+                    Logger.msg("Bootstrap.run() - Bootstrapper started");
+
                     ClassLoader wClassLoader = Bootstrap.class.getClassLoader();
                     Logger.msg(String.format("Bootstrap.run() setContextClassLoader=[%s]",wClassLoader));
                     Thread.currentThread().setContextClassLoader(wClassLoader);
@@ -126,7 +128,7 @@ public class Bootstrap
                     }
 
                     if (!shutdown) {
-                        Logger.msg("Bootstrap.run() - Bootstrapping complete");
+                        Logger.msg("Bootstrap.run() - Bootstrapper complete");
                         Gateway.getModuleManager().runScripts("initialized");
                     }
                 }

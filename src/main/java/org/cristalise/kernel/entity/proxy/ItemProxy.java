@@ -69,7 +69,7 @@ public class ItemProxy
     private final HashMap<MemberSubscription<?>, ProxyObserver<?>> mSubscriptions;
 
     protected ItemProxy( org.omg.CORBA.Object  ior, ItemPath itemPath) {
-        Logger.msg(8, "ItemProxy::initialise() - Initialising item proxy " +itemPath);
+        Logger.msg(8, "ItemProxy::initialise() - path:" +itemPath);
 
         mIOR            = ior;
         mItemPath       = itemPath;
@@ -102,12 +102,15 @@ public class ItemProxy
                           )
                     throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
     {
-        Logger.msg(7, "ItemProxy::initialise - started");
+        Logger.msg(7, "ItemProxy.initialise() - started");
+
         CastorXMLUtility xml = Gateway.getMarshaller();
-        if (itemProps == null) throw new InvalidDataException("No initial properties supplied");
+        if (itemProps == null) throw new InvalidDataException("ItemProxy.initialise() - No initial properties supplied");
         String propString = xml.marshall(itemProps);
+
         String wfString = "";
         if (workflow != null) wfString = xml.marshall(workflow);
+
         String collString = "";
         if (colls != null) collString = xml.marshall(colls);
 
@@ -115,8 +118,7 @@ public class ItemProxy
     }
 
     public void setProperty(AgentProxy agent, String name, String value)
-            throws AccessRightsException,
-            PersistencyException, InvalidDataException
+            throws AccessRightsException, PersistencyException, InvalidDataException
     {
         String[] params = new String[2];
         params[0] = name;
@@ -153,25 +155,23 @@ public class ItemProxy
      */
     public String requestAction( Job thisJob )
             throws AccessRightsException,
-            InvalidTransitionException,
-            ObjectNotFoundException,
-            InvalidDataException,
-            PersistencyException,
-            ObjectAlreadyExistsException, 
-            InvalidCollectionModification
+                   InvalidTransitionException,
+                   ObjectNotFoundException,
+                   InvalidDataException,
+                   PersistencyException,
+                   ObjectAlreadyExistsException, 
+                   InvalidCollectionModification
     {
         String outcome = thisJob.getOutcomeString();
         // check fields that should have been filled in
+
         if (outcome==null)
-            if (thisJob.isOutcomeRequired())
-                throw new InvalidDataException("Outcome is required.");
-            else
-                outcome="";
+            if (thisJob.isOutcomeRequired()) throw new InvalidDataException("Outcome is required.");
+            else                             outcome="";
 
-        if (thisJob.getAgentPath() == null)
-            throw new InvalidDataException("No Agent specified.");
+        if (thisJob.getAgentPath() == null) throw new InvalidDataException("No Agent specified.");
 
-        Logger.msg(7, "ItemProxy - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
+        Logger.msg(7, "ItemProxy.requestAction() - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
 
         if (thisJob.getDelegatePath() == null)
             return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
@@ -347,10 +347,10 @@ public class ItemProxy
      */
     public String queryData( String path ) throws ObjectNotFoundException {
         try {
-            Logger.msg(7, "EntityProxy.queryData() - "+mItemPath+"/"+path);
+            Logger.msg(7, "ItemProxy.queryData() - "+mItemPath+"/"+path);
 
             if (path.endsWith("all")) {
-                Logger.msg(7, "EntityProxy.queryData() - listing contents");
+                Logger.msg(7, "ItemProxy.queryData() - listing contents");
 
                 String[] result = Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()-3));
                 StringBuffer retString = new StringBuffer();
@@ -359,7 +359,7 @@ public class ItemProxy
                     retString.append(result[i]);
                     if (i<result.length-1) retString.append(",");
                 }
-                Logger.msg(7, "EntityProxy.queryData() - "+retString.toString());
+                Logger.msg(7, "ItemProxy.queryData() - "+retString.toString());
                 return retString.toString();
             }
             C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
@@ -377,7 +377,8 @@ public class ItemProxy
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
             return Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()));
-        } catch (PersistencyException e) {
+        }
+        catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());
         }
     }
@@ -394,21 +395,22 @@ public class ItemProxy
             return Gateway.getStorage().get( mItemPath, xpath , null);
         }
         catch( PersistencyException ex ) {
-            Logger.msg(4, "Exception loading object :"+mItemPath+"/"+xpath);
+            Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+xpath);
+            Logger.error(ex);
             throw new ObjectNotFoundException( ex.toString() );
         }
     }
 
     
     public String getProperty( String name ) throws ObjectNotFoundException {
-        Logger.msg(5, "Get property "+name+" from item "+mItemPath);
+        Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
         Property prop = (Property)getObject("Property/"+name);
 
         try {
             return prop.getValue();
         }
         catch (NullPointerException ex) {
-            throw new ObjectNotFoundException();
+            throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not finf property "+name+" from item "+mItemPath);
         }
     }
 
@@ -422,11 +424,10 @@ public class ItemProxy
     }
 
 
+    //**************************************************************************
+    // Subscription methods
+    //**************************************************************************/
 
-
-    /**************************************************************************
-     * Subscription methods
-     **************************************************************************/
 
     public void subscribe(MemberSubscription<?> newSub) {
         newSub.setSubject(this);
@@ -434,7 +435,7 @@ public class ItemProxy
             mSubscriptions.put( newSub, newSub.getObserver() );
         }
         new Thread(newSub).start();
-        Logger.msg(7, "Subscribed "+newSub.getObserver().getClass().getName()+" for "+newSub.interest);
+        Logger.msg(7, "ItemProxy.subscribe() - "+newSub.getObserver().getClass().getName()+" for "+newSub.interest);
     }
 
     public void unsubscribe(ProxyObserver<?> observer) {
@@ -443,14 +444,15 @@ public class ItemProxy
                 MemberSubscription<?> thisSub = e.next();
                 if (mSubscriptions.get( thisSub ) == observer) {
                     e.remove();
-                    Logger.msg(7, "Unsubscribed "+observer.getClass().getName());
+                    Logger.msg(7, "ItemProxy.unsubscribed() - "+observer.getClass().getName());
                 }
             }
         }
     }
 
     public void dumpSubscriptions(int logLevel) {
-        if (mSubscriptions.size() == 0) return;
+        if(!Logger.doLog(logLevel) || mSubscriptions.size() == 0) return;
+
         Logger.msg(logLevel, "Subscriptions to proxy "+mItemPath+":");
         synchronized(this) {
             for (MemberSubscription<?> element : mSubscriptions.keySet()) {
@@ -464,14 +466,15 @@ public class ItemProxy
     }
 
     public void notify(ProxyMessage message) {
-        Logger.msg(4, "EntityProxy.notify() - Received change notification for "+message.getPath()+" on "+mItemPath);
+        Logger.msg(4, "ItemProxy.notify() - Received change notification for "+message.getPath()+" on "+mItemPath);
         synchronized (this){
-            if (Gateway.getProxyServer()== null || !message.getServer().equals(Gateway.getProxyServer().getServerName()))
+            if (Gateway.getProxyServer()== null || !message.getServer().equals(Gateway.getProxyServer().getServerName())) {
                 Gateway.getStorage().clearCache(mItemPath, message.getPath());
+            }
             for (Iterator<MemberSubscription<?>> e = mSubscriptions.keySet().iterator(); e.hasNext();) {
                 MemberSubscription<?> newSub = e.next();
                 if (newSub.getObserver() == null) { // phantom
-                    Logger.msg(4, "Removing phantom subscription to "+newSub.interest);
+                    Logger.msg(4, "ItemProxy.notify() - Removing phantom subscription to "+newSub.interest);
                     e.remove();
                 }
                 else
