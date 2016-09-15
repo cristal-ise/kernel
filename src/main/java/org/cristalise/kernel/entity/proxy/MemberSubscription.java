@@ -47,7 +47,7 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
 
     @Override
     public void run() {
-        Thread.currentThread().setName("Member Subscription: "+subject.getPath()+":"+interest);
+        Thread.currentThread().setName("MemberSubscription:"+subject.getPath()+":"+interest);
         if (preLoad) loadChildren();
     }
 
@@ -66,7 +66,6 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
 
             // look to see what's new
             for (String newChild: newContents) {
-
                 // load child object
                 try {
                     newMember = (C)subject.getObject(interest+"/"+newChild);

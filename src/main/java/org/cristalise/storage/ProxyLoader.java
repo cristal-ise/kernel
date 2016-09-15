@@ -37,123 +37,133 @@ import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.utils.Logger;
 
 
-/** Used by proxies to load clusters by queryData from the Entity.
-*   Last client storage - only used if not cached elsewhere
-*/
-
+/**
+ * Used by proxies to load clusters by queryData from the Entity.
+ * Last client storage - only used if not cached elsewhere
+ */
 public class ProxyLoader extends ClusterStorage {
     HashMap<ItemPath, Item> entities = new HashMap<ItemPath, Item>();
     Lookup lookup;
 
     @Override
-	public void open(Authenticator auth) throws PersistencyException {
+    public void open(Authenticator auth) throws PersistencyException {
         lookup = Gateway.getLookup();
     }
 
     @Override
-	public void close() throws PersistencyException {
+    public void close() throws PersistencyException {
     }
-    // introspection
+
     @Override
-	public short queryClusterSupport(String clusterType) {
+    public short queryClusterSupport(String clusterType) {
         return READ;
     }
 
     @Override
-	public String getName() {
+    public String getName() {
         return "Proxy Cluster Loader";
     }
 
     @Override
-	public String getId() {
+    public String getId() {
         return "CORBA";
     }
 
-    // retrieve object by path
+    /**
+     * retrieve object by path
+     */
     @Override
-	public C2KLocalObject get(ItemPath thisItem, String path) throws PersistencyException {
+    public C2KLocalObject get(ItemPath thisItem, String path) throws PersistencyException {
         try {
             Item thisEntity = getIOR(thisItem);
             String type = getClusterType(path);
 
             // fetch the xml from the item
             String queryData = thisEntity.queryData(path);
-            if (Logger.doLog(6)) Logger.msg(6, "ProxyLoader - "+thisItem+":"+path+" = "+queryData);
+
+            if (Logger.doLog(8)) Logger.msg("ProxyLoader.get() - "+thisItem+" : "+path+" = "+queryData);
 
             if (queryData != null) {
-                if (type.equals(OUTCOME))
-                    return new Outcome(path, queryData);
-                else
-                    return (C2KLocalObject)Gateway.getMarshaller().unmarshall(queryData);
+                if (type.equals(OUTCOME)) return new Outcome(path, queryData);
+                else                      return (C2KLocalObject)Gateway.getMarshaller().unmarshall(queryData);
             }
-        } catch (ObjectNotFoundException e) {
-        	return null;
-        } catch (Exception e) {
+        }
+        catch (ObjectNotFoundException e) {
+            return null;
+        }
+        catch (Exception e) {
             Logger.error(e);
             throw new PersistencyException(e.getMessage());
         }
         return null;
     }
 
-    // store object by path
+    /**
+     * store object not supported
+     */
     @Override
-	public void put(ItemPath thisItem, C2KLocalObject obj) throws PersistencyException {
-        // not supported
-        throw new PersistencyException("Cannot write to items through the ProxyLoader");
-    }
-    // delete cluster
-    @Override
-	public void delete(ItemPath thisItem, String path) throws PersistencyException {
-        // not supported
+    public void put(ItemPath thisItem, C2KLocalObject obj) throws PersistencyException {
         throw new PersistencyException("Cannot write to items through the ProxyLoader");
     }
 
-    /* navigation */
-
-    // directory listing
+    /**
+     * delete cluster not supported
+     */
     @Override
-	public String[] getClusterContents(ItemPath thisItem, String path) throws PersistencyException {
+    public void delete(ItemPath thisItem, String path) throws PersistencyException {
+        throw new PersistencyException("Cannot write to items through the ProxyLoader");
+    }
+
+    /**
+     * Directory listing
+     */
+    @Override
+    public String[] getClusterContents(ItemPath thisItem, String path) throws PersistencyException {
         try {
             Item thisEntity = getIOR(thisItem);
             String contents = thisEntity.queryData(path+"/all");
             StringTokenizer tok = new StringTokenizer(contents, ",");
             String[] result = new String[tok.countTokens()];
-            for (int i=0; i<result.length; i++)
-                result[i] = tok.nextToken();
+
+            for (int i=0; i<result.length; i++) result[i] = tok.nextToken();
 
             return result;
-        } catch (Exception e) {
-        	Logger.error(e);
+        }
+        catch (Exception e) {
+            Logger.error(e);
             throw new PersistencyException(e.getMessage());
         }
     }
 
     private Item getIOR(ItemPath thisPath) throws PersistencyException {
+        // check the cache
         if (entities.containsKey(thisPath)) {
-            // check the cache
-            Logger.msg(7, "ProxyLoader.getIOR() - "+thisPath+" cached.");
+            Logger.msg(8, "ProxyLoader.getIOR() - "+thisPath+" cached.");
             return entities.get(thisPath);
         }
 
         try {
-            Logger.msg(7, "ProxyLoader.getIOR() - Resolving "+thisPath+".");
+            Logger.msg(8, "ProxyLoader.getIOR() - Resolving "+thisPath+".");
             org.omg.CORBA.Object ior = thisPath.getIOR();
 
             Item thisItem = null;
             try {
-            	thisItem = ItemHelper.narrow(ior);
-            } catch (org.omg.CORBA.BAD_PARAM ex) {
+                thisItem = ItemHelper.narrow(ior);
+            }
+            catch (org.omg.CORBA.BAD_PARAM ex) {
                 try {
-                	thisItem =  AgentHelper.narrow(ior);
-                } catch (org.omg.CORBA.BAD_PARAM ex2) {
+                    thisItem =  AgentHelper.narrow(ior);
+                }
+                catch (org.omg.CORBA.BAD_PARAM ex2) {
                     throw new PersistencyException ("Could not narrow "+thisItem+" as a known Entity type");
                 }
             }
 
-            Logger.msg(7, "ProxyLoader.getIOR() - Found "+thisItem+".");
+            Logger.msg(8, "ProxyLoader.getIOR() - Found "+thisItem+".");
             entities.put(thisPath, thisItem);
             return thisItem;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new PersistencyException("Error narrowing "+thisPath+": "+e.getMessage());
         }
     }
