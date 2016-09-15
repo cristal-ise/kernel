@@ -29,6 +29,8 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POI
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.cristalise.kernel.common.AccessRightsException;
@@ -235,30 +237,37 @@ public class Activity extends WfVertex {
             throw ex;
         }
 
-        if (newState.isFinished()) {
-            if (!(getBuiltInProperty(BREAKPOINT).equals(Boolean.TRUE) && !oldState.isFinished())) runNext(agent, itemPath, locker);
+        if (newState.isFinished() && !(getBuiltInProperty(BREAKPOINT).equals(Boolean.TRUE) && !oldState.isFinished())) {
+            runNext(agent, itemPath, locker);
         }
 
         DateUtility.setToNow(mStateDate);
+        pushJobsToAgents(itemPath);
 
-        // refresh all the job lists
-        String agentRole = getCurrentAgentRole();
-        if (agentRole != null && agentRole.length() > 0) {
-            try {
-                RolePath myRole = Gateway.getLookup().getRolePath(agentRole);
-                pushJobsToAgents(itemPath, myRole);
-            }
-            catch (ObjectNotFoundException ex) { // non-existent role
-                Logger.msg(7, "Activity.request() - Activity role '" + agentRole + " not found.");
-            }
-        }
         return outcome;
     }
 
+    /**
+     * Overridden in predefined steps
+     * 
+     * @param agent
+     * @param itemPath
+     * @param transitionID
+     * @param requestData
+     * @param locker
+     * @return
+     * @throws InvalidDataException
+     * @throws InvalidCollectionModification
+     * @throws ObjectAlreadyExistsException
+     * @throws ObjectCannotBeUpdated
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws CannotManageException
+     */
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException, InvalidCollectionModification, ObjectAlreadyExistsException, ObjectCannotBeUpdated,
-            ObjectNotFoundException, PersistencyException, CannotManageException {
-        // Overriden in predefined steps
+                   ObjectNotFoundException, PersistencyException, CannotManageException
+    {
         return requestData;
     }
 
@@ -469,41 +478,59 @@ public class Activity extends WfVertex {
         return jobs;
     }
 
+    /**
+     * Collects all Role names which are associated with this Activity and the Transitions of the current State,
+     * and ....
+     * 
+     * @param itemPath
+     */
     protected void pushJobsToAgents(ItemPath itemPath) {
-        String agentRole = getCurrentAgentRole();
-        if (agentRole != null && agentRole.length() > 0) pushJobsToAgents(itemPath, agentRole);
+        Set<String> roleNames = new TreeSet<String>(); //Shall contain a set of unique role names
 
-        // Also push override jobs if present
+        String role = getCurrentAgentRole();
+        if (role != null && role.length()>0) roleNames.add(role);
+
         try {
             for (Transition trans : getStateMachine().getState(getState()).getPossibleTransitions().values()) {
-                String override = trans.getRoleOverride(getProperties());
-                if (override != null && override.length() > 0) pushJobsToAgents(itemPath, override);
+                role = trans.getRoleOverride(getProperties());
+                if (role != null && role.length()>0) roleNames.add(role);
             }
+
+            Logger.msg(7,"Activity.pushJobsToAgents() - Pushing jobs to "+roleNames.size()+" roles");
+
+            for (String roleName: roleNames) pushJobsToAgents(itemPath, roleName);
         }
-        catch (InvalidDataException e) {
-            Logger.error("Activity.pushJobsToAgents() - Problem loading state machine '" + getProperties().get("StateMachineName")
-                    + "' for Job distribution.");
-        }
+        catch (InvalidDataException ex) { Logger.warning("Activity.pushJobsToAgents() - "+ex.getMessage()); }
     }
 
-    private void pushJobsToAgents(ItemPath itemPath, String role) {
+    /**
+     * 
+     * @param itemPath
+     * @param role
+     */
+    protected void pushJobsToAgents(ItemPath itemPath, String role) {
+        Logger.msg(7,"Activity.pushJobsToAgents() - role:"+role);
+
         try {
-            RolePath myRole = Gateway.getLookup().getRolePath(role);
-            pushJobsToAgents(itemPath, myRole);
+            pushJobsToAgents(itemPath, Gateway.getLookup().getRolePath(role));
         }
-        catch (ObjectNotFoundException ex) { // non-existent role
-            Logger.msg(7, "Activity.pushJobsToAgents() - Activity role '" + role + " not found.");
+        catch (ObjectNotFoundException ex) {
+            Logger.warning("Activity.pushJobsToAgents() - Activity role '" + role + "' not found.");
         }
     }
 
-    private void pushJobsToAgents(ItemPath itemPath, RolePath role) {
+    /**
+     * 
+     * @param itemPath
+     * @param role RolePath
+     */
+    protected void pushJobsToAgents(ItemPath itemPath, RolePath role) {
         if (role.hasJobList()) new JobPusher(this, itemPath, role).start();
 
+        //Inform child roles as well
         Iterator<Path> childRoles = role.getChildren();
-        while (childRoles.hasNext()) {
-            RolePath childRole = (RolePath) childRoles.next();
-            pushJobsToAgents(itemPath, childRole);
-        }
+
+        while (childRoles.hasNext()) pushJobsToAgents(itemPath, (RolePath) childRoles.next());
     }
 
     /**
