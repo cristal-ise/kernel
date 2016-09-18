@@ -146,10 +146,10 @@ public class StateMachine implements DescriptionObject
 		transitionCodes.clear();
 		isCoherent = true;
 
-		Logger.msg(6, "StateMachine.validate() - name:'"+name+"'");
+		Logger.msg(5, "StateMachine.validate() - name:'"+name+"'");
 		
 		for (State state : states) {
-			Logger.debug(6, "State "+state.id+": "+state.name);
+			Logger.debug(8, "State "+state.id+": "+state.name);
 			stateCodes.put(state.getId(), state);
 		}
 
@@ -159,7 +159,7 @@ public class StateMachine implements DescriptionObject
 			isCoherent = false;
 		
 		for (Transition trans : transitions) {
-			Logger.debug(6, "Transition "+trans.id+": "+trans.name);
+			Logger.debug(8, "Transition "+trans.id+": "+trans.name);
 			transitionCodes.put(trans.getId(), trans);
 			isCoherent = isCoherent && trans.resolveStates(stateCodes);
 		}
