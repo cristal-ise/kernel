@@ -22,12 +22,17 @@ package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.WORKFLOW;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.CREATOR;
+
+import java.io.IOException;
 
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.CollectionDescription;
 import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.collection.Dependency;
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -44,13 +49,15 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+import org.exolab.castor.mapping.MappingException;
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.ValidationException;
 
 public class CreateItemFromDescription extends PredefinedStep {
 
@@ -109,15 +116,16 @@ public class CreateItemFromDescription extends PredefinedStep {
                                 Gateway.getMarshaller().marshall(newProps),
                                 Gateway.getMarshaller().marshall(newWorkflow),
                                 Gateway.getMarshaller().marshall(newColls));
-        } 
-        catch (PersistencyException e) {
-            Logger.error(e);
-            throw e;
-        } 
-        catch (Exception e) {
+        }
+        catch (MarshalException | ValidationException | AccessRightsException | IOException | MappingException e) {
             Logger.error(e);
             Gateway.getLookupManager().delete(newItemPath);
             throw new InvalidDataException("CreateItemFromDescription: Problem initializing new Item. See log: " + e.getMessage());
+        }
+        catch(Exception e) {
+            Logger.error(e);
+            Gateway.getLookupManager().delete(newItemPath);
+            throw e;
         }
 
         // add its domain path
@@ -173,8 +181,8 @@ public class CreateItemFromDescription extends PredefinedStep {
             }
         }
 
-        if (!foundName) props.list.add(new Property(BuiltInItemProperties.NAME, newName, true));
-        props.list.add(new Property(BuiltInItemProperties.CREATOR, agent.getAgentName(), false));
+        if (!foundName) props.list.add(new Property(NAME, newName, true));
+        props.list.add(new Property(CREATOR, agent.getAgentName(), false));
 
         return props;
     }
