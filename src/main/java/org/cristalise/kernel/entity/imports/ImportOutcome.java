@@ -23,26 +23,25 @@ package org.cristalise.kernel.entity.imports;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.process.Gateway;
 
-
 public class ImportOutcome {
-	public String schema, viewname, path, data;
-	public int version;
-	
-	public ImportOutcome() {
-	}
-	
-	public ImportOutcome(String schema, int version, String viewname, String path) {
-		super();
-		this.schema = schema;
-		this.version = version;
-		this.viewname = viewname;
-		this.path = path;
-	}
-	
-	public String getData(String ns) throws ObjectNotFoundException {
-		if (data == null)
-			data = Gateway.getResource().getTextResource(ns, path);
-		return data;
-	}
+    
+    public String schema;
+    public String viewname;
+    public String path;
+    public String data;
+    public int    version;
 
+    public ImportOutcome() {}
+
+    public ImportOutcome(String schema, int version, String viewname, String path) {
+        super();
+        this.schema = schema;
+        this.version = version;
+        this.viewname = viewname;
+        this.path = path;
+    }
+
+    public String getData(String ns) throws ObjectNotFoundException {
+        return (data != null) ? data : Gateway.getResource().getTextResource(ns, path);
+    }
 }

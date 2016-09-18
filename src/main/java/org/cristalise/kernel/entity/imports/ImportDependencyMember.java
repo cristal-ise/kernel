@@ -25,17 +25,13 @@ import org.cristalise.kernel.utils.KeyValuePair;
 
 public class ImportDependencyMember {
 
-
-    public String itemPath;
+    public String        itemPath;
     public CastorHashMap props  = new CastorHashMap();
 
-    public ImportDependencyMember() {
-        super();
-    }
+    public ImportDependencyMember() {}
 
     public ImportDependencyMember(String itemPath) {
         this.itemPath = itemPath;
-
     }
 
     public KeyValuePair[] getKeyValuePairs() {
@@ -43,6 +39,6 @@ public class ImportDependencyMember {
     }
 
     public void setKeyValuePairs(KeyValuePair[] pairs) {
-    	props.setKeyValuePairs(pairs);
+        props.setKeyValuePairs(pairs);
     }
 }

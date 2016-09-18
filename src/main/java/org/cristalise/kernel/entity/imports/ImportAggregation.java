@@ -36,17 +36,14 @@ import org.cristalise.kernel.property.PropertyDescription;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
 
-
 public class ImportAggregation {
 
-    public boolean isDescription;
-    public Integer version;
+    public String                             name;
+    public Integer                            version;
+    public boolean                            isDescription;
     public ArrayList<ImportAggregationMember> aggregationMemberList = new ArrayList<ImportAggregationMember>();
-    public String name;
 
-    public ImportAggregation() {
-        super();
-    }
+    public ImportAggregation() {}
 
     public ImportAggregation(String name, boolean isDescription) {
         this();
@@ -54,37 +51,46 @@ public class ImportAggregation {
         this.isDescription = isDescription;
     }
 
-	public org.cristalise.kernel.collection.Aggregation create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
-        Aggregation newAgg = isDescription?new AggregationDescription(name):new AggregationInstance(name);
-        if (version!= null) newAgg.setVersion(version);
+    public org.cristalise.kernel.collection.Aggregation create()
+            throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException
+    {
+        Aggregation newAgg = isDescription ? new AggregationDescription(name) : new AggregationInstance(name);
+        if (version != null) newAgg.setVersion(version);
+
         for (ImportAggregationMember thisMem : aggregationMemberList) {
             StringBuffer classProps = new StringBuffer();
-            if (thisMem.itemDescriptionPath != null && thisMem.itemDescriptionPath.length()>0) {
-            	ItemPath itemPath;
-            	try {
-            		itemPath = new ItemPath(thisMem.itemDescriptionPath);
-            	} catch (InvalidItemPathException ex) {
-            		itemPath = new DomainPath(thisMem.itemDescriptionPath).getItemPath();
-            	}
-            	
-            	 String descVer = thisMem.itemDescriptionVersion==null?"last":thisMem.itemDescriptionVersion;
-                 PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
-                 for (PropertyDescription pd : propList.list) {
-					thisMem.props.put(pd.getName(), pd.getDefaultValue());
-					if (pd.getIsClassIdentifier())
-						classProps.append((classProps.length()>0?",":"")).append(pd.getName());
-				}
-             }
+
             ItemPath itemPath = null;
-        	if (thisMem.itemPath != null && thisMem.itemPath.length()>0) {
-        		
-            	try {
-            		itemPath = new ItemPath(thisMem.itemPath);
-            	} catch (InvalidItemPathException ex) {
-            		itemPath = new DomainPath(thisMem.itemPath).getItemPath();
-            	}
-        	}
-        	newAgg.addMember(itemPath, thisMem.props, classProps.toString(), new GraphPoint(thisMem.geometry.x, thisMem.geometry.y), thisMem.geometry.width, thisMem.geometry.height);
+            if (thisMem.itemDescriptionPath != null && thisMem.itemDescriptionPath.length() > 0) {
+                try {
+                    itemPath = new ItemPath(thisMem.itemDescriptionPath);
+                }
+                catch (InvalidItemPathException ex) {
+                    itemPath = new DomainPath(thisMem.itemDescriptionPath).getItemPath();
+                }
+
+                String descVer = thisMem.itemDescriptionVersion == null ? "last" : thisMem.itemDescriptionVersion;
+
+                PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
+
+                for (PropertyDescription pd : propList.list) {
+                    thisMem.props.put(pd.getName(), pd.getDefaultValue());
+
+                    if (pd.getIsClassIdentifier()) classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
+                }
+            }
+            
+            if (thisMem.itemPath != null && thisMem.itemPath.length() > 0) {
+                try {
+                    itemPath = new ItemPath(thisMem.itemPath);
+                }
+                catch (InvalidItemPathException ex) {
+                    itemPath = new DomainPath(thisMem.itemPath).getItemPath();
+                }
+            }
+            newAgg.addMember(itemPath, thisMem.props, classProps.toString(), 
+                            new GraphPoint(thisMem.geometry.x, thisMem.geometry.y),
+                            thisMem.geometry.width, thisMem.geometry.height);
         }
         return newAgg;
     }

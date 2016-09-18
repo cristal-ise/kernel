@@ -40,12 +40,15 @@ import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public class ImportAgent extends ModuleImport {
 
-    private String password;
-	private ArrayList<Property> properties  = new ArrayList<Property>();
-    private ArrayList<String> roles = new ArrayList<String>();
+    private String              password;
+    private ArrayList<Property> properties = new ArrayList<Property>();
+    private ArrayList<String>   roles      = new ArrayList<String>();
 
     public ImportAgent() {
     }
@@ -56,28 +59,34 @@ public class ImportAgent extends ModuleImport {
     }
 
     @Override
-	public Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
+    public Path create(AgentPath agentPath, boolean reset)
+            throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException
+    {
         AgentPath newAgent = new AgentPath(getItemPath(), name);
         newAgent.setPassword(password);
         ActiveEntity newAgentEnt = Gateway.getCorbaServer().createAgent(newAgent);
         Gateway.getLookupManager().add(newAgent);
+
         // assemble properties
         properties.add(new Property(NAME, name, true));
         properties.add(new Property(TYPE, "Agent", false));
+
         try {
             newAgentEnt.initialise(agentPath.getSystemKey(), Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), null, null);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.error(ex);
             throw new CannotManageException("Error initialising new agent");
         }
-        
+
         if (roles.isEmpty()) roles.add("");
         for (String role : roles) {
             RolePath thisRole;
             try {
                 thisRole = Gateway.getLookup().getRolePath(role);
-            } catch (ObjectNotFoundException ex) {
-                throw new ObjectNotFoundException("Role "+role+" does not exist.");
+            }
+            catch (ObjectNotFoundException ex) {
+                throw new ObjectNotFoundException("Role " + role + " does not exist.");
             }
             Gateway.getLookupManager().addRole(newAgent, thisRole);
         }
@@ -87,38 +96,14 @@ public class ImportAgent extends ModuleImport {
     @Override
     public ItemPath getItemPath() {
         if (itemPath == null) { // try to find agent if it already exists
-        	try {
-        		AgentPath existAgent = Gateway.getLookup().getAgentPath(name);
-        		itemPath = existAgent;
-        	} catch (ObjectNotFoundException ex) {
-        		itemPath = new AgentPath(new ItemPath(), name);
-        	}
+            try {
+                AgentPath existAgent = Gateway.getLookup().getAgentPath(name);
+                itemPath = existAgent;
+            }
+            catch (ObjectNotFoundException ex) {
+                itemPath = new AgentPath(new ItemPath(), name);
+            }
         }
         return itemPath;
     }
-    
-    public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public ArrayList<String> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(ArrayList<String> roles) {
-		this.roles = roles;
-	}
-
-	public ArrayList<Property> getProperties() {
-		return properties;
-	}
-
-	public void setProperties(ArrayList<Property> properties) {
-		this.properties = properties;
-	}
-
 }

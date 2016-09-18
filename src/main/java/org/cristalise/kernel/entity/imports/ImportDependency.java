@@ -37,20 +37,17 @@ import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
 
-
 public class ImportDependency {
 
-    public String name;
-    public Integer version;
-    public boolean isDescription;
-    public String itemDescriptionPath;
-    public String itemDescriptionVersion = null;
-    public ArrayList<ImportDependencyMember> dependencyMemberList = new ArrayList<ImportDependencyMember>();
-    public CastorHashMap props = new CastorHashMap();
+    public String                            name;
+    public Integer                           version;
+    public boolean                           isDescription;
+    public String                            itemDescriptionPath;
+    public String                            itemDescriptionVersion = null;
+    public ArrayList<ImportDependencyMember> dependencyMemberList   = new ArrayList<ImportDependencyMember>();
+    public CastorHashMap                     props                  = new CastorHashMap();
 
-    public ImportDependency() {
-        super();
-    }
+    public ImportDependency() {}
 
     public ImportDependency(BuiltInCollections collection) {
         this(collection.getName());
@@ -66,43 +63,44 @@ public class ImportDependency {
     }
 
     public void setKeyValuePairs(KeyValuePair[] pairs) {
-    	props.setKeyValuePairs(pairs);
+        props.setKeyValuePairs(pairs);
     }
 
-	/**
+    /**
      * @return Dependency
-	 * @throws ObjectAlreadyExistsException 
+     * @throws ObjectAlreadyExistsException
      */
     public Dependency create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
-        Dependency newDep = isDescription?new DependencyDescription(name):new Dependency(name);
-        if (version!= null) newDep.setVersion(version);
-        if (itemDescriptionPath != null && itemDescriptionPath.length()>0) {
-      		ItemPath itemPath;
-           	try {
-           		itemPath = new ItemPath(itemDescriptionPath);
-           	} catch (InvalidItemPathException ex) {
-           		itemPath = new DomainPath(itemDescriptionPath).getItemPath();
-           	}
-        	String descVer = itemDescriptionVersion==null?"last":itemDescriptionVersion;
-        	PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
+        Dependency newDep = isDescription ? new DependencyDescription(name) : new Dependency(name);
+        if (version != null) newDep.setVersion(version);
+        if (itemDescriptionPath != null && itemDescriptionPath.length() > 0) {
+            ItemPath itemPath;
+            try {
+                itemPath = new ItemPath(itemDescriptionPath);
+            }
+            catch (InvalidItemPathException ex) {
+                itemPath = new DomainPath(itemDescriptionPath).getItemPath();
+            }
+            String descVer = itemDescriptionVersion == null ? "last" : itemDescriptionVersion;
+            PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
             StringBuffer classProps = new StringBuffer();
-             for (PropertyDescription pd : propList.list) {
-				props.put(pd.getName(), pd.getDefaultValue());
-				if (pd.getIsClassIdentifier())
-					classProps.append((classProps.length()>0?",":"")).append(pd.getName());
-			}
-             newDep.setProperties(props);
-             newDep.setClassProps(classProps.toString());
+            for (PropertyDescription pd : propList.list) {
+                props.put(pd.getName(), pd.getDefaultValue());
+                if (pd.getIsClassIdentifier()) classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
+            }
+            newDep.setProperties(props);
+            newDep.setClassProps(classProps.toString());
         }
 
         for (ImportDependencyMember thisMem : dependencyMemberList) {
-        	ItemPath itemPath;
-        	try {
-        		itemPath = new ItemPath(thisMem.itemPath);
-        	} catch (InvalidItemPathException ex) {
-        		itemPath = new DomainPath(thisMem.itemPath).getItemPath();
-        	}
-        	
+            ItemPath itemPath;
+            try {
+                itemPath = new ItemPath(thisMem.itemPath);
+            }
+            catch (InvalidItemPathException ex) {
+                itemPath = new DomainPath(thisMem.itemPath).getItemPath();
+            }
+
             org.cristalise.kernel.collection.DependencyMember newDepMem = newDep.addMember(itemPath);
             newDepMem.getProperties().putAll(thisMem.props);
         }

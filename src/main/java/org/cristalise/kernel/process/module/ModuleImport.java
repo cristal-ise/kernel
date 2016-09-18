@@ -20,77 +20,56 @@
  */
 package org.cristalise.kernel.process.module;
 
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public abstract class ModuleImport {
-	
-	protected String ns;
-	protected String name;
-	protected DomainPath domainPath;
-	protected ItemPath itemPath;
-	
-	public ModuleImport() {
-	}
-    
-	public abstract Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException,
-			ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification, InvalidDataException;
-	
-    public void setID( String uuid ) throws InvalidItemPathException 
-    {
-    	if (uuid != null && uuid.length() > 0) itemPath = new ItemPath(uuid);
+
+    protected String     ns;
+    protected String     name;
+    protected DomainPath domainPath;
+    protected ItemPath   itemPath;
+
+    public ModuleImport() {}
+
+    public abstract Path create(AgentPath agentPath, boolean reset)
+            throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException,
+                   InvalidCollectionModification, InvalidDataException, AccessRightsException, PersistencyException;
+
+    public void setID(String uuid) throws InvalidItemPathException {
+        if (uuid != null && uuid.length() > 0) itemPath = new ItemPath(uuid);
     }
-    
+
     public String getID() {
-    	return itemPath==null?null:itemPath.getUUID().toString();
+        return itemPath == null ? null : itemPath.getUUID().toString();
     }
-    
-	public String getName() {
-		return name;
-	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setNamespace(String ns) {
+        this.ns = ns;
+    }
 
-	public void setNamespace(String ns) {
-		this.ns = ns;
-	}
-	
-	public String getNamespace() {
-		return ns;
-	}
-	
-	public DomainPath getDomainPath() {
-		return domainPath;
-	}
+    public String getNamespace() {
+        return ns;
+    }
 
-	public void setDomainPath(DomainPath domainPath) {
-		this.domainPath = domainPath;
-	}
-
-	public ItemPath getItemPath() {
-		return itemPath;
-	}
-
-	public void setItemPath(ItemPath itemPath) {
-		this.itemPath = itemPath;
-	}
-	
-	@Override
-	public int hashCode() {
-		return name.hashCode()+(ns == null?0:ns.hashCode());
-	}
-
+    @Override
+    public int hashCode() {
+        return name.hashCode() + (ns == null ? 0 : ns.hashCode());
+    }
 
 }

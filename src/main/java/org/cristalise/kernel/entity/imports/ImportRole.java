@@ -30,29 +30,28 @@ import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.ModuleImport;
 
-
 public class ImportRole extends ModuleImport {
 
-	public boolean jobList;
-	
-	public ImportRole() {}
-	
-	@Override
-	public Path create(AgentPath agentPath, boolean reset) 
-	        throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException
-	{
-		RolePath newRolePath = new RolePath(name.split("/"), jobList);
+    public boolean jobList;
 
-		//checks if parent exists
-		newRolePath.getParent();
+    public ImportRole() {}
 
-		//checks if Role already exists
-		Gateway.getLookupManager().createRole(newRolePath);
+    @Override
+    public Path create(AgentPath agentPath, boolean reset)
+            throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException
+    {
+        RolePath newRolePath = new RolePath(name.split("/"), jobList);
 
-		return newRolePath;
-	}
+        // checks if parent exists
+        newRolePath.getParent();
 
-	public boolean hasJobList() {
-		return jobList;
-	}
+        // checks if Role already exists
+        Gateway.getLookupManager().createRole(newRolePath);
+
+        return newRolePath;
+    }
+
+    public boolean hasJobList() {
+        return jobList;
+    }
 }
