@@ -55,301 +55,268 @@ import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class ItemImplementation implements ItemOperations {
-	
-	protected final TransactionManager          mStorage;
-	protected final ItemPath                    mItemPath;
-	
-	protected ItemImplementation(ItemPath key) {
-		this.mStorage = Gateway.getStorage();
-		this.mItemPath = key;
-	}
-	
-	@Override
-	public SystemKey getSystemKey() {
-		return mItemPath.getSystemKey();
-	}
-	
-	public UUID getUUID() {
-		return mItemPath.getUUID();
-	}
 
-	@Override
-	public void initialise(SystemKey agentId, String propString, String initWfString,
-			String initCollsString) throws AccessRightsException,
-			InvalidDataException, PersistencyException 
-	{
-        Logger.msg(5, "Item::initialise("+mItemPath+") - agent:"+agentId);
-		Object locker = new Object();
-		
-		AgentPath agentPath;
-		try {
-			agentPath = new AgentPath(agentId);
-		} catch (InvalidItemPathException e) {
-			throw new AccessRightsException("Invalid Agent Id:" + agentId);
-		}
+    protected final TransactionManager mStorage;
+    protected final ItemPath           mItemPath;
 
-		// must supply properties
-		if (propString == null || propString.length() == 0) {
-			throw new InvalidDataException("No properties supplied");
-		}
+    protected ItemImplementation(ItemPath key) {
+        this.mStorage = Gateway.getStorage();
+        this.mItemPath = key;
+    }
 
-		// store properties
-		try {
-			PropertyArrayList props = (PropertyArrayList) Gateway
-					.getMarshaller().unmarshall(propString);
-			for (Property thisProp : props.list)
-				mStorage.put(mItemPath, thisProp, locker);
-		} catch (Throwable ex) {
-			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
-					+ ") - Properties were invalid: " + propString);
-			Logger.error(ex);
-			mStorage.abort(locker);
-			throw new InvalidDataException("Properties were invalid");
-		}
+    @Override
+    public SystemKey getSystemKey() {
+        return mItemPath.getSystemKey();
+    }
 
-		// Store an event and the initial properties
-		try {
-			Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
-			Outcome initOutcome = new Outcome(0, propString, initSchema);
-	        History hist = new History(mItemPath, locker);
-	        Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", initSchema, 
-	        		Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
-	        initOutcome.setID(newEvent.getID());
-	        Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
-	        Gateway.getStorage().put(mItemPath, initOutcome, locker);
-	        Gateway.getStorage().put(mItemPath, newLastView, locker);
-		} catch (Throwable ex) {
-			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
-					+ ") - Could not store event and outcome.");
-			Logger.error(ex);
-			mStorage.abort(locker);
-			throw new PersistencyException("Error storing event and outcome");
-		}
+    public UUID getUUID() {
+        return mItemPath.getUUID();
+    }
 
-		// init collections
-		if (initCollsString != null && initCollsString.length() > 0) {
-			try {
-				CollectionArrayList colls = (CollectionArrayList) Gateway
-						.getMarshaller().unmarshall(initCollsString);
-				for (Collection<?> thisColl : colls.list) {
-					mStorage.put(mItemPath, thisColl, locker);
-				}
-			} catch (Throwable ex) {
-				Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
-						+ ") - Collections were invalid: "
-						+ initCollsString);
-				Logger.error(ex);
-				mStorage.abort(locker);
-				throw new InvalidDataException("Collections were invalid");
-			}
-		}
-		
-		// create wf
-		Workflow lc = null;
-		try {
-			if (initWfString == null || initWfString.length() == 0)
-				lc = new Workflow(new CompositeActivity(), getNewPredefStepContainer());
-			else
-				lc = new Workflow((CompositeActivity) Gateway
-						.getMarshaller().unmarshall(initWfString), getNewPredefStepContainer());
-			mStorage.put(mItemPath, lc, locker);
-		} catch (Throwable ex) {
-			Logger.msg(8, "ItemImplementation::initialise(" + mItemPath
-					+ ") - Workflow was invalid: " + initWfString);
-			Logger.error(ex);
-			mStorage.abort(locker);
-			throw new InvalidDataException("Workflow was invalid");
-		}
-		
-		// All objects are in place, initialize the workflow to get the Item running
-		lc.initialise(mItemPath, agentPath, locker);
-		mStorage.put(mItemPath, lc, locker);
+    @Override
+    public void initialise(SystemKey agentId, String propString, String initWfString, String initCollsString)
+            throws AccessRightsException, InvalidDataException, PersistencyException
+    {
+        Logger.msg(5, "Item::initialise(" + mItemPath + ") - agent:" + agentId);
+        Object locker = new Object();
 
-		mStorage.commit(locker);
+        AgentPath agentPath;
+        try {
+            agentPath = new AgentPath(agentId);
+        }
+        catch (InvalidItemPathException e) {
+            throw new AccessRightsException("Invalid Agent Id:" + agentId);
+        }
 
-		Logger.msg(3, "Initialisation of item " + mItemPath
-				+ " was successful");
-	}
+        // must supply properties
+        if (propString == null || propString.length() == 0) {
+            throw new InvalidDataException("No properties supplied");
+        }
 
+        // store properties
+        try {
+            PropertyArrayList props = (PropertyArrayList) Gateway.getMarshaller().unmarshall(propString);
+            for (Property thisProp : props.list) mStorage.put(mItemPath, thisProp, locker);
+        }
+        catch (Throwable ex) {
+            Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Properties were invalid: " + propString);
+            Logger.error(ex);
+            mStorage.abort(locker);
+            throw new InvalidDataException("Properties were invalid");
+        }
 
-	protected PredefinedStepContainer getNewPredefStepContainer() {
-		
-		return new ItemPredefinedStepContainer();
-	}
-	
-	@Override
-	public String requestAction(SystemKey agentId, String stepPath, int transitionID,
-			String requestData) throws AccessRightsException,
-			InvalidTransitionException, ObjectNotFoundException,
-			InvalidDataException, PersistencyException,
-			ObjectAlreadyExistsException, InvalidCollectionModification {
+        // Store an event and the initial properties
+        try {
+            Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
+            Outcome initOutcome = new Outcome(0, propString, initSchema);
+            History hist = new History(mItemPath, locker);
+            Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", initSchema, Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
+            initOutcome.setID(newEvent.getID());
+            Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
+            Gateway.getStorage().put(mItemPath, initOutcome, locker);
+            Gateway.getStorage().put(mItemPath, newLastView, locker);
+        }
+        catch (Throwable ex) {
+            Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
+            Logger.error(ex);
+            mStorage.abort(locker);
+            throw new PersistencyException("Error storing event and outcome");
+        }
 
-		return delegatedAction(agentId, null, stepPath, transitionID, requestData);
-	}
-	
-	@Override
-	public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID,
-			String requestData) throws AccessRightsException,
-			InvalidTransitionException, ObjectNotFoundException,
-			InvalidDataException, PersistencyException,
-			ObjectAlreadyExistsException, InvalidCollectionModification {
+        // init collections
+        if (initCollsString != null && initCollsString.length() > 0) {
+            try {
+                CollectionArrayList colls = (CollectionArrayList) Gateway.getMarshaller().unmarshall(initCollsString);
+                for (Collection<?> thisColl : colls.list) {
+                    mStorage.put(mItemPath, thisColl, locker);
+                }
+            }
+            catch (Throwable ex) {
+                Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Collections were invalid: " + initCollsString);
+                Logger.error(ex);
+                mStorage.abort(locker);
+                throw new InvalidDataException("Collections were invalid");
+            }
+        }
 
-		try {
-			
-			AgentPath agent = new AgentPath(agentId);
-			AgentPath delegate = null;
-			if (delegateId != null)
-				delegate = new AgentPath(delegateId);
-			Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition "
-					+ transitionID + " on " + stepPath + " by " + (delegate==null?"":delegate+" on behalf of ")  + agent );				
+        // create wf
+        Workflow lc = null;
+        try {
+            if (initWfString == null || initWfString.length() == 0) {
+                lc = new Workflow(new CompositeActivity(), getNewPredefStepContainer());
+            }
+            else{
+                lc = new Workflow((CompositeActivity) Gateway.getMarshaller().unmarshall(initWfString), getNewPredefStepContainer());
+            }
 
-			//TODO: check if delegate is allowed valid for agent
-			
-			Workflow lifeCycle = (Workflow) mStorage.get(mItemPath,
-					ClusterStorage.LIFECYCLE + "/workflow", null);
+            mStorage.put(mItemPath, lc, locker);
+        }
+        catch (Throwable ex) {
+            Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Workflow was invalid: " + initWfString);
+            Logger.error(ex);
+            mStorage.abort(locker);
+            throw new InvalidDataException("Workflow was invalid");
+        }
 
-			String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath,
-					transitionID, requestData);
+        // All objects are in place, initialize the workflow to get the Item running
+        lc.initialise(mItemPath, agentPath, locker);
+        mStorage.put(mItemPath, lc, locker);
+        mStorage.commit(locker);
 
-			// store the workflow if we've changed the state of the domain
-			// wf
-			if (!(stepPath.startsWith("workflow/predefined")))
-				mStorage.put(mItemPath, lifeCycle, null);
-			//remove entity path if transaction was successful
-			if (stepPath.equals("workflow/predefined/Erase")) { 
-				Logger.msg("Erasing item path "+mItemPath.toString());
-		        Gateway.getLookupManager().delete(mItemPath);
-			}
+        Logger.msg(3, "Initialisation of item " + mItemPath + " was successful");
+    }
 
-			return finalOutcome;
-			// Normal operation exceptions
-		} catch (AccessRightsException ex) {
-			Logger.msg("Propagating AccessRightsException back to the calling agent: "+ex.getMessage());
-			throw ex;
-		} catch (InvalidTransitionException ex) {
-			Logger.msg("Propagating InvalidTransitionException back to the calling agent: "+ex.getMessage());
-			throw ex;
-		} catch (ObjectNotFoundException ex) {
-			Logger.msg("Propagating ObjectNotFoundException back to the calling agent: "+ex.getMessage());
-			throw ex;
-			// errors
-		} catch (InvalidItemPathException ex) {
-			throw new AccessRightsException("Invalid Agent Id: " + agentId);
-		} catch (InvalidDataException ex) {
-			Logger.msg("Propagating InvalidDataException back to the calling agent: "+ex.getMessage());
-			throw ex;
-		} catch (ObjectAlreadyExistsException ex) {
-			Logger.msg("Propagating ObjectAlreadyExistsException back to the calling agent: "+ex.getMessage());
-			throw ex;
-		} catch (InvalidCollectionModification ex) {
-			Logger.msg("Propagating InvalidCollectionModification back to the calling agent: "+ex.getMessage());
-			throw ex;
-		} catch (Throwable ex) { // non-CORBA exception hasn't been caught!
-			Logger.error("Unknown Error: requestAction on " + mItemPath
-					+ " by " + agentId + " executing " + stepPath);
-			Logger.error(ex);
-			throw new InvalidDataException(
-					"Extraordinary Exception during execution:"
-							+ ex.getClass().getName() + " - "
-							+ ex.getMessage());
-		}
-	}
+    protected PredefinedStepContainer getNewPredefStepContainer() {
+        return new ItemPredefinedStepContainer();
+    }
 
-	@Override
-	public String queryLifeCycle(SystemKey agentId, boolean filter)
-			throws AccessRightsException, ObjectNotFoundException,
-			PersistencyException {
-		Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath
-				+ ") - agent: " + agentId);
-		try {
-			AgentPath agent;
-			try {
-				agent = new AgentPath(agentId);
-			} catch (InvalidItemPathException e) {
-				throw new AccessRightsException("Agent " + agentId
-						+ " doesn't exist");
-			}
-			Workflow wf;
-			wf = (Workflow) mStorage.get(mItemPath,
-					ClusterStorage.LIFECYCLE + "/workflow", null);
-			JobArrayList jobBag = new JobArrayList();
-			CompositeActivity domainWf = (CompositeActivity) wf
-					.search("workflow/domain");
-			jobBag.list = filter ? 
-					domainWf.calculateJobs(agent, mItemPath, true) : 
-					domainWf.calculateAllJobs(agent, mItemPath, true);
-			Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath
-					+ ") - Returning " + jobBag.list.size() + " jobs.");
-			try {
-				return Gateway.getMarshaller().marshall(jobBag);
-			} catch (Exception e) {
-				Logger.error(e);
-				throw new PersistencyException("Error marshalling job bag");
-			}
-		} catch (Throwable ex) {
-			Logger.error("ItemImplementation::queryLifeCycle(" + mItemPath
-					+ ") - Unknown error");
-			Logger.error(ex);
-			throw new PersistencyException(
-					"Unknown error querying jobs. Please see server log.");
-		}
-	}
+    @Override
+    public String requestAction(SystemKey agentId, String stepPath, int transitionID, String requestData)
+            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException, 
+                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        return delegatedAction(agentId, null, stepPath, transitionID, requestData);
+    }
 
-	@Override
-	public String queryData(String path) throws AccessRightsException,
-			ObjectNotFoundException, PersistencyException {
+    @Override
+    public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID, String requestData)
+            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
+                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        try {
+            AgentPath agent = new AgentPath(agentId);
+            AgentPath delegate = null;
+            if (delegateId != null) delegate = new AgentPath(delegateId);
+            Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
 
-		String result = "";
+            // TODO: check if delegate is allowed valid for agent
+            Workflow lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
 
-		Logger.msg(1, "ItemImplementation::queryData(" + mItemPath + ") - "
-				+ path);
+            String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData);
 
-		try { // check for cluster contents query
+            // store the workflow if we've changed the state of the domain wf
+            if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, null);
 
-			if (path.endsWith("/all")) {
-				int allPos = path.lastIndexOf("all");
-				String query = path.substring(0, allPos);
-				String[] ids = mStorage.getClusterContents(mItemPath, query);
+            // remove entity path if transaction was successful
+            if (stepPath.equals("workflow/predefined/Erase")) {
+                Logger.msg("Erasing item path " + mItemPath.toString());
+                Gateway.getLookupManager().delete(mItemPath);
+            }
 
-				for (int i = 0; i < ids.length; i++) {
-					result += ids[i];
+            return finalOutcome;
+        }
+        catch (AccessRightsException ex) {
+            Logger.msg("Propagating AccessRightsException back to the calling agent: " + ex.getMessage());
+            throw ex;
+        }
+        catch (InvalidTransitionException ex) {
+            Logger.msg("Propagating InvalidTransitionException back to the calling agent: " + ex.getMessage());
+            throw ex;
+        }
+        catch (ObjectNotFoundException ex) {
+            Logger.msg("Propagating ObjectNotFoundException back to the calling agent: " + ex.getMessage());
+            throw ex;
+            // errors
+        }
+        catch (InvalidItemPathException ex) {
+            throw new AccessRightsException("Invalid Agent Id: " + agentId);
+        }
+        catch (InvalidDataException ex) {
+            Logger.msg("Propagating InvalidDataException back to the calling agent: " + ex.getMessage());
+            throw ex;
+        }
+        catch (ObjectAlreadyExistsException ex) {
+            Logger.msg("Propagating ObjectAlreadyExistsException back to the calling agent: " + ex.getMessage());
+            throw ex;
+        }
+        catch (InvalidCollectionModification ex) {
+            Logger.msg("Propagating InvalidCollectionModification back to the calling agent: " + ex.getMessage());
+            throw ex;
+        }
+        catch (Throwable ex) { // non-CORBA exception hasn't been caught!
+            Logger.error("Unknown Error: requestAction on " + mItemPath + " by " + agentId + " executing " + stepPath);
+            Logger.error(ex);
+            throw new InvalidDataException("Extraordinary Exception during execution:" + ex.getClass().getName() + " - " + ex.getMessage());
+        }
+    }
 
-					if (i != ids.length - 1)
-						result += ",";
-				}
-			}
-			// ****************************************************************
-			else { // retrieve the object instead
-				C2KLocalObject obj = mStorage.get(mItemPath, path, null);
+    @Override
+    public String queryLifeCycle(SystemKey agentId, boolean filter)
+            throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+        Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - agent: " + agentId);
+        try {
+            AgentPath agent;
+            try {
+                agent = new AgentPath(agentId);
+            }
+            catch (InvalidItemPathException e) {
+                throw new AccessRightsException("Agent " + agentId + " doesn't exist");
+            }
+            Workflow wf = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
 
-				// marshall it, or in the case of an outcome get the data.
-				result = Gateway.getMarshaller().marshall(obj);
-			}
-		} catch (ObjectNotFoundException ex) {
-			throw ex;
-		} catch (Throwable ex) {
-			Logger.warning("ItemImplementation::queryData(" + mItemPath
-					+ ") - " + path + " Failed: " + ex.getClass().getName());
-			throw new PersistencyException("Server exception: "
-					+ ex.getClass().getName());
-		}
+            JobArrayList jobBag = new JobArrayList();
+            CompositeActivity domainWf = (CompositeActivity) wf.search("workflow/domain");
+            jobBag.list = filter ? domainWf.calculateJobs(agent, mItemPath, true) : domainWf.calculateAllJobs(agent, mItemPath, true);
+            
+            Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - Returning " + jobBag.list.size() + " jobs.");
+            
+            try {
+                return Gateway.getMarshaller().marshall(jobBag);
+            }
+            catch (Exception e) {
+                Logger.error(e);
+                throw new PersistencyException("Error marshalling job bag");
+            }
+        }
+        catch (Throwable ex) {
+            Logger.error("ItemImplementation::queryLifeCycle(" + mItemPath + ") - Unknown error");
+            Logger.error(ex);
+            throw new PersistencyException("Unknown error querying jobs. Please see server log.");
+        }
+    }
 
-		if (Logger.doLog(9))
-			Logger.msg(9, "ItemImplementation::queryData(" + mItemPath
-					+ ") - result:" + result);
+    @Override
+    public String queryData(String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+        String result = "";
 
-		return result;
-	}
-	
-    /**
-    *
-    */
-   @Override
-	protected void finalize() throws Throwable {
-       Logger.msg(7, "Item "+mItemPath+" reaped");
-       Gateway.getStorage().clearCache(mItemPath, null);
-       super.finalize();
-   }
+        Logger.msg(1, "ItemImplementation::queryData(" + mItemPath + ") - " + path);
+
+        try { // check for cluster contents query
+            if (path.endsWith("/all")) {
+                int allPos = path.lastIndexOf("all");
+                String query = path.substring(0, allPos);
+                String[] ids = mStorage.getClusterContents(mItemPath, query);
+
+                for (int i = 0; i < ids.length; i++) {
+                    result += ids[i];
+
+                    if (i != ids.length - 1) result += ",";
+                }
+            }
+            // ****************************************************************
+            else {
+                // retrieve the object instead marshall it, or in the case of an outcome get the data.
+                result = Gateway.getMarshaller().marshall(mStorage.get(mItemPath, path, null));
+            }
+        }
+        catch (ObjectNotFoundException ex) {
+            throw ex;
+        }
+        catch (Throwable ex) {
+            Logger.warning("ItemImplementation::queryData(" + mItemPath + ") - " + path + " Failed: " + ex.getClass().getName());
+            throw new PersistencyException("Server exception: " + ex.getClass().getName());
+        }
+
+        if (Logger.doLog(9)) Logger.msg(9, "ItemImplementation::queryData(" + mItemPath + ") - result:" + result);
+
+        return result;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Logger.msg(7, "ItemImplementation.finalize() - Reaping " + mItemPath);
+        Gateway.getStorage().clearCache(mItemPath, null);
+        super.finalize();
+    }
 }
