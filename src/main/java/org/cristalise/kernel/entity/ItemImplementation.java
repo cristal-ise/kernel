@@ -90,7 +90,7 @@ public class ItemImplementation implements ItemOperations {
         }
 
         // must supply properties
-        if (propString == null || propString.length() == 0) {
+        if (propString == null || propString.length() == 0 || propString.equals("<NULL/>")) {
             throw new InvalidDataException("No properties supplied");
         }
 
@@ -125,7 +125,7 @@ public class ItemImplementation implements ItemOperations {
         }
 
         // init collections
-        if (initCollsString != null && initCollsString.length() > 0) {
+        if (initCollsString != null && initCollsString.length() > 0 || initCollsString.equals("<NULL/>")) {
             try {
                 CollectionArrayList colls = (CollectionArrayList) Gateway.getMarshaller().unmarshall(initCollsString);
                 for (Collection<?> thisColl : colls.list) {
@@ -143,7 +143,7 @@ public class ItemImplementation implements ItemOperations {
         // create wf
         Workflow lc = null;
         try {
-            if (initWfString == null || initWfString.length() == 0) {
+            if (initWfString == null || initWfString.length() == 0 || initWfString.equals("<NULL/>")) {
                 lc = new Workflow(new CompositeActivity(), getNewPredefStepContainer());
             }
             else{
