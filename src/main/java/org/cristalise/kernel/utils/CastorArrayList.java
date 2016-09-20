@@ -23,9 +23,10 @@ package org.cristalise.kernel.utils;
 import java.util.ArrayList;
 
 /**
- * Wrapper for a root element to an ArrayList. Castor Marshalls arraylists
- * as multiple elements, so this class is needed to provide a root element
- * to stop it crashing.
+ * Wrapper for a root element to an ArrayList. Castor marshalls arraylists as multiple 
+ * elements, so this class is needed to provide a root element to stop it crashing.
+ *
+ * @param <E>
  */
 abstract public class CastorArrayList<E> {
     public ArrayList<E> list;
