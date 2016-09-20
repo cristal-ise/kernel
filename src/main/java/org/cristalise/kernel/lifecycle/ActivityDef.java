@@ -81,7 +81,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     @Override
     public String getItemID() {
-        return itemPath.getUUID().toString();
+        return (itemPath != null) ? itemPath.getUUID().toString() : null;
     }
 
     @Override
