@@ -125,7 +125,7 @@ public class ItemImplementation implements ItemOperations {
         }
 
         // init collections
-        if (initCollsString != null && initCollsString.length() > 0 || initCollsString.equals("<NULL/>")) {
+        if (initCollsString != null && initCollsString.length() > 0 && !initCollsString.equals("<NULL/>")) {
             try {
                 CollectionArrayList colls = (CollectionArrayList) Gateway.getMarshaller().unmarshall(initCollsString);
                 for (Collection<?> thisColl : colls.list) {
