@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
@@ -35,6 +36,28 @@ public class PropertyUtility {
     static public String getValue(ArrayList<PropertyDescription> pdlist, String name) {
         for (PropertyDescription pd : pdlist) {
             if (name.equalsIgnoreCase(pd.getName())) return pd.getDefaultValue();
+        }
+        return null;
+    }
+
+    public static boolean propertyExists(ItemPath itemPath, String propName, Object locker) {
+        try {
+            String[] contents = Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.PROPERTY);
+
+            for (String name: contents) if(name.equals(propName)) return true;
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+        }
+        return false;
+    }
+
+    public static Property getProperty(ItemPath itemPath, String propName, Object locker) throws ObjectNotFoundException {
+        try {
+            return (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+propName, locker);
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
         }
         return null;
     }
