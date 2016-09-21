@@ -249,33 +249,48 @@ public class StateMachine implements DescriptionObject {
         return new CollectionArrayList();
     }
 
-    public Map<Transition, String> getPossibleTransitions(Activity act, AgentPath agent) throws ObjectNotFoundException, InvalidDataException {
+    /**
+     * Calculates the list of Transitions which are enabled and available to this Agent(Role).
+     * A Transition is enabled by default but can be disabled by setting a specific Activity 
+     * property to false. 
+     * 
+     * @param act
+     * @param agent
+     * @return list of Transitions which are enabled and available to this Agent(Role)
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     */
+    public Map<Transition, String> getPossibleTransitions(Activity act, AgentPath agent)
+            throws ObjectNotFoundException, InvalidDataException
+    {
         HashMap<Transition, String> returnList = new HashMap<Transition, String>();
-        State currentState = getState(act.getState());
-        for (Integer transCode : currentState.getPossibleTransitionIds()) {
-            Transition possTrans = currentState.getPossibleTransitions().get(transCode);
 
+        State currentState = getState(act.getState());
+        for (Map.Entry<Integer, Transition> entry : currentState.getPossibleTransitions().entrySet()) {
+            Transition possTrans = entry.getValue();
             try {
-                String role = possTrans.getPerformingRole(act, agent);
-                returnList.put(possTrans, role);
+                if (possTrans.isEnabled(act)) {
+                    String role = possTrans.getPerformingRole(act, agent);
+                    if (role != null && role.length() != 0) returnList.put(possTrans, role);
+                }
             }
             catch (AccessRightsException ex) {
-                if (Logger.doLog(6))
-                    Logger.msg(5, "Transition '" + possTrans + "' not possible for " + agent.getAgentName() + ": " + ex.getMessage());
+                Logger.msg(6, "Transition.getPossibleTransitions() - AccessRightsException trans:"+possTrans.getName()
+                    +" agemt:"+agent.getAgentName()+" : "+ex.getMessage());
             }
         }
         return returnList;
     }
 
     public State traverse(Activity act, Transition transition, AgentPath agent)
-            throws InvalidTransitionException, AccessRightsException, ObjectNotFoundException, InvalidDataException {
+            throws InvalidTransitionException, AccessRightsException, ObjectNotFoundException, InvalidDataException
+    {
         State currentState = getState(act.getState());
         if (transition.originState.equals(currentState)) {
             transition.getPerformingRole(act, agent);
             return transition.targetState;
         }
-        else throw new InvalidTransitionException(
-                "Transition '" + transition.getName() + "' not valid from state '" + currentState.getName() + "'");
+        else throw new InvalidTransitionException("Transition '" + transition.getName() + "' not valid from state '" + currentState.getName() + "'");
 
     }
 
@@ -293,8 +308,7 @@ public class StateMachine implements DescriptionObject {
             Logger.error(e);
             throw new InvalidDataException("Couldn't marshall state machine " + getName());
         }
-        FileStringUtility.string2File(new File(new File(dir, "SM"), getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"),
-                smXML);
+        FileStringUtility.string2File(new File(new File(dir, "SM"), getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), smXML);
         if (imports != null)
             imports.write("<Resource name=\"" + getName() + "\" " + (getItemPath() == null ? "" : "id=\"" + getItemID() + "\" ")
                     + (getVersion() == null ? "" : "version=\"" + getVersion() + "\" ") + "type=\"SM\">boot/SM/" + getName()
