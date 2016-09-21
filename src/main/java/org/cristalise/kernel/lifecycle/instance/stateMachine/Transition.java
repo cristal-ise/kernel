@@ -24,9 +24,11 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.RolePath;
@@ -37,352 +39,345 @@ import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class Transition {
 
-	int id;
-	String name;
-	
-	int originStateId = -1;
-	int targetStateId = -1;
-	State originState;
-	State targetState;
-	String reservation;
-	
-	String enabledProp; // Boolean property that permits this transition e.g. 'Skippable'
-	
-	// activation properties
-	boolean requiresActive = true; // Whether the activity must be active for this transition to be available
-	boolean finishing; // whether the target state is a finishing state;
-	boolean reinitializes = false;
-	
-	// permissions
-	String roleOverride;
-	
-	TransitionOutcome outcome;
-	TransitionScript script;
-	
-	public Transition() {}
-	
-	
-	public Transition(int id, String name) {
-	    this.id = id;
-	    this.name = name;
-	}
+    int    id;
+    String name;
 
-	public Transition(int id, String name, int originStateId, int targetStateId) {
-		this(id, name);
-		this.originStateId = originStateId;
-		this.targetStateId = targetStateId;
-	}
+    int    originStateId = -1;
+    int    targetStateId = -1;
+    State  originState;
+    State  targetState;
+    String reservation;
 
-	public String getName() {
-		return name;
-	}
+    /**
+     * Boolean property that permits this transition e.g.'Skippable'
+     */
+    String enabledProp;
+    /**
+     * Whether the activity must be active for this transition to be available (activation property)
+     */
+    boolean requiresActive = true;
+    /**
+     * Whether the target state is a finishing state (activation property)
+     */
+    boolean finishing;
+    boolean reinitializes  = false;
+    /**
+     * Overrides the permision specified in the Activity
+     */
+    String roleOverride;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    TransitionOutcome outcome;
+    TransitionScript  script;
 
-	public State getOriginState() {
-		return originState;
-	}
+    public Transition() {}
 
-	public void setOriginState(State originState) {
-		this.originState = originState;
-	}
+    public Transition(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
-	public State getTargetState() {
-		return targetState;
-	}
+    public Transition(int id, String name, int originStateId, int targetStateId) {
+        this(id, name);
+        this.originStateId = originStateId;
+        this.targetStateId = targetStateId;
+    }
 
-	public void setTargetState(State targetState) {
-		this.targetState = targetState;
-		finishing = targetState.finished;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getEnabledProp() {
-		return enabledProp;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setEnabledProp(String enabledProp) {
-		this.enabledProp = enabledProp;
-	}
+    public State getOriginState() {
+        return originState;
+    }
 
-	public boolean isRequiresActive() {
-		return requiresActive;
-	}
-	
-	public boolean isFinishing() {
-		return finishing;
-	}
+    public void setOriginState(State originState) {
+        this.originState = originState;
+    }
 
-	public boolean reinitializes() {
-		return reinitializes;
-	}
-	
-	public void setReinitializes(boolean reinit) {
-		if (finishing) throw new RuntimeException("Transition cannot be both reinitializing and finishing");
-		reinitializes = reinit;
-	}
+    public State getTargetState() {
+        return targetState;
+    }
 
-	public void setRequiresActive(boolean requiresActive) {
-		this.requiresActive = requiresActive;
-	}
+    public void setTargetState(State targetState) {
+        this.targetState = targetState;
+        finishing = targetState.finished;
+    }
 
-	public String getRoleOverride() {
-		return roleOverride;
-	}
-	
-	public String getRoleOverride(CastorHashMap actProps) {
-		return resolveValue(roleOverride, actProps);
-	}
+    public String getEnabledProp() {
+        return enabledProp;
+    }
 
-	public void setRoleOverride(String roleOverride) {
-		this.roleOverride = roleOverride;
-	}
+    public void setEnabledProp(String enabledProp) {
+        this.enabledProp = enabledProp;
+    }
 
-	public TransitionOutcome getOutcome() {
-		return outcome;
-	}
+    public boolean isRequiresActive() {
+        return requiresActive;
+    }
 
-	public void setOutcome(TransitionOutcome outcome) {
-		this.outcome = outcome;
-	}
+    public boolean isFinishing() {
+        return finishing;
+    }
 
-	public TransitionScript getScript() {
-		return script;
-	}
+    public boolean reinitializes() {
+        return reinitializes;
+    }
 
-	public void setScript(TransitionScript script) {
-		this.script = script;
-	}
-	
-	public String getReservation() {
-		return reservation;
-	}
+    public void setReinitializes(boolean reinit) {
+        if (finishing) throw new RuntimeException("Transition cannot be both reinitializing and finishing");
+        reinitializes = reinit;
+    }
 
-	public void setReservation(String reservation) {
-		this.reservation = reservation;
-	}
-	
-	protected boolean resolveStates(HashMap<Integer, State> states) {
-		boolean allFound = true;
-		if (states.keySet().contains(originStateId)) {
-			setOriginState(states.get(originStateId));
-			originState.addPossibleTransition(this);
-		}
-		else
-			allFound = false;
+    public void setRequiresActive(boolean requiresActive) {
+        this.requiresActive = requiresActive;
+    }
 
-		if (states.keySet().contains(targetStateId))
-			setTargetState(states.get(targetStateId));
-		else
-			allFound = false;
+    public String getRoleOverride() {
+        return roleOverride;
+    }
 
-		return allFound;
-	}
-	
-	public int getOriginStateId() {
-		return originStateId;
-	}
+    public String getRoleOverride(CastorHashMap actProps) {
+        return resolveValue(roleOverride, actProps);
+    }
 
-	public void setOriginStateId(int originStateId) {
-		this.originStateId = originStateId;
-	}
+    public void setRoleOverride(String roleOverride) {
+        this.roleOverride = roleOverride;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public TransitionOutcome getOutcome() {
+        return outcome;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setOutcome(TransitionOutcome outcome) {
+        this.outcome = outcome;
+    }
 
-	public int getTargetStateId() {
-		return targetStateId;
-	}
+    public TransitionScript getScript() {
+        return script;
+    }
 
-	public void setTargetStateId(int targetStateId) {
-		this.targetStateId = targetStateId;
-	}
-	
-	public String getPerformingRole(Activity act, AgentPath agent) throws ObjectNotFoundException, AccessRightsException {
-		
-		// check available
-		if (!isEnabled(act))
-			throw new AccessRightsException("Transition '"+name+"' is disabled by the '"+enabledProp+"' property.");
-		
-		// check active
-		if (isRequiresActive() && !act.getActive()) 
-			throw new AccessRightsException("Activity must be active to perform this transition");
-		
-		RolePath role = null;
-		String overridingRole = getRoleOverride(act.getProperties());
-		boolean override = overridingRole != null;
-		boolean isOwner = false, isOwned = true;
-		
-		// Check agent name
-		String agentName = act.getCurrentAgentName();
-		if (agentName != null && agentName.length() >0) {
-			if (agent.getAgentName().equals(agentName))
-				isOwner = true;
-		}
-		else isOwned = false;
-		
-		// determine transition role
-		if (override) {
-			role = Gateway.getLookup().getRolePath(overridingRole);
-		}
-		else {
-			String actRole = act.getCurrentAgentRole();
-			if (actRole != null && actRole.length() > 0)
-				role = Gateway.getLookup().getRolePath(actRole);
-		}
-		
-		// Decide the access
-		if (isOwned && !override && !isOwner) 
-			throw new AccessRightsException("Agent '"+agent.getAgentName()
-					+"' cannot perform this transition because the activity '"+act.getName()+"' is currently owned by "+agentName);
-		
-		if (role != null) {
-			if (agent.hasRole(role))
-				return role.getName();
-			else if (agent.hasRole("Admin"))
-				return "Admin";
-			else
-				throw new AccessRightsException("Agent '"+agent.getAgentName()
-						+"' does not hold a suitable role '"+role.getName()+"' for the activity "+act.getName());
-		}
-		else
-			return null;
-	}
-	
-	public String getReservation(Activity act, AgentPath agent) {
-		if (reservation == null || reservation.length() == 0)
-			reservation = targetState.finished?"clear":"set";
-		
-		String reservedAgent = act.getCurrentAgentName();
-		if (reservation.equals("set"))
-			reservedAgent = agent.getAgentName();
-		else if (reservation.equals("clear"))
-			reservedAgent = "";
-		return reservedAgent;
-	}
+    public void setScript(TransitionScript script) {
+        this.script = script;
+    }
 
-	private static String resolveValue(String key, CastorHashMap props) {
-		if (key==null) return null;
-		String result = key;
-		Pattern propField = Pattern.compile("\\$\\{(.+?)\\}");
-		Matcher propMatcher = propField.matcher(result);
-		while (propMatcher.find()) {			
-			String propName = propMatcher.group(1);
-			Object propValue = props.get(propName);
-			String propValString = propValue == null ? "" : propValue.toString();
-			result = result.replace("${"+propName+"}", propValString);
-		}
-		Logger.msg(8, "Transition.resolveValue() - returning key '"+key+"' as '"+result+"'");
-		return result;
-	}
+    public String getReservation() {
+        return reservation;
+    }
 
-	public boolean isEnabled(Activity act) throws ObjectNotFoundException {
-	    
-	    if (enabledProp == null || "".equals(enabledProp)) return true;
+    public void setReservation(String reservation) {
+        this.reservation = reservation;
+    }
 
-		try {
-		    Object propValue = act.evaluateProperty(null, enabledProp, null);
-		    return new Boolean(propValue.toString());
-		}
-		catch (Exception e) {
-			Logger.error(e);
-			throw new ObjectNotFoundException(e.getMessage());
-		}
-	}
+    protected boolean resolveStates(HashMap<Integer, State> states) {
+        boolean allFound = true;
 
-	public boolean hasOutcome(CastorHashMap actProps) {
-		if (outcome == null || actProps == null) return false;
-		String outcomeName = resolveValue(outcome.schemaName, actProps);
-		if (outcomeName == null || outcomeName.length() == 0)
-			return false;
-		String outcomeVersion = resolveValue(outcome.schemaVersion, actProps);
-		if (outcomeVersion == null || outcomeVersion.length() == 0)
-			return false;
-		return true;
-	}
+        if (states.keySet().contains(originStateId)) {
+            setOriginState(states.get(originStateId));
+            originState.addPossibleTransition(this);
+        }
+        else allFound = false;
 
-	public Schema getSchema(CastorHashMap actProps) throws InvalidDataException, ObjectNotFoundException {
-		if (hasOutcome(actProps))
-			try {
-				return LocalObjectLoader.getSchema(resolveValue(outcome.schemaName, actProps), 
-					Integer.parseInt(resolveValue(outcome.schemaVersion, actProps)));
-			} catch (NumberFormatException ex) {
-				throw new InvalidDataException("Bad schema version number: "+outcome.schemaVersion+" ("+resolveValue(outcome.schemaVersion, actProps)+")");
-			}
-		else
-			return null;
-	}
-	
-	public Script getScript(CastorHashMap actProps) throws ObjectNotFoundException, InvalidDataException {
-		if (hasScript(actProps))
-			try {
-				return LocalObjectLoader.getScript(resolveValue(script.scriptName, actProps), 
-						Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
-				} catch (NumberFormatException ex) {
-					throw new InvalidDataException("Bad schema version number: "+outcome.schemaVersion+" ("+resolveValue(outcome.schemaVersion, actProps)+")");
-				}
-		else
-		return null;
-	}
-	
+        if (states.keySet().contains(targetStateId)) setTargetState(states.get(targetStateId));
+        else                                         allFound = false;
+
+        return allFound;
+    }
+
+    public int getOriginStateId() {
+        return originStateId;
+    }
+
+    public void setOriginStateId(int originStateId) {
+        this.originStateId = originStateId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getTargetStateId() {
+        return targetStateId;
+    }
+
+    public void setTargetStateId(int targetStateId) {
+        this.targetStateId = targetStateId;
+    }
+
+    public String getPerformingRole(Activity act, AgentPath agent) throws ObjectNotFoundException, AccessRightsException {
+        // check available
+        if (!isEnabled(act))
+            throw new AccessRightsException("Transition '" + name + "' is disabled by the '" + enabledProp + "' property.");
+
+        // check active
+        if (isRequiresActive() && !act.getActive()) 
+            throw new AccessRightsException("Activity must be active to perform this transition");
+
+        String overridingRole = getRoleOverride(act.getProperties());
+
+        RolePath role = null;
+        boolean override = overridingRole != null;
+        boolean isOwner = false, isOwned = true;
+
+        // Check agent name
+        String agentName = act.getCurrentAgentName();
+        if (!StringUtils.isBlank(agentName) && agent.getAgentName().equals(agentName)) isOwner = true;
+
+        // determine transition role
+        if (override) {
+            role = Gateway.getLookup().getRolePath(overridingRole);
+        }
+        else {
+            String actRole = act.getCurrentAgentRole();
+            if (!StringUtils.isBlank(actRole)) role = Gateway.getLookup().getRolePath(actRole);
+        }
+
+        // Decide the access
+        if (isOwned && !override && !isOwner)
+            throw new AccessRightsException("Agent '"+agent.getAgentName()+"' cannot perform this transition because the activity '"+act.getName()+"' is currently owned by "+agentName);
+
+        if (role != null) {
+            if (agent.hasRole(role))         return role.getName();
+            else if (agent.hasRole("Admin")) return "Admin";
+            else 
+                throw new AccessRightsException("Agent '"+agent.getAgentName()+"' does not hold a suitable role '"+role.getName()+"' for the activity "+act.getName());
+        }
+        else return null;
+    }
+
+    public String getReservation(Activity act, AgentPath agent) {
+        if (StringUtils.isBlank(reservation)) reservation = targetState.finished ? "clear" : "set";
+
+        String reservedAgent = act.getCurrentAgentName();
+
+        if (reservation.equals("set"))        reservedAgent = agent.getAgentName();
+        else if (reservation.equals("clear")) reservedAgent = "";
+
+        return reservedAgent;
+    }
+
+    private static String resolveValue(String key, CastorHashMap props) {
+        if (key == null) return null;
+        String result = key;
+        Pattern propField = Pattern.compile("\\$\\{(.+?)\\}");
+        Matcher propMatcher = propField.matcher(result);
+        while (propMatcher.find()) {
+            String propName = propMatcher.group(1);
+            Object propValue = props.get(propName);
+            String propValString = propValue == null ? "" : propValue.toString();
+            result = result.replace("${" + propName + "}", propValString);
+        }
+        Logger.msg(8, "Transition.resolveValue() - returning key '" + key + "' as '" + result + "'");
+        return result;
+    }
+
+    public boolean isEnabled(Activity act) throws ObjectNotFoundException {
+        if (StringUtils.isBlank(enabledProp)) return true;
+
+        try {
+            Object propValue = act.evaluateProperty(null, enabledProp, null);
+            return new Boolean(propValue.toString());
+        }
+        catch (InvalidDataException | PersistencyException e) {
+            Logger.error(e);
+            throw new ObjectNotFoundException(e.getMessage());
+        }
+    }
+
+    public boolean hasOutcome(CastorHashMap actProps) {
+        if (outcome == null || actProps == null) return false;
+
+        String outcomeName = resolveValue(outcome.schemaName, actProps);
+        if (StringUtils.isBlank(outcomeName)) return false;
+
+        String outcomeVersion = resolveValue(outcome.schemaVersion, actProps);
+        if (StringUtils.isBlank(outcomeVersion)) return false;
+
+        return true;
+    }
+
+    public Schema getSchema(CastorHashMap actProps) throws InvalidDataException, ObjectNotFoundException {
+        if (hasOutcome(actProps)) try {
+            return LocalObjectLoader.getSchema(
+                    resolveValue(outcome.schemaName, actProps),
+                    Integer.parseInt(resolveValue(outcome.schemaVersion, actProps)));
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("Bad schema version number: "+outcome.schemaVersion+" ("+resolveValue(outcome.schemaVersion, actProps)+")");
+        }
+        else return null;
+    }
+
+    public Script getScript(CastorHashMap actProps) throws ObjectNotFoundException, InvalidDataException {
+        if (hasScript(actProps)) {
+            try {
+                return LocalObjectLoader.getScript(
+                        resolveValue(script.scriptName, actProps),
+                        Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
+            }
+            catch (NumberFormatException ex) {
+                throw new InvalidDataException("Bad schema version number: " + outcome.schemaVersion + " (" + resolveValue(outcome.schemaVersion, actProps) + ")");
+            }
+        }
+        else return null;
+    }
+
     @Deprecated
     public String getScriptName(CastorHashMap actProps) {
-   		try {
-			return getScript(actProps).getName();
-		} catch (Exception e) {
-	   		return null;
-		}
-	}
+        try {
+            return getScript(actProps).getName();
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 
     @Deprecated
-	public int getScriptVersion(CastorHashMap actProps) throws InvalidDataException {
-   		try {
-			return getScript(actProps).getVersion();
-		} catch (Exception e) {
-	   		return -1;
-		}
-	}
-	
-	public boolean hasScript(CastorHashMap actProps) {
-		if (script == null || actProps == null) return false;
-		String scriptName = resolveValue(script.scriptName, actProps);
-		if (scriptName == null || scriptName.length() == 0)
-			return false;
-		String scriptVersion = resolveValue(script.scriptVersion, actProps);
-		if (scriptVersion == null || scriptVersion.length() == 0)
-			return false;
-		return true;
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		return result;
-	}
+    public int getScriptVersion(CastorHashMap actProps) throws InvalidDataException {
+        try {
+            return getScript(actProps).getVersion();
+        }
+        catch (Exception e) {
+            return -1;
+        }
+    }
 
+    public boolean hasScript(CastorHashMap actProps) {
+        if (script == null || actProps == null) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Transition other = (Transition) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
+        String scriptName = resolveValue(script.scriptName, actProps);
+        if (StringUtils.isBlank(scriptName)) return false;
+
+        String scriptVersion = resolveValue(script.scriptVersion, actProps);
+        if (StringUtils.isBlank(scriptVersion)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)                  return true;
+        if (other == null)                  return false;
+        if (getClass() != other.getClass()) return false;
+        if (id != ((Transition) other).id)  return false;
+
+        return true;
+    }
 }
