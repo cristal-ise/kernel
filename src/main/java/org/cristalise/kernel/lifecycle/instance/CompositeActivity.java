@@ -297,7 +297,7 @@ public class CompositeActivity extends Activity {
                             }
                         }
                     }
-                    Logger.msg(8, "CompositeActivity.getAutoStart() path:" + getPath() + " trans:" + autoStart.getName());
+                    Logger.msg(8, "CompositeActivity.getAutoStart() path:"+getPath()+" trans:"+((autoStart==null)?"null":autoStart.getName()));
                     return autoStart;
                 }
                 catch (ObjectNotFoundException e) {
