@@ -24,11 +24,9 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.RolePath;
@@ -51,7 +49,8 @@ public class Transition {
     String reservation;
 
     /**
-     * Boolean property that permits this transition e.g.'Skippable'
+     * The name of the Boolean property that enables/disables this transition e.g.'Skippable'.
+     * If no property name is specified the Transition is enabled
      */
     String enabledProp;
     /**
@@ -64,14 +63,15 @@ public class Transition {
     boolean finishing;
     boolean reinitializes  = false;
     /**
-     * Overrides the permision specified in the Activity
+     * Overrides permission dpecified in Activity
      */
     String roleOverride;
 
     TransitionOutcome outcome;
     TransitionScript  script;
 
-    public Transition() {}
+    public Transition() {
+    }
 
     public Transition(int id, String name) {
         this.id = id;
@@ -176,7 +176,7 @@ public class Transition {
 
     protected boolean resolveStates(HashMap<Integer, State> states) {
         boolean allFound = true;
-
+        
         if (states.keySet().contains(originStateId)) {
             setOriginState(states.get(originStateId));
             originState.addPossibleTransition(this);
@@ -184,7 +184,7 @@ public class Transition {
         else allFound = false;
 
         if (states.keySet().contains(targetStateId)) setTargetState(states.get(targetStateId));
-        else                                         allFound = false;
+        else allFound = false;
 
         return allFound;
     }
@@ -222,15 +222,17 @@ public class Transition {
         if (isRequiresActive() && !act.getActive()) 
             throw new AccessRightsException("Activity must be active to perform this transition");
 
-        String overridingRole = getRoleOverride(act.getProperties());
-
         RolePath role = null;
+        String overridingRole = getRoleOverride(act.getProperties());
         boolean override = overridingRole != null;
         boolean isOwner = false, isOwned = true;
 
         // Check agent name
         String agentName = act.getCurrentAgentName();
-        if (!StringUtils.isBlank(agentName) && agent.getAgentName().equals(agentName)) isOwner = true;
+        if (agentName != null && agentName.length() > 0) {
+            if (agent.getAgentName().equals(agentName)) isOwner = true;
+        }
+        else isOwned = false;
 
         // determine transition role
         if (override) {
@@ -238,24 +240,24 @@ public class Transition {
         }
         else {
             String actRole = act.getCurrentAgentRole();
-            if (!StringUtils.isBlank(actRole)) role = Gateway.getLookup().getRolePath(actRole);
+            if (actRole != null && actRole.length() > 0) role = Gateway.getLookup().getRolePath(actRole);
         }
 
         // Decide the access
         if (isOwned && !override && !isOwner)
-            throw new AccessRightsException("Agent '"+agent.getAgentName()+"' cannot perform this transition because the activity '"+act.getName()+"' is currently owned by "+agentName);
+            throw new AccessRightsException("Agent '" + agent.getAgentName() + "' cannot perform this transition because the activity '" + act.getName() + "' is currently owned by " + agentName);
 
         if (role != null) {
             if (agent.hasRole(role))         return role.getName();
             else if (agent.hasRole("Admin")) return "Admin";
             else 
-                throw new AccessRightsException("Agent '"+agent.getAgentName()+"' does not hold a suitable role '"+role.getName()+"' for the activity "+act.getName());
+                throw new AccessRightsException("Agent '" + agent.getAgentName() + "' does not hold a suitable role '" + role.getName() + "' for the activity " + act.getName());
         }
         else return null;
     }
 
     public String getReservation(Activity act, AgentPath agent) {
-        if (StringUtils.isBlank(reservation)) reservation = targetState.finished ? "clear" : "set";
+        if (reservation == null || reservation.length() == 0) reservation = targetState.finished ? "clear" : "set";
 
         String reservedAgent = act.getCurrentAgentName();
 
@@ -267,9 +269,11 @@ public class Transition {
 
     private static String resolveValue(String key, CastorHashMap props) {
         if (key == null) return null;
+
         String result = key;
         Pattern propField = Pattern.compile("\\$\\{(.+?)\\}");
         Matcher propMatcher = propField.matcher(result);
+
         while (propMatcher.find()) {
             String propName = propMatcher.group(1);
             Object propValue = props.get(propName);
@@ -281,13 +285,13 @@ public class Transition {
     }
 
     public boolean isEnabled(Activity act) throws ObjectNotFoundException {
-        if (StringUtils.isBlank(enabledProp)) return true;
+        if (enabledProp == null || "".equals(enabledProp)) return true;
 
         try {
             Object propValue = act.evaluateProperty(null, enabledProp, null);
             return new Boolean(propValue.toString());
         }
-        catch (InvalidDataException | PersistencyException e) {
+        catch (Exception e) {
             Logger.error(e);
             throw new ObjectNotFoundException(e.getMessage());
         }
@@ -297,22 +301,36 @@ public class Transition {
         if (outcome == null || actProps == null) return false;
 
         String outcomeName = resolveValue(outcome.schemaName, actProps);
-        if (StringUtils.isBlank(outcomeName)) return false;
+        if (outcomeName == null || outcomeName.length() == 0) return false;
 
         String outcomeVersion = resolveValue(outcome.schemaVersion, actProps);
-        if (StringUtils.isBlank(outcomeVersion)) return false;
+        if (outcomeVersion == null || outcomeVersion.length() == 0) return false;
+
+        return true;
+    }
+
+    public boolean hasScript(CastorHashMap actProps) {
+        if (script == null || actProps == null) return false;
+
+        String scriptName = resolveValue(script.scriptName, actProps);
+        if (scriptName == null || scriptName.length() == 0) return false;
+
+        String scriptVersion = resolveValue(script.scriptVersion, actProps);
+        if (scriptVersion == null || scriptVersion.length() == 0) return false;
 
         return true;
     }
 
     public Schema getSchema(CastorHashMap actProps) throws InvalidDataException, ObjectNotFoundException {
-        if (hasOutcome(actProps)) try {
-            return LocalObjectLoader.getSchema(
+        if (hasOutcome(actProps)) {
+            try {
+                return LocalObjectLoader.getSchema(
                     resolveValue(outcome.schemaName, actProps),
                     Integer.parseInt(resolveValue(outcome.schemaVersion, actProps)));
-        }
-        catch (NumberFormatException ex) {
-            throw new InvalidDataException("Bad schema version number: "+outcome.schemaVersion+" ("+resolveValue(outcome.schemaVersion, actProps)+")");
+            }
+            catch (NumberFormatException ex) {
+                throw new InvalidDataException("Bad schema version number: " + outcome.schemaVersion + " (" + resolveValue(outcome.schemaVersion, actProps) + ")");
+            }
         }
         else return null;
     }
@@ -321,8 +339,8 @@ public class Transition {
         if (hasScript(actProps)) {
             try {
                 return LocalObjectLoader.getScript(
-                        resolveValue(script.scriptName, actProps),
-                        Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
+                    resolveValue(script.scriptName, actProps),
+                    Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
             }
             catch (NumberFormatException ex) {
                 throw new InvalidDataException("Bad schema version number: " + outcome.schemaVersion + " (" + resolveValue(outcome.schemaVersion, actProps) + ")");
@@ -351,18 +369,6 @@ public class Transition {
         }
     }
 
-    public boolean hasScript(CastorHashMap actProps) {
-        if (script == null || actProps == null) return false;
-
-        String scriptName = resolveValue(script.scriptName, actProps);
-        if (StringUtils.isBlank(scriptName)) return false;
-
-        String scriptVersion = resolveValue(script.scriptVersion, actProps);
-        if (StringUtils.isBlank(scriptVersion)) return false;
-
-        return true;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -376,7 +382,7 @@ public class Transition {
         if (this == other)                  return true;
         if (other == null)                  return false;
         if (getClass() != other.getClass()) return false;
-        if (id != ((Transition) other).id)  return false;
+        if (id != ((Transition)other).id)   return false;
 
         return true;
     }
