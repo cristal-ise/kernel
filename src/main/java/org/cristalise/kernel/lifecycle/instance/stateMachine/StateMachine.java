@@ -112,11 +112,10 @@ public class StateMachine implements DescriptionObject {
     }
 
     /**
-     * Factory method to create a new State for the given name. It does NOT
-     * check whether the name exists or not
+     * Factory method to create a new State for the given name.
+     * It does NOT check whether the name exists or not
      * 
-     * @param name
-     *            the name of the State
+     * @param name the name of the State
      * @return the new State
      */
     public State createState(String name) {
@@ -127,11 +126,10 @@ public class StateMachine implements DescriptionObject {
     }
 
     /**
-     * Factory method to create a new Transition for the given name. It does NOT
-     * check whether the name exists or not
+     * Factory method to create a new Transition for the given name.
+     * It does NOT check whether the name exists or not
      * 
-     * @param name
-     *            the name of the Transition
+     * @param name  the name of the Transition
      * @return the new Transition
      */
     public Transition createTransition(String name) {
@@ -240,8 +238,34 @@ public class StateMachine implements DescriptionObject {
         return transitionCodes.get(transitionID);
     }
 
+    public Transition getTransition(String name) {
+        for (Transition t : transitions) {
+            if (t.getName().equals(name)) return t;
+        }
+        return null;
+    }
+
+    /**
+     * Helper method to get transition ID by name
+     * 
+     * @param name the name of the Transition
+     * @return the integer ID associated with the Transition name. Returns -1 in
+     *         case the name does not exist
+     */
+    public int getTransitionID(String name) {
+        Transition t = getTransition(name);
+        return (t == null) ? -1 : t.getId();
+    }
+
     public State getState(int stateID) {
         return stateCodes.get(stateID);
+    }
+
+    public State getState(String name) {
+        for (State s : states) {
+            if (s.getName().equals(name)) return s;
+        }
+        return null;
     }
 
     @Override
@@ -255,11 +279,12 @@ public class StateMachine implements DescriptionObject {
         HashMap<Transition, String> returnList = new HashMap<Transition, String>();
         State currentState = getState(act.getState());
 
-        for (Integer transCode : currentState.getPossibleTransitionIds()) {
-            Transition possTrans = currentState.getPossibleTransitions().get(transCode);
+        for (Transition possTrans: currentState.getPossibleTransitions().values()) {
             try {
-                String role = possTrans.getPerformingRole(act, agent);
-                returnList.put(possTrans, role);
+                if (possTrans.isEnabled(act)) {
+                    returnList.put(possTrans, possTrans.getPerformingRole(act, agent) );
+                }
+                else Logger.msg(7, "Transition.getPossibleTransitions() - DISABLED trans:"+possTrans+" act:"+act.getName());
             }
             catch (AccessRightsException ex) {
                 Logger.msg(5, "Transition.getPossibleTransitions() - '" + possTrans + "' not possible for " + agent.getAgentName() + ": " + ex.getMessage());
@@ -270,15 +295,15 @@ public class StateMachine implements DescriptionObject {
     }
 
     public State traverse(Activity act, Transition transition, AgentPath agent)
-            throws InvalidTransitionException, AccessRightsException, ObjectNotFoundException, InvalidDataException {
+            throws InvalidTransitionException, AccessRightsException, ObjectNotFoundException, InvalidDataException
+    {
         State currentState = getState(act.getState());
+        
         if (transition.originState.equals(currentState)) {
             transition.getPerformingRole(act, agent);
             return transition.targetState;
         }
-        else throw new InvalidTransitionException(
-                "Transition '" + transition.getName() + "' not valid from state '" + currentState.getName() + "'");
-
+        else throw new InvalidTransitionException("Transition '" + transition.getName() + "' not valid from state '" + currentState.getName() + "'");
     }
 
     public boolean isCoherent() {
@@ -303,19 +328,5 @@ public class StateMachine implements DescriptionObject {
                     + (getVersion() == null ? "" : "version=\"" + getVersion() + "\" ") + "type=\"SM\">boot/SM/" + getName()
                     + (getVersion() == null ? "" : "_" + getVersion()) + ".xml</Resource>\n");
         }
-    }
-
-    /**
-     * Helper method to get transition ID by name
-     * 
-     * @param name the name of the Transition
-     * @return the integer ID associated with the Transition name. Returns -1 in
-     *         case the name does not exist
-     */
-    public int getTransitionID(String name) {
-        for (Transition t : transitions) {
-            if (t.getName().equals(name)) return t.getId();
-        }
-        return -1;
     }
 }
