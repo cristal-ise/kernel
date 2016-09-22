@@ -20,33 +20,20 @@
  */
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public class TransitionScript {
+    /**
+     * Name & version of the script to be run by the agent during this transition
+     */
+    String scriptName, scriptVersion;
 
-	// script properties
-	String scriptName, scriptVersion; // Name & version of the script to be run by the agent during this transition
-	
-	public TransitionScript() {}
-	
+    public TransitionScript() {}
+
     public TransitionScript(String script, String version) {
         scriptName = script;
         scriptVersion = version;
     }
-
-	public String getScriptName() {
-		return scriptName;
-	}
-
-	public void setScriptName(String scriptName) {
-		this.scriptName = scriptName;
-	}
-
-	public String getScriptVersion() {
-		return scriptVersion;
-	}
-
-	public void setScriptVersion(String scriptVersion) {
-		this.scriptVersion = scriptVersion;
-	}
-
 }

@@ -23,17 +23,26 @@ package org.cristalise.kernel.lifecycle.instance.stateMachine;
 import java.util.HashMap;
 import java.util.Set;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class State {
 
-	int id;
-	String name;
-	boolean finished = false; // If true, this state deactivates the current activity and the lifecycle proceeds
+    int     id;
+    String  name;
+    /**
+     * If true, this state deactivates the current activity and the lifecycle/workflow proceeds
+     */
+    boolean finished = false; 
 
-	HashMap<Integer, Transition> possibleTransitions;
+    @Setter(AccessLevel.NONE)
+    HashMap<Integer, Transition> possibleTransitions;
 
-	public State() {
-		possibleTransitions = new HashMap<Integer, Transition>();
-	}
+    public State() {
+        possibleTransitions = new HashMap<Integer, Transition>();
+    }
 
     public State(int id, String name) {
         this();
@@ -41,67 +50,34 @@ public class State {
         this.name = name;
     }
 
-	public String getName() {
-		return name;
-	}
-	
-	@Override
-	public String toString() {
-		return id+": "+name;
-	}
+    protected void addPossibleTransition(Transition possibleTransition) {
+        possibleTransitions.put(possibleTransition.getId(), possibleTransition);
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public Set<Integer> getPossibleTransitionIds() {
+        return possibleTransitions.keySet();
+    }
 
+    @Override
+    public String toString() {
+        return id + ": " + name;
+    }
 
-	public int getId() {
-		return id;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        return result;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)                  return true;
+        if (other == null)                  return false;
+        if (getClass() != other.getClass()) return false;
+        if (id != ((State)other).id)        return false;
 
-	public boolean isFinished() {
-		return finished;
-	}
-
-	public void setFinished(boolean finished) {
-		this.finished = finished;
-	}
-	
-	public HashMap<Integer, Transition> getPossibleTransitions() {
-		return possibleTransitions;
-	}
-
-	protected void addPossibleTransition(Transition possibleTransition) {
-		possibleTransitions.put(possibleTransition.getId(), possibleTransition);
-	}
-
-	public Set<Integer> getPossibleTransitionIds() {
-		return possibleTransitions.keySet();
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		State other = (State) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
+        return true;
+    }
 }

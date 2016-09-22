@@ -20,43 +20,27 @@
  */
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public class TransitionOutcome {
-	
-	// schema properties
-	String schemaName, schemaVersion; // Name & version of the schema of the data required for this transition. 
-	boolean required = true; // If true, then the data must be supplied to perform the transition, otherwise it is optional
-	
-    public TransitionOutcome() {
-    }
+
+    // schema properties
+    /**
+     * Name & version of the schema of the data required for this transition
+     */
+    String  schemaName, schemaVersion;
+    /**
+     * If true, then the data must be supplied to perform the transition,
+     * otherwise it is optional
+     */
+    boolean required = true;
+
+    public TransitionOutcome() {}
 
     public TransitionOutcome(String schema, String version) {
         this.schemaName = schema;
         this.schemaVersion = version;
     }
-
-	public String getSchemaName() {
-		return schemaName;
-	}
-
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
-	}
-
-	public String getSchemaVersion() {
-		return schemaVersion;
-	}
-
-	public void setSchemaVersion(String schemaVersion) {
-		this.schemaVersion = schemaVersion;
-	}
-
-	public boolean isRequired() {
-		return required;
-	}
-
-	public void setRequired(boolean required) {
-		this.required = required;
-	}
-
 }
