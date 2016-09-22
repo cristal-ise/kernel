@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -70,8 +71,7 @@ public class Transition {
     TransitionOutcome outcome;
     TransitionScript  script;
 
-    public Transition() {
-    }
+    public Transition() {}
 
     public Transition(int id, String name) {
         this.id = id;
@@ -229,7 +229,7 @@ public class Transition {
 
         // Check agent name
         String agentName = act.getCurrentAgentName();
-        if (agentName != null && agentName.length() > 0) {
+        if (!StringUtils.isEmpty(agentName)) {
             if (agent.getAgentName().equals(agentName)) isOwner = true;
         }
         else isOwned = false;
@@ -240,7 +240,7 @@ public class Transition {
         }
         else {
             String actRole = act.getCurrentAgentRole();
-            if (actRole != null && actRole.length() > 0) role = Gateway.getLookup().getRolePath(actRole);
+            if (!StringUtils.isEmpty(actRole)) role = Gateway.getLookup().getRolePath(actRole);
         }
 
         // Decide the access
@@ -257,7 +257,7 @@ public class Transition {
     }
 
     public String getReservation(Activity act, AgentPath agent) {
-        if (reservation == null || reservation.length() == 0) reservation = targetState.finished ? "clear" : "set";
+        if (StringUtils.isEmpty(reservation)) reservation = targetState.finished ? "clear" : "set";
 
         String reservedAgent = act.getCurrentAgentName();
 
@@ -268,7 +268,7 @@ public class Transition {
     }
 
     private static String resolveValue(String key, CastorHashMap props) {
-        if (key == null) return null;
+        if (StringUtils.isEmpty(key)) return null;
 
         String result = key;
         Pattern propField = Pattern.compile("\\$\\{(.+?)\\}");
@@ -285,7 +285,7 @@ public class Transition {
     }
 
     public boolean isEnabled(Activity act) throws ObjectNotFoundException {
-        if (enabledProp == null || "".equals(enabledProp)) return true;
+        if (StringUtils.isEmpty(enabledProp)) return true;
 
         try {
             Object propValue = act.evaluateProperty(null, enabledProp, null);
@@ -301,10 +301,10 @@ public class Transition {
         if (outcome == null || actProps == null) return false;
 
         String outcomeName = resolveValue(outcome.schemaName, actProps);
-        if (outcomeName == null || outcomeName.length() == 0) return false;
+        if (StringUtils.isEmpty(outcomeName)) return false;
 
         String outcomeVersion = resolveValue(outcome.schemaVersion, actProps);
-        if (outcomeVersion == null || outcomeVersion.length() == 0) return false;
+        if (StringUtils.isEmpty(outcomeVersion)) return false;
 
         return true;
     }
@@ -313,10 +313,10 @@ public class Transition {
         if (script == null || actProps == null) return false;
 
         String scriptName = resolveValue(script.scriptName, actProps);
-        if (scriptName == null || scriptName.length() == 0) return false;
+        if (StringUtils.isEmpty(scriptName)) return false;
 
         String scriptVersion = resolveValue(script.scriptVersion, actProps);
-        if (scriptVersion == null || scriptVersion.length() == 0) return false;
+        if (StringUtils.isEmpty(scriptVersion)) return false;
 
         return true;
     }
