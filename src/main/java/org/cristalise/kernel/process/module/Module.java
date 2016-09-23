@@ -40,7 +40,6 @@ import org.cristalise.kernel.entity.imports.ImportRole;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.DomainPath;
-import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
@@ -180,23 +179,7 @@ public class Module extends ImportItem {
         for (ImportRole thisRole : imports.getRoles()) {
             if (Bootstrap.shutdown) return;
 
-            RolePath rolePath;
-            try {
-                String roleName = thisRole.name;
-                if (roleName.indexOf('/') > -1) roleName = roleName.substring(roleName.indexOf('/')+1);
-
-                rolePath = Gateway.getLookup().getRolePath(roleName);
-
-                if (rolePath.hasJobList() != thisRole.hasJobList()) {
-                    Logger.msg("Module.importRoles() - Role '"+thisRole.name+"' has incorrect joblist settings. Correcting.");
-                    rolePath.setHasJobList(thisRole.hasJobList());
-                    Gateway.getLookupManager().createRole(rolePath);
-                }
-            }
-            catch (ObjectNotFoundException ex) {
-                Logger.msg("Module.importRoles() - Role '"+thisRole.name+"' not found. Creating.");
-                thisRole.create(systemAgent.getPath(), reset);
-            }
+            thisRole.create(systemAgent.getPath(), reset);
         }
     }
 

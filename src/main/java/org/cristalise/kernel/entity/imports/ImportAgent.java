@@ -85,24 +85,21 @@ public class ImportAgent extends ModuleImport {
         }
 
         for (ImportRole role : roles) {
-            RolePath thisRole;
-            try {
-                thisRole = Gateway.getLookup().getRolePath(role.getName());
-            }
-            catch (ObjectNotFoundException ex) {
-                throw new ObjectNotFoundException("Role " + role + " does not exist.");
-            }
+            RolePath thisRole = (RolePath)role.create(agentPath, reset);
             Gateway.getLookupManager().addRole(newAgent, thisRole);
         }
         return newAgent;
     }
 
+    /**
+     * Sets the ItemPath representing the Agent. Tries to find Agent if it already exists, 
+     * otherwise creates  new ItemPath, i.e. it creates new UUID.
+     */
     @Override
     public ItemPath getItemPath() {
-        if (itemPath == null) { // try to find agent if it already exists
+        if (itemPath == null) {
             try {
-                AgentPath existAgent = Gateway.getLookup().getAgentPath(name);
-                itemPath = existAgent;
+                itemPath = Gateway.getLookup().getAgentPath(name);
             }
             catch (ObjectNotFoundException ex) {
                 itemPath = new AgentPath(new ItemPath(), name);

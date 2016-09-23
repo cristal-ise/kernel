@@ -29,10 +29,11 @@ import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.ModuleImport;
+import org.cristalise.kernel.utils.Logger;
 
 public class ImportRole extends ModuleImport {
 
-    public boolean jobList;
+    public Boolean jobList;
 
     public ImportRole() {}
 
@@ -40,18 +41,28 @@ public class ImportRole extends ModuleImport {
     public Path create(AgentPath agentPath, boolean reset)
             throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException
     {
-        RolePath newRolePath = new RolePath(name.split("/"), jobList);
+        RolePath newRolePath = new RolePath(name.split("/"), (jobList == null) ? false : jobList);
 
-        // checks if parent exists
-        newRolePath.getParent();
+        try {
+            // checks if Role already exists
+            newRolePath = Gateway.getLookup().getRolePath(newRolePath.getName());
 
-        // checks if Role already exists
-        Gateway.getLookupManager().createRole(newRolePath);
+            //If jobList is null it means it was not set in the module.xml, therefore existing Role cannot be updated
+            if (jobList != null && newRolePath.hasJobList() != jobList) {
+                Logger.msg("ImportRole.create() - Updating Role:"+this.name+" joblist:"+jobList);
 
+                newRolePath.setHasJobList(jobList);
+                Gateway.getLookupManager().createRole(newRolePath); //FIXME: throws ObjectAlreadyExistsException?????
+            }
+        }
+        catch (ObjectNotFoundException ex) {
+            Logger.msg("ImportRole.create() - Creating Role:"+name+" joblist:"+jobList);
+
+            // checks if parent exists
+            newRolePath.getParent();
+
+            Gateway.getLookupManager().createRole(newRolePath);
+        }
         return newRolePath;
-    }
-
-    public boolean hasJobList() {
-        return jobList;
     }
 }
