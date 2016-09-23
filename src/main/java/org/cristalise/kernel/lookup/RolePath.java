@@ -22,40 +22,26 @@ package org.cristalise.kernel.lookup;
 
 import java.util.Iterator;
 
-import org.cristalise.kernel.common.CannotManageException;
-import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.process.Gateway;
 
-
-
-
-/**
-* @version $Revision: 1.7 $ $Date: 2005/04/26 06:48:12 $
-* @author  $Author: abranson $
-**/
-public class RolePath extends Path
-{
-    /**
-     *
-     */
-
+public class RolePath extends Path {
     private boolean hasJobList = false;
-    
+
     public RolePath() {
-    	super(Path.CONTEXT);
+        super(Path.CONTEXT);
     }
 
-	public RolePath getParent() throws ObjectNotFoundException {
+    public RolePath getParent() throws ObjectNotFoundException {
         if (mPath.length < 2) return null;
 
-        return Gateway.getLookup().getRolePath(mPath[mPath.length-2]);
-	}
+        return Gateway.getLookup().getRolePath(mPath[mPath.length - 2]);
+    }
 
-	public RolePath(RolePath parent, String roleName) {
+    public RolePath(RolePath parent, String roleName) {
         super(parent, roleName, Path.CONTEXT);
     }
-    
+
     public RolePath(String[] path, boolean jobList) {
         super(path, Path.CONTEXT);
         hasJobList = jobList;
@@ -72,53 +58,44 @@ public class RolePath extends Path
     public boolean hasJobList() {
         return hasJobList;
     }
+
     /**
      * @param hasJobList The hasJobList to set.
-     * @throws ObjectCannotBeUpdated 
-     * @throws ObjectNotFoundException 
-     * @throws CannotManageException 
      */
-    public void setHasJobList(boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
+    public void setHasJobList(boolean hasJobList) {
         this.hasJobList = hasJobList;
     }
-    
+
     public Iterator<Path> getChildren() {
-    	return Gateway.getLookup().getChildren(this);
+        return Gateway.getLookup().getChildren(this);
     }
 
     @Override
-	public String dump() {
+    public String dump() {
         StringBuffer comp = new StringBuffer("Components: { ");
-        for (String element : mPath)
-			comp.append("'").append(element).append("' ");
 
-        return "Path - dump(): "+
-                comp.toString()+
-                "}\n        string="+
-                toString()+
-                "\n        type="+
-                mType+
-                "\n        name="+
-                getName()+
-                "\n        ";
+        for (String element : mPath) comp.append("'").append(element).append("' ");
+
+        return "Path - dump(): " + comp.toString() 
+            + "}\n        string=" + toString()
+            +  "\n        type="   + mType
+            +  "\n        name="   + getName()
+            +  "\n        ";
     }
 
-	@Override
-	public String getRoot() {
-		return "role";
-	}
+    @Override
+    public String getRoot() {
+        return "role";
+    }
 
-	@Override
-	public ItemPath getItemPath() throws ObjectNotFoundException {
-		return null;
-	}
+    @Override
+    public ItemPath getItemPath() throws ObjectNotFoundException {
+        return null;
+    }
 
-	public String getName() {
-		if (mPath.length > 0)
-			return mPath[mPath.length-1];
-		else
-			return "role";
-	}
+    public String getName() {
+        if (mPath.length > 0) return mPath[mPath.length - 1];
+        else                  return "role";
+    }
 
 }
-
