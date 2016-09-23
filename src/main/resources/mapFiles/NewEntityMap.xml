@@ -156,7 +156,7 @@
 		<field name="password" type="string" direct="false">
 			<bind-xml name="password" node="attribute"/>
 		</field>
-		<field name="roles" collection="arraylist" direct="false" type="string">
+		<field name="roles" collection="arraylist" direct="false" type="org.cristalise.kernel.entity.imports.ImportRole">
 			<bind-xml name="Role" node="element"/>
 		</field>
 		<field name="properties" collection="arraylist" direct="false" type="org.cristalise.kernel.property.Property">

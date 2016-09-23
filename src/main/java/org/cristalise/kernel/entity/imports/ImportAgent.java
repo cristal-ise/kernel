@@ -46,12 +46,11 @@ import lombok.Setter;
 @Getter @Setter
 public class ImportAgent extends ModuleImport {
 
-    private String              password;
-    private ArrayList<Property> properties = new ArrayList<Property>();
-    private ArrayList<String>   roles      = new ArrayList<String>();
+    private String                password;
+    private ArrayList<Property>   properties = new ArrayList<Property>();
+    private ArrayList<ImportRole> roles      = new ArrayList<ImportRole>();
 
-    public ImportAgent() {
-    }
+    public ImportAgent() {}
 
     public ImportAgent(String name, String password) {
         this.name = name;
@@ -62,6 +61,8 @@ public class ImportAgent extends ModuleImport {
     public Path create(AgentPath agentPath, boolean reset)
             throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException
     {
+        if (roles.isEmpty()) throw new ObjectNotFoundException("Agent '"+name+"' must declare at least one Role ");
+
         AgentPath newAgent = new AgentPath(getItemPath(), name);
         newAgent.setPassword(password);
         ActiveEntity newAgentEnt = Gateway.getCorbaServer().createAgent(newAgent);
@@ -72,18 +73,21 @@ public class ImportAgent extends ModuleImport {
         properties.add(new Property(TYPE, "Agent", false));
 
         try {
-            newAgentEnt.initialise(agentPath.getSystemKey(), Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), null, null);
+            newAgentEnt.initialise(
+                    agentPath.getSystemKey(), 
+                    Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), 
+                    null, 
+                    null);
         }
         catch (Exception ex) {
             Logger.error(ex);
-            throw new CannotManageException("Error initialising new agent");
+            throw new CannotManageException("Error initialising new agent name:"+name);
         }
 
-        if (roles.isEmpty()) roles.add("");
-        for (String role : roles) {
+        for (ImportRole role : roles) {
             RolePath thisRole;
             try {
-                thisRole = Gateway.getLookup().getRolePath(role);
+                thisRole = Gateway.getLookup().getRolePath(role.getName());
             }
             catch (ObjectNotFoundException ex) {
                 throw new ObjectNotFoundException("Role " + role + " does not exist.");
