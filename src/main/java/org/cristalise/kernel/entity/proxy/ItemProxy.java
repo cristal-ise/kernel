@@ -165,9 +165,10 @@ public class ItemProxy
         String outcome = thisJob.getOutcomeString();
         // check fields that should have been filled in
 
-        if (outcome==null)
+        if (outcome==null) {
             if (thisJob.isOutcomeRequired()) throw new InvalidDataException("Outcome is required.");
             else                             outcome="";
+        }
 
         if (thisJob.getAgentPath() == null) throw new InvalidDataException("No Agent specified.");
 
@@ -175,10 +176,10 @@ public class ItemProxy
 
         if (thisJob.getDelegatePath() == null)
             return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
-                    thisJob.getTransition().getId(), outcome);
+                                            thisJob.getTransition().getId(), outcome);
         else
             return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
-                    thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
+                                             thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
     private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
