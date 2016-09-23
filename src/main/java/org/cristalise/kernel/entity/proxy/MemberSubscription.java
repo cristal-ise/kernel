@@ -92,6 +92,7 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
         catch (Exception ex) {
             observer.control(ERROR, "Query on "+interest+" failed with "+ex.getMessage());
         }
+        Logger.msg(5, "MemberSubscription.loadChildren() -  DONE interest:"+interest);
     }
 
     public boolean isRelevant(String path) {
