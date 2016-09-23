@@ -157,7 +157,7 @@ public class StateMachine implements DescriptionObject {
         Logger.msg(5, "StateMachine.validate() - name:'" + name + "'");
 
         for (State state : states) {
-            Logger.debug(8, "State " + state.id + ": " + state.name);
+            Logger.debug(8, "State     : " + state);
             stateCodes.put(state.getId(), state);
         }
 
@@ -165,7 +165,7 @@ public class StateMachine implements DescriptionObject {
         else isCoherent = false;
 
         for (Transition trans : transitions) {
-            Logger.debug(8, "Transition " + trans.id + ": " + trans.name);
+            Logger.debug(8, "Transition: " + trans);
             transitionCodes.put(trans.getId(), trans);
             isCoherent = isCoherent && trans.resolveStates(stateCodes);
         }
@@ -284,10 +284,10 @@ public class StateMachine implements DescriptionObject {
                 if (possTrans.isEnabled(act)) {
                     returnList.put(possTrans, possTrans.getPerformingRole(act, agent) );
                 }
-                else Logger.msg(7, "Transition.getPossibleTransitions() - DISABLED trans:"+possTrans+" act:"+act.getName());
+                else Logger.msg(7, "StetMachine.getPossibleTransitions() - DISABLED trans:"+possTrans+" act:"+act.getName());
             }
             catch (AccessRightsException ex) {
-                Logger.msg(5, "Transition.getPossibleTransitions() - '" + possTrans + "' not possible for " + agent.getAgentName() + ": " + ex.getMessage());
+                Logger.msg(5, "StetMachine.getPossibleTransitions() - trans:"+possTrans+" not possible for "+agent.getAgentName()+" exception:" + ex.getMessage());
                 if (Logger.doLog(8)) Logger.error(ex);
             }
         }
@@ -303,7 +303,7 @@ public class StateMachine implements DescriptionObject {
             transition.getPerformingRole(act, agent);
             return transition.targetState;
         }
-        else throw new InvalidTransitionException("Transition '" + transition.getName() + "' not valid from state '" + currentState.getName() + "'");
+        else throw new InvalidTransitionException("Transition '" + transition + "' not valid from state '" + currentState.getName() + "'");
     }
 
     public boolean isCoherent() {

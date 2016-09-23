@@ -216,11 +216,11 @@ public class Transition {
     public String getPerformingRole(Activity act, AgentPath agent) throws ObjectNotFoundException, AccessRightsException {
         // check available
         if (!isEnabled(act))
-            throw new AccessRightsException("Transition '" + name + "' is disabled by the '" + enabledProp + "' property.");
+            throw new AccessRightsException("Trans:" + toString() + " is disabled by the '" + enabledProp + "' property.");
 
         // check active
         if (isRequiresActive() && !act.getActive()) 
-            throw new AccessRightsException("Activity must be active to perform this transition");
+            throw new AccessRightsException("Activity must be active to perform trans:"+ toString());
 
         RolePath role = null;
         String overridingRole = getRoleOverride(act.getProperties());
@@ -245,7 +245,7 @@ public class Transition {
 
         // Decide the access
         if (isOwned && !override && !isOwner)
-            throw new AccessRightsException("Agent '" + agent.getAgentName() + "' cannot perform this transition because the activity '" + act.getName() + "' is currently owned by " + agentName);
+            throw new AccessRightsException("Agent '" + agent.getAgentName() + "' cannot perform this trans:"+toString()+" because the activity '" + act.getName() + "' is currently owned by " + agentName);
 
         if (role != null) {
             if (agent.hasRole(role))         return role.getName();
@@ -284,12 +284,24 @@ public class Transition {
         return result;
     }
 
+    /**
+     * Computes if the Transition is enabled or not. The default value is true: if the enabledProp is empty
+     * or the Activity property specified in enabledProp is undefined or its value is null.
+     * 
+     * @param act the activity of the actual StateMachine/Transition
+     * @return weather the Transition is enabled or not
+     * @throws ObjectNotFoundException
+     */
     public boolean isEnabled(Activity act) throws ObjectNotFoundException {
         if (StringUtils.isEmpty(enabledProp)) return true;
 
+        Logger.msg(5, "Transition.isEnabled() - trans:" + getName()+" enabledProp:"+enabledProp);
+
         try {
             Object propValue = act.evaluateProperty(null, enabledProp, null);
-            return new Boolean(propValue.toString());
+
+            if(propValue == null) return true;
+            else                  return new Boolean(propValue.toString());
         }
         catch (Exception e) {
             Logger.error(e);
@@ -368,6 +380,11 @@ public class Transition {
             return -1;
         }
     }
+
+    @Override
+    public String toString() {
+        return getName()+"[id:"+getId()+"]";
+    };
 
     @Override
     public int hashCode() {
