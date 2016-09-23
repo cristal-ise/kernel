@@ -548,31 +548,21 @@ public class Job implements C2KLocalObject
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        
-        if (obj == null) return false;
+    public boolean equals(Object other) {
+        if (this == other)                  return true;
+        if (other == null)                  return false;
+        if (getClass() != other.getClass()) return false;
 
-        if (getClass() != obj.getClass()) return false;
+        Job otherJob = (Job) other;
 
-        Job other = (Job) obj;
-        if (itemPath == null) {
-            if (other.itemPath != null) return false;
-        }
-        else if (!itemPath.equals(other.itemPath))
-            return false;
-        
-        if (stepPath == null) {
-            if (other.stepPath != null) return false;
-        }
-        else if (!stepPath.equals(other.stepPath))
-            return false;
+        if (itemPath == null) if (otherJob.itemPath != null) return false;
+        else if (!itemPath.equals(otherJob.itemPath))        return false;
 
-        if (transition == null) {
-            if (other.transition != null) return false;
-        }
-        else if (!transition.equals(other.transition))
-            return false;
+        if (stepPath == null) if (otherJob.stepPath != null) return false;
+        else if (!stepPath.equals(otherJob.stepPath))        return false;
+
+        if (transition == null) if (otherJob.transition != null) return false;
+        else if (!transition.equals(otherJob.transition))        return false;
 
         return true;
     }
