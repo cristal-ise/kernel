@@ -51,6 +51,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
+import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -59,8 +60,7 @@ import org.cristalise.kernel.utils.Logger;
 /**
  * 
  */
-public class Job implements C2KLocalObject
-{
+public class Job implements C2KLocalObject {
     // Persistent fields
     private int            id;
     private ItemPath       itemPath;
@@ -95,14 +95,14 @@ public class Job implements C2KLocalObject
      * 
      */
     public Job() {
-        setCreationDate(Event.getGMT());
+        setCreationDate(DateUtility.getNow());
         setActProps(new CastorHashMap());
     }
 
     public Job(Activity act, ItemPath itemPath, Transition transition, AgentPath agent, String role)
             throws InvalidDataException, ObjectNotFoundException, InvalidAgentPathException
     {
-        setCreationDate(Event.getGMT());
+        setCreationDate(DateUtility.getNow());
         setItemPath(itemPath);
         setStepPath(act.getPath());
         setTransition(transition);
@@ -649,5 +649,10 @@ public class Job implements C2KLocalObject
         }
 
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "[item:"+itemPath+" step:"+stepName+" trans:"+getTransition().getName()+" role:"+agentRole+"]";
     }
 }
