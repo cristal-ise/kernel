@@ -23,202 +23,131 @@ package org.cristalise.kernel.events;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
-import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.RemoteMap;
 import org.cristalise.kernel.persistency.outcome.Schema;
-import org.cristalise.kernel.utils.Logger;
 
-
+/**
+ * The History is an instance of {@link org.cristalise.kernel.persistency.RemoteMap} 
+ * which provides a live view onto the Events of an Item.
+ */
 public class History extends RemoteMap<Event> {
 
     private static final long serialVersionUID = 3273324106002587993L;
 
-    int lastID = -1;
-
     public History(ItemPath itemPath, Object locker) {
         super(itemPath, ClusterStorage.HISTORY, locker);
     }
-    
+
     public Event getEvent(int id) {
-    	return get(String.valueOf(id));
+        return get(String.valueOf(id));
     }
 
-	@Override
-	public Event remove(Object key) {
-		throw new UnsupportedOperationException();
-	}
-    
+    @Override
+    public Event remove(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
     private Event storeNewEvent(Event newEvent) {
         synchronized (this) {
-            int newEventID = getLastId()+1;
-            newEvent.setID(newEventID);
+            newEvent.setID( getLastId()+1 );
             put(newEvent.getName(), newEvent);
-            lastID = newEventID;
             return newEvent;
         }
     }
-	
+
+    /**
+     * 
+     * @param agentPath
+     * @param delegatePath
+     * @param agentRole
+     * @param stepName
+     * @param stepPath
+     * @param stepType
+     * @param stateMachine
+     * @param transitionId
+     * @return newly created Event
+     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
-            String stepName,
-            String stepPath,
-            String stepType,
-            StateMachine stateMachine,
-            int transitionId) {
-    	return storeNewEvent(new Event(mItemPath, 
-    			agentPath, delegatePath, agentRole, 
-    			stepName, stepPath, stepType, 
-    			stateMachine, transitionId));
+                          String stepName, String stepPath, String stepType, 
+                          StateMachine stateMachine, int transitionId)
+    {
+        return storeNewEvent(
+                new Event(mItemPath, agentPath, delegatePath, agentRole, stepName, stepPath, stepType, stateMachine, transitionId));
     }
 
-    
-	public Event addEvent(AgentPath agentPath, 
-			AgentPath delegatePath, String agentRole,
-			String stepName, 
-			String stepPath, 
-			String stepType,
-			Schema schema, 
-			StateMachine stateMachine, 
-			int transitionId,
-			String viewName) {
-    	Event newEvent = new Event(mItemPath, 
-    			agentPath, delegatePath, agentRole, 
-    			stepName, stepPath,	stepType, 
-    			stateMachine, transitionId);
-    	newEvent.addOutcomeDetails(schema, viewName);
-    	return storeNewEvent(newEvent);
-	}
-
-    
-    public Event addEvent(AgentPath agentPath, AgentPath delegatePath,	String agentRole,
-            String stepName, String stepPath, String stepType,
-            StateMachine stateMachine,
-            int transitionId,
-            String timeString) throws InvalidDataException {
-    	Event newEvent = new Event(mItemPath, 
-    			agentPath, delegatePath, agentRole, 
-    			stepName, stepPath,	stepType, 
-    			stateMachine, transitionId);
-    	newEvent.setTimeString(timeString);
-    	return storeNewEvent(newEvent);
-    }
-
+    /**
+     * 
+     * @param agentPath
+     * @param delegatePath
+     * @param agentRole
+     * @param stepName
+     * @param stepPath
+     * @param stepType
+     * @param schema
+     * @param stateMachine
+     * @param transitionId
+     * @param viewName
+     * @return newly created Event
+     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
-            String stepName, String stepPath, String stepType,
-            Schema schema, StateMachine stateMachine,
-            int transitionId,
-            String viewName,
-            String timeString) throws InvalidDataException {
-    	
-    	Event newEvent = new Event(mItemPath, 
-    			agentPath, delegatePath, agentRole, 
-    			stepName, stepPath, stepType, 
-    			stateMachine, transitionId);
-    	newEvent.addOutcomeDetails(schema, viewName);
-    	newEvent.setTimeString(timeString);
-    	return storeNewEvent(newEvent);
-    }
-    
-
-	
-	/*
-	 * Deprecated event management methods
-	 */
-	
-    @Deprecated
-    public Event addEvent(AgentPath agentPath, String agentRole,
-            String stepName,
-            String stepPath,
-            String stepType,
-            String stateMachineName,
-            Integer stateMachineVersion,
-            Transition transition) {
-    	return addEvent(agentPath, agentRole, stepName, stepPath, stepType, null, null, stateMachineName, stateMachineVersion, transition, null);
-    }
-    
-    @Deprecated
-    public Event addEvent(AgentPath agentPath, String agentRole,
-                    String stepName,
-                    String stepPath,
-                    String stepType,
-                    String schemaName,
-                    Integer schemaVersion,
-                    String stateMachineName,
-                    Integer stateMachineVersion,
-                    Transition transition,
-                    String viewName) {
-        Logger.msg(7, "History.addEvent() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
-        Event newEvent = new Event();
-        newEvent.setItemPath(mItemPath);
-        newEvent.setAgentPath(agentPath);
-        newEvent.setAgentRole(agentRole);
-        newEvent.setStepName(stepName);
-        newEvent.setStepPath(stepPath);
-        newEvent.setStepType(stepType);
-        if (schemaName != null && !schemaName.equals("")) {
-        	newEvent.setSchemaName(schemaName);
-        	newEvent.setSchemaVersion(schemaVersion);
-            if (viewName == null || viewName.equals(""))
-            	newEvent.setViewName("last");
-            else
-            	newEvent.setViewName(viewName);
-        }
-        newEvent.setOriginState(transition.getOriginStateId());
-        newEvent.setTargetState(transition.getTargetStateId());
-        newEvent.setTransition(transition.getId());
-        newEvent.setStateMachineName(stateMachineName);
-        newEvent.setStateMachineVersion(stateMachineVersion);
-        newEvent.setTimeStamp(Event.getGMT());
+                          String stepName, String stepPath, String stepType, Schema schema, 
+                          StateMachine stateMachine, int transitionId, String viewName)
+    {
+        Event newEvent = new Event(mItemPath,agentPath, delegatePath, agentRole, stepName, stepPath, stepType, stateMachine, transitionId);
+        newEvent.addOutcomeDetails(schema, viewName);
         return storeNewEvent(newEvent);
     }
 
-    @Deprecated
-    public Event addEvent(AgentPath agentPath, String agentRole,
-            String stepName,
-            String stepPath,
-            String stepType,
-            String stateMachineName,
-            Integer stateMachineVersion,
-            Transition transition,
-            String timeString) throws InvalidDataException {
-    	return addEvent(agentPath, agentRole, stepName, stepPath, stepType, null, null, stateMachineName, stateMachineVersion, transition, null, timeString);
+    /**
+     * 
+     * @param agentPath
+     * @param delegatePath
+     * @param agentRole
+     * @param stepName
+     * @param stepPath
+     * @param stepType
+     * @param stateMachine
+     * @param transitionId
+     * @param timeString
+     * @return newly created Event
+     * @throws InvalidDataException
+     */
+    public Event addEvent(AgentPath agentPath, AgentPath delegatePath,	String agentRole,
+                          String stepName, String stepPath, String stepType,
+                          StateMachine stateMachine, int transitionId, String timeString) 
+           throws InvalidDataException
+    {
+        Event newEvent = new Event(mItemPath, agentPath, delegatePath, agentRole, stepName, stepPath, stepType, stateMachine, transitionId);
+        newEvent.setTimeString(timeString);
+        return storeNewEvent(newEvent);
     }
-    
-    @Deprecated
-    public Event addEvent(AgentPath agentPath, String agentRole,
-                    String stepName,
-                    String stepPath,
-                    String stepType,
-                    String schemaName,
-                    Integer schemaVersion,
-                    String stateMachineName,
-                    Integer stateMachineVersion,
-                    Transition transition,
-                    String viewName,
-                    String timeString) throws InvalidDataException {
-        Logger.msg(7, "History.addEvent() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
-        Event newEvent = new Event();
-        newEvent.setItemPath(mItemPath);
-        newEvent.setAgentPath(agentPath);
-        newEvent.setAgentRole(agentRole);
-        newEvent.setStepName(stepName);
-        newEvent.setStepPath(stepPath);
-        newEvent.setStepType(stepType);
-        if (schemaName != null && !schemaName.equals("")) {
-        	newEvent.setSchemaName(schemaName);
-        	newEvent.setSchemaVersion(schemaVersion);
-            if (viewName == null || viewName.equals(""))
-            	newEvent.setViewName("last");
-            else
-            	newEvent.setViewName(viewName);
-        }
-        newEvent.setOriginState(transition.getOriginStateId());
-        newEvent.setTargetState(transition.getTargetStateId());
-        newEvent.setTransition(transition.getId());
-        newEvent.setStateMachineName(stateMachineName);
-        newEvent.setStateMachineVersion(stateMachineVersion);
+
+    /**
+     * 
+     * @param agentPath
+     * @param delegatePath
+     * @param agentRole
+     * @param stepName
+     * @param stepPath
+     * @param stepType
+     * @param schema
+     * @param stateMachine
+     * @param transitionId
+     * @param viewName
+     * @param timeString
+     * @return newly created Event
+     * @throws InvalidDataException
+     */
+    public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
+                          String stepName, String stepPath, String stepType, Schema schema, 
+                          StateMachine stateMachine, int transitionId, String viewName, String timeString) 
+           throws InvalidDataException
+    {
+        Event newEvent = new Event(mItemPath, agentPath, delegatePath, agentRole, stepName, stepPath, stepType, stateMachine, transitionId);
+        newEvent.addOutcomeDetails(schema, viewName);
         newEvent.setTimeString(timeString);
         return storeNewEvent(newEvent);
     }

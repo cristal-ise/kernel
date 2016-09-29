@@ -37,27 +37,28 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.Logger;
 
 
 /**
  * The data structure of events, which are passed over the event service.
- *
  * Events are incrementally numbered objects maintained by the History.
+ * <br>
+ * Events are generated and stored whenever a step in an Item's lifecycle 
+ * changes state, and provide a full record of what was done, when, and by whom.
  */
 @Accessors(prefix = "m") @Getter @Setter
 public class Event implements C2KLocalObject {
-    ItemPath mItemPath;
-    AgentPath mAgentPath, mDelegatePath;
-    int mOriginState, mTransition, mTargetState;
-    Integer mID, mSchemaVersion, mStateMachineVersion;
-    String mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
+    ItemPath   mItemPath;
+    AgentPath  mAgentPath, mDelegatePath;
+    int        mOriginState, mTransition, mTargetState;
+    Integer    mID, mSchemaVersion, mStateMachineVersion;
+    String     mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
     GTimeStamp mTimeStamp;
 
-    public Event(ItemPath itemPath, 
-                 AgentPath agentPath, AgentPath delegatePath, String agentRole,
-                 String stepName, String stepPath, String stepType,
-                 StateMachine stateMachine, int transitionId)
+    public Event(ItemPath itemPath, AgentPath agentPath, AgentPath delegatePath, String agentRole,
+                 String stepName, String stepPath, String stepType, StateMachine stateMachine, int transitionId)
     {
         Transition transition = stateMachine.getTransition(transitionId);
         Logger.msg(7, "Event() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
@@ -74,7 +75,7 @@ public class Event implements C2KLocalObject {
         setTargetState(transition.getTargetStateId());
         setStateMachineName(stateMachine.getItemID());
         setStateMachineVersion(stateMachine.getVersion());
-        setTimeStamp(Event.getGMT());
+        setTimeStamp(DateUtility.getNow());
     }
 
     public Event() { }
@@ -133,9 +134,10 @@ public class Event implements C2KLocalObject {
 
     /**
      *  Return the TimeStamp in a form that will convert nicely to a String: YYYY-MM-DD HH:MI:SS
+     * @return Return the formatted TimeStamp 
      */
     public String getTimeString() {
-        return Event.timeToString(mTimeStamp);
+        return DateUtility.timeToString(mTimeStamp);
     }
 
     /**
@@ -147,65 +149,8 @@ public class Event implements C2KLocalObject {
         return new Date(mTimeStamp.mYear-1900, mTimeStamp.mMonth-1, mTimeStamp.mDay, mTimeStamp.mHour, mTimeStamp.mMinute, mTimeStamp.mSecond);
     }
 
-    public static String timeToString(GTimeStamp timeStamp) {
-        StringBuffer time = new StringBuffer().append(timeStamp.mYear).append("-");
-
-        if (timeStamp.mMonth<10) time.append("0");
-        time.append(timeStamp.mMonth).append("-");
-
-        if (timeStamp.mDay<10) time.append("0");
-        time.append(timeStamp.mDay).append(" ");
-
-        if (timeStamp.mHour<10) time.append("0");
-        time.append(timeStamp.mHour).append(":");
-
-        if (timeStamp.mMinute<10) time.append("0");
-        time.append(timeStamp.mMinute).append(":");
-
-        if (timeStamp.mSecond<10) time.append("0");
-        time.append(timeStamp.mSecond);
-
-        return time.toString();
-    }
-
-    public void setTimeString(String time) throws InvalidDataException
-    {
-        if (time.length() == 19) {
-            mTimeStamp = new GTimeStamp(
-                    Integer.parseInt(time.substring(0,4)),
-                    Integer.parseInt(time.substring(5,7)),
-                    Integer.parseInt(time.substring(8,10)),
-                    Integer.parseInt(time.substring(11,13)),
-                    Integer.parseInt(time.substring(14,16)),
-                    Integer.parseInt(time.substring(17,19)),
-                    Calendar.getInstance().get(Calendar.ZONE_OFFSET));
-        }
-        else if (time.length() == 14) {
-            // support for some sql formats
-            mTimeStamp = new GTimeStamp(
-                    Integer.parseInt(time.substring(0,4)),
-                    Integer.parseInt(time.substring(4,6)),
-                    Integer.parseInt(time.substring(6,8)),
-                    Integer.parseInt(time.substring(8,10)),
-                    Integer.parseInt(time.substring(10,12)),
-                    Integer.parseInt(time.substring(12,14)),
-                    Calendar.getInstance().get(Calendar.ZONE_OFFSET));
-        }
-        else
-            throw new InvalidDataException("Unknown time format: "+time);
-    }
-
-
-    static public GTimeStamp getGMT() {
-        java.util.Calendar now = Calendar.getInstance();
-
-        return new GTimeStamp( now.get(Calendar.YEAR),
-                now.get(Calendar.MONTH)+1,
-                now.get(Calendar.DAY_OF_MONTH),
-                now.get(Calendar.HOUR_OF_DAY),
-                now.get(Calendar.MINUTE),
-                now.get(Calendar.SECOND),
-                now.get(Calendar.ZONE_OFFSET) );
+    public void setTimeString(String time) throws InvalidDataException {
+        mTimeStamp = DateUtility.parseTimeString(time);
     }
 
     @Override

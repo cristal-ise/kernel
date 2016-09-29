@@ -34,6 +34,7 @@ import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
@@ -90,7 +91,7 @@ public class Import extends PredefinedStep
         if (params.length == 3)
         	timestamp = params[2];
         else
-        	timestamp = Event.timeToString(Event.getGMT());
+        	timestamp = DateUtility.timeToString(DateUtility.getNow());
         
         // write event, outcome and viewpoints to storage
 
