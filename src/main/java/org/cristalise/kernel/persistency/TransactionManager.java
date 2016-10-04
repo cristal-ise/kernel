@@ -71,6 +71,13 @@ public class TransactionManager {
     /**
      * Public get method. Required a 'locker' object for a transaction key.
      * Checks the transaction table first to see if the caller has uncommitted changes
+     * 
+     * @param itemPath
+     * @param path
+     * @param locker
+     * @return C2KLocalObject
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
      */
     public C2KLocalObject get(ItemPath itemPath, String path, Object locker)
             throws PersistencyException,
@@ -219,6 +226,8 @@ public class TransactionManager {
     }
     /**
      * Writes all pending changes to the backends.
+     * 
+     * @param locker
      */
     public void commit(Object locker) {
         synchronized(locks) {
@@ -264,6 +273,8 @@ public class TransactionManager {
 
     /**
      * Rolls back all changes sent in the name of 'locker' and unlocks the sysKeys
+     * 
+     * @param locker
      */
     public void abort(Object locker) {
         synchronized(locks) {
