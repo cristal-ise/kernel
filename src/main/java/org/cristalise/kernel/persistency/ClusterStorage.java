@@ -234,7 +234,17 @@ public abstract class ClusterStorage {
     }
 
     /**
-     * Fetches a CRISTAL local object from storage
+     * Executes an SQL/OQL/XQuery query in the target database. It shall return an XML result
+     * 
+     * @param query the query to be executed
+     * @return the xml result
+     * @throws PersistencyException
+     */
+    public abstract String adHocQuery(String query)
+            throws PersistencyException;
+
+    /**
+     * Fetches a CRISTAL local object from storage by path
      * 
      * @param itemPath
      *            The ItemPath of the containing Item

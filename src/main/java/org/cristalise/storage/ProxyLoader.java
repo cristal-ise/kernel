@@ -69,6 +69,11 @@ public class ProxyLoader extends ClusterStorage {
         return "CORBA";
     }
 
+    @Override
+    public String adHocQuery(String query) throws PersistencyException {
+        throw new PersistencyException("UNIMPLEMENTED funnction");
+    }
+
     /**
      * retrieve object by path
      */

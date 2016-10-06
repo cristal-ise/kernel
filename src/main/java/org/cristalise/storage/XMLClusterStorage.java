@@ -76,9 +76,11 @@ public class XMLClusterStorage extends ClusterStorage {
         return "XML";
     }
 
-    /* object manipulation */
+    @Override
+    public String adHocQuery(String query) throws PersistencyException {
+        throw new PersistencyException("UNIMPLEMENTED funnction");
+    }
 
-    // retrieve object by path
     @Override
 	public C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException {
         try {
