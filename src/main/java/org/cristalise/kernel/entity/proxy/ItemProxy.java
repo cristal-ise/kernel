@@ -377,7 +377,7 @@ public class ItemProxy
 
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().getClusterContents(mItemPath, path.substring(0, path.length()));
+            return Gateway.getStorage().getClusterContents(mItemPath, path);
         }
         catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());
