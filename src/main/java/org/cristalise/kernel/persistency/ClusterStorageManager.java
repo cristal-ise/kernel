@@ -152,21 +152,20 @@ public class ClusterStorageManager {
      * Collection, Property) Must specify if the request is a read or a write.
      */
     private ArrayList<ClusterStorage> findStorages(String clusterType, boolean forWrite) {
-
         // choose the right cache for readers or writers
         HashMap<String, ArrayList<ClusterStorage>> cache;
-        if (forWrite)
-            cache = clusterWriters;
-        else
-            cache = clusterReaders;
+
+        if (forWrite) cache = clusterWriters;
+        else          cache = clusterReaders;
 
         // check to see if we've been asked to do this before
-        if (cache.containsKey(clusterType))
-            return cache.get(clusterType);
+        if (cache.containsKey(clusterType)) return cache.get(clusterType);
 
         // not done yet, we'll have to query them all
         Logger.msg(7, "ClusterStorageManager.findStorages() - finding storage for "+clusterType+" forWrite:"+forWrite);
+
         ArrayList<ClusterStorage> useableStorages = new ArrayList<ClusterStorage>();
+
         for (String element : clusterPriority) {
             ClusterStorage thisStorage = allStores.get(element);
             short requiredSupport = forWrite ? ClusterStorage.WRITE : ClusterStorage.READ;
@@ -177,6 +176,10 @@ public class ClusterStorageManager {
         }
         cache.put(clusterType, useableStorages);
         return useableStorages;
+    }
+
+    public String adHocQuery(String query) throws PersistencyException {
+        return null;
     }
 
     /**
