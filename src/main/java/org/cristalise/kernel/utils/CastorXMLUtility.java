@@ -33,6 +33,8 @@ import java.util.StringTokenizer;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.resource.ResourceLoader;
+import org.exolab.castor.mapping.AbstractFieldHandler;
+import org.exolab.castor.mapping.FieldDescriptor;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
@@ -41,147 +43,175 @@ import org.exolab.castor.xml.Unmarshaller;
 import org.exolab.castor.xml.ValidationException;
 import org.exolab.castor.xml.XMLContext;
 
-
-
 /**************************************************************************
- * Loads all mapfiles, and wraps marshalling/unmarshalling
- *
- * @author $Author: abranson $ $Date: 2004/10/20 14:10:21 $
- * @version $Revision: 1.12 $
+ * Loads all castor mapfiles, and wraps marshalling/unmarshalling
  **************************************************************************/
-public class CastorXMLUtility
-{
-	
-	public static final String  CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
-    private XMLContext mappingContext;
-    
-	/**
-	 * Looks for a file called 'index.xml' at the given URL, and loads every
-	 * file listed in there by relative path
-	 * 
-	 * @param aResourceLoader
-	 *            the resource loader able to return the right class loader
-	 * @param aAppProperties
-	 *            the application properties containing optional castor
-	 *            configuration
-	 * @param mapURL
-	 *            the root URL for the mapfiles
-	 * @throws InvalidDataException
-	 */
-	public CastorXMLUtility(final ResourceLoader aResourceLoader,
-			final Properties aAppProperties, final URL mapURL)
-			throws InvalidDataException {
+public class CastorXMLUtility {
 
-   	
+    public static final String CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
+    private XMLContext         mappingContext;
+
+    /**
+     * Looks for a file called 'index.xml' at the given URL, and loads every
+     * file listed in there by relative path
+     * 
+     * @param aResourceLoader
+     *            the resource loader able to return the right class loader
+     * @param aAppProperties
+     *            the application properties containing optional castor
+     *            configuration
+     * @param mapURL
+     *            the root URL for the mapfiles
+     * @throws InvalidDataException
+     */
+    public CastorXMLUtility(final ResourceLoader aResourceLoader, final Properties aAppProperties, final URL mapURL)
+            throws InvalidDataException
+    {
         // load index
-        Logger.msg(3,String.format( "CastorXMLUtility.<init> Loading maps from [%s]",mapURL));
+        Logger.msg(3, String.format("CastorXMLUtility.<init> Loading maps from [%s]", mapURL));
         String index;
         try {
-            index = FileStringUtility.url2String( new URL(mapURL, "index") );
-        } catch (Exception e) {
-           throw new InvalidDataException(String.format("Could not load map index from [%s]",mapURL));
+            index = FileStringUtility.url2String(new URL(mapURL, "index"));
         }
-        
-        // retrieve the class loader of the class "CastorXMLUtility" 
-		ClassLoader defaultClassLoader = aResourceLoader
-				.getClassLoader(CastorXMLUtility.class.getName());
+        catch (Exception e) {
+            throw new InvalidDataException(String.format("Could not load map index from [%s]", mapURL));
+        }
 
-		Logger.msg(3, String.format(
-				"CastorXMLUtility.<init>: defaultClassLoader=[%s]",
-				defaultClassLoader));
+        // retrieve the class loader of the class "CastorXMLUtility"
+        ClassLoader defaultClassLoader = aResourceLoader.getClassLoader(CastorXMLUtility.class.getName());
 
-		
+        Logger.msg(3, String.format("CastorXMLUtility.<init>: defaultClassLoader=[%s]", defaultClassLoader));
+
         StringTokenizer sTokenizer = new StringTokenizer(index);
-		int wNbMap = sTokenizer.countTokens();
+        int wNbMap = sTokenizer.countTokens();
 
-        // init the castor mapping using the classloader of the class "CastorXMLUtility" 
+        // init the castor mapping using the classloader of this class
         Mapping thisMapping = new Mapping(defaultClassLoader);
         HashSet<String> loadedMapURLs = new HashSet<String>();
-        try { 
-        	int wMapIdx=0;
-        	while( sTokenizer.hasMoreTokens() ) {
-	            String thisMap = sTokenizer.nextToken();
-	            String thisMapURL = new URL(mapURL, thisMap).toString();
-	            wMapIdx++;
-	            if( !loadedMapURLs.contains(thisMapURL) ) {
-					Logger.msg(	3,
-							String.format("CastorXMLUtility.<init>: Adding mapping file (%d/%d):[%s]", wMapIdx, wNbMap, thisMapURL));
-					thisMapping.loadMapping( new URL(thisMapURL) );
-	                loadedMapURLs.add( thisMapURL );
-	            }
-	            else {
-	                Logger.msg(3,"Map file already loaded:"+thisMapURL);
-	            }
-	        }
-	        
-        	mappingContext = new XMLContext();
+        try {
+            int wMapIdx = 0;
+            while (sTokenizer.hasMoreTokens()) {
+                String thisMap = sTokenizer.nextToken();
+                String thisMapURL = new URL(mapURL, thisMap).toString();
+                wMapIdx++;
+                if (!loadedMapURLs.contains(thisMapURL)) {
+                    Logger.msg(3, String.format("CastorXMLUtility.<init>: Adding mapping file (%d/%d):[%s]", wMapIdx, wNbMap, thisMapURL));
+                    thisMapping.loadMapping(new URL(thisMapURL));
+                    loadedMapURLs.add(thisMapURL);
+                }
+                else {
+                    Logger.msg(3, "Map file already loaded:" + thisMapURL);
+                }
+            }
 
-        	mappingContext.setClassLoader(defaultClassLoader);
+            mappingContext = new XMLContext();
+            mappingContext.setClassLoader(defaultClassLoader);
 
-			// if the aAppProperties contains castor properties then
-			if (aAppProperties!= null && aAppProperties.containsKey(CASTOR_XML_SERIALIZER_FACTORY)) {
+            // if the aAppProperties contains castor properties then
+            if (aAppProperties != null && aAppProperties.containsKey(CASTOR_XML_SERIALIZER_FACTORY)) {
 
-				mappingContext.setProperty(CASTOR_XML_SERIALIZER_FACTORY,
-						aAppProperties
-								.getProperty(CASTOR_XML_SERIALIZER_FACTORY));
+                mappingContext.setProperty(CASTOR_XML_SERIALIZER_FACTORY, aAppProperties.getProperty(CASTOR_XML_SERIALIZER_FACTORY));
 
-				Logger.msg(3, String.format(
-						"CastorXMLUtility.<init>: castor prop: %s=[%s]",
-						CASTOR_XML_SERIALIZER_FACTORY, mappingContext
-								.getProperty(CASTOR_XML_SERIALIZER_FACTORY)));
+                Logger.msg(3, String.format("CastorXMLUtility.<init>: castor prop: %s=[%s]", CASTOR_XML_SERIALIZER_FACTORY,
+                        mappingContext.getProperty(CASTOR_XML_SERIALIZER_FACTORY)));
 
-			}
-    			
-			mappingContext.addMapping(thisMapping);
-		} catch (MappingException ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("XML Mapping files are not valid: "+ex.getMessage());
-		} catch (MalformedURLException ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Mapping file location invalid: "+ex.getMessage());
-		} catch (IOException ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Could not read XML mapping files: "+ex.getMessage());
-		}
-        
+            }
+
+            mappingContext.addMapping(thisMapping);
+        }
+        catch (MappingException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("XML Mapping files are not valid: " + ex.getMessage());
+        }
+        catch (MalformedURLException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Mapping file location invalid: " + ex.getMessage());
+        }
+        catch (IOException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Could not read XML mapping files: " + ex.getMessage());
+        }
+
         Logger.msg(1, String.format("Loaded [%d] maps from [%s]", loadedMapURLs.size(), mapURL));
     }
 
-   /**************************************************************************
-    * Marshalls a mapped object to string. The mapping must be loaded before.
-    * See updateMapping().
-    **************************************************************************/
-    public String marshall( Object obj )
-        throws IOException,
-               MappingException,
-               MarshalException,
-               ValidationException
-    {
+    /**
+     * Marshalls a mapped object to xml string. The mapping must be loaded before. See updateMapping().
+     * 
+     * @param obj
+     * @return the xml string of the marshalled object
+     * @throws IOException
+     * @throws MappingException
+     * @throws MarshalException
+     * @throws ValidationException
+     */
+    public String marshall(Object obj) throws IOException, MappingException, MarshalException, ValidationException {
         if (obj == null) return "<NULL/>";
-        if (obj instanceof Outcome)
-            return ((Outcome)obj).getData();
-        StringWriter sWriter    = new StringWriter();
-        Marshaller   marshaller = mappingContext.createMarshaller();
+
+        if (obj instanceof Outcome) return ((Outcome) obj).getData();
+        StringWriter sWriter = new StringWriter();
+        Marshaller marshaller = mappingContext.createMarshaller();
         marshaller.setWriter(sWriter);
-        marshaller.setMarshalAsDocument( false );
-        marshaller.marshal( obj );
+        marshaller.setMarshalAsDocument(false);
+        marshaller.marshal(obj);
 
         return sWriter.toString();
     }
 
-   /**************************************************************************
-    * Unmarshalls a mapped object from string. The mapping must be loaded before.
-    * See updateMapping().
-    **************************************************************************/
-    public Object unmarshall( String data )
-        throws IOException,
-               MappingException,
-               MarshalException,
-               ValidationException
-    {
+    /**
+     * Unmarshalls a mapped object from XML string. The mapping must be loaded before. See updateMapping().
+     * 
+     * @param data
+     * @return the unmarshalled object
+     * @throws IOException
+     * @throws MappingException
+     * @throws MarshalException
+     * @throws ValidationException
+     */
+    public Object unmarshall(String data) throws IOException, MappingException, MarshalException, ValidationException {
         if (data.equals("<NULL/>")) return null;
-        StringReader sReader      = new StringReader( data );
+        StringReader sReader = new StringReader(data);
         Unmarshaller unmarshaller = mappingContext.createUnmarshaller();
-        return unmarshaller.unmarshal( sReader );
+        return unmarshaller.unmarshal(sReader);
     }
+    
+    /*
+    public class CDataFieldHandler extends AbstractFieldHandler {
+
+        public Object getValue(Object object) throws IllegalStateException {
+            FieldDescriptor f = getFieldDescriptor();
+            String fieldName = f.getFieldName();
+
+            Object value = PropertyUtils.getProperty(object, fieldName);
+            if (value == null) {
+                value = "";
+            }
+            return "<![CDATA[" + value.toString() + "]]>";
+        }
+
+        @Override
+        public Object newInstance(Object parent, Object[] args) throws IllegalStateException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public Object newInstance(Object parent) throws IllegalStateException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public void resetValue(Object object) throws IllegalStateException, IllegalArgumentException {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void setValue(Object object, Object value) throws IllegalStateException, IllegalArgumentException {
+            // TODO Auto-generated method stub
+            
+        }
+    }
+    */
 }
