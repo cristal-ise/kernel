@@ -38,18 +38,15 @@ import org.w3c.dom.NodeList;
 public class OutcomeTest {
 
     Outcome testOc;
-    Outcome complexTestOc;
 
     @Before
     public void setup() throws Exception {
         Logger.addLogStream(System.out, 1);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
+
         String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
         testOc = new Outcome("/Outcome/Script/0/0", ocData);
-
-        ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/complexOutcomeTest.xml"));
-        complexTestOc = new Outcome("/Outcome/Script/0/0", ocData);
     }
 
     @Test
@@ -82,6 +79,10 @@ public class OutcomeTest {
 
     @Test
     public void testComplexXpath() throws Exception {
+        Outcome complexTestOc = new Outcome(
+                "/Outcome/Script/0/0",
+                FileStringUtility.url2String(OutcomeTest.class.getResource("/complexOutcomeTest.xml")));
+
         String slotID = complexTestOc.getNodeByXPath("/Fields/@slotID").getNodeValue();
 
         assertEquals("1",  slotID);
