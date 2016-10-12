@@ -55,6 +55,12 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
+    public boolean checkQuerySupport(String queryType) {
+        Logger.warning("ProxyLoader DOES NOT Support any query");
+        return false;
+    }
+
+    @Override
     public short queryClusterSupport(String clusterType) {
         return READ;
     }
@@ -70,7 +76,7 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
-    public String adHocQuery(String query) throws PersistencyException {
+    public String adHocQuery(String query, String queryType) throws PersistencyException {
         throw new PersistencyException("UNIMPLEMENTED funnction");
     }
 

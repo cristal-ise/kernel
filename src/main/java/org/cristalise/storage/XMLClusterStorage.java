@@ -77,7 +77,13 @@ public class XMLClusterStorage extends ClusterStorage {
     }
 
     @Override
-    public String adHocQuery(String query) throws PersistencyException {
+    public boolean checkQuerySupport(String queryType) {
+        Logger.warning("XMLClusterStorage DOES NOT Support any query");
+        return false;
+    }
+
+    @Override
+    public String adHocQuery(String query, String queryType) throws PersistencyException {
         throw new PersistencyException("UNIMPLEMENTED funnction");
     }
 

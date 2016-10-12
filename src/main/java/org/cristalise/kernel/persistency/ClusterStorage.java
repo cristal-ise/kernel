@@ -33,7 +33,7 @@ import org.cristalise.kernel.utils.Logger;
 
 /**
  * <p>Interface for persistency managers of entities. It allows different kernel
- * objects to be stored in different backend. For instance, Properties may be
+ * objects to be stored in different db backend. For instance, Properties may be
  * stored in LDAP, while Events, Outcomes and Viewpoints could be stored in a
  * relational database. The kernel does and needs no analytical querying of the 
  * ClusterStorages, only simple gets and puts. This may be implemented on top
@@ -55,7 +55,6 @@ import org.cristalise.kernel.utils.Logger;
  * no action.
  */
 public abstract class ClusterStorage {
-
     /**
      * Constant to return from {@link #queryClusterSupport(String)} for Cluster
      * types this storage does not support.
@@ -149,8 +148,7 @@ public abstract class ClusterStorage {
      * @throws PersistencyException
      *             If storage initialization failed
      */
-    public abstract void open(Authenticator auth)
-            throws PersistencyException;
+    public abstract void open(Authenticator auth) throws PersistencyException;
 
     /**
      * Shuts down the storage. Data must be completely written to disk before
@@ -172,6 +170,14 @@ public abstract class ClusterStorage {
      * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
      */
     public abstract short queryClusterSupport(String clusterType);
+
+    /**
+     * Checks whether the storage support the given type of query or not
+     * 
+     * @param queryType type of the query (e.g. SQL/XQuery)
+     * @return if the Storage supports the type of the query 
+     */
+    public abstract boolean checkQuerySupport(String queryType);
 
     /**
      * @return A full name of this storage for logging
@@ -234,14 +240,14 @@ public abstract class ClusterStorage {
     }
 
     /**
-     * Executes an SQL/OQL/XQuery query in the target database. It shall return an XML result
+     * Executes an SQL/OQL/XQuery/XPath/etc query in the target database. 
      * 
      * @param query the query to be executed
-     * @return the xml result
+     * @param queryType the type of the query to be executed 
+     * @return the xml result of the query
      * @throws PersistencyException
      */
-    public abstract String adHocQuery(String query)
-            throws PersistencyException;
+    public abstract String adHocQuery(String query, String queryType) throws PersistencyException;
 
     /**
      * Fetches a CRISTAL local object from storage by path
@@ -254,8 +260,7 @@ public abstract class ClusterStorage {
      * @throws PersistencyException
      *             when retrieval failed
      */
-    public abstract C2KLocalObject get(ItemPath itemPath, String path)
-            throws PersistencyException;
+    public abstract C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException;
 
     /**
      * Stores a CRISTAL local object. The path is automatically generated.
@@ -267,8 +272,7 @@ public abstract class ClusterStorage {
      * @throws PersistencyException
      *             When storage fails
      */
-    public abstract void put(ItemPath itemPath, C2KLocalObject obj)
-            throws PersistencyException;
+    public abstract void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException;
 
     /**
      * Remove a CRISTAL local object from storage. This should be used sparingly
@@ -282,10 +286,8 @@ public abstract class ClusterStorage {
      * @throws PersistencyException
      *             When deletion fails or is not allowed
      */
-    public abstract void delete(ItemPath itemPath, String path)
-            throws PersistencyException;
+    public abstract void delete(ItemPath itemPath, String path) throws PersistencyException;
 
-    // directory listing
     /**
      * Queries the local path below the given root and returns the possible next
      * elements.
@@ -299,7 +301,5 @@ public abstract class ClusterStorage {
      * @throws PersistencyException
      *             When an error occurred during the query
      */
-    public abstract String[] getClusterContents(ItemPath itemPath, String path)
-            throws PersistencyException;
-
+    public abstract String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException;
 }

@@ -57,6 +57,12 @@ public class MemoryOnlyClusterStorage extends ClusterStorage {
     }
 
     @Override
+    public boolean checkQuerySupport(String queryType) {
+        Logger.warning("MemoryOnlyClusterStorage DOES NOT Support any query");
+        return false;
+    }
+
+    @Override
     public short queryClusterSupport(String clusterType) {
         return ClusterStorage.READWRITE;
     }
@@ -72,7 +78,7 @@ public class MemoryOnlyClusterStorage extends ClusterStorage {
     }
 
     @Override
-    public String adHocQuery(String query) throws PersistencyException {
+    public String adHocQuery(String query, String queryType) throws PersistencyException {
         throw new PersistencyException("UNIMPLEMENTED funnction");
     }
 

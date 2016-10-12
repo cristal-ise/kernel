@@ -104,7 +104,6 @@ public class ClusterStorageManager {
                 transactionalStores.add((TransactionalClusterStorage)newStorage);
         }
         clusterReaders.put(ClusterStorage.ROOT, rootStores); // all storages are queried for clusters at the root level
-
     }
 
     public ArrayList<ClusterStorage> instantiateStores(String allClusters) throws PersistencyException {
@@ -141,15 +140,33 @@ public class ClusterStorageManager {
         for (ClusterStorage thisStorage : allStores.values()) {
             try {
                 thisStorage.close();
-            } catch (PersistencyException ex) {
+            } 
+            catch (PersistencyException ex) {
                 Logger.error(ex);
             }
         }
     }
 
     /**
+     * 
+     * @param queryType
+     * @return
+     */
+    private ClusterStorage findStorageForQuery(String queryType) {
+        for (String element : clusterPriority) {
+            ClusterStorage store = allStores.get(element);
+            if (store.checkQuerySupport(queryType) ) return store;
+        }
+        return null;
+    }
+
+    /**
      * Returns the loaded storage that declare that they can handle writing or reading the specified cluster name (e.g.
      * Collection, Property) Must specify if the request is a read or a write.
+     * 
+     * @param clusterType
+     * @param forWrite whether the request is for write or read
+     * @return the list of usable storages
      */
     private ArrayList<ClusterStorage> findStorages(String clusterType, boolean forWrite) {
         // choose the right cache for readers or writers
@@ -178,8 +195,18 @@ public class ClusterStorageManager {
         return useableStorages;
     }
 
-    public String adHocQuery(String query) throws PersistencyException {
-        return null;
+    /**
+     * 
+     * @param query
+     * @param queryType
+     * @return the result of the query
+     * @throws PersistencyException
+     */
+    public String adHocQuery(String query, String queryType) throws PersistencyException {
+        ClusterStorage reader = findStorageForQuery(queryType);
+
+        if (reader != null) return reader.adHocQuery(query, queryType);
+        else                return null;
     }
 
     /**
@@ -207,7 +234,8 @@ public class ClusterStorageManager {
                             contents.add(thisArr[j]);
                         }
                 }
-            } catch (PersistencyException e) {
+            }
+            catch (PersistencyException e) {
                 Logger.msg(5, "ClusterStorageManager.getClusterContents() - reader " + thisReader.getName() +
                         " could not retrieve contents of " + itemPath + "/" + path + ": " + e.getMessage());
             }
@@ -331,9 +359,9 @@ public class ClusterStorageManager {
                     ((TransactionalClusterStorage)thisWriter).put(itemPath, obj, locker);
                 else
                     thisWriter.put(itemPath, obj);
-            } catch (PersistencyException e) {
-                Logger.error("ClusterStorageManager.put() - writer " + thisWriter.getName() + " could not store " +
-                        itemPath + "/" + path + ": " + e.getMessage());
+            }
+            catch (PersistencyException e) {
+                Logger.error("ClusterStorageManager.put() - writer " + thisWriter.getName() + " could not store " + itemPath + "/" + path + ": " + e.getMessage());
                 throw e;
             }
         }
@@ -384,9 +412,9 @@ public class ClusterStorageManager {
                     ((TransactionalClusterStorage)thisWriter).delete(itemPath, path, locker);
                 else
                     thisWriter.delete(itemPath, path);
-            } catch (PersistencyException e) {
-                Logger.error("ClusterStorageManager.delete() - writer " + thisWriter.getName() + " could not delete " + itemPath +
-                        "/" + path + ": " + e.getMessage());
+            }
+            catch (PersistencyException e) {
+                Logger.error("ClusterStorageManager.delete() - writer " + thisWriter.getName() + " could not delete " + itemPath + "/" + path + ": " + e.getMessage());
                 throw e;
             }
         }
@@ -459,12 +487,14 @@ public class ClusterStorageManager {
                             String path = (String) name;
                             try {
                                 Logger.msg(logLevel, "    Path " + path + ": " + sysKeyMemCache.get(path).getClass().getName());
-                            } catch (NullPointerException e) {
+                            }
+                            catch (NullPointerException e) {
                                 Logger.msg(logLevel, "    Path " + path + ": reaped");
                             }
                         }
                     }
-                } catch (ConcurrentModificationException ex) {
+                }
+                catch (ConcurrentModificationException ex) {
                     Logger.msg(logLevel, "Cache modified - aborting");
                 }
             }

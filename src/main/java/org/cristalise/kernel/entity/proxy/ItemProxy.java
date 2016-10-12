@@ -384,9 +384,9 @@ public class ItemProxy
         }
     }
 
-    public String adHocQuery( String query ) throws ObjectNotFoundException {
+    public String adHocQuery(String query, String queryType) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().adHocQuery(query);
+            return Gateway.getStorage().adHocQuery(query, queryType);
         }
         catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());

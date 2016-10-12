@@ -63,8 +63,8 @@ public class TransactionManager {
         storage.close();
     }
 
-    public String adHocQuery(String query) throws PersistencyException {
-        return storage.adHocQuery(query);
+    public String adHocQuery(String query, String queryType) throws PersistencyException {
+        return storage.adHocQuery(query, queryType);
     }
 
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
