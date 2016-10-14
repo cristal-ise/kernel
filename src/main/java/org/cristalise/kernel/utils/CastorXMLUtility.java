@@ -30,16 +30,16 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.xml.transform.Result;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.resource.ResourceLoader;
-import org.exolab.castor.mapping.AbstractFieldHandler;
-import org.exolab.castor.mapping.FieldDescriptor;
+import org.cristalise.kernel.querying.Query;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.Marshaller;
-import org.exolab.castor.xml.Unmarshaller;
 import org.exolab.castor.xml.ValidationException;
 import org.exolab.castor.xml.XMLContext;
 
@@ -49,17 +49,16 @@ import org.exolab.castor.xml.XMLContext;
 public class CastorXMLUtility {
 
     public static final String CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
-    private XMLContext         mappingContext;
+    
+    private XMLContext mappingContext;
 
     /**
-     * Looks for a file called 'index.xml' at the given URL, and loads every
-     * file listed in there by relative path
+     * Looks for a file called 'index' at the given URL, and loads every file listed in there by relative path
      * 
      * @param aResourceLoader
      *            the resource loader able to return the right class loader
      * @param aAppProperties
-     *            the application properties containing optional castor
-     *            configuration
+     *            the application properties containing optional castor configuration
      * @param mapURL
      *            the root URL for the mapfiles
      * @throws InvalidDataException
@@ -114,7 +113,6 @@ public class CastorXMLUtility {
 
                 Logger.msg(3, String.format("CastorXMLUtility.<init>: castor prop: %s=[%s]", CASTOR_XML_SERIALIZER_FACTORY,
                         mappingContext.getProperty(CASTOR_XML_SERIALIZER_FACTORY)));
-
             }
 
             mappingContext.addMapping(thisMapping);
@@ -149,10 +147,14 @@ public class CastorXMLUtility {
         if (obj == null) return "<NULL/>";
 
         if (obj instanceof Outcome) return ((Outcome) obj).getData();
+
         StringWriter sWriter = new StringWriter();
         Marshaller marshaller = mappingContext.createMarshaller();
         marshaller.setWriter(sWriter);
         marshaller.setMarshalAsDocument(false);
+
+        if (obj instanceof Query) marshaller.addProcessingInstruction(Result.PI_DISABLE_OUTPUT_ESCAPING, "");
+
         marshaller.marshal(obj);
 
         return sWriter.toString();
@@ -170,48 +172,9 @@ public class CastorXMLUtility {
      */
     public Object unmarshall(String data) throws IOException, MappingException, MarshalException, ValidationException {
         if (data.equals("<NULL/>")) return null;
+
         StringReader sReader = new StringReader(data);
-        Unmarshaller unmarshaller = mappingContext.createUnmarshaller();
-        return unmarshaller.unmarshal(sReader);
+
+        return mappingContext.createUnmarshaller().unmarshal(sReader);
     }
-    
-    /*
-    public class CDataFieldHandler extends AbstractFieldHandler {
-
-        public Object getValue(Object object) throws IllegalStateException {
-            FieldDescriptor f = getFieldDescriptor();
-            String fieldName = f.getFieldName();
-
-            Object value = PropertyUtils.getProperty(object, fieldName);
-            if (value == null) {
-                value = "";
-            }
-            return "<![CDATA[" + value.toString() + "]]>";
-        }
-
-        @Override
-        public Object newInstance(Object parent, Object[] args) throws IllegalStateException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public Object newInstance(Object parent) throws IllegalStateException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public void resetValue(Object object) throws IllegalStateException, IllegalArgumentException {
-            // TODO Auto-generated method stub
-            
-        }
-
-        @Override
-        public void setValue(Object object, Object value) throws IllegalStateException, IllegalArgumentException {
-            // TODO Auto-generated method stub
-            
-        }
-    }
-    */
 }
