@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+    <class name="org.cristalise.kernel.scripting.Script">
+        <map-to xml="cristalscript"/>
+        <field name="mIncludes" type="org.cristalise.kernel.scripting.Include" collection="arraylist" 
+                direct="false" get-method="getIncludes" set-method="setIncludes">
+            <bind-xml name="include" node="element" />
+        </field>
+        <field name="mInputParams" type="org.cristalise.kernel.scripting.Parameter" collection="map" 
+                direct="false" get-method="getInputParams" set-method="setInputParams">
+            <bind-xml name="param" node="element" />
+        </field>
+        <field name="mOutputParams" type="org.cristalise.kernel.scripting.Parameter" collection="map" 
+                direct="false" get-method="getOutputParams" set-method="setOutputParams">
+            <bind-xml name="output" node="element" />
+        </field>
+        <field name="mScript" type="string" direct="false" get-method="getScriptData" set-method="setScriptData">
+            <bind-xml name="script" node="text" />
+        </field>
+        <field name="language" type="string" direct="false">
+            <bind-xml name="language" location="script" node="attribute" />
+        </field>
+   	</class>
+    <class name="org.cristalise.kernel.scripting.Include">
+        <map-to xml="include"/>
+        <field name="name" type="string" direct="true">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" type="integer" direct="true">
+            <bind-xml name="version" node="attribute" />
+        </field>
+    </class>
+    <class name="org.cristalise.kernel.scripting.Parameter">
+        <field name="name" type="string" direct="false">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="type" type="string" direct="false" set-method="setTypeFromName">
+            <bind-xml name="type" node="attribute" />
+        </field>
+    </class>
+</mapping>

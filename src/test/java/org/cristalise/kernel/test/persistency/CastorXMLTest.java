@@ -42,7 +42,7 @@ public class CastorXMLTest {
 
     @Before
     public void setup() throws Exception {
-        Logger.addLogStream(System.out, 1);
+        Logger.addLogStream(System.out, 5);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
     }

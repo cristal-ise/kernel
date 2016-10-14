@@ -20,53 +20,49 @@
  */
 package org.cristalise.kernel.scripting;
 
+import org.cristalise.kernel.process.Gateway;
 
-/**************************************************************************
-* Place holder for the Parameter details to be passed to the script.
-**************************************************************************/
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Place holder for the Parameter details to be passed to the script.
+ */
+@Getter @Setter
 public class Parameter {
 
     private String name;
     private Class<?> type;
-    private boolean initialised=false;
+    private boolean initialised = false;
+
+    public Parameter() {}
 
     public Parameter(String name) {
         this.name = name;
     }
-    
+
     public Parameter(String name, Class<?> type) {
         this.name = name;
         this.type = type;
     }
 
-    public void setName(String n)
-    {
-        name=n;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setType(Class<?> t)
-    {
-        type=t;
-    }
-
-    public Class<?> getType()
-    {
-        return type;
-    }
-
-    public void setInitialised(boolean state)
-    {
-        initialised=state;
-    }
-
-    public boolean getInitialised()
-    {
+    /**
+     * Method only provided for backward compability. Lombok would generate isInitialised() instead
+     * @return if the Parameter was initialised or not
+     */
+    public boolean getInitialised() {
         return initialised;
     }
 
+    /**
+     * Sets the type paramater from the String. Method is needed to make Castor marshalling to work
+     * 
+     * FIXME: CASTOR MARSHALLING DOES NOT WORK YET
+     * 
+     * @param className
+     * @throws ClassNotFoundException
+     */
+    public void setTypeFromName(String className) throws ClassNotFoundException {
+        type = Gateway.getResource().getClassForName(className);
+    }
 }

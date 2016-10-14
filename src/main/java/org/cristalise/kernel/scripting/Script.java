@@ -43,6 +43,7 @@ import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidCollectionModification;
@@ -66,24 +67,52 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
  * 
  */
+@Accessors(prefix = "m") @Getter @Setter
 public class Script implements DescriptionObject {
 
-    String mScript = "";
+    String         mScript     = "";
     CompiledScript mCompScript = null;
-    String mName;
-    Integer mVersion;
-    ItemPath mItemPath;
-    HashMap<String, Parameter> mInputParams = new HashMap<String, Parameter>();
+
+    String         mName;
+    Integer        mVersion;
+    ItemPath       mItemPath;
+    String         mLanguage;
+
+    HashMap<String, Parameter> mInputParams    = new HashMap<String, Parameter>();
+    HashMap<String, Parameter> mOutputParams   = new HashMap<String, Parameter>();
+
+    /**
+     * All declared parameters, including those of imported scripts
+     */
     HashMap<String, Parameter> mAllInputParams = new HashMap<String, Parameter>();
-    HashMap<String, Parameter> mOutputParams = new HashMap<String, Parameter>();
+
     ArrayList<Script> mIncludes = new ArrayList<Script>();
-    ScriptEngine engine;
+
+    @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
+    ScriptEngine  engine;
+
+    @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
     ScriptContext context;
 
-    /** For testing. Parses a given script xml, instead of loading it from Items.
+    /**
+     * Constructor for castor unmarshall
+     */
+    public Script() {}
+
+    /**
+     * For testing. Parses a given script xml, instead of loading it from Items.
+     * 
+     * @param name
+     * @param version
+     * @param path
      * @param xml
      * @throws ScriptParsingException
      * @throws ParameterException
@@ -96,6 +125,11 @@ public class Script implements DescriptionObject {
     /**
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
      * Output class is forced to an object.
+     * 
+     * @param lang
+     * @param expr
+     * @param returnType
+     * @throws ScriptingEngineException
      */
     public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException {
         mName = "<expr>";
@@ -131,6 +165,7 @@ public class Script implements DescriptionObject {
      * @param lang - script language
      * @param agent - AgentProxy of the console user
      * @param out - the output PrintStream for reporting results that don't go to the log
+     * @throws Exception
      */
     public Script(String lang, AgentProxy agent, PrintStream out) throws Exception {
         setScriptEngine(lang);
@@ -207,14 +242,18 @@ public class Script implements DescriptionObject {
      */
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
         String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
+
         ScriptEngineManager sem = (ScriptEngineManager)Gateway.getProperties().getObject("Script.EngineManager");
+
         if (sem == null) sem = new ScriptEngineManager(getClass().getClassLoader());
         engine = sem.getEngineByName(lang);
-        if (engine==null)
-            throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
-        Bindings beans = engine.createBindings();
+
+        if (engine == null) throw new ScriptingEngineException("No script engine for '"+lang+"' found.");
+
+        mLanguage = requestedLang;
+
         context = new SimpleScriptContext();
-        context.setBindings(beans, ScriptContext.ENGINE_SCOPE);
+        context.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
         engine.setContext(context);
     }
 
@@ -237,13 +276,18 @@ public class Script implements DescriptionObject {
 
     /**
      * Extracts script data from script xml.
+     * 
+     * TODO: implement XML marshall/unmarshall with CASTOR 
      *
      * @param scriptXML
      * @throws ScriptParsingException - when script is invalid
      */
     private void parseScriptXML(String scriptXML) throws ScriptParsingException, ParameterException {
-        //TODO: raw parsing of Script XML with CASTOR unmarshall if possbile
-
+        if (StringUtils.isBlank(scriptXML)) {
+            Logger.warning("Script.parseScriptXML - scriptXML was NULL!" );
+            return;
+        }
+        
         Document scriptDoc = null;
 
         // get the DOM document from the XML
@@ -256,71 +300,99 @@ public class Script implements DescriptionObject {
             throw new ScriptParsingException("Error parsing Script XML : " + ex.toString());
         }
 
-        // parse script first
-        Element scriptElem = (Element)scriptDoc.getElementsByTagName("script").item(0); {
-            if (!scriptElem.hasAttribute("language"))
-                throw new ScriptParsingException("Script data incomplete, must specify scripting language");
-            Logger.msg(6, "Script.parseScriptXML() - Script Language: " + scriptElem.getAttribute("language"));
-            try {
-                setScriptEngine(scriptElem.getAttribute("language"));
-            } catch (ScriptingEngineException ex) {
-                throw new ScriptParsingException(ex.getMessage());
+        parseScriptTag (scriptDoc.getElementsByTagName("script"));
+        parseIncludeTag(scriptDoc.getElementsByTagName("include"));
+        parseParamTag  (scriptDoc.getElementsByTagName("param"));
+        parseOutputTag (scriptDoc.getElementsByTagName("output"));
+    }
+
+    private void parseOutputTag(NodeList outputList) throws ScriptParsingException, ParameterException {
+        for (int i=0; i<outputList.getLength(); i++) {
+            Element output = (Element)outputList.item(i);
+
+            if (!output.hasAttribute("type")) {
+                throw new ScriptParsingException("Script Output declaration incomplete, must have type");
             }
 
-            // get script source
-            NodeList scriptChildNodes = scriptElem.getChildNodes();
-            if (scriptChildNodes.getLength() != 1)
-                throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
-            if (scriptChildNodes.item(0) instanceof Text)
-                setScriptData(((Text) scriptChildNodes.item(0)).getData());
-            else
-                throw new ScriptParsingException("Child element of script tag was not text");
-            Logger.msg(6, "Script.parseScriptXML() - script:" + mScript);
+            addOutput(output.getAttribute("name"), output.getAttribute("type"));
         }
+    }
 
-        NodeList includeList = scriptDoc.getElementsByTagName("include");
+    private void parseParamTag(NodeList paramList) throws ScriptParsingException, ParameterException {
+        for (int i=0; i<paramList.getLength(); i++) {
+            Element param = (Element)paramList.item(i);
+
+            if (!(param.hasAttribute("name") && param.hasAttribute("type"))) {
+                throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
+            }
+
+            addInputParam(param.getAttribute("name"), param.getAttribute("type"));
+        }
+    }
+
+    private void parseIncludeTag(NodeList includeList) throws ScriptParsingException {
         for (int i=0; i<includeList.getLength(); i++) {
             Element include = (Element)includeList.item(i);
+
             if (!(include.hasAttribute("name") && include.hasAttribute("version")))
                 throw new ScriptParsingException("Script include declaration incomplete, must have name and version");
+
             String includeName = include.getAttribute("name");
             String includeVersion =  include.getAttribute("version");
+
             try {
                 Script includedScript = LocalObjectLoader.getScript(includeName, Integer.parseInt(includeVersion));
                 includedScript.setContext(context);
                 mIncludes.add(includedScript);
+
                 for (Parameter includeParam : includedScript.getInputParams().values()) {
                     addIncludedInputParam(includeParam.getName(), includeParam.getType());
                 }
-            } catch (NumberFormatException e) {
+            }
+            catch (NumberFormatException e) {
                 throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
-            } catch (ScriptingEngineException e) {
+            }
+            catch (ScriptingEngineException e) {
                 Logger.error(e);
                 throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+": "+e.getMessage());
-            } catch (ObjectNotFoundException e) {
+            }
+            catch (ObjectNotFoundException e) {
                 Logger.error(e);
                 throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" not found.");
-            } catch (InvalidDataException e) {
+            }
+            catch (InvalidDataException e) {
                 Logger.error(e);
                 throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" was invalid: "+e.getMessage());
             }
         }
+    }
 
-        NodeList paramList = scriptDoc.getElementsByTagName("param");
-        for (int i=0; i<paramList.getLength(); i++) {
-            Element param = (Element)paramList.item(i);        
-            if (!(param.hasAttribute("name") && param.hasAttribute("type")))
-                throw new ScriptParsingException("Script Input Param incomplete, must have name and type");
-            addInputParam(param.getAttribute("name"), param.getAttribute("type"));
+    private void parseScriptTag(NodeList scriptList) throws ScriptParsingException {
+        Element scriptElem = (Element)scriptList.item(0);
+
+        if (!scriptElem.hasAttribute("language")) throw new ScriptParsingException("Script data incomplete, must specify scripting language");
+
+        Logger.msg(6, "Script.parseScriptTag() - Script Language: " + scriptElem.getAttribute("language"));
+
+        try {
+            setScriptEngine(scriptElem.getAttribute("language"));
+        }
+        catch (ScriptingEngineException ex) {
+            throw new ScriptParsingException(ex.getMessage());
         }
 
-        NodeList outputList = scriptDoc.getElementsByTagName("output");
-        for (int i=0; i<outputList.getLength(); i++) {
-            Element output = (Element)outputList.item(i);
-            if (!output.hasAttribute("type"))
-                throw new ScriptParsingException("Script Output declaration incomplete, must have type");
-            addOutput(output.getAttribute("name"), output.getAttribute("type"));
-        }
+        // get script source from CDATA
+        NodeList scriptChildNodes = scriptElem.getChildNodes();
+
+        if (scriptChildNodes.getLength() != 1)
+            throw new ScriptParsingException("More than one child element found under script tag. Script characters may need escaping - suggest convert to CDATA section");
+        
+        if (scriptChildNodes.item(0) instanceof Text)
+            setScriptData(((Text) scriptChildNodes.item(0)).getData());
+        else
+            throw new ScriptParsingException("Child element of script tag was not text");
+
+        Logger.msg(6, "Script.parseScriptTag() - script:" + mScript);
     }
 
     /**
@@ -341,7 +413,7 @@ public class Script implements DescriptionObject {
     protected void addInputParam(String name, Class<?> type) throws ParameterException {
         Parameter inputParam = new Parameter(name, type);
 
-        Logger.msg(6, "ScriptExecutor.parseScriptXML() - declared parameter " + name + " (" + type + ")");
+        Logger.msg(6, "ScriptExecutor.addInputParam() - declared parameter " + name + " (" + type + ")");
         //add parameter to hashtable
         mInputParams.put(inputParam.getName(), inputParam);
         mAllInputParams.put(inputParam.getName(), inputParam);
@@ -403,29 +475,11 @@ public class Script implements DescriptionObject {
     }
 
     /**
-     * Gets all declared parameters
-     * 
-     * @return HashMap of String (name), org.cristalise.kernel.scripting.Parameter (param)
-     * @see org.cristalise.kernel.scripting.Parameter
-     */
-    public HashMap<String, Parameter> getInputParams() {
-        return mInputParams;
-    }
-
-    /**
-     * Gets all declared parameters, including those of imported scripts
-     * @return HashMap of String (name), org.cristalise.kernel.scripting.Parameter (param)
-     * @see org.cristalise.kernel.scripting.Parameter
-     */
-    public HashMap<String, Parameter> getAllInputParams() {
-        return mAllInputParams;
-    }
-
-    /**
      * Submits an input parameter to the script. Must be declared by name and type in the script XML.
      *
      * @param name - input parameter name from the script xml
      * @param value - object to use for this parameter
+     * @return if the input parameter was used or not
      * @throws ParameterException - name not found or wrong type
      */
     public boolean setInputParamValue(String name, Object value) throws ParameterException {
@@ -626,38 +680,8 @@ public class Script implements DescriptionObject {
     }
 
     @Override
-    public String getName() {
-        return mName;
-    }
-
-    @Override
-    public Integer getVersion() {
-        return mVersion;
-    }
-
-    @Override
-    public ItemPath getItemPath() {
-        return mItemPath;
-    }
-
-    @Override
     public String getItemID() {
         return mItemPath.getUUID().toString();
-    }
-
-    @Override
-    public void setName(String name) {
-        mName = name;
-    }
-
-    @Override
-    public void setVersion(Integer version) {
-        mVersion = version;
-    }
-
-    @Override
-    public void setItemPath(ItemPath path) {
-        mItemPath = path;
     }
 
     /**
@@ -687,6 +711,43 @@ public class Script implements DescriptionObject {
 
             if(tokens.length == 2) return new Script(tokens[0], tokens[1]);
             else                   throw new InvalidDataException("Data '"+name+"' cannot be interpreted as expression");
+        }
+    }
+
+    /**
+     * Method for castor marshall
+     * 
+     * @return list of Include objects
+     */
+    public ArrayList<Include> getIncludes() {
+        //FIXME: CASTOR MARSHALLIN DOES NOT WORK YET
+        ArrayList<Include> returnList = new ArrayList<Include>();
+        for(Script s: mIncludes) {
+            returnList.add(new Include(s.getName(), s.getVersion()));
+        }
+        return returnList;
+    }
+
+    /**
+     * Method for castor unmarshall
+     * 
+     * @param includes
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws ParameterException
+     * @throws ScriptParsingException 
+     */
+    public void setIncludes(ArrayList<Include> includes) throws ObjectNotFoundException, InvalidDataException, ParameterException, ScriptParsingException {
+        //FIXME: CASTOR MARSHALLIN DOES NOT WORK YET
+        for(Include i: includes) {
+//            Script includedScript = LocalObjectLoader.getScript(i.name, i.version);
+            Script includedScript = new Script(i.name, i.version, null, null);
+            includedScript.setContext(context);
+            mIncludes.add(includedScript);
+
+            for (Parameter includeParam : includedScript.getInputParams().values()) {
+                addIncludedInputParam(includeParam.getName(), includeParam.getType());
+            }
         }
     }
 
