@@ -22,6 +22,7 @@ package org.cristalise.kernel.process;
 
 import java.net.MalformedURLException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.cristalise.kernel.common.CannotManageException;
@@ -38,7 +39,10 @@ import org.cristalise.kernel.lookup.LookupManager;
 import org.cristalise.kernel.persistency.TransactionManager;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.process.module.ModuleManager;
+import org.cristalise.kernel.process.resource.BuiltInResources;
+import org.cristalise.kernel.process.resource.DefaultResourceImportHandler;
 import org.cristalise.kernel.process.resource.Resource;
+import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.CastorXMLUtility;
@@ -75,6 +79,8 @@ public class Gateway
     static private CorbaServer          mCorbaServer;
     static private CastorXMLUtility     mMarshaller;
     static private ResourceLoader       mResource;
+
+    static private HashMap<BuiltInResources, ResourceImportHandler> resourceImportHandlerCache = new HashMap<BuiltInResources, ResourceImportHandler>();
 
     private Gateway() { }
 
@@ -479,7 +485,49 @@ public class Gateway
         catch (Exception ex) {
             return "No version info found";
         }
+    }
 
+    /**
+     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
+     * or falls back to the default one provided in the kernel
+     * 
+     * @param resType the type o the Resource. ie. one of these values: OD/SC/SM/EA/CA/QL
+     * @return the initialised ResourceImportHandler
+     * @throws Exception
+     */
+    @Deprecated
+    public static ResourceImportHandler getResourceImportHandler(String resType) throws Exception {
+        return getResourceImportHandler(BuiltInResources.getValue(resType));
+    }
+
+    /**
+     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
+     * or falls back to the default one provided in the kernel
+     * 
+     * @param resType the type o the Resource
+     * @return the initialised ResourceImportHandler
+     * @throws Exception
+     */
+    public static ResourceImportHandler getResourceImportHandler(BuiltInResources resType) throws Exception {
+        if (resourceImportHandlerCache.containsKey(resType)) return resourceImportHandlerCache.get(resType);
+
+        ResourceImportHandler handler = null;
+
+        if (Gateway.getProperties().containsKey("ResourceImportHandler."+resType)) {
+            try {
+                handler = (ResourceImportHandler) Gateway.getProperties().getInstance("ResourceImportHandler."+resType);
+            }
+            catch (Exception ex) {
+                Logger.error(ex);
+                Logger.error("Exception loading ResourceHandler for "+resType+". Using default.");
+            }
+        }
+
+        if (handler == null) handler = new DefaultResourceImportHandler(resType);
+
+        resourceImportHandlerCache.put(resType, handler);
+
+        return handler;
     }
 }
 

@@ -144,6 +144,20 @@ public enum BuiltInVertexProperties {
     SCRIPT_VERSION("ScriptVersion"),
 
     /**
+     * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
+     * 
+     * Can be null or undefined.
+     */
+    QUERY_NAME("QueryName"),
+
+    /**
+     * Integer property to hold the version of the Script associated with Activities. 
+     * 
+     * Can be null or undefined.
+     */
+    QUERY_VERSION("QueryVersion"),
+
+    /**
      * String property to hold either the name of the StateMachine or the UUID of the StateMachine 
      * Item associated with Activities. Can be null or undefined. The default StateMachine is called Default
      * 

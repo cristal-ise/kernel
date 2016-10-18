@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.utils;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_NAME;
@@ -36,6 +38,7 @@ import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.Script;
 
 
@@ -46,6 +49,7 @@ public class LocalObjectLoader {
     private static StateMachineCache smCache = new StateMachineCache();
     private static SchemaCache schCache = new SchemaCache();
     private static ScriptCache scrCache = new ScriptCache();
+    private static QueryCache queryCache = new QueryCache();
 
     /**
      * Retrieves a named version of a script from the database
@@ -71,6 +75,32 @@ public class LocalObjectLoader {
      */
     static public Script getScript(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
         return (Script)getDescObjectByProperty(properties, SCRIPT_NAME, SCRIPT_VERSION);
+    }
+
+    /**
+     * Retrieves a named version of a query from the database
+     *
+     * @param queryName - query name
+     * @param queryVersion - integer query version
+     * @return Query
+     * @throws ObjectNotFoundException - When query or version does not exist
+     * @throws InvalidDataException - When the stored query data was invalid
+     * 
+     */ 
+    static public Query getQuery(String queryName, int queryVersion) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.getQuery("+queryName+" v"+queryVersion+")");
+        return queryCache.get(queryName, queryVersion);
+    }
+
+    /**
+     * 
+     * @param properties
+     * @return Query
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    static public Query getQuery(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
+        return (Query)getDescObjectByProperty(properties, QUERY_NAME, QUERY_VERSION);
     }
 
     /**
@@ -189,6 +219,7 @@ public class LocalObjectLoader {
             switch (nameProp) {
                 case SCHEMA_NAME:        return getSchema(resName, resVer);
                 case SCRIPT_NAME:        return getScript(resName, resVer);
+                case QUERY_NAME :        return getQuery(resName, resVer);
                 case STATE_MACHINE_NAME: return getStateMachine(resName, resVer);
                 default:
                     throw new InvalidDataException("LocalObjectLoader CANNOT handle BuiltInVertexPropertie:"+nameProp);

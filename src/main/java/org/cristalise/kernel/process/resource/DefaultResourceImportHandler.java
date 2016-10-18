@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
@@ -35,44 +36,65 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 
 public class DefaultResourceImportHandler implements ResourceImportHandler {
 
-    String schemaName;
-    String typeRoot;
-    DomainPath typeRootPath;
-    String wfDef;
-    PropertyDescriptionList props;
+    BuiltInResources         type;
+    String                   schemaName;
+    String                   typeRoot;
+    DomainPath               typeRootPath;
+    String                   wfDef;
+    PropertyDescriptionList  props;
 
-    public DefaultResourceImportHandler(String resType) throws Exception {
-        if (resType.equals("CA")) {
-            schemaName = "CompositeActivityDef";
-            typeRoot = "/desc/ActivityDesc";
-            wfDef = "ManageCompositeActDef";
+    public DefaultResourceImportHandler(BuiltInResources resType) throws Exception {
+        type = resType;
+
+        switch (resType) {
+            case COMPOSITE_ACTIVITY_DESC:
+                schemaName = "CompositeActivityDef";
+                typeRoot = "/desc/ActivityDesc";
+                wfDef = "ManageCompositeActDef";
+                break;
+
+            case ELEMENTARY_ACTIVITY_DESC:
+                schemaName = "ElementaryActivityDef";
+                typeRoot = "/desc/ActivityDesc";
+                wfDef = "ManageElementaryActDef";
+                break;
+
+            case SCHEMA:
+                schemaName = "Schema";
+                typeRoot = "/desc/OutcomeDesc";
+                wfDef = "ManageSchema";
+                break;
+    
+            case SCRIPT:
+                schemaName = "Script";
+                typeRoot = "/desc/Script";
+                wfDef = "ManageScript";
+                break;
+
+            case STATE_MACHINE:
+                schemaName = "StateMachine";
+                typeRoot = "/desc/StateMachine";
+                wfDef = "ManageStateMachine";
+                break;
+
+            case QUERY:
+                schemaName = "Query";
+                typeRoot = "/desc/Query";
+                wfDef = "ManageQuery";
+                break;
+
+            default:
+                throw new InvalidDataException("Unknown bootstrap item type: "+resType);
         }
-        else if (resType.equals("EA")) {
-            schemaName = "ElementaryActivityDef";
-            typeRoot = "/desc/ActivityDesc";
-            wfDef = "ManageElementaryActDef";
-        }
-        else if (resType.equals("OD")) {
-            schemaName = "Schema";
-            typeRoot = "/desc/OutcomeDesc";
-            wfDef = "ManageSchema";
-        }
-        else if (resType.equals("SC")) {
-            schemaName = "Script";
-            typeRoot = "/desc/Script";
-            wfDef = "ManageScript";
-        }
-        else if (resType.equals("SM")) {
-            schemaName = "StateMachine";
-            typeRoot = "/desc/StateMachine";
-            wfDef = "ManageStateMachine";
-        }
-        else 
-            throw new Exception("Unknown bootstrap item type: "+resType);
 
         typeRootPath = new DomainPath(typeRoot);
 
         props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
+    }
+
+    @Deprecated
+    public DefaultResourceImportHandler(String resType) throws Exception {
+        this(BuiltInResources.getValue(resType));
     }
 
     @Override

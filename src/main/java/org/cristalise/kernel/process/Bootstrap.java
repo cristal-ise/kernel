@@ -56,7 +56,6 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
-import org.cristalise.kernel.process.resource.DefaultResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
@@ -76,7 +75,6 @@ import org.custommonkey.xmlunit.XMLUnit;
 public class Bootstrap
 {
     static DomainPath thisServerPath;
-    static HashMap<String, ResourceImportHandler> resHandlerCache = new HashMap<String, ResourceImportHandler>();
     static HashMap<String, AgentProxy> systemAgents = new HashMap<String, AgentProxy>();
     public static boolean shutdown = false;
     static StateMachine predefSM;
@@ -267,7 +265,7 @@ public class Bootstrap
     private static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, String dataLocation, boolean reset)
             throws Exception
     {
-        ResourceImportHandler typeImpHandler = getHandler(itemType);
+        ResourceImportHandler typeImpHandler = Gateway.getResourceImportHandler(itemType);
 
         Logger.msg(1, "Bootstrap.verifyResource() - Verifying "+typeImpHandler.getName()+" "+ itemName+" v"+version);
 
@@ -447,36 +445,6 @@ public class Bootstrap
             Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - "+schema.getName()+" "+item.getName()+" v"+version+" not found! Attempting to insert new.");
         }
         return true;
-    }
-
-    /**
-     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
-     * or falls back to the default one provided in the kernel
-     * 
-     * @param resType the type o the Resource
-     * @return the initialised ResourceImportHandler
-     * @throws Exception
-     */
-    private static ResourceImportHandler getHandler(String resType) throws Exception {
-        if (resHandlerCache.containsKey(resType)) return resHandlerCache.get(resType);
-
-        ResourceImportHandler handler = null;
-
-        if (Gateway.getProperties().containsKey("ResourceImportHandler."+resType)) {
-            try {
-                handler = (ResourceImportHandler) Gateway.getProperties().getInstance("ResourceImportHandler."+resType);
-            }
-            catch (Exception ex) {
-                Logger.error(ex);
-                Logger.error("Exception loading ResourceHandler for "+resType+". Using default.");
-            }
-        }
-
-        if (handler == null) handler = new DefaultResourceImportHandler(resType);
-
-        resHandlerCache.put(resType, handler);
-
-        return handler;
     }
 
     /**

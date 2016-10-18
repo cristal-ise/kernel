@@ -20,12 +20,14 @@
  */
 package org.cristalise.kernel.test.persistency;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -42,7 +44,7 @@ public class CastorXMLTest {
 
     @Before
     public void setup() throws Exception {
-        Logger.addLogStream(System.out, 5);
+        Logger.addLogStream(System.out, 6);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
     }
@@ -76,15 +78,26 @@ public class CastorXMLTest {
     public void testScriptCDATAHandling() throws Exception {
         String origScriptXML = FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/SC/CreateNewNumberedVersionFromLast.xml"));
         String marshalledScriptXML = Gateway.getMarshaller().marshall(Gateway.getMarshaller().unmarshall(origScriptXML));
-        
+
         assertTrue(compareXML(origScriptXML, marshalledScriptXML));
     }
 
-    @Test
+    @Test @Ignore("Castor XML mapping is not done for Query")
     public void testQueryCDATAHandling() throws Exception {
-        String origScriptXML = FileStringUtility.url2String(CastorXMLTest.class.getResource("/testQuery.xml"));
-        String marshalledScriptXML = Gateway.getMarshaller().marshall(Gateway.getMarshaller().unmarshall(origScriptXML));
-        
-        assertTrue(compareXML(origScriptXML, marshalledScriptXML));
+        String origQueryXML = FileStringUtility.url2String(CastorXMLTest.class.getResource("/testQuery.xml"));
+        String marshalledQueryXML = Gateway.getMarshaller().marshall(Gateway.getMarshaller().unmarshall(origQueryXML));
+
+        assertTrue(compareXML(origQueryXML, marshalledQueryXML));
+    }
+
+    @Test 
+    public void testQueryParsing() throws Exception {
+        Query q = new Query(FileStringUtility.url2String(CastorXMLTest.class.getResource("/testQuery.xml")));
+
+        assertEquals("TestQuery", q.getName());
+        assertEquals((int)0, (int)q.getVersion());
+        assertEquals("existdb:xquery", q.getLanguage());
+        assertTrue(q.getQuery().startsWith("\n<TRList>"));
+        assertTrue(q.getQuery().endsWith("</TRList>\n    "));
     }
 }
