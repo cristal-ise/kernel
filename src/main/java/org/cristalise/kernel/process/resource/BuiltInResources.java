@@ -21,36 +21,79 @@
 
 package org.cristalise.kernel.process.resource;
 
+import lombok.Getter;
+
+
+/*
+case COMP_ACT_DESC_RESOURCE:
+    schemaName = "CompositeActivityDef";
+    typeRoot = "/desc/ActivityDesc";
+    wfDef = "ManageCompositeActDef";
+    break;
+
+case ELEM_ACT_DESC_RESOURCE:
+    schemaName = "ElementaryActivityDef";
+    typeRoot = "/desc/ActivityDesc";
+    wfDef = "ManageElementaryActDef";
+    break;
+
+case SCHEMA_RESOURCE:
+    schemaName = "Schema";
+    typeRoot = "/desc/OutcomeDesc";
+    wfDef = "ManageSchema";
+    break;
+
+case SCRIPT_RESOURCE:
+    schemaName = "Script";
+    typeRoot = "/desc/Script";
+    wfDef = "ManageScript";
+    break;
+
+case STATE_MACHINE_RESOURCE:
+    schemaName = "StateMachine";
+    typeRoot = "/desc/StateMachine";
+    wfDef = "ManageStateMachine";
+    break;
+
+case QUERY_RESOURCE:
+    schemaName = "Query";
+    typeRoot = "/desc/Query";
+    wfDef = "ManageQuery";
+    break;
+*/
 
 /**
  *
  */
+@Getter
 public enum BuiltInResources {
-    PROPERTY_DESC("property"),
-    SCHEMA("OD"),
-    SCRIPT("SC"),
-    QUERY("query"),
-    STATE_MACHINE("SM"),
-    COMPOSITE_ACTIVITY_DESC("CA"),
-    ELEMENTARY_ACTIVITY_DESC("EA");
+    PROPERTY_DESC_RESOURCE("property", "PropertyDescription",   null,                 null),
+    SCHEMA_RESOURCE(       "OD",       "Schema",                "/desc/OutcomeDesc",  "ManageSchema"),
+    SCRIPT_RESOURCE(       "SC",       "Script",                "/desc/Script",       "ManageScript"),
+    QUERY_RESOURCE(        "query",    "Query",                 "/desc/Query",        "ManageQuery"),
+    STATE_MACHINE_RESOURCE("SM",       "StateMachine",          "/desc/StateMachine", "ManageStateMachine"),
+    COMP_ACT_DESC_RESOURCE("CA",       "CompositeActivityDef",  "/desc/ActivityDesc", "ManageCompositeActDef"),
+    ELEM_ACT_DESC_RESOURCE("EA",       "ElementaryActivityDef", "/desc/ActivityDesc", "ManageElementaryActDef");
 
-    private String typeName;
+    private String  typeCode;
+    private String  schemaName;
+    private String  typeRoot;
+    private String  workflowDef;
 
-    private BuiltInResources(final String n) {
-        typeName = n;
-    }
-
-    public String getName() {
-        return typeName;
+    private BuiltInResources(final String code, final String schema, final String root, final String wf) {
+        typeCode = code;
+        schemaName = schema;
+        typeRoot = root;
+        workflowDef = wf;
     }
 
     public String toString() {
-        return getName();
+        return getTypeCode();
     }
 
-    public static BuiltInResources getValue(String typeName) {
+    public static BuiltInResources getValue(String typeCode) {
         for (BuiltInResources res : BuiltInResources.values()) {
-            if(res.getName().equals(typeName) || res.name().equals(typeName)) return res;
+            if(res.getTypeCode().equals(typeCode) || res.name().equals(typeCode)) return res;
         }
         return null;
     }

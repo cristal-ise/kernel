@@ -32,12 +32,12 @@ public class QueryCache extends DescriptionObjectCache<Query> {
 
     @Override
     public String getTypeCode() {
-        return BuiltInResources.QUERY.getName();
+        return BuiltInResources.QUERY_RESOURCE.getTypeCode();
     }
 
     @Override
     public String getSchemaName() {
-        return "Query";
+        return BuiltInResources.QUERY_RESOURCE.getSchemaName();
     }
 
     @Override

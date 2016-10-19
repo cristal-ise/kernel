@@ -24,6 +24,8 @@
 package org.cristalise.kernel.utils;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.process.resource.BuiltInResources.COMP_ACT_DESC_RESOURCE;
+import static org.cristalise.kernel.process.resource.BuiltInResources.ELEM_ACT_DESC_RESOURCE;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -35,65 +37,74 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 
-
 public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 
-	Boolean isComposite;
-	public ActDefCache(Boolean isComposite) {
-		super();
-		this.isComposite = isComposite;
-	}
+    Boolean isComposite;
 
-	@Override
-	public String getTypeCode() {
-		if (isComposite == null) return "AC";
-		return isComposite?"CA":"EA";
-	}
-	
-	@Override
-	public String getSchemaName() {
-		if (isComposite == null) return "ActivityDef"; // this won't work for resource loads, but loadObject is overridden below 
-		return isComposite?"CompositeActivityDef":"ActivityDef";
-	}
-	
-	@Override
-	protected boolean isBootResource(String filename, String resName) {
-		if (isComposite==null)
-			return filename.endsWith("/"+resName) && (filename.startsWith("CA") || filename.startsWith("EA"));
-		else
-			return super.isBootResource(filename, resName);
-	}
+    public ActDefCache(Boolean isComposite) {
+        super();
+        this.isComposite = isComposite;
+    }
 
-	@Override
-	public ActivityDef loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
-		String actType;
-		if (isComposite == null)
-			actType = proxy.getProperty("Complexity");
-		else 
-			actType= isComposite?"Composite":"Elementary";
-        Viewpoint actView = (Viewpoint)proxy.getObject(ClusterStorage.VIEWPOINT + "/" + actType + "ActivityDef/" + version);
-        String marshalledAct;
-		try {
-			marshalledAct = actView.getOutcome().getData();
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new ObjectNotFoundException("Problem loading "+name+" v"+version+": "+ex.getMessage());
-		}
-		return buildObject(name, version, proxy.getPath(), marshalledAct);
-	}
+    @Override
+    public String getTypeCode() {
+        if (isComposite == null) return "AC";
+        return isComposite ? COMP_ACT_DESC_RESOURCE.getTypeCode() : ELEM_ACT_DESC_RESOURCE.getTypeCode();
+    }
 
-	@Override
-	public ActivityDef buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
-		try {
-			ActivityDef thisActDef = (ActivityDef)Gateway.getMarshaller().unmarshall(data);
-			thisActDef.setBuiltInProperty(VERSION, version);
-	        thisActDef.setName(name);
-	        thisActDef.setVersion(version);
-	        thisActDef.setItemPath(path);
-	        return thisActDef;
-		} catch (Exception ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Could not unmarshall '"+name+"' v"+version+": "+ex.getMessage());
-		}
-	}
+    @Override
+    public String getSchemaName() {
+        if (isComposite == null) return "ActivityDef"; // this won't work for resource loads, but loadObject is overridden below
+        return isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
+    }
+
+    @Override
+    protected boolean isBootResource(String filename, String resName) {
+        if (isComposite == null)
+            return filename.endsWith("/" + resName) && (filename.startsWith("CA") || filename.startsWith("EA"));
+        else
+            return super.isBootResource(filename, resName);
+    }
+
+    @Override
+    public ActivityDef loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
+        String viewName;
+
+        if (isComposite == null) {
+            String prop = proxy.getProperty("Complexity");
+
+            if(     "Composite".equals(prop)) isComposite = true;
+            else if("Elementary".equals(prop)) isComposite = false;
+            else throw new InvalidDataException("Missing 'complexity' property");
+        }
+
+        viewName = isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
+
+        Viewpoint actView = (Viewpoint) proxy.getObject(ClusterStorage.VIEWPOINT + "/" + viewName + "/" + version);
+
+        try {
+            String marshalledAct = actView.getOutcome().getData();
+            return buildObject(name, version, proxy.getPath(), marshalledAct);
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new ObjectNotFoundException("Problem loading Activity " + name + " v" + version + ": " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public ActivityDef buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
+        try {
+            ActivityDef thisActDef = (ActivityDef) Gateway.getMarshaller().unmarshall(data);
+            thisActDef.setBuiltInProperty(VERSION, version);
+            thisActDef.setName(name);
+            thisActDef.setVersion(version);
+            thisActDef.setItemPath(path);
+            return thisActDef;
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Could not unmarshall Activity '" + name + "' v" + version + ": " + ex.getMessage());
+        }
+    }
 }

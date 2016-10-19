@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.querying;
 
+import static org.cristalise.kernel.process.resource.BuiltInResources.QUERY_RESOURCE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -36,7 +38,6 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -138,8 +139,8 @@ public class Query implements DescriptionObject {
 
     @Override
     public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
-        String resType = BuiltInResources.QUERY.getName();
-        
+        String resType = QUERY_RESOURCE.getTypeCode();
+
         //FIXME: this line only saves the actual query, rather than the full XML
         FileStringUtility.string2File(new File(new File(dir, resType), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getQuery());
 

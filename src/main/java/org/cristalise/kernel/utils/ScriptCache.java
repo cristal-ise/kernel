@@ -25,29 +25,29 @@ package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.scripting.Script;
-
 
 public class ScriptCache extends DescriptionObjectCache<Script> {
 
-	
-	@Override
-	public String getTypeCode() {
-		return "SC";
-	}
-	
-	@Override
-	public String getSchemaName() {
-		return "Script";
-	}
-	
-	@Override
-	public Script buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
-		try {
-			return new Script(name, version, path, data);
-		} catch (Exception ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Error parsing script '"+name+"' v"+version+": "+ex.getMessage());
-		}
-	}
+    @Override
+    public String getTypeCode() {
+        return BuiltInResources.SCRIPT_RESOURCE.getTypeCode();
+    }
+
+    @Override
+    public String getSchemaName() {
+        return BuiltInResources.SCRIPT_RESOURCE.getSchemaName();
+    }
+
+    @Override
+    public Script buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
+        try {
+            return new Script(name, version, path, data);
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Error parsing script '" + name + "' v" + version + ": " + ex.getMessage());
+        }
+    }
 }

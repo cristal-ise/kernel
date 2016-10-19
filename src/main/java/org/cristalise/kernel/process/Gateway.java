@@ -80,6 +80,7 @@ public class Gateway
     static private CastorXMLUtility     mMarshaller;
     static private ResourceLoader       mResource;
 
+    //FIXME: Move this cache to Resource class - requires to extend ResourceLoader with getResourceImportHandler()
     static private HashMap<BuiltInResources, ResourceImportHandler> resourceImportHandlerCache = new HashMap<BuiltInResources, ResourceImportHandler>();
 
     private Gateway() { }

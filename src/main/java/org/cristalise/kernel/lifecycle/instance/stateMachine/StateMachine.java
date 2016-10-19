@@ -36,6 +36,7 @@ import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -313,6 +314,8 @@ public class StateMachine implements DescriptionObject {
     @Override
     public void export(Writer imports, File dir) throws IOException, InvalidDataException {
         String smXML;
+        String typeCode = BuiltInResources.STATE_MACHINE_RESOURCE.getTypeCode();
+
         try {
             smXML = Gateway.getMarshaller().marshall(this);
         }
@@ -320,12 +323,12 @@ public class StateMachine implements DescriptionObject {
             Logger.error(e);
             throw new InvalidDataException("Couldn't marshall state machine " + getName());
         }
-        
-        FileStringUtility.string2File(new File(new File(dir, "SM"), getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), smXML);
+
+        FileStringUtility.string2File(new File(new File(dir, typeCode), getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), smXML);
 
         if (imports != null) {
             imports.write("<Resource name=\"" + getName() + "\" " + (getItemPath() == null ? "" : "id=\"" + getItemID() + "\" ")
-                    + (getVersion() == null ? "" : "version=\"" + getVersion() + "\" ") + "type=\"SM\">boot/SM/" + getName()
+                    + (getVersion() == null ? "" : "version=\"" + getVersion() + "\" ") + "type=\""+typeCode+"\">boot/"+typeCode+"/" + getName()
                     + (getVersion() == null ? "" : "_" + getVersion()) + ".xml</Resource>\n");
         }
     }

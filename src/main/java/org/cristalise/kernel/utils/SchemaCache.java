@@ -26,29 +26,30 @@ package org.cristalise.kernel.utils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
-
+import org.cristalise.kernel.process.resource.BuiltInResources;
 
 public class SchemaCache extends DescriptionObjectCache<Schema> {
 
-	@Override
-	public String getTypeCode() {
-		return "OD";
-	}
-	
-	@Override
-	public String getSchemaName() {
-		return "Schema";
-	}
-	
-	@Override
-	public Schema buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
-		try {
-			Schema thisSchema =  new Schema(name, version, path, data);
-			thisSchema.validate();
-			return thisSchema;
-		} catch (Exception ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Could not parse Schema '"+name+"' v"+version+": "+ex.getMessage());
-		}
-	}
+    @Override
+    public String getTypeCode() {
+        return BuiltInResources.SCHEMA_RESOURCE.getTypeCode();
+    }
+
+    @Override
+    public String getSchemaName() {
+        return BuiltInResources.SCHEMA_RESOURCE.getSchemaName();
+    }
+
+    @Override
+    public Schema buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
+        try {
+            Schema thisSchema = new Schema(name, version, path, data);
+            thisSchema.validate();
+            return thisSchema;
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Could not parse Schema '" + name + "' v" + version + ": " + ex.getMessage());
+        }
+    }
 }

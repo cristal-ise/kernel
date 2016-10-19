@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
-import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
@@ -37,58 +36,12 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     BuiltInResources         type;
-    String                   schemaName;
-    String                   typeRoot;
     DomainPath               typeRootPath;
-    String                   wfDef;
     PropertyDescriptionList  props;
 
     public DefaultResourceImportHandler(BuiltInResources resType) throws Exception {
         type = resType;
-
-        switch (resType) {
-            case COMPOSITE_ACTIVITY_DESC:
-                schemaName = "CompositeActivityDef";
-                typeRoot = "/desc/ActivityDesc";
-                wfDef = "ManageCompositeActDef";
-                break;
-
-            case ELEMENTARY_ACTIVITY_DESC:
-                schemaName = "ElementaryActivityDef";
-                typeRoot = "/desc/ActivityDesc";
-                wfDef = "ManageElementaryActDef";
-                break;
-
-            case SCHEMA:
-                schemaName = "Schema";
-                typeRoot = "/desc/OutcomeDesc";
-                wfDef = "ManageSchema";
-                break;
-    
-            case SCRIPT:
-                schemaName = "Script";
-                typeRoot = "/desc/Script";
-                wfDef = "ManageScript";
-                break;
-
-            case STATE_MACHINE:
-                schemaName = "StateMachine";
-                typeRoot = "/desc/StateMachine";
-                wfDef = "ManageStateMachine";
-                break;
-
-            case QUERY:
-                schemaName = "Query";
-                typeRoot = "/desc/Query";
-                wfDef = "ManageQuery";
-                break;
-
-            default:
-                throw new InvalidDataException("Unknown bootstrap item type: "+resType);
-        }
-
-        typeRootPath = new DomainPath(typeRoot);
-
+        typeRootPath = new DomainPath(type.getTypeRoot());
         props = (PropertyDescriptionList)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/property/"+resType+"Prop.xml"));
     }
 
@@ -99,14 +52,13 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     @Override
     public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception {
-
-        if (schemaName.endsWith("ActivityDef")) {
+        if (type.getSchemaName().endsWith("ActivityDef")) {
             String actData = Gateway.getResource().getTextResource(ns, location);
             ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
             actDef.setVersion(version);
             return actDef.makeDescCollections();
         }
-        else if (schemaName.equals("Script")) {
+        else if (type.getSchemaName().equals("Script")) {
             Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
             return thisScript.makeDescCollections();
         }
@@ -120,12 +72,12 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     @Override
     public String getName() {
-        return schemaName;
+        return type.getSchemaName();
     }
 
     @Override
     public DomainPath getPath(String name, String ns) throws Exception {
-        return new DomainPath(typeRoot+"/system/"+(ns == null ? "kernel" : ns)+'/'+name);
+        return new DomainPath(type.getTypeRoot()+"/system/"+(ns == null ? "kernel" : ns)+'/'+name);
     }
 
     @Override
@@ -133,9 +85,9 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
         HashSet<Outcome> retArr = new HashSet<Outcome>();
         String data = Gateway.getResource().getTextResource(ns, location);
 
-        if (data == null) throw new Exception("No data found for "+schemaName+" "+name);
+        if (data == null) throw new Exception("No data found for "+type.getSchemaName()+" "+name);
 
-        Outcome resOutcome = new Outcome(0, data, LocalObjectLoader.getSchema(schemaName, 0));
+        Outcome resOutcome = new Outcome(0, data, LocalObjectLoader.getSchema(type.getSchemaName(), 0));
         retArr.add(resOutcome);
         return retArr;
     }
@@ -147,6 +99,6 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     @Override
     public String getWorkflowName() throws Exception {
-        return wfDef;
+        return type.getWorkflowDef();
     }
 }

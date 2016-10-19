@@ -27,33 +27,34 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
-
+import org.cristalise.kernel.process.resource.BuiltInResources;
 
 public class StateMachineCache extends DescriptionObjectCache<StateMachine> {
 
-	
-	@Override
-	public String getTypeCode() {
-		return "SM";
-	}
-	@Override
-	public String getSchemaName() {
-		return "StateMachine";
-	}
-	
-	@Override
-	public StateMachine buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
-		try {
-			StateMachine thisStateMachine = (StateMachine)Gateway.getMarshaller().unmarshall(data);
-			thisStateMachine.validate();
-			thisStateMachine.setName(name);
-			thisStateMachine.setVersion(version);
-			thisStateMachine.setItemPath(path);
-	        return thisStateMachine;
-		} catch (Exception ex) {
-			Logger.error(ex);
-			throw new InvalidDataException("Could not unmarshall State Machine '"+name+"' v"+version+": "+ex.getMessage());
-		}
-	}
+    @Override
+    public String getTypeCode() {
+        return BuiltInResources.STATE_MACHINE_RESOURCE.getTypeCode();
+    }
+
+    @Override
+    public String getSchemaName() {
+        return BuiltInResources.STATE_MACHINE_RESOURCE.getSchemaName();
+    }
+
+    @Override
+    public StateMachine buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
+        try {
+            StateMachine thisStateMachine = (StateMachine) Gateway.getMarshaller().unmarshall(data);
+            thisStateMachine.validate();
+            thisStateMachine.setName(name);
+            thisStateMachine.setVersion(version);
+            thisStateMachine.setItemPath(path);
+            return thisStateMachine;
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Could not unmarshall State Machine '" + name + "' v" + version + ": " + ex.getMessage());
+        }
+    }
 
 }
