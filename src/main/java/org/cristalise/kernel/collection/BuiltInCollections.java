@@ -59,6 +59,15 @@ public enum BuiltInCollections {
     SCRIPT("Script"),
 
     /**
+     * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties (see bellow). 
+     * Also it is Dependency Collection of Workflow.
+     * 
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#QUERY_NAME
+     * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#QUERY_VERSION
+     */
+    QUERY("Query"),
+
+    /**
      * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties
      * 
      * @see org.cristalise.kernel.graph.model.BuiltInVertexProperties#STATE_MACHINE_NAME

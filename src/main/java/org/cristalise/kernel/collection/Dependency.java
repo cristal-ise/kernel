@@ -21,6 +21,8 @@
 package org.cristalise.kernel.collection;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ACTIVITY_DEF_URN;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_NAME;
@@ -28,6 +30,7 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_V
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.property.BuiltInItemProperties.QUERY_URN;
 import static org.cristalise.kernel.property.BuiltInItemProperties.SCHEMA_URN;
 import static org.cristalise.kernel.property.BuiltInItemProperties.SCRIPT_URN;
 import static org.cristalise.kernel.property.BuiltInItemProperties.STATE_MACHINE_URN;
@@ -235,9 +238,14 @@ public class Dependency extends Collection<DependencyMember> {
                     props.put(new Property(SCRIPT_URN, memberUUID+":"+memberVer));
                     break;
                 //***************************************************************************************************
+                case QUERY:
+                    LocalObjectLoader.getQuery(memberUUID, memberVer);
+                    props.put(new Property(QUERY_URN, memberUUID+":"+memberVer));
+                    break;
+                //***************************************************************************************************
                 case STATE_MACHINE:
                     if (Gateway.getProperties().getBoolean("Dependency.addStateMachineURN", false) ) {
-                        LocalObjectLoader.getScript(memberUUID, memberVer);
+                        LocalObjectLoader.getStateMachine(memberUUID, memberVer);
                         props.put(new Property(STATE_MACHINE_URN, memberUUID+":"+memberVer));
                     }
                     break;
@@ -340,6 +348,22 @@ public class Dependency extends Collection<DependencyMember> {
                     }
                     break;
                 //***************************************************************************************************
+                case QUERY:
+                    try {
+                        LocalObjectLoader.getQuery(memberUUID, memberVer);
+                        props.setBuiltInProperty(QUERY_NAME, memberUUID);
+                        props.setBuiltInProperty(QUERY_VERSION, memberVer);
+                    }
+                    catch (ObjectNotFoundException e) {
+                        //Backward compability: Query dependency could be defined in Properties
+                        if(props.containsKey(QUERY_NAME)) {
+                            Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
+                            String uuid = LocalObjectLoader.getQuery(props).getItemPath().getUUID().toString();
+                            props.setBuiltInProperty(QUERY_NAME, uuid);
+                        }
+                    }
+                    break;
+                //***************************************************************************************************
                 case STATE_MACHINE:
                     try {
                         LocalObjectLoader.getStateMachine(memberUUID, memberVer);
@@ -348,7 +372,7 @@ public class Dependency extends Collection<DependencyMember> {
                     }
                     catch (ObjectNotFoundException e) {
                         if(props.containsKey(STATE_MACHINE_NAME)) {
-                            Logger.msg(8, "Dependency.addToVertexProperties() - Dependency '"+getName()+"' is defined in Properties");
+                            Logger.msg(8, "Dependency.addToVertexProperties() -  BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
                             String uuid = LocalObjectLoader.getStateMachine(props).getItemPath().getUUID().toString();
                             props.setBuiltInProperty(STATE_MACHINE_NAME, uuid);
                         }

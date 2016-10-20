@@ -65,6 +65,12 @@ public enum BuiltInItemProperties {
     SCRIPT_URN("ScriptURN"),
 
     /**
+     * The UUID of the Query Item and its Version number separated by colon ':'. It is created during 
+     * instantiation of the Query Dependency.
+     */
+    QUERY_URN("QueryURN"),
+
+    /**
      * The UUID of the StateMachine Item and its Version number separated by colon ':'. It is created during 
      * instantiation of the StateMachine Dependency.
      */
