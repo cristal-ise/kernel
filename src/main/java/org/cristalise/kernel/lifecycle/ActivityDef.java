@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.QUERY;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
@@ -46,6 +47,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
@@ -65,6 +67,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     Schema          actSchema;
     Script          actScript;
+    Query           actQuery;
     StateMachine    actStateMachine;
 
     public ActivityDef() {
@@ -194,6 +197,14 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return actScript;
     }
 
+    public Query getQuery() throws InvalidDataException, ObjectNotFoundException {
+        if (actQuery == null) {
+            Logger.msg(1, "ActivityDef.getQuery(actName:"+getName()+") - Loading ...");
+            actQuery = LocalObjectLoader.getQuery(getProperties());
+        }
+        return actQuery;
+    }
+
     public StateMachine getStateMachine() throws InvalidDataException, ObjectNotFoundException {
         if (actStateMachine == null) {
             Logger.msg(1, "ActivityDef.getStateMachine(actName:"+getName()+") - Loading ...");
@@ -236,6 +247,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                     break;
                 case SCRIPT:
                     retArr.add(LocalObjectLoader.getScript(resUUID, resVer));
+                    break;
+                case QUERY:
+                    retArr.add(LocalObjectLoader.getQuery(resUUID, resVer));
                     break;
                 case STATE_MACHINE:
                     retArr.add(LocalObjectLoader.getStateMachine(resUUID, resVer));
@@ -292,6 +306,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
         retArr.put(makeDescCollection(SCHEMA,        getSchema()));
         retArr.put(makeDescCollection(SCRIPT,        getScript()));
+        retArr.put(makeDescCollection(QUERY,         getQuery()));
         retArr.put(makeDescCollection(STATE_MACHINE, getStateMachine()));
 
         return retArr;
