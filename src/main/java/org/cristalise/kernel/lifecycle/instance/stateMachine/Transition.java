@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -33,11 +36,13 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
+@Getter @Setter
 public class Transition {
 
     int    id;
@@ -70,6 +75,7 @@ public class Transition {
 
     TransitionOutcome outcome;
     TransitionScript  script;
+    TransitionQuery   query;
 
     public Transition() {}
 
@@ -84,47 +90,6 @@ public class Transition {
         this.targetStateId = targetStateId;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public State getOriginState() {
-        return originState;
-    }
-
-    public void setOriginState(State originState) {
-        this.originState = originState;
-    }
-
-    public State getTargetState() {
-        return targetState;
-    }
-
-    public void setTargetState(State targetState) {
-        this.targetState = targetState;
-        finishing = targetState.finished;
-    }
-
-    public String getEnabledProp() {
-        return enabledProp;
-    }
-
-    public void setEnabledProp(String enabledProp) {
-        this.enabledProp = enabledProp;
-    }
-
-    public boolean isRequiresActive() {
-        return requiresActive;
-    }
-
-    public boolean isFinishing() {
-        return finishing;
-    }
-
     public boolean reinitializes() {
         return reinitializes;
     }
@@ -134,44 +99,8 @@ public class Transition {
         reinitializes = reinit;
     }
 
-    public void setRequiresActive(boolean requiresActive) {
-        this.requiresActive = requiresActive;
-    }
-
-    public String getRoleOverride() {
-        return roleOverride;
-    }
-
     public String getRoleOverride(CastorHashMap actProps) {
         return resolveValue(roleOverride, actProps);
-    }
-
-    public void setRoleOverride(String roleOverride) {
-        this.roleOverride = roleOverride;
-    }
-
-    public TransitionOutcome getOutcome() {
-        return outcome;
-    }
-
-    public void setOutcome(TransitionOutcome outcome) {
-        this.outcome = outcome;
-    }
-
-    public TransitionScript getScript() {
-        return script;
-    }
-
-    public void setScript(TransitionScript script) {
-        this.script = script;
-    }
-
-    public String getReservation() {
-        return reservation;
-    }
-
-    public void setReservation(String reservation) {
-        this.reservation = reservation;
     }
 
     protected boolean resolveStates(HashMap<Integer, State> states) {
@@ -187,30 +116,6 @@ public class Transition {
         else allFound = false;
 
         return allFound;
-    }
-
-    public int getOriginStateId() {
-        return originStateId;
-    }
-
-    public void setOriginStateId(int originStateId) {
-        this.originStateId = originStateId;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getTargetStateId() {
-        return targetStateId;
-    }
-
-    public void setTargetStateId(int targetStateId) {
-        this.targetStateId = targetStateId;
     }
 
     public String getPerformingRole(Activity act, AgentPath agent) throws ObjectNotFoundException, AccessRightsException {
@@ -312,11 +217,8 @@ public class Transition {
     public boolean hasOutcome(CastorHashMap actProps) {
         if (outcome == null || actProps == null) return false;
 
-        String outcomeName = resolveValue(outcome.schemaName, actProps);
-        if (StringUtils.isEmpty(outcomeName)) return false;
-
-        String outcomeVersion = resolveValue(outcome.schemaVersion, actProps);
-        if (StringUtils.isEmpty(outcomeVersion)) return false;
+        if (StringUtils.isEmpty( resolveValue(outcome.schemaName,    actProps)) ) return false;
+        if (StringUtils.isEmpty( resolveValue(outcome.schemaVersion, actProps)) ) return false;
 
         return true;
     }
@@ -324,11 +226,17 @@ public class Transition {
     public boolean hasScript(CastorHashMap actProps) {
         if (script == null || actProps == null) return false;
 
-        String scriptName = resolveValue(script.scriptName, actProps);
-        if (StringUtils.isEmpty(scriptName)) return false;
+        if (StringUtils.isEmpty( resolveValue(script.scriptName,    actProps)) ) return false;
+        if (StringUtils.isEmpty( resolveValue(script.scriptVersion, actProps)) ) return false;
 
-        String scriptVersion = resolveValue(script.scriptVersion, actProps);
-        if (StringUtils.isEmpty(scriptVersion)) return false;
+        return true;
+    }
+
+    public boolean hasQuery(CastorHashMap actProps) {
+        if (query == null || actProps == null) return false;
+
+        if (StringUtils.isEmpty( resolveValue(query.name,    actProps)) ) return false;
+        if (StringUtils.isEmpty( resolveValue(query.version, actProps)) ) return false;
 
         return true;
     }
@@ -355,7 +263,21 @@ public class Transition {
                     Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
             }
             catch (NumberFormatException ex) {
-                throw new InvalidDataException("Bad schema version number: " + outcome.schemaVersion + " (" + resolveValue(outcome.schemaVersion, actProps) + ")");
+                throw new InvalidDataException("Bad script version number: " + script.scriptVersion + " (" + resolveValue(script.scriptVersion, actProps) + ")");
+            }
+        }
+        else return null;
+    }
+
+    public Query getQuery(CastorHashMap actProps) throws ObjectNotFoundException, InvalidDataException {
+        if (hasQuery(actProps)) {
+            try {
+                return LocalObjectLoader.getQuery(
+                    resolveValue(query.name, actProps),
+                    Integer.parseInt(resolveValue(query.version, actProps)));
+            }
+            catch (NumberFormatException ex) {
+                throw new InvalidDataException("Bad query version number: " + query.version + " (" + resolveValue(query.version, actProps) + ")");
             }
         }
         else return null;

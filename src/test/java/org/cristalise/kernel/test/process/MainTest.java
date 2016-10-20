@@ -64,7 +64,8 @@ public class MainTest {
         while (str.hasMoreTokens()) {
             String thisItem = str.nextToken();
             StringTokenizer str2 = new StringTokenizer(thisItem, "/,");
-            String id = str2.nextToken(), itemType = str2.nextToken(), resName = str2.nextToken();
+            String id = str2.nextToken();
+            String itemType = str2.nextToken(), resName = str2.nextToken();
             Logger.msg(1, "Validating " + itemType+" "+resName);
             OutcomeValidator validator = validators.get(itemType);
             String data = Gateway.getResource().getTextResource(

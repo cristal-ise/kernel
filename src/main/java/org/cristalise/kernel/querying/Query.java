@@ -38,8 +38,12 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
+import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,27 +62,23 @@ public class Query implements DescriptionObject {
     
     public Query() {}
 
-    public Query(String n, int v, ItemPath path, String q) throws QueryParsingException {
+    public Query(String n, int v, ItemPath path, String xml) throws QueryParsingException {
         name = n;
         version = v;
         itemPath = path;
-        query = q;
 
-        parseQuery();
+        parseXML(xml);
     }
 
-    public Query(String n, int v, String q) throws QueryParsingException {
+    public Query(String n, int v, String xml) throws QueryParsingException {
         name = n;
         version = v;
-        query = q;
 
-        parseQuery();
+        parseXML(xml);
     }
 
-    public Query(String q) throws QueryParsingException {
-        query = q;
-
-        parseQuery();
+    public Query(String xml) throws QueryParsingException {
+        parseXML(xml);
     }
 
    @Override
@@ -86,19 +86,36 @@ public class Query implements DescriptionObject {
         return itemPath.getUUID().toString();
     }
 
-    public void parseQuery() throws QueryParsingException {
-        if (StringUtils.isBlank(query) || "<NULL/>".equals(query)) {
-            Logger.warning("Query.parseQuery - query XML was NULL!" );
+    public void validateXML(String xml) throws InvalidDataException, ObjectNotFoundException {
+        Schema querySchema;
+
+        if (Gateway.getLookup() == null) querySchema = new Schema("Query", 0, Gateway.getResource().getTextResource(null, "boot/OD/Query.xsd"));
+        else                             querySchema = LocalObjectLoader.getSchema("Query", 0);
+
+        OutcomeValidator validator = new OutcomeValidator(querySchema);
+        String error = validator.validate(xml);
+
+        if (StringUtils.isBlank(error)) {
+            Logger.debug(5, "Query.validateL() - DONE");
+        }
+        else {
+            Logger.error("Query.validateXML() - $error");
+            Logger.error("\n============== XML ==============\n" + xml + "\n=================================\n");
+            throw new InvalidDataException(error);
+        }
+    }
+
+    public void parseXML(String xml) throws QueryParsingException {
+        if (StringUtils.isBlank(xml) || "<NULL/>".equals(xml)) {
+            Logger.warning("Query.parseXML() - query XML was NULL!" );
             return;
         }
 
-        Document queryDoc = null;
-
-        // get the DOM document from the XML
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
-            DocumentBuilder domBuilder = factory.newDocumentBuilder();
-            queryDoc = domBuilder.parse(new InputSource(new StringReader(query)));
+            validateXML(xml);
+
+            DocumentBuilder domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document queryDoc = domBuilder.parse(new InputSource(new StringReader(xml)));
 
             if(queryDoc.getDocumentElement().hasAttribute("name") )    name    = queryDoc.getDocumentElement().getAttribute("name");
             if(queryDoc.getDocumentElement().hasAttribute("version") ) version = Integer.valueOf(queryDoc.getDocumentElement().getAttribute("version"));
@@ -106,6 +123,7 @@ public class Query implements DescriptionObject {
             parseQueryTag (queryDoc.getElementsByTagName("query"));
         }
         catch (Exception ex) {
+            Logger.error(ex);
             throw new QueryParsingException("Error parsing Query XML : " + ex.toString());
         }
     }
@@ -123,13 +141,17 @@ public class Query implements DescriptionObject {
 
         if (queryChildNodes.getLength() != 1)
             throw new QueryParsingException("More than one child element found under query tag. Query characters may need escaping - suggest convert to CDATA section");
-        
-        if (queryChildNodes.item(0) instanceof Text)
-            query = ((Text) queryChildNodes.item(0)).getData();
-        else
-            throw new QueryParsingException("Child element of query tag was not text");
+
+        if (queryChildNodes.item(0) instanceof Text) query = ((Text) queryChildNodes.item(0)).getData();
+        else                                         throw new QueryParsingException("Child element of query tag was not text");
 
         Logger.msg(6, "Query.parseQueryTag() - query:" + query);
+    }
+
+    public String getQueryXML() {
+        return "<cristalquery name='" + name + "' version='" + version + "'>" +
+                    "<query language='" + language + "'>"+"<![CDATA[" + query + "]]></query>" +
+               "</cristalquery>";
     }
 
     @Override

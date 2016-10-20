@@ -21,26 +21,25 @@
 
 -->
 <StateMachine initialState="0">
-              <State id="0" name="Waiting"/>
-              <State id="1" name="Started"/>
-              <State id="2" name="Finished" proceeds="true"/>
-              <State id="3" name="Suspended"/>
+    <State id="0" name="Waiting" />
+    <State id="1" name="Started" />
+    <State id="2" name="Finished" proceeds="true" />
+    <State id="3" name="Suspended" />
 
-              <Transition id="0" name="Done" origin="0" target="2">
-                          <Outcome name="${SchemaType}" version="${SchemaVersion}"/>
-                          <Script name="${ScriptName}" version="${ScriptVersion}"/>
-              </Transition>
-              <Transition id="1" name="Start" origin="0" target="1" reservation="set"/>
-              <Transition id="2" name="Complete" origin="1" target="2" reservation="clear">
-                          <Outcome name="${SchemaType}" version="${SchemaVersion}"/>
-                          <Script name="${ScriptName}" version="${ScriptVersion}"/>              
-              </Transition>
-              <Transition id="3" name="Suspend" origin="1" target="3">
-                          <Outcome name="Errors" version="0"/>
-              </Transition>
-              <Transition id="4" name="Resume" origin="3" target="1" roleOverride="Admin" reservation="preserve"/>
-              <Transition id="5" name="Proceed" origin="2" target="2"/>
+    <Transition id="0" name="Done" origin="0" target="2">
+        <Outcome name="${SchemaType}" version="${SchemaVersion}" />
+        <Script  name="${ScriptName}" version="${ScriptVersion}" />
+        <Query   name="${QueryName}"  version="${QueryVersion}" />
+    </Transition>
+    <Transition id="1" name="Start" origin="0" target="1" reservation="set" />
+    <Transition id="2" name="Complete" origin="1" target="2" reservation="clear">
+        <Outcome name="${SchemaType}" version="${SchemaVersion}" />
+        <Script  name="${ScriptName}" version="${ScriptVersion}" />
+        <Query   name="${QueryName}"  version="${QueryVersion}" />
+    </Transition>
+    <Transition id="3" name="Suspend" origin="1" target="3">
+        <Outcome name="Errors" version="0" />
+    </Transition>
+    <Transition id="4" name="Resume" origin="3" target="1" roleOverride="Admin" reservation="preserve" />
+    <Transition id="5" name="Proceed" origin="2" target="2" />
 </StateMachine>
-
-
-
