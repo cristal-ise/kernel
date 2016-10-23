@@ -20,7 +20,8 @@
 
     http://www.fsf.org/licensing/licenses/lgpl.html
 
---><mapping>
+-->
+<mapping>
     <class name="org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine">
         <map-to xml="StateMachine" />
         <field name="name" type="string" direct="false">
