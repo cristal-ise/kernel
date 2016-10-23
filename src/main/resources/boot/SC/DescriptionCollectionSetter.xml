@@ -54,6 +54,7 @@ if (objName != null && !objName.isEmpty()) {
     try {
         if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
         else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
+        else if (objType.equals("Query"))        newObj = LocalObjectLoader.getQuery(objName, objVer);
         else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
         else {
             var searchProps = new Array(2);
@@ -76,8 +77,8 @@ if (objName != null && !objName.isEmpty()) {
         params[0] = objType;
 
         //TODO: implement multiplicity check (could be based on a property) instead of hardcoded value
-        if ((objType.equals("Schema") || objType.equals("Script") || objType.equals("StateMachine")) && descColl.size() > 0) {
-            Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member for Schema/Script/StateMachine");
+        if ((objType.equals("Schema") || objType.equals("Script") || objType.equals("Query") || objType.equals("StateMachine")) && descColl.size() > 0) {
+            Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member for Schema/Script/Query/StateMachine");
 
             params[1] = descColl.getMembers().list.iterator().next().getID();
             agent.execute(item, "RemoveSlotFromCollection", params);
