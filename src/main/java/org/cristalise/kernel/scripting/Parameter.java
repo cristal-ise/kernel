@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.scripting;
 
-import org.cristalise.kernel.process.Gateway;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -63,6 +61,6 @@ public class Parameter {
      * @throws ClassNotFoundException
      */
     public void setTypeFromName(String className) throws ClassNotFoundException {
-        type = Gateway.getResource().getClassForName(className);
+        type = Class.forName(className);
     }
 }
