@@ -31,6 +31,7 @@ import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -63,8 +64,8 @@ public class TransactionManager {
         storage.close();
     }
 
-    public String adHocQuery(String query, String queryType) throws PersistencyException {
-        return storage.adHocQuery(query, queryType);
+    public String executeQuery(Query query) throws PersistencyException {
+        return storage.executeQuery(query);
     }
 
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
@@ -157,7 +158,7 @@ public class TransactionManager {
      * 
      * @param itemPath
      * @param locker
-     * @return
+     * @return the list of transaction corresponds to that lock object
      * @throws PersistencyException
      */
     private ArrayList<TransactionEntry> getLockingTransaction(ItemPath itemPath, Object locker) throws PersistencyException {

@@ -28,6 +28,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -174,10 +175,10 @@ public abstract class ClusterStorage {
     /**
      * Checks whether the storage support the given type of query or not
      * 
-     * @param queryType type of the query (e.g. SQL/XQuery)
-     * @return if the Storage supports the type of the query 
+     * @param language type of the query (e.g. SQL/XQuery/XPath/....)
+     * @return whether the Storage supports the type of the query or not
      */
-    public abstract boolean checkQuerySupport(String queryType);
+    public abstract boolean checkQuerySupport(String language);
 
     /**
      * @return A full name of this storage for logging
@@ -243,11 +244,10 @@ public abstract class ClusterStorage {
      * Executes an SQL/OQL/XQuery/XPath/etc query in the target database. 
      * 
      * @param query the query to be executed
-     * @param queryType the type of the query to be executed 
      * @return the xml result of the query
      * @throws PersistencyException
      */
-    public abstract String adHocQuery(String query, String queryType) throws PersistencyException;
+    public abstract String executeQuery(Query query) throws PersistencyException;
 
     /**
      * Fetches a CRISTAL local object from storage by path

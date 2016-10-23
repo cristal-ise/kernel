@@ -38,6 +38,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.SoftCache;
 import org.cristalise.kernel.utils.WeakCache;
@@ -148,14 +149,15 @@ public class ClusterStorageManager {
     }
 
     /**
+     * Check which storage can execute the given query
      * 
-     * @param queryType
-     * @return
+     * @param language the language of the query
+     * @return the found store or null
      */
-    private ClusterStorage findStorageForQuery(String queryType) {
+    private ClusterStorage findStorageForQuery(String language) {
         for (String element : clusterPriority) {
             ClusterStorage store = allStores.get(element);
-            if (store.checkQuerySupport(queryType) ) return store;
+            if (store.checkQuerySupport(language) ) return store;
         }
         return null;
     }
@@ -198,14 +200,13 @@ public class ClusterStorageManager {
     /**
      * 
      * @param query
-     * @param queryType
      * @return the result of the query
      * @throws PersistencyException
      */
-    public String adHocQuery(String query, String queryType) throws PersistencyException {
-        ClusterStorage reader = findStorageForQuery(queryType);
+    public String executeQuery(Query query) throws PersistencyException {
+        ClusterStorage reader = findStorageForQuery(query.getLanguage());
 
-        if (reader != null) return reader.adHocQuery(query, queryType);
+        if (reader != null) return reader.executeQuery(query);
         else                return null;
     }
 

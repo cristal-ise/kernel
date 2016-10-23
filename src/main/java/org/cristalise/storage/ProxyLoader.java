@@ -34,6 +34,7 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
 
 
@@ -55,7 +56,7 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
-    public boolean checkQuerySupport(String queryType) {
+    public boolean checkQuerySupport(String language) {
         Logger.warning("ProxyLoader DOES NOT Support any query");
         return false;
     }
@@ -76,7 +77,7 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
-    public String adHocQuery(String query, String queryType) throws PersistencyException {
+    public String executeQuery(Query query) throws PersistencyException {
         throw new PersistencyException("UNIMPLEMENTED funnction");
     }
 
