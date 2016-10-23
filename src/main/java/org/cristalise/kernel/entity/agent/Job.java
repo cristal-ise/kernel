@@ -33,7 +33,6 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
@@ -48,6 +47,7 @@ import org.cristalise.kernel.persistency.outcome.OutcomeInitiator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
@@ -55,7 +55,6 @@ import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
-
 
 /**
  * 
@@ -332,6 +331,13 @@ public class Job implements C2KLocalObject {
         return null;
     }
 
+    public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
+        if (getTransition().hasQuery(actProps)) {
+            return getTransition().getQuery(actProps);
+        }
+        return null;
+    }
+
     @Deprecated
     public String getScriptName() {
         try {
@@ -525,6 +531,10 @@ public class Job implements C2KLocalObject {
 
     public boolean hasScript() {
         return transition.hasScript(actProps);
+    }
+
+    public boolean hasQuery() {
+        return transition.hasQuery(actProps);
     }
 
     public boolean isOutcomeSet() {

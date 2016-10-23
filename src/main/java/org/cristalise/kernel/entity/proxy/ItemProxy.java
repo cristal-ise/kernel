@@ -49,6 +49,7 @@ import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
@@ -384,9 +385,16 @@ public class ItemProxy
         }
     }
 
-    public String adHocQuery(String query, String queryType) throws ObjectNotFoundException {
+    /**
+     * Executes Cristal Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc. 
+     * 
+     * @param query the query to be executed
+     * @return the xml result of the query
+     * @throws ObjectNotFoundException
+     */
+    public String executeQuery(Query query) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().adHocQuery(query, queryType);
+            return Gateway.getStorage().executeQuery(query);
         }
         catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());
