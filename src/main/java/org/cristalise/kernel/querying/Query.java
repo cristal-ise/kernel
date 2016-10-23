@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +42,8 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.OutcomeValidator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.scripting.ParameterException;
+import org.cristalise.kernel.scripting.ScriptParsingException;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -59,7 +62,9 @@ public class Query implements DescriptionObject {
     private ItemPath    itemPath;
     private String      language;
     private String      query;
-    
+
+    private ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+
     public Query() {}
 
     public Query(String n, int v, ItemPath path, String xml) throws QueryParsingException {
@@ -81,9 +86,13 @@ public class Query implements DescriptionObject {
         parseXML(xml);
     }
 
-   @Override
+    @Override
     public String getItemID() {
         return itemPath.getUUID().toString();
+    }
+
+    public boolean hasParameters() {
+        return parameters != null && parameters.size() > 0; 
     }
 
     public void validateXML(String xml) throws InvalidDataException, ObjectNotFoundException {
@@ -96,7 +105,7 @@ public class Query implements DescriptionObject {
         String error = validator.validate(xml);
 
         if (StringUtils.isBlank(error)) {
-            Logger.debug(5, "Query.validateL() - DONE");
+            Logger.msg(5, "Query.validateXML() - DONE");
         }
         else {
             Logger.error("Query.validateXML() - $error");
@@ -111,6 +120,8 @@ public class Query implements DescriptionObject {
             return;
         }
 
+        if(Logger.doLog(8)) Logger.msg("Query.parseXML() - xml:\n"+xml);
+
         try {
             validateXML(xml);
 
@@ -120,7 +131,8 @@ public class Query implements DescriptionObject {
             if(queryDoc.getDocumentElement().hasAttribute("name") )    name    = queryDoc.getDocumentElement().getAttribute("name");
             if(queryDoc.getDocumentElement().hasAttribute("version") ) version = Integer.valueOf(queryDoc.getDocumentElement().getAttribute("version"));
 
-            parseQueryTag (queryDoc.getElementsByTagName("query"));
+            parseQueryTag(queryDoc.getElementsByTagName("query"));
+            parseParameterTag(queryDoc.getElementsByTagName("parameter"));
         }
         catch (Exception ex) {
             Logger.error(ex);
@@ -148,10 +160,31 @@ public class Query implements DescriptionObject {
         Logger.msg(6, "Query.parseQueryTag() - query:" + query);
     }
 
+    private void parseParameterTag(NodeList paramList) throws ScriptParsingException, ParameterException, ClassNotFoundException {
+        for (int i = 0; i < paramList.getLength(); i++) {
+            Element param = (Element)paramList.item(i);
+
+            if (!(param.hasAttribute("name") && param.hasAttribute("type"))) {
+                throw new ScriptParsingException("Incomplete Query Parameter: must have name and type");
+            }
+
+            parameters.add( new Parameter(param.getAttribute("name"), param.getAttribute("type")) );
+        }
+    }
+
     public String getQueryXML() {
-        return "<cristalquery name='" + name + "' version='" + version + "'>" +
-                    "<query language='" + language + "'>"+"<![CDATA[" + query + "]]></query>" +
-               "</cristalquery>";
+        StringBuffer sb = new StringBuffer("<cristalquery name='" + name + "' version='" + version + "'>");
+
+        for(Parameter p: parameters) {
+            sb.append("<parameter name='"+p.getName()+"' type='"+p.getType().getName()+"'/>");
+        }
+
+        sb.append("<query language='" + language + "'>"+"<![CDATA[" + query + "]]></query>");
+        sb.append("</cristalquery>");
+
+        if(Logger.doLog(8)) Logger.msg("Query.getQueryXML() - xml:\n"+sb);
+
+        return sb.toString();
     }
 
     @Override
@@ -163,8 +196,7 @@ public class Query implements DescriptionObject {
     public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
         String resType = QUERY_RESOURCE.getTypeCode();
 
-        //FIXME: this line only saves the actual query, rather than the full XML
-        FileStringUtility.string2File(new File(new File(dir, resType), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getQuery());
+        FileStringUtility.string2File(new File(new File(dir, resType), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getQueryXML());
 
         if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
                 +(getItemPath()==null?"":"id=\""+getItemID()+"\" ")

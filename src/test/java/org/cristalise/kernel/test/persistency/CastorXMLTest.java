@@ -97,6 +97,11 @@ public class CastorXMLTest {
         assertEquals("TestQuery", q.getName());
         assertEquals((int)0, (int)q.getVersion());
         assertEquals("existdb:xquery", q.getLanguage());
+
+        assertEquals(1, q.getParameters().size());
+        assertEquals("uuid", q.getParameters().get(0).getName());
+        assertEquals("java.lang.String", q.getParameters().get(0).getType().getName());
+
         assertTrue(q.getQuery().startsWith("\n<TRList>"));
         assertTrue(q.getQuery().endsWith("</TRList>\n    "));
     }
