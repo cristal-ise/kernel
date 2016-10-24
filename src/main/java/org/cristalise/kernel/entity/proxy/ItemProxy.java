@@ -47,6 +47,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.querying.Query;
@@ -419,17 +420,29 @@ public class ItemProxy
         }
     }
 
-    
+    /**
+     * Retrieves the values of a BuiltInItemProperty
+     * 
+     * @param prop one of the Built-In Item Property
+     * @return the value of the property
+     * @throws ObjectNotFoundException
+     */
+    public String getProperty( BuiltInItemProperties prop ) throws ObjectNotFoundException {
+        return getProperty(prop.getName());
+    }
+
+    /**
+     * Retrieves the values of a named property
+     * @param name of the Item Property
+     * @return the value of the property
+     * @throws ObjectNotFoundException
+     */
     public String getProperty( String name ) throws ObjectNotFoundException {
         Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
         Property prop = (Property)getObject("Property/"+name);
 
-        try {
-            return prop.getValue();
-        }
-        catch (NullPointerException ex) {
-            throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not finf property "+name+" from item "+mItemPath);
-        }
+        if(prop != null) return prop.getValue();
+        else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not finf property "+name+" from item "+mItemPath);
     }
 
     public String getName() {

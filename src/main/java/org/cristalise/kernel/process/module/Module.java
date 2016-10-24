@@ -21,6 +21,7 @@
 package org.cristalise.kernel.process.module;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.CONTENTS;
+import static org.cristalise.kernel.property.BuiltInItemProperties.COMPLEXITY;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.io.File;
@@ -288,12 +289,12 @@ public class Module extends ImportItem {
                 ItemProxy    child   = mem.resolveItem();
                 String       name    = child.getName();
                 Integer      version = Integer.valueOf(mem.getProperties().get("Version").toString());
-                String       type    = child.getProperty("Type");
+                String       type    = child.getProperty(TYPE);
                 ModuleImport newImport;
                 
                 switch (type) {
                     case "ActivityDesc":
-                        String complex = child.getProperty("Complexity");
+                        String complex = child.getProperty(COMPLEXITY);
 
                         if (complex.equals("Elementary")) newImport = new ModuleActivity(child, version);
                         else                              newImport = new ModuleWorkflow(child, version);
@@ -301,6 +302,7 @@ public class Module extends ImportItem {
                         break;
 
                     case "Script":
+                    case "Query":
                     case "StateMachine":
                     case "OutcomeDesc":
                         newImport = new ModuleResource();

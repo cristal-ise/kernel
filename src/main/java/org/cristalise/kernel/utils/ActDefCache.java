@@ -24,8 +24,10 @@
 package org.cristalise.kernel.utils;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.process.resource.BuiltInResources.ACTIVITY_DESC_RESOURCE;
 import static org.cristalise.kernel.process.resource.BuiltInResources.COMP_ACT_DESC_RESOURCE;
 import static org.cristalise.kernel.process.resource.BuiltInResources.ELEM_ACT_DESC_RESOURCE;
+import static org.cristalise.kernel.property.BuiltInItemProperties.COMPLEXITY;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -39,7 +41,7 @@ import org.cristalise.kernel.process.Gateway;
 
 public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 
-    Boolean isComposite;
+    Boolean isComposite = null;
 
     public ActDefCache(Boolean isComposite) {
         super();
@@ -48,14 +50,16 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
 
     @Override
     public String getTypeCode() {
-        if (isComposite == null) return "AC";
+        if (isComposite == null) return ACTIVITY_DESC_RESOURCE.getTypeCode();
         return isComposite ? COMP_ACT_DESC_RESOURCE.getTypeCode() : ELEM_ACT_DESC_RESOURCE.getTypeCode();
     }
 
     @Override
     public String getSchemaName() {
-        if (isComposite == null) return "ActivityDef"; // this won't work for resource loads, but loadObject is overridden below
-        return isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
+        if (isComposite == null)
+            return ACTIVITY_DESC_RESOURCE.getSchemaName(); // this won't work for resource loads, but loadObject is overridden below
+        else 
+            return isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
     }
 
     @Override
@@ -71,18 +75,18 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
         String viewName;
 
         if (isComposite == null) {
-            String prop = proxy.getProperty("Complexity");
+            String prop = proxy.getProperty(COMPLEXITY);
 
-            if(     "Composite".equals(prop)) isComposite = true;
-            else if("Elementary".equals(prop)) isComposite = false;
-            else throw new InvalidDataException("Missing 'complexity' property");
+            if(     "Composite".equals(prop))  viewName = COMP_ACT_DESC_RESOURCE.getSchemaName();
+            else if("Elementary".equals(prop)) viewName = ELEM_ACT_DESC_RESOURCE.getSchemaName();
+            else                               throw new InvalidDataException("Missing Item property:" + COMPLEXITY);
+        }
+        else {
+            viewName = isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
         }
 
-        viewName = isComposite ? COMP_ACT_DESC_RESOURCE.getSchemaName() : ELEM_ACT_DESC_RESOURCE.getSchemaName();
-
-        Viewpoint actView = (Viewpoint) proxy.getObject(ClusterStorage.VIEWPOINT + "/" + viewName + "/" + version);
-
         try {
+            Viewpoint actView = (Viewpoint) proxy.getObject(ClusterStorage.VIEWPOINT + "/" + viewName + "/" + version);
             String marshalledAct = actView.getOutcome().getData();
             return buildObject(name, version, proxy.getPath(), marshalledAct);
         }

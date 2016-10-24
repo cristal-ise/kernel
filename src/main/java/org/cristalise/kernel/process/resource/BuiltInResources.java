@@ -35,7 +35,8 @@ public enum BuiltInResources {
     QUERY_RESOURCE(        "query",    "Query",                 "/desc/Query",        "ManageQuery"),
     STATE_MACHINE_RESOURCE("SM",       "StateMachine",          "/desc/StateMachine", "ManageStateMachine"),
     COMP_ACT_DESC_RESOURCE("CA",       "CompositeActivityDef",  "/desc/ActivityDesc", "ManageCompositeActDef"),
-    ELEM_ACT_DESC_RESOURCE("EA",       "ElementaryActivityDef", "/desc/ActivityDesc", "ManageElementaryActDef");
+    ELEM_ACT_DESC_RESOURCE("EA",       "ElementaryActivityDef", "/desc/ActivityDesc", "ManageElementaryActDef"),
+    ACTIVITY_DESC_RESOURCE("AC",       "ActivityDef",           null,                 null);
 
     private String  typeCode;
     private String  schemaName;
