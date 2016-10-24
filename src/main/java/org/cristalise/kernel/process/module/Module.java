@@ -43,6 +43,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.scripting.ErrorInfo;
@@ -59,12 +60,10 @@ public class Module extends ImportItem {
 
     public Module() {
         super();
-        // Module properties
         properties.add(new Property(TYPE, "Module", false));
 
-        //FIXME: This is defined in DefaultResourceImportHandler for all the other module imports
-        setInitialPath("/desc/modules/");
-        setWorkflow("NoWorkflow");
+        setInitialPath(BuiltInResources.MODULE_RESOURCE.getTypeRoot());
+        setWorkflow(   BuiltInResources.MODULE_RESOURCE.getWorkflowDef());
         setWorkflowVer(0);
 
         //imports.list.add(this);

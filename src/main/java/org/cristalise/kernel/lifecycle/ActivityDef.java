@@ -25,6 +25,7 @@ import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.process.resource.BuiltInResources.ELEM_ACT_DESC_RESOURCE;
 
 import java.io.File;
 import java.io.IOException;
@@ -315,6 +316,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     @Override
     public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
         String actXML;
+        String tc = ELEM_ACT_DESC_RESOURCE.getTypeCode();
+
         try {
             actXML = Gateway.getMarshaller().marshall(this);
         }
@@ -323,10 +326,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             throw new InvalidDataException("Couldn't marshall activity def " + getActName());
         }
         
-        FileStringUtility.string2File(new File(new File(dir, "EA"), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), actXML);
+        FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), actXML);
 
         if (imports != null) {
-            imports.write("<Activity " + getExportAttributes("EA") + ">" + getExportCollections() + "</Activity>\n");
+            imports.write("<Activity " + getExportAttributes(tc) + ">" + getExportCollections() + "</Activity>\n");
         }
     }
 
@@ -341,6 +344,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return 
             (getStateMachine() == null ? "" : "<StateMachine name=\"" + getStateMachine().getName() + "\" id=\"" + getStateMachine().getItemID() + "\" version=\"" + getStateMachine().getVersion() + "\"/>")
                 + (getSchema() == null ? "" : "<Schema       name=\"" + getSchema().getName() + "\"       id=\"" + getSchema().getItemID()       + "\" version=\"" + getSchema().getVersion()       + "\"/>")
-                + (getScript() == null ? "" : "<Script       name=\"" + getScript().getName() + "\"       id=\"" + getScript().getItemID()       + "\" version=\"" + getScript().getVersion()       + "\"/>");
+                + (getScript() == null ? "" : "<Script       name=\"" + getScript().getName() + "\"       id=\"" + getScript().getItemID()       + "\" version=\"" + getScript().getVersion()       + "\"/>")
+                + (getQuery()  == null ? "" : "<Query        name=\"" + getQuery().getName()  + "\"       id=\"" + getQuery().getItemID()        + "\" version=\"" + getQuery().getVersion()        + "\"/>");
     }
 }

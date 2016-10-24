@@ -20,9 +20,12 @@
  */
 package org.cristalise.kernel.process.module;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.QUERY;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
+import lombok.Getter;
+import lombok.Setter;
 
 import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Collection;
@@ -40,127 +43,117 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
+@Getter @Setter
 public class ModuleActivity extends ModuleResource {
 
-	ModuleDescRef script, schema, stateMachine;
-	ActivityDef actDef;
+    ModuleDescRef script, schema, query, stateMachine;
+    ActivityDef   actDef;
 
-	public ModuleActivity() {
-		super();
-		resourceType="EA";
-	}
-	
-	public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
-		this();
-		this.version = version;
-		script = getDescRef(child, SCRIPT);
-		schema = getDescRef(child, SCHEMA);
-		stateMachine = getDescRef(child, STATE_MACHINE);
-		
-	}
-	
-	public ModuleDescRef getDescRef(ItemProxy child, BuiltInCollections collection) throws ObjectNotFoundException, InvalidDataException {
-		Collection<?> coll = child.getCollection(collection.getName(), version);
-		
-		if (coll.size() == 1) throw new InvalidDataException("Too many members in "+collection+" collection in "+name);
-		
-		CollectionMember collMem = coll.getMembers().list.get(0);
-		return new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get("Version").toString()));
-	}
+    public ModuleActivity() {
+        super();
+        resourceType = BuiltInResources.ELEM_ACT_DESC_RESOURCE.getTypeCode();
+    }
 
-	@Override
-	public Path create(AgentPath agentPath, boolean reset)
-			throws ObjectNotFoundException, ObjectCannotBeUpdated,
-			CannotManageException, ObjectAlreadyExistsException, InvalidDataException {
-		try {
-			domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
-			itemPath = domainPath.getItemPath();
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new CannotManageException("Exception verifying module resource "+ns+"/"+name);
-		}		
+    public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
+        this();
+        this.version = version;
 
-		actDef = LocalObjectLoader.getActDef(name, version);
-		populateActivityDef();
-		
-		CollectionArrayList colls;
-		try {
-			colls = actDef.makeDescCollections();
-		} catch (InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("Could not create description collections for "+getName()+".");
-		}
-		for (Collection<?> coll : colls.list) {
-			try {
-				Gateway.getStorage().put(itemPath, coll, null);
-				// create last collection
-				coll.setVersion(null);
-				Gateway.getStorage().put(itemPath, coll, null);
-			} catch (PersistencyException e) {
-				Logger.error(e);
-				throw new CannotManageException("Persistency exception storing description collections for "+getName()+".");
-			}
-		}
+        script       = getDescRef(child, SCRIPT);
+        schema       = getDescRef(child, SCHEMA);
+        query        = getDescRef(child, QUERY);
+        stateMachine = getDescRef(child, STATE_MACHINE);
+    }
 
-		return domainPath;
-	}
-	
+    public ModuleDescRef getDescRef(ItemProxy child, BuiltInCollections collection) throws ObjectNotFoundException, InvalidDataException {
+        Collection<?> coll = child.getCollection(collection.getName(), version);
 
-	public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
-		try {
-			if (schema != null) 
-				actDef.setSchema(LocalObjectLoader.getSchema(schema.id == null? schema.name:schema.id, Integer.valueOf(schema.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("Schema definition in "+getName()+" not valid.");
-		}
-		try {
-			if (script != null) 
-				actDef.setScript(LocalObjectLoader.getScript(script.id == null? script.name:script.id, Integer.valueOf(script.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("Script definition in "+getName()+" not valid.");
-		}
-		try {
-			if (stateMachine != null) 
-				actDef.setStateMachine(LocalObjectLoader.getStateMachine(stateMachine.id == null? stateMachine.name:stateMachine.id, Integer.valueOf(stateMachine.version)));
-		} catch (NumberFormatException | InvalidDataException e) {
-			Logger.error(e);
-			throw new CannotManageException("State Machine definition in "+getName()+" not valid.");
-		}
-	}
+        if (coll.size() == 1) throw new InvalidDataException("Too many members in " + collection + " collection in " + name);
 
-	public ModuleDescRef getScript() {
-		return script;
-	}
-	
+        CollectionMember collMem = coll.getMembers().list.get(0);
+        return new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().get("Version").toString()));
+    }
 
-	public void setScript(ModuleDescRef script) {
-		this.script = script;
-	}
-	
+    @Override
+    public Path create(AgentPath agentPath, boolean reset) 
+            throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidDataException
+    {
+        try {
+            domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
+            itemPath = domainPath.getItemPath();
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new CannotManageException("Exception verifying module resource " + ns + "/" + name);
+        }
 
-	public ModuleDescRef getSchema() {
-		return schema;
-	}
-	
+        actDef = LocalObjectLoader.getActDef(name, version);
+        populateActivityDef();
 
-	public void setSchema(ModuleDescRef schema) {
-		this.schema = schema;
-	}
-	
+        CollectionArrayList colls;
 
-	public ModuleDescRef getStateMachine() {
-		return stateMachine;
-	}
-	
+        try {
+            colls = actDef.makeDescCollections();
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            throw new CannotManageException("Could not create description collections for " + getName() + ".");
+        }
+        for (Collection<?> coll : colls.list) {
+            try {
+                Gateway.getStorage().put(itemPath, coll, null);
+                // create last collection
+                coll.setVersion(null);
+                Gateway.getStorage().put(itemPath, coll, null);
+            }
+            catch (PersistencyException e) {
+                Logger.error(e);
+                throw new CannotManageException("Persistency exception storing description collections for " + getName() + ".");
+            }
+        }
 
-	public void setStateMachine(ModuleDescRef stateMachine) {
-		this.stateMachine = stateMachine;
-	}
-	
-	
+        return domainPath;
+    }
+
+    public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
+        try {
+            if (schema != null)
+                actDef.setSchema(LocalObjectLoader.getSchema(schema.id == null ? schema.name : schema.id, Integer.valueOf(schema.version)));
+        }
+        catch (NumberFormatException | InvalidDataException e) {
+            Logger.error(e);
+            throw new CannotManageException("Schema definition in " + getName() + " not valid.");
+        }
+
+        try {
+            if (script != null)
+                actDef.setScript(LocalObjectLoader.getScript(script.id == null ? script.name : script.id, Integer.valueOf(script.version)));
+        }
+        catch (NumberFormatException | InvalidDataException e) {
+            Logger.error(e);
+            throw new CannotManageException("Script definition in " + getName() + " not valid.");
+        }
+
+        try {
+            if (query != null)
+                actDef.setScript(LocalObjectLoader.getScript(query.id == null ? query.name : query.id, Integer.valueOf(query.version)));
+        }
+        catch (NumberFormatException | InvalidDataException e) {
+            Logger.error(e);
+            throw new CannotManageException("Query definition in " + getName() + " not valid.");
+        }
+
+        try {
+            if (stateMachine != null)
+                actDef.setStateMachine(LocalObjectLoader.getStateMachine(stateMachine.id == null ? stateMachine.name : stateMachine.id,
+                        Integer.valueOf(stateMachine.version)));
+        }
+        catch (NumberFormatException | InvalidDataException e) {
+            Logger.error(e);
+            throw new CannotManageException("State Machine definition in " + getName() + " not valid.");
+        }
+    }
 }

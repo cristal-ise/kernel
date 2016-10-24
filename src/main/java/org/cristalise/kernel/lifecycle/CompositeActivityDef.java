@@ -24,6 +24,7 @@ import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ABORTABLE;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.REPEAT_WHEN;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
+import static org.cristalise.kernel.process.resource.BuiltInResources.COMP_ACT_DESC_RESOURCE;
 
 import java.io.File;
 import java.io.IOException;
@@ -420,10 +421,12 @@ public class CompositeActivityDef extends ActivityDef {
             }
         }
 
+        String tc = COMP_ACT_DESC_RESOURCE.getTypeCode();
+
         try {
             // export marshalled compAct
             String compactXML = Gateway.getMarshaller().marshall(this);
-            FileStringUtility.string2File(new File(new File(dir, "CA"), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
+            FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
         }
         catch (Exception e) {
             Logger.error(e);
@@ -431,7 +434,7 @@ public class CompositeActivityDef extends ActivityDef {
         }
 
         if (imports != null) {
-            imports.write("<Workflow " + getExportAttributes("CA") + ">" + getExportCollections());
+            imports.write("<Workflow " + getExportAttributes(tc) + ">" + getExportCollections());
 
             for (ActivityDef childActDef : refChildActDef) {
                 imports.write("<Activity name=\"" + childActDef.getActName() + "\" id=\"" + childActDef.getItemID() + "\" version=\"" + childActDef.getVersion() + "\"/>");

@@ -23,51 +23,13 @@ package org.cristalise.kernel.process.resource;
 
 import lombok.Getter;
 
-
-/*
-case COMP_ACT_DESC_RESOURCE:
-    schemaName = "CompositeActivityDef";
-    typeRoot = "/desc/ActivityDesc";
-    wfDef = "ManageCompositeActDef";
-    break;
-
-case ELEM_ACT_DESC_RESOURCE:
-    schemaName = "ElementaryActivityDef";
-    typeRoot = "/desc/ActivityDesc";
-    wfDef = "ManageElementaryActDef";
-    break;
-
-case SCHEMA_RESOURCE:
-    schemaName = "Schema";
-    typeRoot = "/desc/OutcomeDesc";
-    wfDef = "ManageSchema";
-    break;
-
-case SCRIPT_RESOURCE:
-    schemaName = "Script";
-    typeRoot = "/desc/Script";
-    wfDef = "ManageScript";
-    break;
-
-case STATE_MACHINE_RESOURCE:
-    schemaName = "StateMachine";
-    typeRoot = "/desc/StateMachine";
-    wfDef = "ManageStateMachine";
-    break;
-
-case QUERY_RESOURCE:
-    schemaName = "Query";
-    typeRoot = "/desc/Query";
-    wfDef = "ManageQuery";
-    break;
-*/
-
 /**
  *
  */
 @Getter
 public enum BuiltInResources {
     PROPERTY_DESC_RESOURCE("property", "PropertyDescription",   null,                 null),
+    MODULE_RESOURCE(       "module",   "Module",                "/desc/Modules",      "NoWorkflow"),
     SCHEMA_RESOURCE(       "OD",       "Schema",                "/desc/OutcomeDesc",  "ManageSchema"),
     SCRIPT_RESOURCE(       "SC",       "Script",                "/desc/Script",       "ManageScript"),
     QUERY_RESOURCE(        "query",    "Query",                 "/desc/Query",        "ManageQuery"),

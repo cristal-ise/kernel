@@ -281,6 +281,7 @@
 			<xs:element name="StateMachine" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
 			<xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
 			<xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
+            <xs:element name="Query" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
 		</xs:sequence>
 		<xs:attribute name="name" type="xs:string" use="required" />
 		<xs:attribute name="version" type="xs:integer" use="optional" />
