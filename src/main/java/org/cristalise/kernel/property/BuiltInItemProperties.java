@@ -30,9 +30,13 @@ import org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDe
 public enum BuiltInItemProperties {
     /**
      * Store the Agent name used used to call the {@link CreateItemFromDescription} predefined Step.
-     * 
      */
     CREATOR("Creator"),
+
+    /**
+     * Used in description Items to manage Elementary or Composite Activity Definition
+     */
+    COMPLEXITY("Complexity"),
 
     KERNEL_VERSION("KernelVersion"),
 
