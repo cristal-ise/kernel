@@ -21,22 +21,20 @@
 package org.cristalise.kernel.process.module;
 
 public class ModuleConfig {
+    public String name;
+    public String value;
+    public String target;
 
-	public String name;
-	public String value;
-	public String target;
-	
-	public ModuleConfig() {
-	}
+    public ModuleConfig() {}
 
-	public ModuleConfig(String name, String value, String target) {
-		super();
-		this.name = name;
-		this.value = value;
-		this.target = target;
-	}
-	
-	public boolean include(boolean isServer) {
-		return (target == null || target.length() == 0 || isServer == target.equals("server"));
-	}
+    public ModuleConfig(String name, String value, String target) {
+        super();
+        this.name = name;
+        this.value = value;
+        this.target = target;
+    }
+
+    public boolean include(boolean isServer) {
+        return (target == null || target.length() == 0 || isServer == target.equals("server"));
+    }
 }

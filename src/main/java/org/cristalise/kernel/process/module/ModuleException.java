@@ -22,8 +22,9 @@ package org.cristalise.kernel.process.module;
 
 public class ModuleException extends Exception {
 
-	public ModuleException(String msg) {
-		super(msg);
-	}
+    private static final long serialVersionUID = -4237604381466154870L;
 
+    public ModuleException(String msg) {
+        super(msg);
+    }
 }

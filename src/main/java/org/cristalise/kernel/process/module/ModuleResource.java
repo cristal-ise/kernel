@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.process.module;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -30,57 +33,32 @@ import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.utils.Logger;
 
-
+@Getter @Setter
 public class ModuleResource extends ModuleImport {
-	
-	public int version;
-	public String resourceType;
-	public String resourceLocation;
-	
-	public ModuleResource() {
-		// if not given, version defaults to 0
-		version = 0;
-	}
 
-	@Override
-	public Path create(AgentPath agentPath, boolean reset)
-			throws ObjectNotFoundException, ObjectCannotBeUpdated,
-			CannotManageException, ObjectAlreadyExistsException, InvalidDataException {
-		try {
-			return domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new CannotManageException("Exception verifying module resource "+ns+"/"+name);
-		}
-	}
+    public int    version;
+    public String resourceType;
+    public String resourceLocation;
 
-	public int getVersion() {
-		return version;
-	}
+    public ModuleResource() {
+        // if not given, version defaults to 0
+        version = 0;
+    }
 
-	public void setVersion(int version) {
-		this.version = version;
-	}
+    @Override
+    public Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException,
+            ObjectAlreadyExistsException, InvalidDataException {
+        try {
+            return domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new CannotManageException("Exception verifying module resource " + ns + "/" + name);
+        }
+    }
 
-	public String getResourceType() {
-		return resourceType;
-	}
-
-	public void setResourceType(String resourceType) {
-		this.resourceType = resourceType;
-	}
-
-	public String getResourceLocation() {
-		return resourceLocation;
-	}
-
-	public void setResourceLocation(String resourceLocation) {
-		this.resourceLocation = resourceLocation;
-	}
-
-	@Override
-	public int hashCode() {
-		return super.hashCode()+resourceType.hashCode()+version;
-	}
-
+    @Override
+    public int hashCode() {
+        return super.hashCode() + resourceType.hashCode() + version;
+    }
 }

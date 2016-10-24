@@ -33,51 +33,54 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 
 public class ModuleWorkflow extends ModuleActivity {
 
-	ArrayList<ModuleDescRef> activities = new ArrayList<ModuleDescRef>();
+    ArrayList<ModuleDescRef> activities = new ArrayList<ModuleDescRef>();
 
-	public ModuleWorkflow() {
-		super();
-		resourceType="CA";
-	}
-	
-	public ModuleWorkflow(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
-		super(child, version);
-		Collection<?> coll = child.getCollection(ACTIVITY, version);
-		for (CollectionMember collMem : coll.getMembers().list) {
-			activities.add(new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().getBuiltInProperty(VERSION).toString())));			
-		}
-	}
+    public ModuleWorkflow() {
+        super();
+        resourceType = BuiltInResources.COMP_ACT_DESC_RESOURCE.getTypeCode();
+    }
 
-	public ArrayList<ModuleDescRef> getActivities() {
-		return activities;
-	}
-	
+    public ModuleWorkflow(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
+        super(child, version);
+        Collection<?> coll = child.getCollection(ACTIVITY, version);
 
-	public void setActivities(ArrayList<ModuleDescRef> activities) {
-		this.activities = activities;
-	}
-	
+        for (CollectionMember collMem : coll.getMembers().list) {
+            activities.add(new ModuleDescRef(null, collMem.getChildUUID(), Integer.valueOf(collMem.getProperties().getBuiltInProperty(VERSION).toString())));
+        }
+    }
 
-	@Override
-	public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
-		super.populateActivityDef();
-		CompositeActivityDef compActDef = (CompositeActivityDef)actDef;
-		ArrayList<ActivityDef> graphActDefs = compActDef.getRefChildActDef();
-		if (activities.size() != graphActDefs.size())
-			throw new CannotManageException("There were "+activities.size()+" declared activities, but the graph uses "+graphActDefs.size());
-		for (ModuleDescRef moduleDescRef : activities) {
-			boolean found = false;
-			for (ActivityDef childActDef : graphActDefs) {
-				if (childActDef.getName().equals(moduleDescRef.getName()) &&
-						childActDef.getVersion().equals(moduleDescRef.getVersion())) {
-					found = true; break;
-				}
-			}
-			if (!found) throw new CannotManageException("Graphed child activity "+moduleDescRef.getName()+" v"+moduleDescRef.getVersion()+" not referenced in module for "+getName());
-		}
-	}
-	
+    public ArrayList<ModuleDescRef> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(ArrayList<ModuleDescRef> activities) {
+        this.activities = activities;
+    }
+
+    @Override
+    public void populateActivityDef() throws ObjectNotFoundException, CannotManageException {
+        super.populateActivityDef();
+        CompositeActivityDef compActDef = (CompositeActivityDef) actDef;
+        ArrayList<ActivityDef> graphActDefs = compActDef.getRefChildActDef();
+
+        if (activities.size() != graphActDefs.size())
+            throw new CannotManageException("There were " + activities.size() + " declared activities, but the graph uses " + graphActDefs.size());
+
+        for (ModuleDescRef moduleDescRef : activities) {
+            boolean found = false;
+            for (ActivityDef childActDef : graphActDefs) {
+                if (childActDef.getName().equals(moduleDescRef.getName()) && childActDef.getVersion().equals(moduleDescRef.getVersion())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                throw new CannotManageException("Graphed child activity " + moduleDescRef.getName() + " v" + moduleDescRef.getVersion() + " not referenced in module for " + getName());
+        }
+    }
+
 }

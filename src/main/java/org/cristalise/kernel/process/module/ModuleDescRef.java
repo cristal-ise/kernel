@@ -20,42 +20,21 @@
  */
 package org.cristalise.kernel.process.module;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class ModuleDescRef {
-	String name;
-	String id;
-	Integer version;
-	
-	public ModuleDescRef() {
-	}
-	
-	public ModuleDescRef(String name, String id, Integer version) {
-		this.name = name;
-		this.id = id;
-		this.version = version;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public Integer getVersion() {
-		return version;
-	}
-	
-	public void setVersion(Integer version) {
-		this.version = version;
-	}
-	
+
+    String  name;
+    String  id;
+    Integer version;
+
+    public ModuleDescRef() {}
+
+    public ModuleDescRef(String name, String id, Integer version) {
+        this.name = name;
+        this.id = id;
+        this.version = version;
+    }
 }
