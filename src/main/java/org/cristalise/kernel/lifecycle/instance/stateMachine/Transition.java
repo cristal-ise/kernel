@@ -69,7 +69,7 @@ public class Transition {
     boolean finishing;
     boolean reinitializes  = false;
     /**
-     * Overrides permission dpecified in Activity
+     * Overrides permission specified in Activity
      */
     String roleOverride;
 
@@ -88,6 +88,11 @@ public class Transition {
         this(id, name);
         this.originStateId = originStateId;
         this.targetStateId = targetStateId;
+    }
+
+    public void setTargetState(State targetState) {
+        this.targetState = targetState;
+        finishing = targetState.finished;
     }
 
     public boolean reinitializes() {
