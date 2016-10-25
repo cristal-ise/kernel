@@ -21,6 +21,7 @@
 package org.cristalise.kernel.scripting;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.INCLUDE;
+import static org.cristalise.kernel.process.resource.BuiltInResources.SCRIPT_RESOURCE;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,11 @@ import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
@@ -66,11 +72,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * 
@@ -776,11 +777,14 @@ public class Script implements DescriptionObject {
      */
     @Override
     public void export(Writer imports, File dir) throws IOException {
-        FileStringUtility.string2File(new File(new File(dir, "SC"), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
-        if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
-                +(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
-                +(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-                +"type=\"SC\">boot/SC/"+getName()
+        String tc = SCRIPT_RESOURCE.getTypeCode();
+
+        FileStringUtility.string2File(new File(new File(dir, tc), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
+
+        if (imports!=null) imports.write("<Resource name='"+getName()+"' "
+                +(getItemPath()==null?"":"id='"+getItemID()+"' ")
+                +(getVersion()==null?"":"version='"+getVersion()+"' ")
+                +"type='"+tc+"'>boot/"+tc+"/"+getName()
                 +(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
     }
 
