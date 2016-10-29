@@ -27,6 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -59,6 +62,7 @@ import org.cristalise.kernel.utils.Logger;
 /**
  * 
  */
+@Getter @Setter
 public class Job implements C2KLocalObject {
     // Persistent fields
     private int            id;
@@ -81,8 +85,9 @@ public class Job implements C2KLocalObject {
     private ErrorInfo  error;
     private ItemProxy  item = null;
     private boolean    transitionResolved = false;
-    
+
     private Outcome outcome = null;;
+    private Query query = null;;
 
     /**
      * OutcomeInitiator cache
@@ -115,81 +120,17 @@ public class Job implements C2KLocalObject {
         setActPropsAndEvaluateValues(act);
     }
 
-
-    // Castor persistent fields
-
-    public String getOriginStateName() {
-        return originStateName;
-    }
-
-    public void setOriginStateName(String originStateName) {
-        this.originStateName = originStateName;
-    }
-
-    public String getTargetStateName() {
-        return targetStateName;
-    }
-
-    public void setTargetStateName(String targetStateName) {
-        this.targetStateName = targetStateName;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    } 
-
-    public ItemPath getItemPath() {
-        return itemPath;
-    }
-
     public void setItemPath(ItemPath path) {
         itemPath = path;
         item = null;
-    }	
+    }
 
-    public void setItemUUID( String uuid ) throws InvalidItemPathException
-    {
+    public void setItemUUID( String uuid ) throws InvalidItemPathException {
         setItemPath(new ItemPath(uuid));
     }
 
     public String getItemUUID() {
         return getItemPath().getUUID().toString();
-    }
-
-    public String getStepName() {
-        return stepName;
-    }
-
-    public void setStepName(String string) {
-        stepName = string;
-    }
-
-    public String getStepPath() {
-        return stepPath;
-    }
-
-    public void setStepPath(String string) {
-        stepPath = string;
-    }
-
-    public String getStepType() {
-        return stepType;
-    }
-
-    public void setStepType(String actType) {
-        stepType = actType;
-    }
-
-    public GTimeStamp getCreationDate() {
-        return creationDate;
-    }	
-
-    public void setCreationDate(GTimeStamp creationDate) {
-        this.creationDate = creationDate;
     }
 
     public Transition getTransition() {
@@ -287,14 +228,6 @@ public class Job implements C2KLocalObject {
         delegatePath = Gateway.getLookup().getAgentPath(delegateName);
     }    
 
-    public String getAgentRole() {
-        return agentRole;
-    }
-
-    public void setAgentRole(String role) {
-        agentRole = role;
-    }
-
     public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
         if (getTransition().hasOutcome(actProps)) {
             Schema schema = getTransition().getSchema(actProps);
@@ -332,10 +265,10 @@ public class Job implements C2KLocalObject {
     }
 
     public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
-        if (getTransition().hasQuery(actProps)) {
-            return getTransition().getQuery(actProps);
+        if (query == null && hasQuery()) {
+            query = getTransition().getQuery(actProps);
         }
-        return null;
+        return query;
     }
 
     @Deprecated
@@ -539,11 +472,10 @@ public class Job implements C2KLocalObject {
 
     public boolean isOutcomeSet() {
         return outcome != null;
-    }   
+    }
 
     @Override
-    public String getClusterType()
-    {
+    public String getClusterType() {
         return ClusterStorage.JOB;
     }
 
