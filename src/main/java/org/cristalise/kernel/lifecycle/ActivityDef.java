@@ -276,6 +276,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         this.actScript = actScript;
     }
 
+    public void setQuery(Query actQuery) {
+        this.actQuery = actQuery;
+    }
+
     public void setStateMachine(StateMachine actStateMachine) {
         this.actStateMachine = actStateMachine;
     }

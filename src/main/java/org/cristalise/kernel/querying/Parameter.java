@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.querying;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Placeholder for the Parameter details to be passed to the Query.
  */
-@Data @RequiredArgsConstructor
+@Data @RequiredArgsConstructor @AllArgsConstructor
 public class Parameter {
     @NonNull
     private String name;

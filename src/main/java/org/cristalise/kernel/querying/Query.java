@@ -95,6 +95,31 @@ public class Query implements DescriptionObject {
         return parameters != null && parameters.size() > 0; 
     }
 
+    public Parameter getParameter(String name) {
+        for(Parameter p: parameters) {
+            if (p.getName().equals(name)) return p;
+        }
+        return null;
+    }
+
+    public void setStringParameter(String name, Object value) {
+        if (value == null) return; 
+
+        Parameter p = getParameter(name);
+
+        if (p == null) {
+            p = new Parameter(name, String.class, value);
+            parameters.add(p);
+        }
+        else p.setValue(value);
+    }
+
+    public void setMandatoryParemeters(String uuid, Object schemaName, Object viewPoint) {
+        setStringParameter("itemUUID",   uuid);
+        setStringParameter("schemaName", schemaName);
+//        setStringParameter("viewPoint",  viewPoint);
+    }
+
     public void validateXML(String xml) throws InvalidDataException, ObjectNotFoundException {
         Schema querySchema;
 

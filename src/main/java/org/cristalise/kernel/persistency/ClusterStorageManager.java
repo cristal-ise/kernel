@@ -93,16 +93,15 @@ public class ClusterStorageManager {
         for (ClusterStorage newStorage : rootStores) {
             try {
                 newStorage.open(auth);
-            } catch (PersistencyException ex) {
+            }catch (PersistencyException ex) {
                 Logger.error(ex);
-                throw new PersistencyException("ClusterStorageManager.init() - Error initialising storage handler " + newStorage.getClass().getName() +
-                        ": " + ex.getMessage());
+                throw new PersistencyException("ClusterStorageManager.init() - Error initialising storage handler " + newStorage.getClass().getName() + ": " + ex.getMessage());
             }
             Logger.msg(5, "ClusterStorageManager.init() - Cluster storage " + newStorage.getClass().getName() + " initialised successfully.");
             allStores.put(newStorage.getId(), newStorage);
             clusterPriority[clusterNo++] = newStorage.getId();
-            if (newStorage instanceof TransactionalClusterStorage)
-                transactionalStores.add((TransactionalClusterStorage)newStorage);
+
+            if (newStorage instanceof TransactionalClusterStorage) transactionalStores.add((TransactionalClusterStorage)newStorage);
         }
         clusterReaders.put(ClusterStorage.ROOT, rootStores); // all storages are queried for clusters at the root level
     }
@@ -207,7 +206,7 @@ public class ClusterStorageManager {
         ClusterStorage reader = findStorageForQuery(query.getLanguage());
 
         if (reader != null) return reader.executeQuery(query);
-        else                return null;
+        else                throw new PersistencyException("No storage was found supporting language:"+query.getLanguage()+" query:"+query.getName());
     }
 
     /**
