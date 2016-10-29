@@ -391,15 +391,10 @@ public class ItemProxy
      * 
      * @param query the query to be executed
      * @return the xml result of the query
-     * @throws ObjectNotFoundException
+     * @throws PersistencyException
      */
-    public String executeQuery(Query query) throws ObjectNotFoundException {
-        try {
-            return Gateway.getStorage().executeQuery(query);
-        }
-        catch (PersistencyException e) {
-            throw new ObjectNotFoundException(e.toString());
-        }
+    public String executeQuery(Query query) throws PersistencyException {
+        return Gateway.getStorage().executeQuery(query);
     }
 
     /**

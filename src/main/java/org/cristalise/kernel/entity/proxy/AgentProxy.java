@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -46,6 +48,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescriptionList;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
@@ -126,6 +129,11 @@ public class AgentProxy extends ItemProxy {
                 // pre-validate outcome for script if there is one
                 validateOutcome(job);
 
+                if (job.hasQuery()) {
+                    Logger.msg(3, "AgentProxy.execute(job) - setting up query in Job");
+                    job.getQuery().setMandatoryParemeters(item.getPath().getUUID().toString(), job.getSchemaName(), job.getActProp(VIEW_POINT));
+                }
+
                 // load script
                 ErrorInfo scriptErrors = (ErrorInfo) callScript(item, job);
                 String errorString = scriptErrors.toString();
@@ -147,7 +155,10 @@ public class AgentProxy extends ItemProxy {
             // pre-validate outcome for query if there is one
             validateOutcome(job);
 
-            job.setOutcome(item.executeQuery(job.getQuery()));
+            Query query = job.getQuery();
+            query.setMandatoryParemeters(item.getPath().getUUID().toString(), job.getSchemaName(), job.getActProp(VIEW_POINT));
+
+            job.setOutcome(item.executeQuery(query));
         }
 
         validateOutcome(job);
@@ -172,7 +183,7 @@ public class AgentProxy extends ItemProxy {
      * @throws ObjectNotFoundException
      */
     private void validateOutcome(Job job) throws InvalidDataException, ObjectNotFoundException {
-        if (job.hasOutcome() || job.isOutcomeSet()) {
+        if (job.hasOutcome() && job.isOutcomeSet()) {
             Logger.msg(5, "AgentProxy.validateOutcome() -  act:" + job.getStepPath());
 
             String error = job.getOutcome().validate();
@@ -180,6 +191,7 @@ public class AgentProxy extends ItemProxy {
             if (error.length() > 0) {
                 Logger.error("AgentProxy.validateOutcome() - Outcome not valid: \n " + error);
                 Logger.error(job.getOutcome().getData());
+                if (job.hasQuery()) Logger.error(job.getQuery().getQueryXML());
                 throw new InvalidDataException(error);
             }
         }
