@@ -85,8 +85,8 @@ public class TransactionManager {
      * @throws ObjectNotFoundException
      */
     public C2KLocalObject get(ItemPath itemPath, String path, Object locker)
-            throws PersistencyException,
-            ObjectNotFoundException {
+            throws PersistencyException, ObjectNotFoundException
+    {
         if (path.startsWith("/") && path.length() > 1) path = path.substring(1);
 
         // deal out top level remote maps, if transactions aren't needed
