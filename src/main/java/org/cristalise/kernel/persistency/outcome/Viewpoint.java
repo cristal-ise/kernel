@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -30,171 +33,72 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
 
-
-/**
- * @author Andrew Branson
- *
- * $Revision: 1.10 $
- * $Date: 2005/10/05 07:39:36 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- */
-
+@Getter @Setter
 public class Viewpoint implements C2KLocalObject {
 
-	// db fields
-	ItemPath itemPath;
-	String schemaName;
-	String name;
-	int schemaVersion;
-	int eventId;
-	public static final int NONE = -1;
+    public static final int NONE = -1;
 
-	public Viewpoint() {
-		eventId = NONE;
-		itemPath = null;
-		schemaVersion = NONE;
-		schemaName = null;
-		name = null;
-	}
+    // db fields
+    ItemPath  itemPath;
+    String    schemaName;
+    String    name;
+    int       schemaVersion;
+    int       eventId;
 
-	@Deprecated
-	public Viewpoint(ItemPath itemPath, String schemaName, String name, int schemaVersion, int eventId) {
-		this.itemPath = itemPath;
-		this.schemaName = schemaName;
-		this.name = name;
-		this.schemaVersion = schemaVersion;
-		this.eventId = eventId;
-	}
-	
-	public Viewpoint(ItemPath itemPath, Schema schema, String name, int eventId) {
-		this.itemPath = itemPath;
-		this.schemaName = schema.getName();
-		this.name = name;
-		this.schemaVersion = schema.getVersion();
-		this.eventId = eventId;
-	}
-
-	public Outcome getOutcome() throws ObjectNotFoundException, PersistencyException {
-		if (eventId == NONE) throw new ObjectNotFoundException("No last eventId defined for path:"+itemPath+"/OUTCOME/"+schemaName+"/"+schemaVersion+"/"+eventId);
-		return (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+schemaName+"/"+schemaVersion+"/"+eventId, null);
-	}
-
-	@Override
-	public String getClusterType() {
-		return ClusterStorage.VIEWPOINT;
-	}
-
-
-	/**
-	 * Returns the eventId.
-	 * @return int
-	 */
-	public int getEventId() {
-		return eventId;
-	}
-
-	/**
-	 * Returns the name.
-	 * @return String
-	 */
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Returns the schemaName.
-	 * @return String
-	 */
-	public String getSchemaName() {
-		return schemaName;
-	}
-
-	/**
-	 * Returns the schemaVersion.
-	 * @return int
-	 */
-	public int getSchemaVersion() {
-		return schemaVersion;
-	}
-
-	/**
-	 * Returns the sysKey.
-	 * @return int
-	 */
-	public ItemPath getItemPath() {
-		return itemPath;
-	}
-
-	/**
-	 * Sets the eventId.
-	 * @param eventId The eventId to set
-	 */
-	public void setEventId(int eventId) {
-		this.eventId = eventId;
-	}
-
-	/**
-	 * Sets the name.
-	 * @param name The name to set
-	 */
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * Sets the schemaName.
-	 * @param schemaName The schemaName to set
-	 */
-	public void setSchemaName(String schemaName) {
-		this.schemaName = schemaName;
-	}
-
-	/**
-	 * Sets the schemaVersion.
-	 * @param schemaVersion The schemaVersion to set
-	 */
-	public void setSchemaVersion(int schemaVersion) {
-		this.schemaVersion = schemaVersion;
-	}
-
-	/**
-     * Sets the sysKey.
-     * 
-	 * @param itemPath
-	 */
-	public void setItemPath(ItemPath itemPath) {
-		this.itemPath = itemPath;
-	}
-	
-    public void setItemUUID( String uuid ) throws InvalidItemPathException
-    {
-    	setItemPath(new ItemPath(uuid));
-    }
-    
-    public String getItemUUID() {
-    	return getItemPath().getUUID().toString();
+    public Viewpoint() {
+        eventId = NONE;
+        itemPath = null;
+        schemaVersion = NONE;
+        schemaName = null;
+        name = null;
     }
 
-	/**
-	 * Method getEvent.
-	 * @return GDataRecord
-	 */
-	public Event getEvent()
-        throws InvalidDataException, PersistencyException, ObjectNotFoundException
-	{
+    @Deprecated
+    public Viewpoint(ItemPath itemPath, String schemaName, String name, int schemaVersion, int eventId) {
+        this.itemPath = itemPath;
+        this.schemaName = schemaName;
+        this.name = name;
+        this.schemaVersion = schemaVersion;
+        this.eventId = eventId;
+    }
+
+    public Viewpoint(ItemPath itemPath, Schema schema, String name, int eventId) {
+        this.itemPath = itemPath;
+        this.schemaName = schema.getName();
+        this.name = name;
+        this.schemaVersion = schema.getVersion();
+        this.eventId = eventId;
+    }
+
+    public Outcome getOutcome() throws ObjectNotFoundException, PersistencyException {
         if (eventId == NONE)
-            throw new InvalidDataException("No last eventId defined");
-
-        return (Event)Gateway.getStorage().get(itemPath, ClusterStorage.HISTORY+"/"+eventId, null);
-	}
+            throw new ObjectNotFoundException("No last eventId defined for path:" + itemPath + "/OUTCOME/" + schemaName + "/"
+                    + schemaVersion + "/" + eventId);
+        return (Outcome) Gateway.getStorage().get(itemPath,
+                ClusterStorage.OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, null);
+    }
 
     @Override
-	public String toString() {
-        return name;
+    public String getClusterType() {
+        return ClusterStorage.VIEWPOINT;
     }
 
+    public void setItemUUID(String uuid) throws InvalidItemPathException {
+        setItemPath(new ItemPath(uuid));
+    }
+
+    public String getItemUUID() {
+        return getItemPath().getUUID().toString();
+    }
+
+    public Event getEvent() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+        if (eventId == NONE) throw new InvalidDataException("No last eventId defined");
+
+        return (Event) Gateway.getStorage().get(itemPath, ClusterStorage.HISTORY + "/" + eventId, null);
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
