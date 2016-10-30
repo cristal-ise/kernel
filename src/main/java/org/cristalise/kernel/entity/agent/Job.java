@@ -21,6 +21,7 @@
 package org.cristalise.kernel.entity.agent;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -267,6 +268,7 @@ public class Job implements C2KLocalObject {
     public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
         if (query == null && hasQuery()) {
             query = getTransition().getQuery(actProps);
+            query.setMandatoryParemeters(item.getPath().getUUID().toString(), getSchemaName(), getActProp(VIEW_POINT));
         }
         return query;
     }

@@ -117,7 +117,7 @@ public class Query implements DescriptionObject {
     public void setMandatoryParemeters(String uuid, Object schemaName, Object viewPoint) {
         setStringParameter("itemUUID",   uuid);
         setStringParameter("schemaName", schemaName);
-//        setStringParameter("viewPoint",  viewPoint);
+        setStringParameter("viewPoint",  viewPoint);
     }
 
     public void validateXML(String xml) throws InvalidDataException, ObjectNotFoundException {

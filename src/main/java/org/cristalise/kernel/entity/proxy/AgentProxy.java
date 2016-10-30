@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -38,6 +36,7 @@ import org.cristalise.kernel.entity.Agent;
 import org.cristalise.kernel.entity.AgentHelper;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.Job;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
@@ -48,7 +47,6 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescriptionList;
-import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
@@ -127,12 +125,7 @@ public class AgentProxy extends ItemProxy {
             Logger.msg(3, "AgentProxy.execute(job) - executing script");
             try {
                 // pre-validate outcome for script if there is one
-                validateOutcome(job);
-
-                if (job.hasQuery()) {
-                    Logger.msg(3, "AgentProxy.execute(job) - setting up query in Job");
-                    job.getQuery().setMandatoryParemeters(item.getPath().getUUID().toString(), job.getSchemaName(), job.getActProp(VIEW_POINT));
-                }
+                if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
                 // load script
                 ErrorInfo scriptErrors = (ErrorInfo) callScript(item, job);
@@ -149,19 +142,16 @@ public class AgentProxy extends ItemProxy {
                 throw new InvalidDataException(ex.getMessage());
             }
         }
-        else if (job.hasQuery()) {
-            Logger.msg(3, "AgentProxy.execute(job) - executing query");
+        else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {
+            Logger.msg(3, "AgentProxy.execute(job) - executing query (OutcomeInit != Query)");
 
             // pre-validate outcome for query if there is one
-            validateOutcome(job);
+            if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
-            Query query = job.getQuery();
-            query.setMandatoryParemeters(item.getPath().getUUID().toString(), job.getSchemaName(), job.getActProp(VIEW_POINT));
-
-            job.setOutcome(item.executeQuery(query));
+            job.setOutcome(item.executeQuery(job.getQuery()));
         }
 
-        validateOutcome(job);
+        if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
         job.setAgentPath(mAgentPath);
         Logger.msg(3, "AgentProxy.execute(job) - submitting job to item proxy");
@@ -175,26 +165,6 @@ public class AgentProxy extends ItemProxy {
         }
 
         return result;
-    }
-
-    /**
-     * @param job
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
-     */
-    private void validateOutcome(Job job) throws InvalidDataException, ObjectNotFoundException {
-        if (job.hasOutcome() && job.isOutcomeSet()) {
-            Logger.msg(5, "AgentProxy.validateOutcome() -  act:" + job.getStepPath());
-
-            String error = job.getOutcome().validate();
-
-            if (error.length() > 0) {
-                Logger.error("AgentProxy.validateOutcome() - Outcome not valid: \n " + error);
-                Logger.error(job.getOutcome().getData());
-                if (job.hasQuery()) Logger.error(job.getQuery().getQueryXML());
-                throw new InvalidDataException(error);
-            }
-        }
     }
 
     private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
