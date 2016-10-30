@@ -36,17 +36,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-
-/**************************************************************************
- *
- * $Revision: 1.24 $
- * $Date: 2005/06/09 13:50:10 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
-
 public class OutcomeValidator implements ErrorHandler {
 
     static SchemaValidator schemaValid = new SchemaValidator();
@@ -83,8 +72,6 @@ public class OutcomeValidator implements ErrorHandler {
         schemaFactory.setErrorHandler(this);
         errors = new StringBuffer();
         Logger.msg(5, "Parsing "+schema.getName()+" version "+schema.getVersion()+". "+schema.getSchemaData().length()+" chars");
-
-        
 
         try {
         	xmlSchema = schemaFactory.newSchema(new StreamSource(new StringReader(schema.getSchemaData())));
@@ -128,8 +115,9 @@ public class OutcomeValidator implements ErrorHandler {
     private void appendError(String level, Exception ex) {
         errors.append(level);
         String message = ex.getMessage();
-        if (message == null || message.length()==0)
-            message = ex.getClass().getName();
+        
+        if (message == null || message.length() == 0) message = ex.getClass().getName();
+
         errors.append(message);
         errors.append("\n");
     }

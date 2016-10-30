@@ -24,18 +24,6 @@ import java.io.IOException;
 
 import org.w3c.dom.Document;
 
-
-/**************************************************************************
- *
- * $Revision: 1.2 $
- * $Date: 2005/04/26 06:48:13 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
-
-
 public class SchemaValidator extends OutcomeValidator {
 
     public SchemaValidator() {
@@ -43,17 +31,18 @@ public class SchemaValidator extends OutcomeValidator {
     }
 
     @Override
-	public synchronized String validate(String outcome) {
+    public synchronized String validate(String outcome) {
         Schema schema = new Schema(outcome);
         try {
-			return schema.validate();
-		} catch (IOException e) {
-			return "Error reading schema";
-		}
+            return schema.validate();
+        }
+        catch (IOException e) {
+            return "Error reading schema";
+        }
     }
-    
+
     @Override
     public synchronized String validate(Document outcome) {
-    	return validate(Outcome.serialize(outcome, false));
+        return validate(Outcome.serialize(outcome, false));
     }
 }
