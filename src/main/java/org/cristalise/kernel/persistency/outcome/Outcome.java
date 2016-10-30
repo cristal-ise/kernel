@@ -97,6 +97,16 @@ public class Outcome implements C2KLocalObject {
         return validator.validate(mDOM);
     }
 
+    public void validateAndCheck() throws InvalidDataException {
+        String error = validate();
+
+        if (error.length() > 0) {
+            Logger.error("Outcome.validateAndCheck() - Outcome not valid: \n " + error);
+            Logger.error(getData());
+            throw new InvalidDataException(error);
+        }
+    }
+
     //id is the eventID
     public Outcome(int id, Document dom, Schema schema) {
         mID = id;
@@ -310,15 +320,14 @@ public class Outcome implements C2KLocalObject {
      */
     public static Document parse(String xml) throws SAXException, IOException {
         synchronized (parser) {
-            if (xml!=null)
-                return parser.parse(new InputSource(new StringReader(xml)));
-            else
-                return parser.newDocument();
+            if (xml!=null) return parser.parse(new InputSource(new StringReader(xml)));
+            else           return parser.newDocument();
         }
     }
 
     public String getField(String name) {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
+
         if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
             return ((Text)elements.item(0).getFirstChild()).getData();
         else
@@ -340,7 +349,8 @@ public class Outcome implements C2KLocalObject {
         Transformer transformer;
         try {
             transformer = tf.newTransformer();
-        } catch (TransformerConfigurationException ex) {
+        }
+        catch (TransformerConfigurationException ex) {
             Logger.error(ex);
             return "";
         }
@@ -351,7 +361,8 @@ public class Outcome implements C2KLocalObject {
         Writer out = new StringWriter();
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(out));
-        } catch (TransformerException e) {
+        }
+        catch (TransformerException e) {
             Logger.error(e);
         }
         return out.toString();
