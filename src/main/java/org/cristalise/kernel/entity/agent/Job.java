@@ -566,7 +566,11 @@ public class Job implements C2KLocalObject {
     }
 
     public void setActProp(BuiltInVertexProperties prop, Object value) {
-        actProps.setBuiltInProperty(prop, value);;
+        actProps.setBuiltInProperty(prop, value);
+    }
+
+    public void setActProp(String name, Object value) {
+        actProps.put(name, value);
     }
 
     public String getActPropString(BuiltInVertexProperties name) {
@@ -583,7 +587,7 @@ public class Job implements C2KLocalObject {
         Map<String, Object> result = new HashMap<String, Object>();
 
         for(String propName : actProps.keySet()) {
-            if(propName.startsWith("/")) result.put(propName, actProps.get(propName));
+            if(propName.startsWith(pattern)) result.put(propName, actProps.get(propName));
             //if(propName.matches(pattern)) result.put(propName, actProps.get(propName));
         }
 
