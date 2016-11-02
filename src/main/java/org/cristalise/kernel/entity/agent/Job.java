@@ -268,7 +268,7 @@ public class Job implements C2KLocalObject {
     public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
         if (query == null && hasQuery()) {
             query = getTransition().getQuery(actProps);
-            query.setMandatoryParemeters(item.getPath().getUUID().toString(), getSchemaName(), getActProp(VIEW_POINT));
+            query.setMandatoryParemeters(itemPath.getUUID().toString(), getSchemaName(), getActProp(VIEW_POINT));
         }
         return query;
     }
