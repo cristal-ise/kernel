@@ -26,83 +26,79 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
 
-
-
 /**
-* Extends Path to enforce SystemKey structure and support int form
-*
-* @version $Revision: 1.12 $ $Date: 2005/10/13 08:15:00 $
-* @author  $Author: abranson $
-**/
-public class AgentPath extends ItemPath
-{
+ * Extends Path to enforce SystemKey structure and support int form
+ **/
+public class AgentPath extends ItemPath {
 
-	private String mAgentName=null;
-	private String mPassword=null;
+    private String mAgentName = null;
+    private String mPassword  = null;
 
-	public AgentPath(SystemKey syskey) throws InvalidAgentPathException, InvalidItemPathException {
-		super(syskey);
-		try {
-			findAgentName();
-		} catch (ObjectNotFoundException e) {
-			throw new InvalidAgentPathException();
-		}
-	}
-	protected AgentPath(UUID uuid) throws InvalidAgentPathException, InvalidItemPathException {
-        super(uuid);
-		try {
-			findAgentName();
-		} catch (ObjectNotFoundException e) {
-			throw new InvalidAgentPathException();
-		}        
+    public AgentPath(SystemKey syskey) throws InvalidAgentPathException, InvalidItemPathException {
+        super(syskey);
+        try {
+            findAgentName();
+        }
+        catch (ObjectNotFoundException e) {
+            throw new InvalidAgentPathException();
+        }
     }
-    
+
+    protected AgentPath(UUID uuid) throws InvalidAgentPathException, InvalidItemPathException {
+        super(uuid);
+        try {
+            findAgentName();
+        }
+        catch (ObjectNotFoundException e) {
+            throw new InvalidAgentPathException();
+        }
+    }
+
     public AgentPath(ItemPath itemPath) throws InvalidAgentPathException {
         super(itemPath.mUUID);
-		try {
-			findAgentName();
-		} catch (ObjectNotFoundException e) {
-			throw new InvalidAgentPathException();
-		}
+        try {
+            findAgentName();
+        }
+        catch (ObjectNotFoundException e) {
+            throw new InvalidAgentPathException();
+        }
     }
-    
+
     public AgentPath(ItemPath itemPath, String agentName) {
-    	super(itemPath.mUUID);
-    	mAgentName = agentName;
+        super(itemPath.mUUID);
+        mAgentName = agentName;
     }
-    
+
     public AgentPath(String path) throws InvalidItemPathException {
-    	super(path);
-		try {
-			findAgentName();
-		} catch (ObjectNotFoundException e) {
-			throw new InvalidAgentPathException();
-		}
+        super(path);
+        try {
+            findAgentName();
+        }
+        catch (ObjectNotFoundException e) {
+            throw new InvalidAgentPathException();
+        }
     }
 
-    public void setAgentName(String agentID)
-    {
-    	mAgentName = agentID;
+    public void setAgentName(String agentID) {
+        mAgentName = agentID;
     }
 
-    public String getAgentName()
-    {
-    	if (mAgentName==null)
-			try {
-				findAgentName();
-			} catch (ObjectNotFoundException e) {
-				return null;
-			}
-		return mAgentName;
+    public String getAgentName() {
+        if (mAgentName == null)
+            try {
+                findAgentName();
+            } catch (ObjectNotFoundException e) {
+                return null;
+            }
+        return mAgentName;
     }
-    
+
     private void findAgentName() throws ObjectNotFoundException {
-		mAgentName = Gateway.getLookup().getAgentName(this);
+        mAgentName = Gateway.getLookup().getAgentName(this);
     }
 
-    public RolePath[] getRoles()
-    {
-  		return Gateway.getLookup().getRoles(this);
+    public RolePath[] getRoles() {
+        return Gateway.getLookup().getRoles(this);
     }
 
     public boolean hasRole(RolePath role) {
@@ -112,35 +108,32 @@ public class AgentPath extends ItemPath
     public boolean hasRole(String role) {
         try {
             return hasRole(Gateway.getLookup().getRolePath(role));
-        } catch (ObjectNotFoundException ex) {
+        }
+        catch (ObjectNotFoundException ex) {
             return false;
         }
     }
 
-    public void setPassword(String passwd)
-    {
- 		mPassword = passwd;
+    public void setPassword(String passwd) {
+        mPassword = passwd;
     }
 
-    public String getPassword()
-    {
-    	return mPassword;
+    public String getPassword() {
+        return mPassword;
     }
 
     @Override
-	public String dump() {
-        return super.dump()+
-                "\n        agentID="+
-                mAgentName;
+    public String dump() {
+        return super.dump() + "\n        agentID=" + mAgentName;
     }
-    
+
     public static AgentPath fromUUIDString(String uuid) throws InvalidAgentPathException {
-    	try {
-    		return new AgentPath(new ItemPath(uuid));
-    	} catch (InvalidItemPathException ex) {
-    		throw new InvalidAgentPathException(ex.getMessage());
-    	}
+        try {
+            return new AgentPath(new ItemPath(uuid));
+        }
+        catch (InvalidItemPathException ex) {
+            throw new InvalidAgentPathException(ex.getMessage());
+        }
     }
 
 }
-

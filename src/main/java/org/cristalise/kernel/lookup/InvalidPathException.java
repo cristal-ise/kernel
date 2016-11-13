@@ -22,6 +22,8 @@ package org.cristalise.kernel.lookup;
 
 public class InvalidPathException extends Exception {
 
+    private static final long serialVersionUID = -1980471517943177915L;
+
     public InvalidPathException() {
         super();
     }
@@ -29,5 +31,4 @@ public class InvalidPathException extends Exception {
     public InvalidPathException(String msg) {
         super(msg);
     }
-
 }

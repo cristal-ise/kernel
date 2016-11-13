@@ -22,6 +22,8 @@ package org.cristalise.kernel.lookup;
 
 public class InvalidAgentPathException extends InvalidItemPathException {
 
+    private static final long serialVersionUID = -7237043435484155424L;
+
     public InvalidAgentPathException() {
         super();
     }
@@ -29,5 +31,4 @@ public class InvalidAgentPathException extends InvalidItemPathException {
     public InvalidAgentPathException(String msg) {
         super(msg);
     }
-
 }

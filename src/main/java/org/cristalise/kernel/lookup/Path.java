@@ -29,181 +29,150 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
 
-
-
-/**
-* 
-**/
-public abstract class Path
-{
+public abstract class Path {
     public static final String delim = "/";
 
     // types
     public static final short UNKNOWN = 0;
     public static final short CONTEXT = 1;
-    public static final short ITEM  = 2;
+    public static final short ITEM    = 2;
 
     protected String[] mPath = new String[0];
 
     // slash delimited path
-    protected String   mStringPath = null;
+    protected String mStringPath = null;
     // entity or context
-    protected short    mType      = UNKNOWN;
-    
-    // item UUID (only valid for ItemPaths and DomainPaths that are aliases for Items)
-    protected UUID			 mUUID;
-    protected SystemKey		 mSysKey;
+    protected short mType = UNKNOWN;
 
-    // ior is stored in here when it is resolved
-    protected org.omg.CORBA.Object   mIOR         = null;
+    public Path() {}
 
-    public Path() {
-    }
-
-    /*
-    * Creates an empty path
-    */
-    public Path(short type)
-    {
+    /**
+     * Creates an empty path
+     */
+    public Path(short type) {
         mType = type;
     }
 
-    /*
-    * Creates a path with an arraylist of the path (big endian)
-    */
+    /**
+     * Creates a path with an arraylist of the path (big endian)
+     * 
+     * @param path
+     * @param type
+     */
     public Path(String[] path, short type) {
         setPath(path);
         mType = type;
     }
 
-    /*
+    /**
      * Creates a path from a slash separated string (big endian)
-    */
+     * 
+     * @param path
+     * @param type
+     */
     public Path(String path, short type) {
         setPath(path);
         mType = type;
     }
 
-    /*
-     *  Create a path by appending a child string to an existing path
+    /**
+     * Create a path by appending a child string to an existing path
+     * 
+     * @param parent
+     * @param child
+     * @param type
      */
     public Path(Path parent, String child, short type) {
-    	mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length+1);
-        mPath[mPath.length-1] = child;
+        mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length + 1);
+        mPath[mPath.length - 1] = child;
         mType = type;
     }
 
-     /*
-      * Create a path by appending a child
-      */
+    /**
+     * Create a path by appending a child
+     * 
+     * @param parent
+     * @param child
+     */
     public Path(Path parent, String child) {
         this(parent, child, UNKNOWN);
     }
-    /*************************************************************************/
 
-    // Setters
-
-    /* string array path e.g. { "Product", "Crystal", "Barrel", "2L", "331013013348" }
-     * system/domain node ABSENT
-    */
-    public void setPath(String[] path)
-    {
+    /**
+     * string array path e.g. { "Product", "Crystal", "Barrel", "2L",
+     * "331013013348" } system/domain node ABSENT
+     * 
+     * @param path
+     */
+    public void setPath(String[] path) {
         mStringPath = null;
         mPath = path.clone();
-        mUUID = null;
-        mSysKey = null;
     }
 
-    /* string path e.g. /system/d000/d000/d001
-     * system/domain node PRESENT
-    */
-    public void setPath(String path)
-    {
+    /**
+     * string path e.g. /system/d000/d000/d001 system/domain node PRESENT
+     * 
+     * @param path
+     */
+    public void setPath(String path) {
         ArrayList<String> newPath = new ArrayList<String>();
         if (path != null) {
-        	StringTokenizer tok = new StringTokenizer(path, delim);
-	        if (tok.hasMoreTokens()) {
-		        String first = tok.nextToken();
-		        if (!first.equals(getRoot()))
-		        	newPath.add(first);
-		        while (tok.hasMoreTokens())
-		            newPath.add(tok.nextToken());
-	        }
+            StringTokenizer tok = new StringTokenizer(path, delim);
+            if (tok.hasMoreTokens()) {
+                String first = tok.nextToken();
+                if (!first.equals(getRoot()))
+                    newPath.add(first);
+                while (tok.hasMoreTokens())
+                    newPath.add(tok.nextToken());
+            }
         }
 
         mPath = (newPath.toArray(mPath));
         mStringPath = null;
-        mUUID = null;
-        mSysKey = null;
     }
 
-    // lookup sets the IOR
-    public void setIOR(org.omg.CORBA.Object IOR) {
-        mIOR = IOR;
-        if (IOR == null) mType = Path.CONTEXT;
-        else mType = Path.ITEM;
-    }
+    // root is defined as 'domain', 'item' or 'role' in subclasses
+    abstract public String getRoot();
 
-    /* clone another path object
-    */
-    public void setPath(Path path)
-    {
+    //these methods declared here to provide backward compatibility
+    abstract public org.omg.CORBA.Object getIOR();
+    abstract public void setIOR(org.omg.CORBA.Object IOR);
+    abstract public SystemKey getSystemKey();
+    abstract public UUID getUUID();
+    abstract public ItemPath getItemPath() throws ObjectNotFoundException;
+
+    /**
+     * clones the path object
+     * 
+     * @param path
+     */
+    public void setPath(Path path) {
         mStringPath = null;
         mPath = (path.getPath().clone());
-        mUUID = null;
-        mSysKey = null;
     }
 
-    /*************************************************************************/
 
-
-    /*
-     * Getter Methods
-     */
-
-     // root is defined as 'domain', 'item' or 'role' in subclasses
-    public abstract String getRoot();
-
-    public String[] getPath()
-    {
+    public String[] getPath() {
         return mPath;
     }
 
-    public String getString()
-    {
+    public String getString() {
         if (mStringPath == null) {
-                StringBuffer stringPathBuffer = new StringBuffer("/").append(getRoot());
-                for (String element : mPath)
-					stringPathBuffer.append(delim).append(element);
-                mStringPath = stringPathBuffer.toString();
+            StringBuffer stringPathBuffer = new StringBuffer("/").append(getRoot());
+            for (String element : mPath)
+                stringPathBuffer.append(delim).append(element);
+            mStringPath = stringPathBuffer.toString();
         }
         return mStringPath;
     }
 
     public boolean exists() {
-    	if (Gateway.getLookup() == null) return false;
+        if (Gateway.getLookup() == null) return false;
         return Gateway.getLookup().exists(this);
     }
 
-    /** Queries the lookup for the IOR
-     */
-
-    public org.omg.CORBA.Object getIOR() {
-        org.omg.CORBA.Object newIOR = null;
-        if (mIOR==null) { // if not cached try to resolve
-            Lookup myLookup = Gateway.getLookup();
-            try {
-                String iorString = myLookup.getIOR(this);
-                newIOR = Gateway.getORB().string_to_object(iorString);
-            } catch (ObjectNotFoundException ex) {
-            }
-            setIOR(newIOR);
-        }
-        return mIOR;
-    } 
-
     @Override
-	public String toString() {
+    public String toString() {
         return getString();
     }
 
@@ -211,33 +180,23 @@ public abstract class Path
         return mType;
     }
 
-    public SystemKey getSystemKey() {
-        return mSysKey;
-    }
-    
-    public UUID getUUID() {
-    	return mUUID;
-    }
-
-    public abstract ItemPath getItemPath() throws ObjectNotFoundException;
-
     @Override
-	public boolean equals( Object path )
-    {
-    	if (path == null) return false;
+    public boolean equals(Object path) {
+        if (path == null) return false;
         return toString().equals(path.toString());
     }
 
     @Override
-	public int hashCode() {
+    public int hashCode() {
         return toString().hashCode();
     }
 
     public String dump() {
         StringBuffer comp = new StringBuffer("Components: { ");
-        for (String element : mPath)
-			comp.append("'").append(element).append("' ");
-        return "Path - dump(): "+comp.toString()+"}\n        string="+toString()+"\n        uuid="+getUUID()+"\n        type="+mType;
+
+        for (String element : mPath) comp.append("'").append(element).append("' ");
+
+        return "Path - dump(): " + comp.toString() + "}\n        string=" + toString() + "\n        uuid=" + getUUID()
+                + "\n        type=" + mType;
     }
 }
-

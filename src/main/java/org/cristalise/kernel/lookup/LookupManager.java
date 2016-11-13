@@ -35,90 +35,88 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
  *
  */
 public interface LookupManager extends Lookup {
-	
-	/**
-	 * Called when a server starts up. The Lookup implementation should ensure 
-	 * that the initial structure of its directory is valid, and create it on 
-	 * first boot.
-	 * 
-	 * @throws ObjectNotFoundException When initialization data is not found
-	 */
-	public void initializeDirectory() throws ObjectNotFoundException;
-	
-	// Path management
-	
-	/**
-	 * Register a new a Path in the directory.
-	 * 
-	 * @param newPath The path to add
-	 * @throws ObjectCannotBeUpdated When there is an error writing to the 
-	 * directory
-	 * @throws ObjectAlreadyExistsException When the Path has already been registered
-	 */
-	public void add(Path newPath) throws ObjectCannotBeUpdated, ObjectAlreadyExistsException;
 
-	/**
-	 * Remove a Path from the directory.
-	 * 
-	 * @param path The path to remove
-	 * @throws ObjectCannotBeUpdated When an error occurs writing to the directory
-	 */
-	public void delete(Path path) throws ObjectCannotBeUpdated;
-	
-	// Role and agent management
-	
-	/**
-	 * Creates a new Role. Called by the server predefined step 'CreateNewRole'
-	 * 
-	 * @param role The new role path
-	 * @return
-	 * @throws ObjectAlreadyExistsException 
-	 * @throws ObjectCannotBeUpdated
-	 */
-	public RolePath createRole(RolePath role) throws ObjectAlreadyExistsException, ObjectCannotBeUpdated;
+    /**
+     * Called when a server starts up. The Lookup implementation should ensure 
+     * that the initial structure of its directory is valid, and create it on 
+     * first boot.
+     * 
+     * @throws ObjectNotFoundException When initialization data is not found
+     */
+    public void initializeDirectory() throws ObjectNotFoundException;
 
-	/**
-	 * Adds the given Agent to the given Role, if they both exist.
-	 * 
-	 * @param agent 
-	 * @param rolePath
-	 * @throws ObjectCannotBeUpdated
-	 * @throws ObjectNotFoundException
-	 */
-	public void addRole(AgentPath agent, RolePath rolePath) throws ObjectCannotBeUpdated, ObjectNotFoundException;
+    // Path management
 
-	/**
-	 * Remove the given Agent from the given Role. Does not delete the Role.
-	 * 
-	 * @param agent
-	 * @param role
-	 * @throws ObjectCannotBeUpdated
-	 * @throws ObjectNotFoundException
-	 */
-	public void removeRole(AgentPath agent, RolePath role) throws ObjectCannotBeUpdated, ObjectNotFoundException;
+    /**
+     * Register a new a Path in the directory.
+     * 
+     * @param newPath The path to add
+     * @throws ObjectCannotBeUpdated When there is an error writing to the 
+     * directory
+     * @throws ObjectAlreadyExistsException When the Path has already been registered
+     */
+    public void add(Path newPath) throws ObjectCannotBeUpdated, ObjectAlreadyExistsException;
 
-	/**
-	 * Set an Agent's password
-	 * 
-	 * @param agent The Agent
-	 * @param newPassword The Agent's new password
-	 * @throws ObjectNotFoundException
-	 * @throws ObjectCannotBeUpdated
-	 * @throws NoSuchAlgorithmException
-	 */
-	public void setAgentPassword(AgentPath agent, String newPassword) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
-	
-	/**
-	 * Set the flag specifying whether Activities holding this Role should push
-	 * Jobs its Agents.
-	 * 
-	 * @param role The role to modify
-	 * @param hasJobList boolean flag
-	 * 
-	 * @throws ObjectNotFoundException When the Role doesn't exist
-	 * @throws ObjectCannotBeUpdated 
-	 */
-	public void setHasJobList(RolePath role, boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated;
+    /**
+     * Remove a Path from the directory.
+     * 
+     * @param path The path to remove
+     * @throws ObjectCannotBeUpdated When an error occurs writing to the directory
+     */
+    public void delete(Path path) throws ObjectCannotBeUpdated;
 
+    // Role and agent management
 
+    /**
+     * Creates a new Role. Called by the server predefined step 'CreateNewRole'
+     * 
+     * @param role The new role path
+     * @return
+     * @throws ObjectAlreadyExistsException 
+     * @throws ObjectCannotBeUpdated
+     */
+    public RolePath createRole(RolePath role) throws ObjectAlreadyExistsException, ObjectCannotBeUpdated;
+
+    /**
+     * Adds the given Agent to the given Role, if they both exist.
+     * 
+     * @param agent 
+     * @param rolePath
+     * @throws ObjectCannotBeUpdated
+     * @throws ObjectNotFoundException
+     */
+    public void addRole(AgentPath agent, RolePath rolePath) throws ObjectCannotBeUpdated, ObjectNotFoundException;
+
+    /**
+     * Remove the given Agent from the given Role. Does not delete the Role.
+     * 
+     * @param agent
+     * @param role
+     * @throws ObjectCannotBeUpdated
+     * @throws ObjectNotFoundException
+     */
+    public void removeRole(AgentPath agent, RolePath role) throws ObjectCannotBeUpdated, ObjectNotFoundException;
+
+    /**
+     * Set an Agent's password
+     * 
+     * @param agent The Agent
+     * @param newPassword The Agent's new password
+     * @throws ObjectNotFoundException
+     * @throws ObjectCannotBeUpdated
+     * @throws NoSuchAlgorithmException
+     */
+    public void setAgentPassword(AgentPath agent, String newPassword) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
+
+    /**
+     * Set the flag specifying whether Activities holding this Role should push
+     * Jobs its Agents.
+     * 
+     * @param role The role to modify
+     * @param hasJobList boolean flag
+     * 
+     * @throws ObjectNotFoundException When the Role doesn't exist
+     * @throws ObjectCannotBeUpdated 
+     */
+    public void setHasJobList(RolePath role, boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated;
 }

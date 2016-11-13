@@ -20,45 +20,39 @@
  */
 package org.cristalise.kernel.lookup;
 
+import java.util.UUID;
+
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
-
-
+import org.omg.CORBA.Object;
 
 /**
-* @version $Revision: 1.22 $ $Date: 2005/10/13 08:15:00 $
-* @author  $Author: abranson $
-**/
-public class DomainPath extends Path
-{
-    private ItemPath target = null;
+ * Very simple extension to Path. Only copies constructors and defines root
+ */
+public class DomainPath extends Path {
+
+    private ItemPath        target = null;
     protected static String mTypeRoot;
 
-/* Very simple extension to Path. Only copies constructors and defines root */
-
-    public DomainPath()
-    {
+    public DomainPath() {
         super(Path.UNKNOWN);
     }
 
-    public DomainPath(short type)
-    {
+    public DomainPath(short type) {
         super();
         mType = type;
     }
 
-    public DomainPath(String[] path)
-    {
+    public DomainPath(String[] path) {
         super(path, Path.UNKNOWN);
     }
 
-    public DomainPath(String path)
-    {
+    public DomainPath(String path) {
         super(path, Path.UNKNOWN);
     }
 
-    public DomainPath(String path, ItemPath entity)
-    {
+    public DomainPath(String path, ItemPath entity) {
         super(path, Path.UNKNOWN);
         setItemPath(entity);
     }
@@ -67,11 +61,11 @@ public class DomainPath extends Path
         super(parent, child);
     }
 
-    /* the root of domain paths is /domain
-     * clearly
-    */
+    /*
+     * the root of domain paths is /domain clearly
+     */
     @Override
-	public String getRoot() {
+    public String getRoot() {
         return "domain";
     }
 
@@ -79,7 +73,7 @@ public class DomainPath extends Path
         if (mPath.length == 0)
             return null;
 
-        String[] parentPath = new String[mPath.length-1];
+        String[] parentPath = new String[mPath.length - 1];
         System.arraycopy(mPath, 0, parentPath, 0, parentPath.length);
         return new DomainPath(parentPath);
     }
@@ -96,30 +90,29 @@ public class DomainPath extends Path
     }
 
     @Override
-	public ItemPath getItemPath() throws ObjectNotFoundException {
-        if (mType == UNKNOWN) { // must decide
-            checkType();
-        }
+    public ItemPath getItemPath() throws ObjectNotFoundException {
+        if (mType == UNKNOWN) checkType();
 
-        if (target == null)
-            throw new ObjectNotFoundException("Path "+toString()+" does not resolve to an Item");
+        if (target == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
+
         return target;
     }
 
     @Override
-	public short getType() {
-        if (mType == UNKNOWN) { // must decide
-            checkType();
-        }
+    public short getType() {
+        if (mType == UNKNOWN) checkType();
+
         return mType;
     }
 
     protected void checkType() {
         try {
-		    setItemPath(Gateway.getLookup().resolvePath(this));
-        } catch (InvalidItemPathException ex) {
+            setItemPath(Gateway.getLookup().resolvePath(this));
+        } 
+        catch (InvalidItemPathException ex) {
             mType = CONTEXT;
-        } catch (ObjectNotFoundException ex) {
+        } 
+        catch (ObjectNotFoundException ex) {
             mType = CONTEXT;
         }
 
@@ -127,10 +120,22 @@ public class DomainPath extends Path
 
     /**
      * Retrieves the domkey of the path
+     * 
      * @return the last path component;
      */
     public String getName() {
-    	return mPath[mPath.length-1];
+        return mPath[mPath.length - 1];
     }
-}
 
+    @Override
+    public Object getIOR() { return null; }
+
+    @Override
+    public SystemKey getSystemKey() { return null; }
+
+    @Override
+    public UUID getUUID() { return null; }
+
+    @Override
+    public void setIOR(Object IOR) {}
+}

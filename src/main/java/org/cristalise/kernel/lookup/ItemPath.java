@@ -26,95 +26,140 @@ import java.util.UUID;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
-
-
+import org.cristalise.kernel.process.Gateway;
 
 /**
-* Extends Path to enforce SystemKey structure and support int form
-*
-* @version $Revision: 1.14 $ $Date: 2006/03/03 13:52:21 $
-* @author  $Author: abranson $
-**/
-public class ItemPath extends Path
-{
-    
+ * Extends Path to enforce SystemKey structure and support int form
+ */
+public class ItemPath extends Path {
+
+    protected UUID                 mUUID;
+    protected SystemKey            mSysKey;
+    protected org.omg.CORBA.Object mIOR = null;
+
     public ItemPath() {
-    	setSysKey(UUID.randomUUID());
+        setSysKey(UUID.randomUUID());
     }
 
     public ItemPath(UUID uuid) {
-       	setSysKey(uuid);
+        setSysKey(uuid);
     }
 
     public ItemPath(SystemKey syskey) {
         setSysKey(syskey);
     }
 
-    /*
-    */
-    public ItemPath(String[] path) throws InvalidItemPathException
-    {
+    public ItemPath(String[] path) throws InvalidItemPathException {
         super(path, Path.CONTEXT);
         getSysKeyFromPath();
     }
 
-    /*
-    */
-    public ItemPath(String path) throws InvalidItemPathException
-    {
+    public ItemPath(String path) throws InvalidItemPathException {
         super(path, Path.CONTEXT);
-        if (path == null) throw new InvalidItemPathException("Path cannot be null");
+        if (path == null)
+            throw new InvalidItemPathException("Path cannot be null");
         getSysKeyFromPath();
+    }
+
+    public void setPath(String[] path) {
+        super.setPath(path);
+        mUUID = null;
+        mSysKey = null;
+    }
+
+    public void setPath(String path) {
+        super.setPath(path);
+        mUUID = null;
+        mSysKey = null;
+    }
+
+    public void setPath(Path path) {
+        super.setPath(path);
+        mUUID = null;
+        mSysKey = null;
     }
 
     private void getSysKeyFromPath() throws InvalidItemPathException {
         if (mPath.length == 1) {
-        	try {
-        		setSysKey(UUID.fromString(mPath[0]));
-        		mType = Path.ITEM;
-        	} catch (IllegalArgumentException ex) {
-        		throw new InvalidItemPathException(mPath[0]+" is not a valid UUID");
-        	}
-        }
-        else
-        	throw new InvalidItemPathException("Not a valid item path: "+Arrays.toString(mPath));
+            try {
+                setSysKey(UUID.fromString(mPath[0]));
+                mType = Path.ITEM;
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidItemPathException(mPath[0] + " is not a valid UUID");
+            }
+        } else
+            throw new InvalidItemPathException("Not a valid item path: " + Arrays.toString(mPath));
     }
-    
-    // EntityPaths root in /entity
+
+    /**
+     * The roof of EntityPaths is /entity
+     */
     @Override
-	public String getRoot() {
+    public String getRoot() {
         return "entity";
     }
 
     @Override
-	public ItemPath getItemPath() throws ObjectNotFoundException {
+    public ItemPath getItemPath() throws ObjectNotFoundException {
         return this;
+    }
+
+    public org.omg.CORBA.Object getIOR() {
+        org.omg.CORBA.Object newIOR = null;
+        if (mIOR == null) { // if not cached try to resolve
+            Lookup myLookup = Gateway.getLookup();
+            try {
+                String iorString = myLookup.getIOR(this);
+                newIOR = Gateway.getORB().string_to_object(iorString);
+            }
+            catch (ObjectNotFoundException ex) {
+            }
+            setIOR(newIOR);
+        }
+        return mIOR;
+    }
+
+    public void setIOR(org.omg.CORBA.Object IOR) {
+        mIOR = IOR;
+
+        if (IOR == null) mType = Path.CONTEXT;
+        else             mType = Path.ITEM;
     }
 
     public byte[] getOID() {
         if (mType == Path.CONTEXT) return null;
+
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(mSysKey.msb);
         bb.putLong(mSysKey.lsb);
         return bb.array();
     }
-    
+
     protected void setSysKey(UUID uuid) {
-		mUUID = uuid;
-		mSysKey = new SystemKey(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
-		setPathFromUUID(mUUID.toString());
+        mUUID = uuid;
+        mSysKey = new SystemKey(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
+        setPathFromUUID(mUUID.toString());
     }
-    
+
     protected void setSysKey(SystemKey sysKey) {
-		mSysKey = sysKey;
-		mUUID = new UUID(sysKey.msb, sysKey.lsb);
-		setPathFromUUID(mUUID.toString());
+        mSysKey = sysKey;
+        mUUID = new UUID(sysKey.msb, sysKey.lsb);
+        setPathFromUUID(mUUID.toString());
     }
-    
+
     private void setPathFromUUID(String uuid) {
-    	mPath = new String[1];
-    	mPath[0] = uuid;
-    	mType = Path.ITEM;
+        mPath = new String[1];
+        mPath[0] = uuid;
+        mType = Path.ITEM;
+    }
+
+    @Override
+    public SystemKey getSystemKey() {
+        return mSysKey;
+    }
+
+    @Override
+    public UUID getUUID() {
+        return mUUID;
     }
 }
-
