@@ -32,8 +32,7 @@ import org.omg.CORBA.Object;
  */
 public class DomainPath extends Path {
 
-    private ItemPath        target = null;
-    protected static String mTypeRoot;
+    private ItemPath target = null;
 
     public DomainPath() {
         super(Path.UNKNOWN);
@@ -119,7 +118,7 @@ public class DomainPath extends Path {
     }
 
     /**
-     * Retrieves the domkey of the path
+     * Retrieves the domain name of the path
      * 
      * @return the last path component;
      */

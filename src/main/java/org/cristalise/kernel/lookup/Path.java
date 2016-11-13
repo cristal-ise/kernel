@@ -39,9 +39,13 @@ public abstract class Path {
 
     protected String[] mPath = new String[0];
 
-    // slash delimited path
+    /**
+     *  slash delimited path
+     */
     protected String mStringPath = null;
-    // entity or context
+    /**
+     *  entity or context
+     */
     protected short mType = UNKNOWN;
 
     public Path() {}
@@ -120,10 +124,9 @@ public abstract class Path {
             StringTokenizer tok = new StringTokenizer(path, delim);
             if (tok.hasMoreTokens()) {
                 String first = tok.nextToken();
-                if (!first.equals(getRoot()))
-                    newPath.add(first);
-                while (tok.hasMoreTokens())
-                    newPath.add(tok.nextToken());
+                if (!first.equals(getRoot())) newPath.add(first);
+
+                while (tok.hasMoreTokens()) newPath.add(tok.nextToken());
             }
         }
 
@@ -131,7 +134,11 @@ public abstract class Path {
         mStringPath = null;
     }
 
-    // root is defined as 'domain', 'item' or 'role' in subclasses
+    /**
+     *  Returns root as it is defined as 'domain', 'entity' or 'role' in subclasses
+     *  
+     * @return root as it is defined as 'domain', 'entity' or 'role' in subclasses
+     */
     abstract public String getRoot();
 
     //these methods declared here to provide backward compatibility

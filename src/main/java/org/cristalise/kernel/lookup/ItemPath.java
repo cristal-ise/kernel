@@ -92,7 +92,7 @@ public class ItemPath extends Path {
     }
 
     /**
-     * The roof of EntityPaths is /entity
+     * The root of ItemPath is /entity
      */
     @Override
     public String getRoot() {

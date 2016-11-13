@@ -84,12 +84,14 @@ public class AgentPath extends ItemPath {
     }
 
     public String getAgentName() {
-        if (mAgentName == null)
+        if (mAgentName == null) {
             try {
                 findAgentName();
-            } catch (ObjectNotFoundException e) {
+            }
+            catch (ObjectNotFoundException e) {
                 return null;
             }
+        }
         return mAgentName;
     }
 

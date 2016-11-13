@@ -91,15 +91,13 @@ public class RolePath extends Path {
         return "role";
     }
 
-    @Override
-    public ItemPath getItemPath() throws ObjectNotFoundException {
-        return null;
-    }
-
     public String getName() {
         if (mPath.length > 0) return mPath[mPath.length - 1];
         else                  return "role";
     }
+
+    @Override
+    public ItemPath getItemPath() throws ObjectNotFoundException { return null; }
 
     @Override
     public Object getIOR() { return null; }
