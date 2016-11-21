@@ -258,6 +258,23 @@ public class StateMachine implements DescriptionObject {
         return (t == null) ? -1 : t.getId();
     }
 
+    /**
+     * Helper method to get transition ID by name
+     * 
+     * @param sm
+     * @param transName
+     * @return
+     * @throws InvalidDataException
+     */
+    public int getValidTransitionID(String transName) throws InvalidDataException {
+        int id =  getTransitionID(transName);
+
+        if(id == -1) 
+            throw new InvalidDataException("Transition name '"+transName+"' was not found in StateMachine '"+getName()+"'");
+        else
+            return id;
+    }
+
     public State getState(int stateID) {
         return stateCodes.get(stateID);
     }

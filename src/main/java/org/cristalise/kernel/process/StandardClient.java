@@ -20,16 +20,25 @@
  */
 package org.cristalise.kernel.process;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
+import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
-
 
 abstract public class StandardClient extends AbstractMain {
     protected AgentProxy agent = null;
-    
-	protected void login(String agentName, String agentPass, String resource) throws InvalidDataException {
-		// login - try for a while in case server hasn't imported our user yet
+
+    /**
+     * 
+     * @param agentName
+     * @param agentPass
+     * @param resource
+     * @throws InvalidDataException
+     */
+    protected void login(String agentName, String agentPass, String resource) throws InvalidDataException {
+        // login - try for a while in case server hasn't imported our user yet
         for (int i=1; i < 6; i++) {
             try {
                 Logger.msg("Login attempt "+i+" of 5");
@@ -46,24 +55,42 @@ abstract public class StandardClient extends AbstractMain {
                 catch (InterruptedException ex2) { }
             }
         }
-        
+
         if(agent == null) throw new InvalidDataException("Could not login agent:"+agentName);
-	}
+    }
 
     /**
-     * This method is only provided as an example
+     * CRISTAL-iSE clients should use the StateMachine information to implement application logic. This method loads the
+     * required StateMachine using different cristal-ise configuration. 
      * 
-     * @param args
-     * @throws Exception
+     * @param propPrefix the Property Name prefix to find client specific configuration
+     * @param namesSpaceDefault default value to load bootstrap file if no configuration was provided
+     * @param bootfileDefault default value to load bootstrap file if no configuration was provided
+     * @return the initialised StateMachine object
+     * @throws InvalidDataException Missing/Incorrect configuration data
      */
-    static public void main(String[] args) throws Exception {
-        Gateway.init(readC2KArgs(args));
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                AbstractMain.shutdown(0);
+    protected static StateMachine getRequiredStateMachine(String propPrefix, String namesSpaceDefault, String bootfileDefault) throws InvalidDataException  {
+        if(StringUtils.isBlank(propPrefix)) throw new InvalidDataException("propertyPrefix must contain a value");
+
+        String smName    = Gateway.getProperties().getString(propPrefix + ".StateMachine.name");
+        int    smVersion = Gateway.getProperties().getInt(   propPrefix + ".StateMachine.version");
+
+        try {
+            if (StringUtils.isNotBlank(smName) && smVersion != -1) {
+                return LocalObjectLoader.getStateMachine(smName, smVersion);
             }
-        });
-        Gateway.connect("username", "password");
+            else {
+                Logger.warning("StandardClient.getRequiredStateMachine() - SM Name and/or Version was not specified, trying to load from bootsrap resource.");
+
+                String stateMachineNS   = Gateway.getProperties().getString(propPrefix + ".StateMachine.namespace", namesSpaceDefault);
+                String stateMachinePath = Gateway.getProperties().getString(propPrefix + ".StateMachine.bootfile",  bootfileDefault);
+
+                return (StateMachine) Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(stateMachineNS, stateMachinePath));
+            }
+        }
+        catch(Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
+        }
     }
 }

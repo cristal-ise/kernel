@@ -25,9 +25,13 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.cristalise.kernel.common.AccessRightsException;
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.InvalidTransitionException;
+import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.proxy.MemberSubscription;
@@ -51,29 +55,23 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     private final int SUSPEND;
     private final int RESUME;
 
-    static boolean active = true;
-    ArrayList<String> ignoredPaths = new ArrayList<String>();
-    HashMap<String, ErrorInfo> errors = new HashMap<String, ErrorInfo>();
-    final HashMap<String, C2KLocalObject> jobs = new HashMap<String, C2KLocalObject>();
+    static boolean                        active       = true;
+    ArrayList<String>                     ignoredPaths = new ArrayList<String>();
+    HashMap<String, ErrorInfo>            errors       = new HashMap<String, ErrorInfo>();
+    final HashMap<String, C2KLocalObject> jobs         = new HashMap<String, C2KLocalObject>();
 
-    public UserCodeProcess(String agentName, String agentPass, String resource) 
-            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException, InvalidDataException
-    {
-        //TODO: make this configurable from properties
-        StateMachine sm = (StateMachine)Gateway.getMarshaller().unmarshall(Gateway.getResource().getTextResource(null, "boot/SM/Default.xml"));
+    public UserCodeProcess() throws InvalidDataException, ObjectNotFoundException {
+        StateMachine sm = getRequiredStateMachine("UserCode", null, "boot/SM/Default.xml");
 
-        //TODO: make this configurable from properties
-        START    = sm.getTransitionID("Start");
-        COMPLETE = sm.getTransitionID("Complete");
-        SUSPEND  = sm.getTransitionID("Suspend");
-        RESUME   = sm.getTransitionID("Resume");
-
-        login(agentName, agentPass, resource);
-        System.out.println(getDesc()+" initialised for " + agentName);
+        //default values are valid for Transitions compatible with kernel provided Default StateMachine
+        START    = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.startTransition",    "Start"));
+        COMPLETE = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.completeTransition", "Complete"));
+        SUSPEND  = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.suspendTransition",  "Suspend"));
+        RESUME   = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.resumeTransition",   "Resume"));
     }
 
     @Override
-	public void run() {
+    public void run() {
         Thread.currentThread().setName("Usercode Process");
         // subscribe to job list
         agent.subscribe(new MemberSubscription<Job>(this, ClusterStorage.JOB, true));
@@ -83,36 +81,12 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             if (thisJob != null) {
                 String jobKey = thisJob.getItemPath()+":"+thisJob.getStepPath();
                 int transitionId = thisJob.getTransition().getId();
-                try {
-                    if (transitionId==START) {
-                        Logger.msg(5, "Testing start conditions");
 
-                        if (assessStartConditions(thisJob)) {
-                            Logger.msg(5, "Attempting to start");
-                            agent.execute(thisJob);
-                        }
-                        else {
-                            Logger.msg(5, "Start conditions failed "+thisJob.getStepName()+" in "+thisJob.getItemPath());
-                        }
-                    }
-                    else if (transitionId==COMPLETE) {
-                        Logger.msg(5, "Executing logic");
-                        runUCLogic(thisJob);
-                        
-                        if (ignoredPaths.contains(jobKey)) ignoredPaths.remove(jobKey);
-                    }
-                    else if (transitionId==SUSPEND) {
-                        if (ignoredPaths.contains(jobKey)) {
-                            if (errors.containsKey(jobKey)) {
-                                thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
-                                errors.remove(jobKey);
-                            }
-                            agent.execute(thisJob);
-                        }
-                    }
-                    else if (transitionId==RESUME) {
-                        if (!ignoredPaths.contains(jobKey)) agent.execute(thisJob);
-                    }
+                try {
+                    if      (transitionId==START)    start(thisJob, jobKey);
+                    else if (transitionId==COMPLETE) complete(thisJob, jobKey);
+                    else if (transitionId==SUSPEND)  suspend(thisJob, jobKey);
+                    else if (transitionId==RESUME)   resume(thisJob, jobKey);
                 }
                 catch (ScriptErrorException ex) {
                     errors.put(jobKey, ex.getErrors());
@@ -135,7 +109,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             try {
                 synchronized (jobs) {
                     if (jobs.size() == 0) {
-                        Logger.msg("Sleeping");
+                        Logger.msg("UserCodeProcess.run() - Sleeping");
                         while (active && jobs.size() == 0) jobs.wait(2000);
                     }
                 }
@@ -144,12 +118,143 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
 
         // shut down
         try {
-        	Gateway.close();
+            Gateway.close();
         }
         catch( Exception ex ) {
             Logger.error(ex);
         }
     }
+
+    /**
+     * 
+     * @param thisJob
+     * @param jobKey
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws ScriptErrorException
+     * @throws InvalidCollectionModification
+     */
+    public void start(Job thisJob, String jobKey)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
+                   ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+    {
+        Logger.msg(5, "UserCodeProcess.start() - job:"+thisJob);
+
+        if (assessStartConditions(thisJob)) {
+            Logger.msg(5, "UserCodeProcess.start() - Attempting to start");
+            agent.execute(thisJob);
+        }
+        else {
+            Logger.msg(5, "UserCodeProcess.start() - Start conditions failed "+thisJob.getStepName()+" in "+thisJob.getItemPath());
+        }
+    }
+
+    /**
+     * 
+     * @param thisJob
+     * @param jobKey
+     * @throws Exception
+     */
+    public void complete(Job thisJob, String jobKey) throws Exception {
+        Logger.msg(5, "UserCodeProcess.complete() - job:"+thisJob);
+        runUserCodeLogic(thisJob);
+
+        if (ignoredPaths.contains(jobKey)) ignoredPaths.remove(jobKey);
+    }
+
+    /**
+     * 
+     * @param thisJob
+     * @param jobKey
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws ScriptErrorException
+     * @throws InvalidCollectionModification
+     */
+    protected void resume(Job thisJob, String jobKey)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
+                   ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+    {
+        Logger.msg(5, "UserCodeProcess.resume() - job:"+thisJob);
+
+        if (!ignoredPaths.contains(jobKey)) agent.execute(thisJob);
+    }
+
+    /**
+     * 
+     * @param thisJob the actual Job to be executed.
+     * @param jobKey
+     * 
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     * @throws IOException
+     * @throws MappingException
+     * @throws MarshalException
+     * @throws ValidationException
+     * @throws AccessRightsException
+     * @throws InvalidTransitionException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws ScriptErrorException
+     * @throws InvalidCollectionModification
+     */
+    protected void suspend(Job thisJob, String jobKey) 
+            throws MarshalException, ValidationException, InvalidDataException, ObjectNotFoundException, IOException, MappingException, 
+                   AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException, 
+                   InvalidCollectionModification, ScriptErrorException 
+    {
+        Logger.msg(5, "UserCodeProcess.suspend() - job:"+thisJob);
+
+        if (ignoredPaths.contains(jobKey)) {
+            if (errors.containsKey(jobKey)) {
+                thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
+                errors.remove(jobKey);
+            }
+            agent.execute(thisJob);
+        }
+    }
+
+    /**
+     * Override this method to implement application specific evaluation of start condition.
+     * Default implementation - returns always true, i.e. there were no start conditions.
+     * 
+     * @param job the actual Job to be executed.
+     * @return true, if the start condition were met
+     */
+    public boolean assessStartConditions(Job job) {
+        return true;
+    }
+
+    /**
+     * Override this mehod to implement application specific (business) logic
+     * Default implementation - the agent execute any scripts, query or both defined
+     * 
+     * @param job the actual Job to be executed.
+     * 
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     * @throws ScriptErrorException
+     */
+    public void runUserCodeLogic(Job job)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
+                   ObjectAlreadyExistsException, InvalidCollectionModification, ScriptErrorException 
+    {
+        agent.execute(job);
+    }
+
 
     /**
      * Gets the next possible Job based on the Transitions of the Default StateMachine
@@ -171,80 +276,89 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                     Logger.error("No supported jobs, but joblist is not empty! Discarding remaining jobs");
                     jobs.clear();
                 }
-                else
+                else {
                     jobs.remove(ClusterStorage.getPath(thisJob));
+                }
             }
         }
         return thisJob;
     }
 
-	private static Job getJob(HashMap<String, C2KLocalObject> jobs, int transition) {
+    /**
+     * 
+     * @param jobs
+     * @param transition
+     * @return
+     */
+    private static Job getJob(HashMap<String, C2KLocalObject> jobs, int transition) {
         for (C2KLocalObject c2kLocalObject : jobs.values()) {
             Job thisJob = (Job)c2kLocalObject;
             if (thisJob.getTransition().getId() == transition) {
                 Logger.msg(1,"=================================================================");
-                Logger.msg(1, "Got "+thisJob.getTransition().getName()+" job for "+thisJob.getStepName()+" in "+thisJob.getItemPath());
+                Logger.msg(5, "UserCodeProcess.getJob() - job:"+thisJob);
                 return thisJob;
             }
         }
         return null;
     }
 
-    public boolean assessStartConditions(Job job) {
-        // default implementation - has no start conditions.
-        return true;
-    }
-
-    public void runUCLogic(Job job) throws Exception {
-        // default implementation - the agent will execute any scripts defined when we execute
-        agent.execute(job);
-    }
-
-
     /**
      * Receives job from the AgentProxy. Reactivates thread if sleeping.
-    */
+     */
     @Override
-	public void add(Job contents) {
-            synchronized(jobs) {
-                Logger.msg(7, "Adding "+ClusterStorage.getPath(contents));
-                jobs.put(ClusterStorage.getPath(contents), contents);
-                jobs.notify();
-            }
-
-    }
-
-    @Override
-    public void control(String control, String msg) {
-        if (MemberSubscription.ERROR.equals(control))
-            Logger.error("Error in job subscription: "+msg);
+    public void add(Job contents) {
+        synchronized(jobs) {
+            Logger.msg(7, "UserCodeProcess.add() - path:"+ClusterStorage.getPath(contents));
+            jobs.put(ClusterStorage.getPath(contents), contents);
+            jobs.notify();
+        }
     }
 
     /**
-    * Job removal notification from the AgentProxy.
-    */
+     * 
+     */
     @Override
-	public void remove(String id) {
+    public void control(String control, String msg) {
+        if (MemberSubscription.ERROR.equals(control)) Logger.error("Error in job subscription: "+msg);
+    }
+
+    /**
+     * Job removal notification from the AgentProxy.
+     */
+    @Override
+    public void remove(String id) {
         synchronized(jobs) {
-            Logger.msg(7, "Deleting "+id);
+            Logger.msg(7, "UserCodeProcess.remove() - id:"+id);
             jobs.remove(id);
         }
     }
 
-    public static UserCodeProcess getInstance() 
-            throws MarshalException, ValidationException, ObjectNotFoundException, IOException, MappingException, InvalidDataException
-    {
-        return new UserCodeProcess(InetAddress.getLocalHost().getHostName(), "uc", Gateway.getProperties().getString("AuthResource", "Cristal"));
+    public String getDesc() {
+        return("Usercode Process");
     }
 
+    public static void shutdown() {
+        active = false;
+    }
+
+    /**
+     * 
+     * @param args
+     */
     static public void main(String[] args) {
         int status = 0;
 
         try {
-        	Gateway.init(readC2KArgs(args));
-            UserCodeProcess proc = getInstance();
+            Gateway.init(readC2KArgs(args));
+
+            UserCodeProcess proc =  new UserCodeProcess();
+
+            proc.login( Gateway.getProperties().getString("UserCode.agent", InetAddress.getLocalHost().getHostName()),
+                        Gateway.getProperties().getString("UserCode.password", "uc"),
+                        Gateway.getProperties().getString("AuthResource", "Cristal"));
+
             new Thread(proc).start();
-            
+
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -256,7 +370,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             Logger.error(ex);
 
             try {
-            	Gateway.close();
+                Gateway.close();
             }
             catch(Exception ex1) {
                 Logger.error(ex1);
@@ -264,13 +378,5 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             status = 1;
             System.exit(status);
         }
-    }
-
-    public String getDesc() {
-        return("Usercode Process");
-    }
-
-    public static void shutdown() {
-        active = false;
     }
 }
