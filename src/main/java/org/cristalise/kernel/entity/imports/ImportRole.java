@@ -43,10 +43,7 @@ public class ImportRole extends ModuleImport {
     {
         RolePath newRolePath = new RolePath(name.split("/"), (jobList == null) ? false : jobList);
 
-        try {
-            // checks if Role already exists
-            newRolePath = Gateway.getLookup().getRolePath(newRolePath.getName());
-
+        if(Gateway.getLookup().exists(newRolePath)) {
             //If jobList is null it means it was not set in the module.xml, therefore existing Role cannot be updated
             if (jobList != null && newRolePath.hasJobList() != jobList) {
                 Logger.msg("ImportRole.create() - Updating Role:"+this.name+" joblist:"+jobList);
@@ -55,10 +52,10 @@ public class ImportRole extends ModuleImport {
                 Gateway.getLookupManager().createRole(newRolePath); //FIXME: throws ObjectAlreadyExistsException?????
             }
         }
-        catch (ObjectNotFoundException ex) {
+        else {
             Logger.msg("ImportRole.create() - Creating Role:"+name+" joblist:"+jobList);
 
-            // checks if parent exists
+            //Check if parent exists and throw ObjectNotFoundException
             newRolePath.getParent();
 
             Gateway.getLookupManager().createRole(newRolePath);

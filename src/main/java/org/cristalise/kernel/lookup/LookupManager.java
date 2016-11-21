@@ -68,7 +68,8 @@ public interface LookupManager extends Lookup {
     // Role and agent management
 
     /**
-     * Creates a new Role. Called by the server predefined step 'CreateNewRole'
+     * Creates a new Role. Checks if parent role exists or not and throws ObjectCannotBeUpdated if parent does not exist
+     * Called by the server predefined step 'CreateNewRole'
      * 
      * @param role The new role path
      * @return
