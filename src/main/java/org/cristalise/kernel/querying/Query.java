@@ -44,6 +44,7 @@ import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ParameterException;
 import org.cristalise.kernel.scripting.ScriptParsingException;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
@@ -114,10 +115,15 @@ public class Query implements DescriptionObject {
         else p.setValue(value);
     }
 
-    public void setMandatoryParemeters(String uuid, Object schemaName, Object viewPoint) {
+    public void setParemeterValues(String itemUUID,  Object schemaName, CastorHashMap actProps) {
+        for(Parameter p : parameters) p.setValue(actProps.get(p.getName()));
+
+        setMandatoryParemeters(itemUUID, schemaName);
+    }
+
+    public void setMandatoryParemeters(String uuid, Object schemaName) {
         setStringParameter("itemUUID",   uuid);
         setStringParameter("schemaName", schemaName);
-        setStringParameter("viewPoint",  viewPoint);
     }
 
     public void validateXML(String xml) throws InvalidDataException, ObjectNotFoundException {

@@ -21,15 +21,11 @@
 package org.cristalise.kernel.entity.agent;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import lombok.Getter;
-import lombok.Setter;
 
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -60,6 +56,9 @@ import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 
  */
@@ -88,7 +87,6 @@ public class Job implements C2KLocalObject {
     private boolean    transitionResolved = false;
 
     private Outcome outcome = null;;
-    private Query query = null;;
 
     /**
      * OutcomeInitiator cache
@@ -266,9 +264,10 @@ public class Job implements C2KLocalObject {
     }
 
     public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
-        if (query == null && hasQuery()) {
+        Query query = null;
+        if (hasQuery()) {
             query = getTransition().getQuery(actProps);
-            query.setMandatoryParemeters(itemPath.getUUID().toString(), getSchemaName(), getActProp(VIEW_POINT));
+            query.setParemeterValues(itemPath.getUUID().toString(), getSchemaName(), actProps);
         }
         return query;
     }
