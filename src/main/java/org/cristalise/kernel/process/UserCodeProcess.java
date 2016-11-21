@@ -64,10 +64,17 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         StateMachine sm = getRequiredStateMachine("UserCode", null, "boot/SM/Default.xml");
 
         //default values are valid for Transitions compatible with kernel provided Default StateMachine
-        START    = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.startTransition",    "Start"));
-        COMPLETE = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.completeTransition", "Complete"));
-        SUSPEND  = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.suspendTransition",  "Suspend"));
-        RESUME   = sm.getValidTransitionID(Gateway.getProperties().getString("UserCode.StateMachine.resumeTransition",   "Resume"));
+        START    = getValidTransitionID(sm, "UserCode.StateMachine.startTransition",    "Start");
+        COMPLETE = getValidTransitionID(sm, "UserCode.StateMachine.completeTransition", "Complete");
+        SUSPEND  = getValidTransitionID(sm, "UserCode.StateMachine.suspendTransition",  "Suspend");
+        RESUME   = getValidTransitionID(sm, "UserCode.StateMachine.resumeTransition",   "Resume");
+    }
+
+    private int getValidTransitionID(StateMachine sm, String propertyName, String defaultValue) throws InvalidDataException {
+        String propertyValue = Gateway.getProperties().getString(propertyName, defaultValue);
+
+        if("USERCODE_IGNORE".equals(propertyValue)) return -1;
+        else                                        return sm.getValidTransitionID(propertyValue);
     }
 
     @Override
