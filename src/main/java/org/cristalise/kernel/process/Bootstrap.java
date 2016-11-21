@@ -544,7 +544,6 @@ public class Bootstrap
      * @throws Exception
      */
     public static void checkAdminAgents() throws Exception {
-
         // check for administrative user & admin role
         RolePath rootRole = new RolePath();
         if (!rootRole.exists()) Gateway.getLookupManager().createRole(rootRole);
@@ -558,7 +557,10 @@ public class Bootstrap
         // check for local usercode user & role
         RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
         if (!usercodeRole.exists()) Gateway.getLookupManager().createRole(usercodeRole);
-        checkAgent(InetAddress.getLocalHost().getHostName(), "uc", usercodeRole, UUID.randomUUID().toString());
+        checkAgent(InetAddress.getLocalHost().getHostName(), 
+                   Gateway.getProperties().getString("UserCode.password", "uc"), 
+                   usercodeRole, 
+                   UUID.randomUUID().toString());
     }
 
     /**
