@@ -89,21 +89,17 @@ public class CompositeActivity extends Activity {
     }
 
     /**
-     * Initialize Vertex and attach to the current activity
+     * Initialise Vertex and attach to the current activity
      *
-     * @param vertex
+     * @param vertex the vertex to be initialised
      * @param first if true, the Waiting state will be one of the first launched by the parent activity
-     * @param point
+     * @param point the location of the vertex in the graph
      */
     public void initChild(WfVertex vertex, boolean first, GraphPoint point) {
         safeAddChild(vertex, point);
         if (first) setFirstVertex(vertex.getID());
     }
 
-    /**
-     * 
-     * @param vertexID
-     */
     public void setFirstVertex(int vertexID) {
         Logger.msg(5, "org.cristalise.kernel.lifecycle.CompositeActivity::setFirstVertex() vertexID:"+vertexID);
 
@@ -123,52 +119,22 @@ public class CompositeActivity extends Activity {
         addChild(v, p);
     }
 
-    /**
-     * 
-     * @param child
-     * @param Name
-     * @param point
-     * @return  child vertex
-     */
     public WfVertex newExistingChild(Activity child, String Name, GraphPoint point) {
         child.setName(Name);
         safeAddChild(child, point);
         return child;
     }
 
-    /**
-     * Method newChild.
-     *
-     * @param Name
-     * @param Type
-     * @param point
-     * @return WfVertex
-     */
     public WfVertex newChild(String Name, String Type, GraphPoint point) {
         WfVertex v = newChild(Type, point);
         v.setName(Name);
         return v;
     }
 
-    /**
-     * Method newChild.
-     *
-     * @param vertexTypeId
-     * @param point
-     * @return WfVertex
-     */
     public WfVertex newChild(String vertexTypeId, GraphPoint point) {
         return newChild(Types.valueOf(vertexTypeId), "False id", false, point);
     }
 
-    /**
-     * 
-     * @param type
-     * @param name
-     * @param first
-     * @param point
-     * @return new child vertex
-     */
     public WfVertex newChild(Types type, String name, boolean first, GraphPoint point) {
         switch (type) {
             case Atomic:    return newAtomChild(name, first, point);
@@ -185,15 +151,6 @@ public class CompositeActivity extends Activity {
         }
     }
 
-    /**
-     * Method newCompChild.
-     *
-     * @param id
-     * @param first
-     * @param point
-     * @return CompositeActivity Create an initialize a composite Activity
-     *         attached to the current activity
-     */
     public CompositeActivity newCompChild(String id, boolean first, GraphPoint point) {
         CompositeActivity act = new CompositeActivity();
         initChild(act, first, point);
@@ -201,16 +158,6 @@ public class CompositeActivity extends Activity {
         return act;
     }
 
-    /**
-     * Method newAtomChild.
-     *
-     * @param id
-     * @param first
-     * @param point
-     * @return Activity Create an initialize an Atomic Activity attached to the
-     *         current activity
-     *
-     */
     public Activity newAtomChild(String id, boolean first, GraphPoint point) {
         Activity act = new Activity();
         initChild(act, first, point);
@@ -218,13 +165,6 @@ public class CompositeActivity extends Activity {
         return act;
     }
 
-    /**
-     * Method newSplitChild.
-     *
-     * @param Type
-     * @param point
-     * @return Split
-     */
     public Split newSplitChild(String name, String Type, boolean first, GraphPoint point) {
         Split split = null;
 
@@ -239,12 +179,6 @@ public class CompositeActivity extends Activity {
         return split;
     }
 
-    /**
-     * Method newJoinChild.
-     *
-     * @param point
-     * @return Join
-     */
     public Join newJoinChild(String name, String type, boolean first, GraphPoint point) {
         Join join = new Join();
         join.getProperties().put("Type", type);
@@ -427,33 +361,14 @@ public class CompositeActivity extends Activity {
         return jobs;
     }
 
-    /**
-     * Method addNext.
-     *
-     * @param origin
-     * @param terminus
-     * @return Next
-     */
     public Next addNext(WfVertex origin, WfVertex terminus) {
         return new Next(origin, terminus);
     }
 
-    /**
-     * Method addNext.
-     *
-     * @param originID
-     * @param terminusID
-     * @return Next
-     */
     public Next addNext(int originID, int terminusID) {
         return addNext(search(originID), search(terminusID));
     }
 
-    /**
-     * Method hasGoodNumberOfActivity.
-     *
-     * @return boolean
-     */
     public boolean hasGoodNumberOfActivity() {
         int endingAct = 0;
         for (int i = 0; i < getChildren().length; i++) {
@@ -466,18 +381,11 @@ public class CompositeActivity extends Activity {
         return true;
     }
 
-    /**
-     * @see org.cristalise.kernel.lifecycle.instance.Activity#getType()
-     */
     @Override
     public String getType() {
         return super.getType();
     }
 
-    /**
-     * @throws InvalidDataException 
-     *
-     */
     @Override
     public void reinit(int idLoop) throws InvalidDataException {
         super.reinit(idLoop);

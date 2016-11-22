@@ -72,29 +72,23 @@ public interface LookupManager extends Lookup {
      * Called by the server predefined step 'CreateNewRole'
      * 
      * @param role The new role path
-     * @return
-     * @throws ObjectAlreadyExistsException 
-     * @throws ObjectCannotBeUpdated
+     * @return the RolePath representing the newly create Role
      */
     public RolePath createRole(RolePath role) throws ObjectAlreadyExistsException, ObjectCannotBeUpdated;
 
     /**
      * Adds the given Agent to the given Role, if they both exist.
      * 
-     * @param agent 
-     * @param rolePath
-     * @throws ObjectCannotBeUpdated
-     * @throws ObjectNotFoundException
+     * @param agent  the path representing the given Agent
+     * @param rolePath the path representing the given Role
      */
     public void addRole(AgentPath agent, RolePath rolePath) throws ObjectCannotBeUpdated, ObjectNotFoundException;
 
     /**
      * Remove the given Agent from the given Role. Does not delete the Role.
      * 
-     * @param agent
-     * @param role
-     * @throws ObjectCannotBeUpdated
-     * @throws ObjectNotFoundException
+     * @param agent the path representing the given Agent
+     * @param role the path representing the given Role
      */
     public void removeRole(AgentPath agent, RolePath role) throws ObjectCannotBeUpdated, ObjectNotFoundException;
 
@@ -103,9 +97,6 @@ public interface LookupManager extends Lookup {
      * 
      * @param agent The Agent
      * @param newPassword The Agent's new password
-     * @throws ObjectNotFoundException
-     * @throws ObjectCannotBeUpdated
-     * @throws NoSuchAlgorithmException
      */
     public void setAgentPassword(AgentPath agent, String newPassword) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
 
@@ -115,9 +106,6 @@ public interface LookupManager extends Lookup {
      * 
      * @param role The role to modify
      * @param hasJobList boolean flag
-     * 
-     * @throws ObjectNotFoundException When the Role doesn't exist
-     * @throws ObjectCannotBeUpdated 
      */
     public void setHasJobList(RolePath role, boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated;
 }

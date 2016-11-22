@@ -38,7 +38,7 @@ public interface ProxyLogin {
      * Intialiase the connection with the system used for authentication
      * 
      * @param props Properties needed for the initialisation
-     * @throws Exception
+     * @throws Exception anything could happen
      */
     public void initialize(Properties props) throws Exception;
 
@@ -47,7 +47,7 @@ public interface ProxyLogin {
      * 
      * @param resource additional data required by the system used for authentication
      * @return the authenticated Agent
-     * @throws Exception
+     * @throws Exception anything could happen
      */
     public AgentProxy authenticate(String resource) throws Exception;
 }

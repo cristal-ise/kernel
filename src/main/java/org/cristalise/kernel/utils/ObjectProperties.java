@@ -42,7 +42,7 @@ public class ObjectProperties extends Properties {
 
     public String getString(String propName, String defaultValue) {
         String value = super.getProperty(propName, defaultValue);
-        if (value!=null) value = value.trim();
+        if (value != null) value = value.trim();
         return value;
     }
 
@@ -51,8 +51,7 @@ public class ObjectProperties extends Properties {
      * 
      * @param propName
      *            the name of the property
-     * @return the object value of the property. Returns null if the property
-     *         doesn't exist or if the properties of the gateway is null
+     * @return the object value of the property. Returns null if the property doesn't exist or if the properties of the gateway is null
      */
     public Object getObject(String propName) {
         return getObject(propName, null);
@@ -65,8 +64,8 @@ public class ObjectProperties extends Properties {
      *            the name of the property
      * @param defaultValue
      *            the default value.
-     * @return the object value of the property. Returns the default value if the property
-     *         doesn't exist or if the properties of the gateway is null.
+     * @return the object value of the property. Returns the default value if the property doesn't exist or if the properties of the gateway
+     *         is null.
      */
     public Object getObject(String propName, Object defaultValue) {
         Object wValue = get(propName);
@@ -81,8 +80,7 @@ public class ObjectProperties extends Properties {
      * 
      * @param aPropertyName
      *            the name of the paroperty
-     * @return the boolean value of the property. Returns false if the property
-     *         doesn't exist or if the value is not a String or a Boolean
+     * @return the boolean value of the property. Returns false if the property doesn't exist or if the value is not a String or a Boolean
      *         instance
      */
     public boolean getBoolean(String aPropertyName) {
@@ -96,9 +94,8 @@ public class ObjectProperties extends Properties {
      *            the name of the parameter stored in the clc file
      * @param defaultValue
      *            the default value
-     * @return the boolean value of the property. Returns the default value if
-     *         the property doesn't exist or if the value is not a String or a
-     *         Boolean instance
+     * @return the boolean value of the property. Returns the default value if the property doesn't exist or if the value is not a String or
+     *         a Boolean instance
      */
     public boolean getBoolean(String aPropertyName, boolean defaultValue) {
         Object wValue = getObject(aPropertyName, Boolean.valueOf(defaultValue));
@@ -108,7 +105,8 @@ public class ObjectProperties extends Properties {
         if (wValue instanceof String) {
             return Boolean.parseBoolean((String) wValue);
         }
-        Logger.error("getBoolean(): unable to retrieve a int value for ["+aPropertyName+"]. Returning default value ["+defaultValue+"]. object found="+wValue);
+        Logger.error("getBoolean(): unable to retrieve a int value for [" + aPropertyName + "]. Returning default value [" + defaultValue
+                + "]. object found=" + wValue);
 
         return defaultValue;
     }
@@ -118,8 +116,8 @@ public class ObjectProperties extends Properties {
      * 
      * @param aPropertyName
      *            the name of the property
-     * @return the int value of the property. Returns -1 if the property doesn't
-     *         exist or if the value is not a String or an Integer instance
+     * @return the int value of the property. Returns -1 if the property doesn't exist or if the value is not a String or an Integer
+     *         instance
      */
     public int getInt(String aPropertyName) {
         return getInt(aPropertyName, -1);
@@ -132,8 +130,7 @@ public class ObjectProperties extends Properties {
      *            the name of the property
      * @param defaultValue
      *            the default value
-     * @return the int value of the property. Returns the default vakue if the
-     *         property doesn't exist or if the value is not a String or an
+     * @return the int value of the property. Returns the default vakue if the property doesn't exist or if the value is not a String or an
      *         Integer instance
      */
     public int getInt(String aPropertyName, int defaultValue) {
@@ -144,9 +141,11 @@ public class ObjectProperties extends Properties {
         if (wValue instanceof String) {
             try {
                 return Integer.parseInt((String) wValue);
-            } catch (NumberFormatException ex) { }
+            }
+            catch (NumberFormatException ex) {}
         }
-        Logger.error("getInt(): unable to retrieve a int value for ["+aPropertyName+"]. Returning default value ["+defaultValue+"]. object found="+wValue);
+        Logger.error("getInt(): unable to retrieve a int value for [" + aPropertyName + "]. Returning default value [" + defaultValue
+                + "]. object found=" + wValue);
         return defaultValue;
     }
 
@@ -155,7 +154,7 @@ public class ObjectProperties extends Properties {
      * 
      * @param aPropertyName
      *            the name of the property
-     * @param aPropertyValue
+     * @param aPropertyValue the value of the property
      */
     public void setProperty(String aPropertyName, Object aPropertyValue) {
         put(aPropertyName, aPropertyValue);
@@ -167,34 +166,36 @@ public class ObjectProperties extends Properties {
             String name = (String) e.nextElement();
             Object value = getObject(name);
             if (value == null)
-                Logger.msg("    "+name+": null");
+                Logger.msg("    " + name + ": null");
             else
-                Logger.msg("    "+name+" ("+getObject(name).getClass().getSimpleName()+"): '"+getObject(name).toString()+"'");
+                Logger.msg("    " + name + " (" + getObject(name).getClass().getSimpleName() + "): '" + getObject(name).toString() + "'");
         }
     }
 
-    public Object getInstance(String propName, Object defaultVal) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public Object getInstance(String propName, Object defaultVal)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         Object prop = getObject(propName, defaultVal);
         if (prop == null || prop.equals(""))
-            throw new InstantiationException("Property '"+propName+"' was not defined. Cannot instantiate.");
+            throw new InstantiationException("Property '" + propName + "' was not defined. Cannot instantiate.");
         if (prop instanceof String)
-            return Class.forName(((String)prop).trim()).newInstance();
+            return Class.forName(((String) prop).trim()).newInstance();
         return prop;
     }
 
     public Object getInstance(String propName) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         return getInstance(propName, null);
-    }		
+    }
 
-    public ArrayList<?> getInstances(String propName, Object defaultVal) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public ArrayList<?> getInstances(String propName, Object defaultVal)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         Object val = getObject(propName, defaultVal);
         if (val == null) return null;
         if (val instanceof ArrayList)
-            return (ArrayList<?>)val;
+            return (ArrayList<?>) val;
         else if (val instanceof String) {
             ArrayList<Object> retArr = new ArrayList<Object>();
-            StringTokenizer tok = new StringTokenizer((String)val, ",");
-            while (tok.hasMoreTokens()) 
+            StringTokenizer tok = new StringTokenizer((String) val, ",");
+            while (tok.hasMoreTokens())
                 retArr.add(getInstance(tok.nextToken()));
             return retArr;
         }

@@ -43,8 +43,8 @@ public interface ResourceImportHandler {
      * 
      * @param name the name of the resource 
      * @param ns the namespace defined in the module
-     * @param location
-     * @param version
+     * @param location the location of the resource file
+     * @param version the specified version
      * @return a set of outcomes to be synced with the resource item.
      * @throws Exception - if the supplied resources are not valid
      */
@@ -55,7 +55,6 @@ public interface ResourceImportHandler {
      * Should be found in the CA typeroot (/desc/ActivityDesc/)
      * 
      * @return String workflow name
-     * @throws Exception
      */
     public String getWorkflowName() throws Exception; 
 
@@ -64,7 +63,6 @@ public interface ResourceImportHandler {
      * The Property 'Name' will be created and populated automatically, even if not declared.
      * 
      * @return a PropertyDescriptionList - an arraylist of PropertyDescriptions
-     * @throws Exception
      */
     public PropertyDescriptionList getPropDesc() throws Exception;
 
@@ -81,7 +79,6 @@ public interface ResourceImportHandler {
      * Returns any collections that this Resource Item should contain.
      * 
      * @return CollectionArrayList
-     * @throws Exception
      */
     public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception;
 

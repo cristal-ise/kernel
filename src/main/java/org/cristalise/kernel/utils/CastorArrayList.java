@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * Wrapper for a root element to an ArrayList. Castor marshalls arraylists as multiple 
  * elements, so this class is needed to provide a root element to stop it crashing.
  *
- * @param <E>
+ * @param <E> the class specialisation
  */
 abstract public class CastorArrayList<E> {
     public ArrayList<E> list;

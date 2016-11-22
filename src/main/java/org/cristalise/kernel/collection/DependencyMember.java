@@ -39,10 +39,6 @@ import org.cristalise.kernel.utils.KeyValuePair;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**
- * 
- */
 public class DependencyMember implements CollectionMember {
     private ItemPath      mItemPath   = null;
     private ItemProxy     mItem       = null;
@@ -50,38 +46,29 @@ public class DependencyMember implements CollectionMember {
     private CastorHashMap mProperties = null;
     private String        mClassProps;
 
-
-    /**************************************************************************
-     *
-     **************************************************************************/
-    public DependencyMember()
-    {
+    public DependencyMember() {
         mProperties = new CastorHashMap();
     }
 
     @Override
-    public ItemPath getItemPath()
-    {
+    public ItemPath getItemPath() {
         return mItemPath;
     }
 
-    public void setProperties(CastorHashMap props)
-    {
+    public void setProperties(CastorHashMap props) {
         mProperties = props;
     }
 
     @Override
-    public CastorHashMap getProperties()
-    {
+    public CastorHashMap getProperties() {
         return mProperties;
     }
 
-    public KeyValuePair[] getKeyValuePairs()
-    {
+    public KeyValuePair[] getKeyValuePairs() {
         return mProperties.getKeyValuePairs();
     }
-    public void setKeyValuePairs(KeyValuePair[] pairs)
-    {
+
+    public void setKeyValuePairs(KeyValuePair[] pairs) {
         mProperties.setKeyValuePairs(pairs);
     }
 
@@ -94,39 +81,36 @@ public class DependencyMember implements CollectionMember {
         mId = id;
     }
 
-    public void setClassProps(String props)
-    {
+    public void setClassProps(String props) {
         mClassProps = props;
     }
 
     @Override
-    public String getClassProps()
-    {
+    public String getClassProps() {
         return mClassProps;
     }
 
     @Override
-    public void assignItem(ItemPath itemPath) throws InvalidCollectionModification
-    {
+    public void assignItem(ItemPath itemPath) throws InvalidCollectionModification {
         if (itemPath != null) {
             if (mClassProps == null || getProperties() == null)
                 throw new InvalidCollectionModification("ClassProps not yet set. Cannot check membership validity.");
 
-            //for each mandatory prop check if its in the member property and has the matching value
+            // for each mandatory prop check if its in the member property and has the matching value
             StringTokenizer sub = new StringTokenizer(mClassProps, ",");
-            while (sub.hasMoreTokens())
-            {
+
+            while (sub.hasMoreTokens()) {
                 String aClassProp = sub.nextToken();
                 try {
-                    String memberValue = (String)getProperties().get(aClassProp);
-                    Property ItemProperty = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+aClassProp, null);
+                    String memberValue = (String) getProperties().get(aClassProp);
+                    Property ItemProperty = (Property) Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + aClassProp, null);
                     if (ItemProperty == null)
-                        throw new InvalidCollectionModification("Property "+aClassProp+ " does not exist for item " + itemPath );
+                        throw new InvalidCollectionModification("Property " + aClassProp + " does not exist for item " + itemPath);
                     if (!ItemProperty.getValue().equalsIgnoreCase(memberValue))
-                        throw new InvalidCollectionModification("DependencyMember::checkProperty() Values of mandatory prop "+aClassProp+" do not match " + ItemProperty.getValue()+"!="+memberValue);
+                        throw new InvalidCollectionModification("DependencyMember::checkProperty() Values of mandatory prop " + aClassProp
+                                + " do not match " + ItemProperty.getValue() + "!=" + memberValue);
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     Logger.error(ex);
                     throw new InvalidCollectionModification("Error checking properties");
                 }
@@ -154,7 +138,6 @@ public class DependencyMember implements CollectionMember {
         mItemPath = new ItemPath(uuid);
     }
 
-
     @Override
     public String getChildUUID() {
         return mItemPath.getUUID().toString();
@@ -176,7 +159,7 @@ public class DependencyMember implements CollectionMember {
      * @throws ObjectNotFoundException
      */
     protected Object evaluateScript() throws InvalidDataException, ObjectNotFoundException {
-        Logger.msg(5, "DependencyMember.evaluateScript() - memberUUID:"+getChildUUID());
+        Logger.msg(5, "DependencyMember.evaluateScript() - memberUUID:" + getChildUUID());
         Script script = LocalObjectLoader.getScript(getProperties());
 
         try {

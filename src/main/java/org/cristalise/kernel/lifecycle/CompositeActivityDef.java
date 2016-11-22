@@ -103,26 +103,12 @@ public class CompositeActivityDef extends ActivityDef {
         return mEdgeTypeNameAndConstructionInfo;
     }
 
-    /**
-     * Method addNextDef.
-     *
-     * @param origin
-     * @param terminus
-     * @return NextDef
-     */
     public NextDef addNextDef(WfVertexDef origin, WfVertexDef terminus) {
         NextDef returnNxt = new NextDef(origin, terminus);
         getChildrenGraphModel().addEdgeAndCreateId(returnNxt, origin, terminus);
         return returnNxt;
     }
 
-    /**
-     * Method addExistingActivityDef.
-     *
-     * @param actDef
-     * @param point
-     * @throws InvalidDataException
-     */
     public ActivitySlotDef addExistingActivityDef(String name, ActivityDef actDef, GraphPoint point) throws InvalidDataException {
         changed = true;
         boolean newActDef = true;
@@ -156,16 +142,6 @@ public class CompositeActivityDef extends ActivityDef {
         return child;
     }
 
-    /**
-     * Method newChild.
-     *
-     * @param Name
-     * @param Type
-     * @param location
-     * @return WfVertexDef
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
-     */
     public WfVertexDef newChild(String Name, String Type, Integer version, GraphPoint location)
             throws ObjectNotFoundException, InvalidDataException
     {
@@ -317,7 +293,7 @@ public class CompositeActivityDef extends ActivityDef {
      * Used in Script CompositeActivityDefCollSetter
      * 
      * @return the Dependency collection created from the list of child ActDefs of this class
-     * @throws InvalidDataException
+     * @throws InvalidDataException there was a problem creating the collections
      */
     public Dependency makeActDefCollection() throws InvalidDataException {
         return makeDescCollection(ACTIVITY, refChildActDef.toArray(new ActivityDef[refChildActDef.size()]));

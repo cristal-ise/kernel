@@ -37,9 +37,9 @@ public class DataHelperUtility {
      * If there is such no property, it uses the given id to instantiate one of these classes:
      * {@link ViewpointDataHelper}, {@link PropertyDataHelper}, {@link ActivityDataHelper}
      * 
-     * @param id
+     * @param id the string user to identify the DataHelper in the cristal-ise configuration
      * @return the DataHelper instance
-     * @throws InvalidDataException
+     * @throws InvalidDataException could not configure DataHelper
      */
     public static DataHelper getDataHelper(String id) throws InvalidDataException {
         Object configHelper = Gateway.getProperties().getObject("DataHelper."+id);
@@ -66,14 +66,15 @@ public class DataHelperUtility {
     /**
      * If the 
      * 
-     * @param itemPath
-     * @param value
-     * @param actContext
-     * @param locker
+     * @param itemPath the actual Item context
+     * @param value the value to be evaluated
+     * @param actContext activity path
+     * @param locker database transaction locker
      * @return String value which was evaluated using {@link DataHelper} implementation
-     * @throws InvalidDataException
-     * @throws PersistencyException
-     * @throws ObjectNotFoundException
+     * 
+     * @throws InvalidDataException data inconsistency
+     * @throws PersistencyException persistency issue
+     * @throws ObjectNotFoundException  object was not found
      */
     public static Object evaluateValue(ItemPath itemPath, Object value, String actContext, Object locker) 
             throws InvalidDataException, PersistencyException, ObjectNotFoundException

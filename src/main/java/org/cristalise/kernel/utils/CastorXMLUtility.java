@@ -43,9 +43,9 @@ import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.ValidationException;
 import org.exolab.castor.xml.XMLContext;
 
-/**************************************************************************
+/**
  * Loads all castor mapfiles, and wraps marshalling/unmarshalling
- **************************************************************************/
+ */
 public class CastorXMLUtility {
 
     public static final String CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
@@ -61,7 +61,6 @@ public class CastorXMLUtility {
      *            the application properties containing optional castor configuration
      * @param mapURL
      *            the root URL for the mapfiles
-     * @throws InvalidDataException
      */
     public CastorXMLUtility(final ResourceLoader aResourceLoader, final Properties aAppProperties, final URL mapURL)
             throws InvalidDataException
@@ -136,12 +135,8 @@ public class CastorXMLUtility {
     /**
      * Marshalls a mapped object to xml string. The mapping must be loaded before. See updateMapping().
      * 
-     * @param obj
+     * @param obj the object to be marshalled
      * @return the xml string of the marshalled object
-     * @throws IOException
-     * @throws MappingException
-     * @throws MarshalException
-     * @throws ValidationException
      */
     public String marshall(Object obj) throws IOException, MappingException, MarshalException, ValidationException {
         if (obj == null) return "<NULL/>";
@@ -163,12 +158,8 @@ public class CastorXMLUtility {
     /**
      * Unmarshalls a mapped object from XML string. The mapping must be loaded before. See updateMapping().
      * 
-     * @param data
+     * @param data the string to be unmarshalled
      * @return the unmarshalled object
-     * @throws IOException
-     * @throws MappingException
-     * @throws MarshalException
-     * @throws ValidationException
      */
     public Object unmarshall(String data) throws IOException, MappingException, MarshalException, ValidationException {
         if (data.equals("<NULL/>")) return null;

@@ -245,7 +245,6 @@ public abstract class ClusterStorage {
      * 
      * @param query the query to be executed
      * @return the xml result of the query
-     * @throws PersistencyException
      */
     public abstract String executeQuery(Query query) throws PersistencyException;
 

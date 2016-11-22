@@ -56,9 +56,7 @@ public interface CollectionMember {
 	 * Assign the given item to the slot, if it fits
 	 * 
 	 * @param itemPath The item to assign
-	 * @throws InvalidCollectionModification When the Item Properties don't match the
-	 * typing specification in ClassProps and Properties
-	 * @throws InvalidCollectionModification 
+	 * @throws InvalidCollectionModification When the Item Properties don't match the typing specification in ClassProps and Properties
 	 */
     public void assignItem(ItemPath itemPath) throws InvalidCollectionModification;
     

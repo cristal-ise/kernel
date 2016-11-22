@@ -38,17 +38,6 @@ import org.omg.PortableServer.POAManager;
 import org.omg.PortableServer.Servant;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
 
-
-/**************************************************************************
- *
- * $Revision: 1.8 $
- * $Date: 2005/10/13 08:13:44 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
-
 public class CorbaServer {
     private final Map<ItemPath, Servant>         mItemCache;
     private POA         mRootPOA;
@@ -70,7 +59,7 @@ public class CorbaServer {
 
         new Thread(new Runnable() {
             @Override
-			public void run() {
+            public void run() {
                 Thread.currentThread().setName("ORB Invoker");
                 Gateway.getORB().run();
             }
@@ -85,54 +74,42 @@ public class CorbaServer {
              * Unfortunately we can't do this without using Restricted API, which can cause build errors 
              * Fix this comment terminator to enable: * /
             if (Gateway.getORB() instanceof com.sun.corba.se.impl.orb.ORBImpl) {
-            	com.sun.corba.se.spi.transport.CorbaTransportManager mgr = ((com.sun.corba.se.impl.orb.ORBImpl)Gateway.getORB()).getCorbaTransportManager();
-            	for (Object accept: mgr.getAcceptors()) {
-            		((com.sun.corba.se.pept.transport.Acceptor) accept).close(); 
-					}
+                com.sun.corba.se.spi.transport.CorbaTransportManager mgr = ((com.sun.corba.se.impl.orb.ORBImpl)Gateway.getORB()).getCorbaTransportManager();
+                for (Object accept: mgr.getAcceptors()) {
+                    ((com.sun.corba.se.pept.transport.Acceptor) accept).close();
+                }
             }
-            // */
+            */
         } catch (AdapterInactive ex) {
             Logger.error(ex);
         }
     }
 
-    /**************************************************************************
+    /**
      * Initialises the C2KRootPOA with policies which are suitable for Factory objects
-     **************************************************************************/
+     * 
+     * @throws Exception different exceptions
+     */
     public void setupPOA() throws Exception {
 
         //Initialise the RootPOA
-        mRootPOA = org.omg.PortableServer.POAHelper.narrow(
-                              Gateway.getORB().resolve_initial_references("RootPOA"));
+        mRootPOA = org.omg.PortableServer.POAHelper.narrow(Gateway.getORB().resolve_initial_references("RootPOA"));
 
         //Initilaise the default POAManager
-
         mPOAManager = mRootPOA.the_POAManager();
 
         // Create POA for use by the entities
         org.omg.CORBA.Policy[] policies = new org.omg.CORBA.Policy[6];
 
-        policies[0] = mRootPOA.create_id_assignment_policy(
-            org.omg.PortableServer.IdAssignmentPolicyValue.USER_ID);
-        policies[1] = mRootPOA.create_lifespan_policy(
-            org.omg.PortableServer.LifespanPolicyValue.PERSISTENT);
-        policies[2] = mRootPOA.create_servant_retention_policy(
-            org.omg.PortableServer.ServantRetentionPolicyValue.NON_RETAIN);
-        policies[3] = mRootPOA.create_id_uniqueness_policy(
-            org.omg.PortableServer.IdUniquenessPolicyValue.UNIQUE_ID);
-        policies[4] = mRootPOA.create_request_processing_policy(
-            org.omg.PortableServer.RequestProcessingPolicyValue.
-            USE_SERVANT_MANAGER);
-        policies[5] = mRootPOA.create_implicit_activation_policy(
-            org.omg.PortableServer.ImplicitActivationPolicyValue.
-            NO_IMPLICIT_ACTIVATION);
+        policies[0] = mRootPOA.create_id_assignment_policy(      org.omg.PortableServer.IdAssignmentPolicyValue.USER_ID);
+        policies[1] = mRootPOA.create_lifespan_policy(           org.omg.PortableServer.LifespanPolicyValue.PERSISTENT);
+        policies[2] = mRootPOA.create_servant_retention_policy(  org.omg.PortableServer.ServantRetentionPolicyValue.NON_RETAIN);
+        policies[3] = mRootPOA.create_id_uniqueness_policy(      org.omg.PortableServer.IdUniquenessPolicyValue.UNIQUE_ID);
+        policies[4] = mRootPOA.create_request_processing_policy( org.omg.PortableServer.RequestProcessingPolicyValue.USE_SERVANT_MANAGER);
+        policies[5] = mRootPOA.create_implicit_activation_policy(org.omg.PortableServer.ImplicitActivationPolicyValue.NO_IMPLICIT_ACTIVATION);
 
-        mItemPOA = mRootPOA.create_POA( "Item",
-                mRootPOA.the_POAManager(),
-                                        policies );
-        mAgentPOA = mRootPOA.create_POA( "Agent",
-                mRootPOA.the_POAManager(),
-                                        policies );
+        mItemPOA = mRootPOA.create_POA( "Item",mRootPOA.the_POAManager(),policies );
+        mAgentPOA = mRootPOA.create_POA( "Agent",mRootPOA.the_POAManager(),policies );
 
         //Create the locators
         TraceableLocator itemLocator = new TraceableLocator();
@@ -140,14 +117,15 @@ public class CorbaServer {
 
         ActiveLocator agentLocator = new ActiveLocator();
         mAgentPOA.set_servant_manager( agentLocator._this( Gateway.getORB() ) );
-
     }
 
-
-    /**************************************************************************
+    /**
      * Returns a CORBA servant for a pre-existing entity
-     * @throws ObjectNotFoundException 
-     **************************************************************************/
+     * 
+     * @param itemPath the ItemPath representing the Item
+     * @return the servant
+     * @throws ObjectNotFoundException itemPath was not found
+     */
     public TraceableEntity getItem(ItemPath itemPath) throws ObjectNotFoundException {
         Servant item = null;
         if (!itemPath.exists()) throw new ObjectNotFoundException(itemPath+" does not exist");
@@ -162,51 +140,54 @@ public class CorbaServer {
         return (TraceableEntity)item;
     }
 
-    /**************************************************************************
+    /**
      * Returns a CORBA servant for a pre-existing entity
-     **************************************************************************/
+     * 
+     * @param agentPath the AgentPath representing the Agent
+     * @return the servant
+     * @throws InvalidAgentPathException agentPath was not Agent
+     * @throws ObjectNotFoundException agentPath was not found
+     */
     public ActiveEntity getAgent(AgentPath agentPath) throws InvalidAgentPathException, ObjectNotFoundException {
         Servant agent = null;
         if (!agentPath.exists()) throw new ObjectNotFoundException(agentPath+" does not exist");
+
         synchronized (mItemCache) {
-        	agent = mItemCache.get(agentPath);
+            agent = mItemCache.get(agentPath);
             if (agent == null) {
                 Logger.msg(7, "Creating new servant for "+agentPath);
                 agent = new ActiveEntity(agentPath, mAgentPOA);
                 mItemCache.put(agentPath, agent);
             }
             else if (!(agent instanceof ActiveEntity))
-            	throw new InvalidAgentPathException("Item "+agentPath+" was not an agent");
+                throw new InvalidAgentPathException("Item "+agentPath+" was not an agent");
         }
         return (ActiveEntity)agent;
     }
 
-    /**
-     * @param itemPath
-     * @return TraceableEntity
-     */
     public TraceableEntity createItem(ItemPath itemPath) throws CannotManageException, ObjectAlreadyExistsException {
+        if (itemPath.exists()) throw new ObjectAlreadyExistsException();
 
-    	if (itemPath.exists()) throw new ObjectAlreadyExistsException();
-        org.omg.CORBA.Object obj = mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id());
-        itemPath.setIOR(obj);
+        itemPath.setIOR( mItemPOA.create_reference_with_id(itemPath.getOID(), ItemHelper.id()) );
+
         TraceableEntity item = new TraceableEntity(itemPath, mItemPOA);
+
         synchronized (mItemCache) {
             mItemCache.put(itemPath, item);
         }
         return item;
     }
-    
+
     public ActiveEntity createAgent(AgentPath agentPath) throws CannotManageException, ObjectAlreadyExistsException {
-    	if (agentPath.exists()) throw new ObjectAlreadyExistsException();
-        org.omg.CORBA.Object obj = mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id());
-        agentPath.setIOR(obj);
-        ActiveEntity agent;
-		agent = new ActiveEntity(agentPath, mAgentPOA);
+        if (agentPath.exists()) throw new ObjectAlreadyExistsException();
+
+        agentPath.setIOR( mAgentPOA.create_reference_with_id(agentPath.getOID(), AgentHelper.id()) );
+
+        ActiveEntity agent = new ActiveEntity(agentPath, mAgentPOA);
+
         synchronized (mItemCache) {
             mItemCache.put(agentPath, agent);
         }
         return agent;
-    	
     }
 }

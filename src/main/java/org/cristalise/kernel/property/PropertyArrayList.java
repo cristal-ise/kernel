@@ -33,7 +33,7 @@ public class PropertyArrayList extends CastorArrayList<Property> {
     /**
      * Puts all Properties in order, so later ones with the same name overwrite earlier ones
      * 
-     * @param aList
+     * @param aList the list to initialise this list
      */
     public PropertyArrayList(ArrayList<Property> aList) {
         super();
@@ -61,7 +61,9 @@ public class PropertyArrayList extends CastorArrayList<Property> {
     }
 
     /**
-     * @param newProps
+     * Merge properties
+     * 
+     * @param newProps the new properties to be merged
      */
     public void merge(PropertyArrayList newProps) {
         for (Property newProp : newProps.list) {

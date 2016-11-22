@@ -340,11 +340,11 @@ public class Job implements C2KLocalObject {
     }
 
     /**
-     * Returns the 'last' Viepoint of the Outcome associated with this Job
+     * Returns the 'last' Viewpoint of the Outcome associated with this Job
      * 
      * @return XML data of the last version of Outcome
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
+     * @throws InvalidDataException inconsistent data or persystency issue
+     * @throws ObjectNotFoundException Schema or Outcome was not found
      */
     public String getLastView() throws InvalidDataException, ObjectNotFoundException {
         String viewName = getActPropString("Viewpoint");
@@ -372,8 +372,8 @@ public class Job implements C2KLocalObject {
      * 
      * @see BuiltInVertexProperties#OUTCOME_INIT
      * 
-     * @return OutcomeInitiator
-     * @throws InvalidDataException
+     * @return the configured OutcomeInitiator
+     * @throws InvalidDataException OutcomeInitiator could not be created
      */
     public OutcomeInitiator getOutcomeInitiator() throws InvalidDataException {
         String ocInitName = getActPropString(OUTCOME_INIT);
@@ -416,7 +416,7 @@ public class Job implements C2KLocalObject {
      * it tries to use an OutcomeInitiator.
      * 
      * @return the Outcome xml
-     * @throws InvalidDataException
+     * @throws InvalidDataException inconsistent data
      */
     public String getOutcomeString() throws InvalidDataException {
         if(outcome != null) { 
@@ -445,9 +445,9 @@ public class Job implements C2KLocalObject {
     /**
      * Returns the Outcome instance. It is based on {@link Job#getOutcomeString()}
      * 
-     * @return the Otucome object
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
+     * @return the Outcome object
+     * @throws InvalidDataException inconsistent data
+     * @throws ObjectNotFoundException Schema was not found
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
         if(outcome == null) {

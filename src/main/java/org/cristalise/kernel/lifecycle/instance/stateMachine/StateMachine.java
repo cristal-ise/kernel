@@ -261,10 +261,9 @@ public class StateMachine implements DescriptionObject {
     /**
      * Helper method to get transition ID by name
      * 
-     * @param sm
-     * @param transName
-     * @return
-     * @throws InvalidDataException
+     * @param transName the name of the Transaction
+     * @return the ID matching the name
+     * @throws InvalidDataException the name was not found
      */
     public int getValidTransitionID(String transName) throws InvalidDataException {
         int id =  getTransitionID(transName);

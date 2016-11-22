@@ -110,13 +110,6 @@ public class Script implements DescriptionObject {
 
     /**
      * For testing. Parses a given script xml, instead of loading it from Items.
-     * 
-     * @param name
-     * @param version
-     * @param path
-     * @param xml
-     * @throws ScriptParsingException
-     * @throws ParameterException
      */
     public Script(String name, Integer version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
         mName = name; mVersion = version; mItemPath = path;
@@ -127,10 +120,9 @@ public class Script implements DescriptionObject {
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
      * Output class is forced to an object.
      * 
-     * @param lang
-     * @param expr
-     * @param returnType
-     * @throws ScriptingEngineException
+     * @param lang - script language
+     * @param expr - the script to run
+     * @param returnType Class of the return of the Script
      */
     public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException {
         mName = "<expr>";
@@ -147,7 +139,6 @@ public class Script implements DescriptionObject {
      * @param name - script name for debugging
      * @param expr - the script to run
      * @param agent - the agentproxy to pass into the script as 'agent'
-     * @throws ScriptingEngineException
      */
     public Script(String lang, String name, String expr, AgentProxy agent) throws ScriptingEngineException {
         this(lang, expr, Object.class);
@@ -166,7 +157,6 @@ public class Script implements DescriptionObject {
      * @param lang - script language
      * @param agent - AgentProxy of the console user
      * @param out - the output PrintStream for reporting results that don't go to the log
-     * @throws Exception
      */
     public Script(String lang, AgentProxy agent, PrintStream out) throws Exception {
         setScriptEngine(lang);
@@ -205,8 +195,6 @@ public class Script implements DescriptionObject {
      * @param object ItemProxy representing the Item for the Job
      * @param subject AgentProxy representing executing Agent
      * @param job Job to be executed
-     * @throws ScriptingEngineException
-     * @throws InvalidDataException
      */
     public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
             throws ScriptingEngineException, InvalidDataException
@@ -237,9 +225,9 @@ public class Script implements DescriptionObject {
     }
 
     /**
+     * Sets the language
      * 
-     * @param requestedLang
-     * @throws ScriptingEngineException
+     * @param requestedLang the language
      */
     public void setScriptEngine(String requestedLang) throws ScriptingEngineException {
         String lang = Gateway.getProperties().getString("OverrideScriptLang."+requestedLang, requestedLang);
@@ -260,7 +248,7 @@ public class Script implements DescriptionObject {
 
     /**
      * 
-     * @param context
+     * @param context  {@link ScriptContext}
      */
     public void setContext(ScriptContext context) {
         this.context = context;
@@ -510,12 +498,11 @@ public class Script implements DescriptionObject {
     /**
      * Reads and evaluates input properties, set input parameters from those properties and executes the Script
      * 
-     * @param itemPath 
-     * @param inputProps
-     * @param actContext
-     * @param locker
+     * @param itemPath the Item context
+     * @param inputProps imput properties
+     * @param actContext activity path
+     * @param locker transaction locker
      * @return the values returned by the Script
-     * @throws ScriptingEngineException
      */
     public Object evaluate(ItemPath itemPath, CastorHashMap inputProps, String actContext, Object locker) throws ScriptingEngineException {
         try {
@@ -656,11 +643,6 @@ public class Script implements DescriptionObject {
         return outputs;
     }
 
-    /**
-     * 
-     * @param script
-     * @throws ScriptParsingException
-     */
     public void setScriptData(String script) throws ScriptParsingException {
         mScript = script;
         if (engine instanceof Compilable) {
@@ -694,9 +676,6 @@ public class Script implements DescriptionObject {
      * @param name the name of the Script Item or an expression
      * @param version the version of the Script. If set to null
      * @return {@link Script}
-     * @throws ScriptingEngineException
-     * @throws ObjectNotFoundException
-     * @throws InvalidDataException
      */
     public static Script getScript(String name, Integer version) 
             throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
@@ -732,11 +711,7 @@ public class Script implements DescriptionObject {
     /**
      * Method for castor unmarshall
      * 
-     * @param includes
-     * @throws ObjectNotFoundException
-     * @throws InvalidDataException
-     * @throws ParameterException
-     * @throws ScriptParsingException 
+     * @param includes included Scripts
      */
     public void setIncludes(ArrayList<Include> includes) throws ObjectNotFoundException, InvalidDataException, ParameterException, ScriptParsingException {
         //FIXME: CASTOR MARSHALLIN DOES NOT WORK YET

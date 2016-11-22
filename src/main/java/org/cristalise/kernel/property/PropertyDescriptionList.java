@@ -81,7 +81,7 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
      * 
      * @param initProps initial list of Properties
      * @return instantiated PropertyArrayList for Item
-     * @throws InvalidDataException
+     * @throws InvalidDataException data was inconsistent
      */
     public PropertyArrayList instantiate(PropertyArrayList initProps) throws InvalidDataException {
         HashMap<String, String> validatedInitProps = new HashMap<String, String>();

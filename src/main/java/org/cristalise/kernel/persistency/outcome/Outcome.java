@@ -220,8 +220,6 @@ public class Outcome implements C2KLocalObject {
      * 
      * @param xpath the selected Node to be updated
      * @param data string containing the data
-     * @throws XPathExpressionException
-     * @throws InvalidDataException
      */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
         //if(data == null) data = "";
@@ -263,7 +261,6 @@ public class Outcome implements C2KLocalObject {
      * @param xpath the selected parent node
      * @param xmlFragment string containing the xml fragment
      * @return the Node just added
-     * @throws InvalidDataException
      */
     public Node appendXmlFragment(String xpath, String xmlFragment) throws InvalidDataException {
         try {
@@ -315,8 +312,6 @@ public class Outcome implements C2KLocalObject {
      * 
      * @param xml string to be parsed
      * @return the parsed Document
-     * @throws SAXException
-     * @throws IOException
      */
     public static Document parse(String xml) throws SAXException, IOException {
         synchronized (parser) {

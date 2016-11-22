@@ -49,7 +49,7 @@ public class Vertex {
     /**
      * Sets the outline points and re-calculates the height and width
      * 
-     * @param outline
+     * @param outline the Outline coordinates
      */
     public void setOutlinePoints(GraphPoint[] outline) {
         int topLeftX     = outline[0].x;

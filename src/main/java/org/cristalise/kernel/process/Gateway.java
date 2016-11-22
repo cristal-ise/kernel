@@ -49,7 +49,7 @@ import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
 
-/**************************************************************************
+/**
  * The Gateway is the central object of a CRISTAL process. It initializes,
  * maintains and shuts down every other subsystem in both the client and the
  * server.
@@ -64,7 +64,7 @@ import org.cristalise.kernel.utils.ObjectProperties;
  * <li>CorbaServer - Manages the memory pool of active Entities
  * <li>ORB - the CORBA ORB
  * </ul>
- **************************************************************************/
+ */
 public class Gateway
 {
     static private ObjectProperties     mC2KProps = new ObjectProperties();
@@ -159,8 +159,6 @@ public class Gateway
      * time-out manager.
      * 
      * @param auth - this is NOT USED
-     * @throws InvalidDataException
-     * @throws CannotManageException
      */
     @Deprecated
     static public void startServer(Authenticator auth) throws InvalidDataException, CannotManageException {
@@ -171,9 +169,6 @@ public class Gateway
      * Makes this process capable of creating and managing server entities. Runs the
      * bootstrap to create the root LDAP contexts, initialises the CORBA server and
      * time-out manager.
-     * 
-     * @throws InvalidDataException
-     * @throws CannotManageException
      */
     static public void startServer() throws InvalidDataException, CannotManageException {
         try {
@@ -267,8 +262,6 @@ public class Gateway
      * @param agentName - username
      * @param agentPassword - password
      * @return an AgentProxy on the requested user
-     * @throws InvalidDataException
-     * @throws PersistencyException 
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
@@ -313,8 +306,6 @@ public class Gateway
      * @param agentPassword the password of the agent
      * @param resource check {@link Authenticator#authenticate(String, String, String)}
      * @return AgentProxy representing the logged in user/agent
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
      */
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
             throws InvalidDataException, ObjectNotFoundException
@@ -331,11 +322,6 @@ public class Gateway
         return userProxy;
     }
 
-    /**
-     * 
-     * @return Authenticator
-     * @throws InvalidDataException
-     */
     static public Authenticator getAuthenticator() throws InvalidDataException {
         try {
             return (Authenticator)mC2KProps.getInstance("Authenticator");
@@ -346,18 +332,6 @@ public class Gateway
         } 
     }
 
-    /**
-     * 
-     * @param agentName
-     * @param agentPassword
-     * @return AgentProxy
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws ClassNotFoundException
-     */
     static public AgentProxy connect(String agentName, String agentPassword) 
             throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
     {
@@ -494,7 +468,6 @@ public class Gateway
      * 
      * @param resType the type o the Resource. ie. one of these values: OD/SC/SM/EA/CA/QL
      * @return the initialised ResourceImportHandler
-     * @throws Exception
      */
     @Deprecated
     public static ResourceImportHandler getResourceImportHandler(String resType) throws Exception {
@@ -507,7 +480,6 @@ public class Gateway
      * 
      * @param resType the type o the Resource
      * @return the initialised ResourceImportHandler
-     * @throws Exception
      */
     public static ResourceImportHandler getResourceImportHandler(BuiltInResources resType) throws Exception {
         if (resourceImportHandlerCache.containsKey(resType)) return resourceImportHandlerCache.get(resType);

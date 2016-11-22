@@ -127,8 +127,8 @@ public class Activity extends WfVertex {
     }
 
     /**
-     * @return The current State of the Statemachine (Used in Serialisation)
-     * @throws InvalidDataException
+     * @return The current State of the StateMachine (Used in Serialisation)
+     * @throws InvalidDataException data was inconsistent
      */
     public int getState() throws InvalidDataException {
         if (state == -1) state = getStateMachine().getInitialStateCode();
@@ -148,26 +148,6 @@ public class Activity extends WfVertex {
         return getStateMachine().getState(getState()).isFinished();
     }
 
-    /**
-     * Item request
-     * 
-     * @param agent
-     * @param delegate
-     * @param itemPath
-     * @param transitionID
-     * @param requestData
-     * @param locker
-     * @return Outcome string
-     * @throws AccessRightsException
-     * @throws InvalidTransitionException
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws ObjectCannotBeUpdated
-     * @throws CannotManageException
-     * @throws InvalidCollectionModification
-     */
     public String request(AgentPath agent, AgentPath delegate, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
                    ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
@@ -440,19 +420,11 @@ public class Activity extends WfVertex {
     }
 
     /**
-     * calculates the lists of jobs for the activity and children (cf
-     * org.cristalise.kernel.entity.Job)
-     * 
-     * @param agent
-     * @param itemPath
-     * @param recurse
-     * @return the job available for the agent
-     * @throws InvalidAgentPathException
-     * @throws ObjectNotFoundException
-     * @throws InvalidDataException
+     * Calculates the lists of jobs for the activity and its children (cf org.cristalise.kernel.entity.Job)
      */
     public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse)
-            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException {
+            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
+    {
         return calculateJobsBase(agent, itemPath, false);
     }
 

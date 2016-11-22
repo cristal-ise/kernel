@@ -138,7 +138,7 @@ public class ProxyServerConnection extends Thread
     }
 
     /**
-     * @param sub
+     * @param sub the message
      */
     public void sendMessage(ProxyMessage sub) {
         if (serverStream != null)

@@ -104,11 +104,12 @@ public class Dependency extends Collection<DependencyMember> {
     }
 
     /**
+     * Add a member to the Dependency
      * 
-     * @param itemPath
-     * @return DependencyMember
-     * @throws InvalidCollectionModification
-     * @throws ObjectAlreadyExistsException
+     * @param itemPath the Item to be added as a Member
+     * @return DependencyMember the newly created DependencyMember 
+     * @throws InvalidCollectionModification if Item is null or the Properties of the Item (e.g. Type) does not match the Collection's
+     * @throws ObjectAlreadyExistsException Item is already a member
      */
     public DependencyMember addMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
         if (itemPath == null)   throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
@@ -132,7 +133,7 @@ public class Dependency extends Collection<DependencyMember> {
      * Returns all DependencyMember that are members of the other collection but not members of this one.
      * 
      * @param other - The collection to compare
-     * @return List of Member
+     * @return List of Members
      */
     public List<DependencyMember> compare(Dependency other) {
         ArrayList<DependencyMember> newMembers = new ArrayList<DependencyMember>();
@@ -291,8 +292,8 @@ public class Dependency extends Collection<DependencyMember> {
      * to be executed, if no Script defined it will use the default conversion implemented for BuiltInCollections
      * 
      * @param props the current list of VertexProperties
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
+     * @throws InvalidDataException inconsistent data was provided
+     * @throws ObjectNotFoundException objects were not found while reading the properties
      */
     public void addToVertexProperties(CastorHashMap props) throws InvalidDataException, ObjectNotFoundException {
         Logger.msg(2, "Dependency.addToVertexProperties("+getName()+") - Starting ...");

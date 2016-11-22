@@ -143,18 +143,6 @@ public class ItemProxy
         }
     }
 
-    /**
-     * 
-     * @param thisJob
-     * @return Outcome
-     * @throws AccessRightsException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws InvalidDataException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws InvalidCollectionModification
-     */
     public String requestAction( Job thisJob )
             throws AccessRightsException,
                    InvalidTransitionException,
@@ -167,9 +155,9 @@ public class ItemProxy
         String outcome = thisJob.getOutcomeString();
         // check fields that should have been filled in
 
-        if (outcome==null) {
+        if (outcome == null) {
             if (thisJob.isOutcomeRequired()) throw new InvalidDataException("Outcome is required.");
-            else                             outcome="";
+            else                             outcome = "";
         }
 
         if (thisJob.getAgentPath() == null) throw new InvalidDataException("No Agent specified.");
@@ -200,27 +188,10 @@ public class ItemProxy
         return thisJobList.list;
     }
 
-    /**
-     * 
-     * @param agent
-     * @return array of Jobs
-     * @throws AccessRightsException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     */
     public ArrayList<Job> getJobList(AgentProxy agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         return getJobList(agent.getPath(), true);
     }
 
-    /**
-     * 
-     * @param actName
-     * @param agent
-     * @return Job
-     * @throws AccessRightsException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     */
     private Job getJobByName(String actName, AgentPath agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         ArrayList<Job> jobList = getJobList(agent, true);
         for (Job job : jobList) {
@@ -235,7 +206,7 @@ public class ItemProxy
      * 
      * @param collection The built-in collection
      * @return the Collection object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection) throws ObjectNotFoundException {
         return getCollection(collection, null);
@@ -247,7 +218,7 @@ public class ItemProxy
      * @param collection The built-in Collection
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection, Integer version) throws ObjectNotFoundException {
         return getCollection(collection.getName(), version);
@@ -258,7 +229,7 @@ public class ItemProxy
      * 
      * @param collName The collection name
      * @return the Collection object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName) throws ObjectNotFoundException {
         return getCollection(collName, null);
@@ -270,7 +241,7 @@ public class ItemProxy
      * @param collName The collection name
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
         String verStr = version==null?"last":String.valueOf(version);
@@ -280,7 +251,7 @@ public class ItemProxy
     /** Gets the Workflow object of this Item
      * 
      * @return the Item's Workflow object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Workflow getWorkflow() throws ObjectNotFoundException {
         return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
@@ -292,7 +263,7 @@ public class ItemProxy
      * @param schemaName Outcome schema name
      * @param viewName Viewpoint name
      * @return a Viewpoint object
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException objects were not found
      */
     public Viewpoint getViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
         return (Viewpoint)getObject(ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
@@ -304,8 +275,8 @@ public class ItemProxy
      * @param actName the name of the Activity to look for
      * @param agent The agent to fetch jobs for
      * @return the JOB object or null if nothing was found
-     * @throws AccessRightsException
-     * @throws ObjectNotFoundException
+     * @throws AccessRightsException Agent has not rights
+     * @throws ObjectNotFoundException objects were not found
      * @throws PersistencyException Error loading the relevant objects
      */
     public Job getJobByName(String actName, AgentProxy agent) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
@@ -319,9 +290,9 @@ public class ItemProxy
      * @param transName the name of the Transition to look for
      * @param agentPath The agent to fetch jobs for
      * @return the JOB object or null if nothing was found
-     * @throws AccessRightsException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
+     * @throws AccessRightsException Agent has not rights
+     * @throws ObjectNotFoundException objects were not found
+     * @throws PersistencyException Error loading the relevant objects
      */
     public Job getJobByTransitionName(String actName, String transName, AgentPath agentPath) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
         for (Job job : getJobList(agentPath, true)) {
@@ -342,12 +313,6 @@ public class ItemProxy
         super.finalize();
     }
 
-    /**
-     * 
-     * @param path 
-     * @return string
-     * @throws ObjectNotFoundException
-     */
     public String queryData( String path ) throws ObjectNotFoundException {
         try {
             Logger.msg(7, "ItemProxy.queryData() - "+mItemPath+"/"+path);
@@ -387,22 +352,16 @@ public class ItemProxy
     }
 
     /**
-     * Executes Cristal Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc. 
+     * Executes the Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc. 
      * 
      * @param query the query to be executed
      * @return the xml result of the query
-     * @throws PersistencyException
+     * @throws PersistencyException there was a fundamental DB issue
      */
     public String executeQuery(Query query) throws PersistencyException {
         return Gateway.getStorage().executeQuery(query);
     }
 
-    /**
-     * 
-     * @param xpath
-     * @return C2KLocalObject
-     * @throws ObjectNotFoundException
-     */
     public C2KLocalObject getObject( String xpath ) throws ObjectNotFoundException {
         // load from storage, falling back to proxy loader if not found in others
         try {
@@ -420,7 +379,7 @@ public class ItemProxy
      * 
      * @param prop one of the Built-In Item Property
      * @return the value of the property
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException property was not found
      */
     public String getProperty( BuiltInItemProperties prop ) throws ObjectNotFoundException {
         return getProperty(prop.getName());
@@ -428,16 +387,17 @@ public class ItemProxy
 
     /**
      * Retrieves the values of a named property
+     * 
      * @param name of the Item Property
      * @return the value of the property
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException property was not found
      */
     public String getProperty( String name ) throws ObjectNotFoundException {
         Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
         Property prop = (Property)getObject("Property/"+name);
 
         if(prop != null) return prop.getValue();
-        else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not finf property "+name+" from item "+mItemPath);
+        else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not find property "+name+" from item "+mItemPath);
     }
 
     public String getName() {

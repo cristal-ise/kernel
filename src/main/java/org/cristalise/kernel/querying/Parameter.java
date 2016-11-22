@@ -47,8 +47,8 @@ public class Parameter {
      * 
      * FIXME: CASTOR MARSHALLING DOES NOT WORK YET
      * 
-     * @param className
-     * @throws ClassNotFoundException
+     * @param className the name of the Class specifying the type
+     * @throws ClassNotFoundException class was not found
      */
     public void setTypeFromName(String className) throws ClassNotFoundException {
         type = Class.forName(className);

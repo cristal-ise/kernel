@@ -62,8 +62,7 @@ public class ClusterStorageManager {
      * Initialises all ClusterStorage handlers listed by class name in the property "ClusterStorages"
      * This property is usually process specific, and so should be in the server/client.conf and not the connect file.
      * 
-     * @param auth
-     * @throws PersistencyException
+     * @param auth the Authenticator to be used to initialise all the handlers
      */
     public ClusterStorageManager(Authenticator auth) throws PersistencyException {
         Object clusterStorageProp = Gateway.getProperties().getObject("ClusterStorage");
@@ -197,10 +196,10 @@ public class ClusterStorageManager {
     }
 
     /**
+     * Executes the Query
      * 
-     * @param query
-     * @return the result of the query
-     * @throws PersistencyException
+     * @param query the Query to be executed
+     * @return the xml result of the query
      */
     public String executeQuery(Query query) throws PersistencyException {
         ClusterStorage reader = findStorageForQuery(query.getLanguage());
@@ -213,10 +212,9 @@ public class ClusterStorageManager {
      * Retrieves the ids of the next level of a cluster
      * Does not look in any currently open transactions.
      * 
-     * @param itemPath
-     * @param path
+     * @param itemPath the current Item
+     * @param path the cluster path
      * @return list of keys found in the cluster
-     * @throws PersistencyException
      */
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
         ArrayList<String> contents = new ArrayList<String>();
@@ -253,11 +251,9 @@ public class ClusterStorageManager {
      * <br>
      * There is a special case for Viewpoint. When path ends with /data it returns referenced Outcome instead of Viewpoint.
      * 
-     * @param itemPath
-     * @param path
+     * @param itemPath current Iten
+     * @param path the cluster path
      * @return the C2KObject located by path
-     * @throws PersistencyException
-     * @throws ObjectNotFoundException
      */
     public C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException, ObjectNotFoundException {
         C2KLocalObject result = null;
@@ -331,23 +327,12 @@ public class ClusterStorageManager {
         return result;
     }
 
-    /**
-     * 
-     * @param itemPath
-     * @param obj
-     * @throws PersistencyException
-     */
     public void put(ItemPath itemPath, C2KLocalObject obj) throws PersistencyException {
         put(itemPath, obj, null);
     }
 
     /**
      * Internal put method. Creates or overwrites a cluster in all writers. Used when committing transactions.
-     * 
-     * @param itemPath
-     * @param obj
-     * @param locker
-     * @throws PersistencyException
      */
     public void put(ItemPath itemPath, C2KLocalObject obj, Object locker) throws PersistencyException {
         String path = ClusterStorage.getPath(obj);
@@ -397,11 +382,6 @@ public class ClusterStorageManager {
 
     /**
      * Deletes a cluster from all writers
-     * 
-     * @param itemPath
-     * @param path
-     * @param locker
-     * @throws PersistencyException
      */
     public void remove(ItemPath itemPath, String path, Object locker) throws PersistencyException {
         ArrayList<ClusterStorage> writers = findStorages(ClusterStorage.getClusterType(path), true);

@@ -68,9 +68,8 @@ abstract public class AbstractMain
      * </ul>
      *  
      * 
-     * @param args
-     * @returnn Properties
-     * @throws BadArgumentsException
+     * @param args arguments normally passed by the main()
+     * @return the initialised Properties
      */
     public static Properties readC2KArgs( String[] args ) throws BadArgumentsException {
         Properties c2kProps;

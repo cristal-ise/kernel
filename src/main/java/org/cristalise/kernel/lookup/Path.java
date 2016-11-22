@@ -59,9 +59,6 @@ public abstract class Path {
 
     /**
      * Creates a path with an arraylist of the path (big endian)
-     * 
-     * @param path
-     * @param type
      */
     public Path(String[] path, short type) {
         setPath(path);
@@ -70,9 +67,6 @@ public abstract class Path {
 
     /**
      * Creates a path from a slash separated string (big endian)
-     * 
-     * @param path
-     * @param type
      */
     public Path(String path, short type) {
         setPath(path);
@@ -81,10 +75,6 @@ public abstract class Path {
 
     /**
      * Create a path by appending a child string to an existing path
-     * 
-     * @param parent
-     * @param child
-     * @param type
      */
     public Path(Path parent, String child, short type) {
         mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length + 1);
@@ -94,19 +84,13 @@ public abstract class Path {
 
     /**
      * Create a path by appending a child
-     * 
-     * @param parent
-     * @param child
      */
     public Path(Path parent, String child) {
         this(parent, child, UNKNOWN);
     }
 
     /**
-     * string array path e.g. { "Product", "Crystal", "Barrel", "2L",
-     * "331013013348" } system/domain node ABSENT
-     * 
-     * @param path
+     * string array path e.g. { "Product", "Crystal", "Barrel", "2L", "331013013348" } system/domain node ABSENT
      */
     public void setPath(String[] path) {
         mStringPath = null;
@@ -115,8 +99,6 @@ public abstract class Path {
 
     /**
      * string path e.g. /system/d000/d000/d001 system/domain node PRESENT
-     * 
-     * @param path
      */
     public void setPath(String path) {
         ArrayList<String> newPath = new ArrayList<String>();
@@ -135,7 +117,7 @@ public abstract class Path {
     }
 
     /**
-     *  Returns root as it is defined as 'domain', 'entity' or 'role' in subclasses
+     * Returns root as it is defined as 'domain', 'entity' or 'role' in subclasses
      *  
      * @return root as it is defined as 'domain', 'entity' or 'role' in subclasses
      */
@@ -150,8 +132,6 @@ public abstract class Path {
 
     /**
      * clones the path object
-     * 
-     * @param path
      */
     public void setPath(Path path) {
         mStringPath = null;

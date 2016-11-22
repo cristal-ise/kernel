@@ -52,13 +52,6 @@ public class Schema implements DescriptionObject, ErrorHandler {
     @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     public org.exolab.castor.xml.schema.Schema som;
 
-    /**
-     * 
-     * @param name
-     * @param version
-     * @param itemPath
-     * @param schema
-     */
     public Schema(String name, int version, ItemPath itemPath, String schema) {
         super();
         this.name = name;
@@ -67,12 +60,6 @@ public class Schema implements DescriptionObject, ErrorHandler {
         this.schemaData = schema;
     }
 
-    /**
-     * 
-     * @param name
-     * @param version
-     * @param schema
-     */
     public Schema(String name, int version, String schema) {
         super();
         this.name = name;
@@ -105,7 +92,6 @@ public class Schema implements DescriptionObject, ErrorHandler {
      * Validates the schemaData (XML)
      * 
      * @return errors in String format
-     * @throws IOException
      */
     public synchronized String validate() throws IOException {
         errors = new StringBuffer();

@@ -34,7 +34,6 @@ public interface OutcomeInitiator {
      * 
      * @param job the Job containing information about the Outcome to be constructed
      * @return XML string
-     * @throws InvalidDataException
      */
     public String initOutcome(Job job) throws InvalidDataException;
 
@@ -43,7 +42,6 @@ public interface OutcomeInitiator {
      * 
      * @param job the Job containing information about the Outcome to be constructed
      * @return Outcome object
-     * @throws InvalidDataException
      */
     public Outcome initOutcomeInstance(Job job) throws InvalidDataException;
 }

@@ -66,10 +66,6 @@ public class ImportDependency {
         props.setKeyValuePairs(pairs);
     }
 
-    /**
-     * @return Dependency
-     * @throws ObjectAlreadyExistsException
-     */
     public Dependency create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
         Dependency newDep = isDescription ? new DependencyDescription(name) : new Dependency(name);
         if (version != null) newDep.setVersion(version);

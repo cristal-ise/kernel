@@ -232,7 +232,7 @@ public class ProxyManager {
     /**
      * A utility to Dump the current proxies loaded
      * 
-     * @param logLevel
+     * @param logLevel the selectd log level
      */
     public void reportCurrentProxies(int logLevel) {
         if (!Logger.doLog(logLevel)) return;

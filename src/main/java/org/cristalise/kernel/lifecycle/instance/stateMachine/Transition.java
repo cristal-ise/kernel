@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.RolePath;
@@ -200,7 +201,7 @@ public class Transition {
      * 
      * @param act the activity of the actual StateMachine/Transition
      * @return weather the Transition is enabled or not
-     * @throws ObjectNotFoundException
+     * @throws ObjectNotFoundException Objects were not found while evaluating properties
      */
     public boolean isEnabled(Activity act) throws ObjectNotFoundException {
         if (StringUtils.isEmpty(enabledProp)) return true;
@@ -213,7 +214,7 @@ public class Transition {
             if(propValue == null) return true;
             else                  return new Boolean(propValue.toString());
         }
-        catch (Exception e) {
+        catch ( InvalidDataException | PersistencyException e) {
             Logger.error(e);
             throw new ObjectNotFoundException(e.getMessage());
         }

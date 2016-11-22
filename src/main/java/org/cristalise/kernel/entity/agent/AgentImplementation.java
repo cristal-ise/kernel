@@ -89,12 +89,11 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
         }
     }
 
-    /** Adds the given Role to this Agent. Called from the SetAgentRoles
-     * predefined step.
+    /** Adds the given Role to this Agent. Called from the SetAgentRoles predefined step.
      * 
      * @param roleName - the new Role to add
      * @throws CannotManageException When the process has no lookup manager
-     * @throws ObjectNotFoundException 
+     * @throws ObjectNotFoundException Role does not exists
      * 
      */
     @Override
@@ -112,7 +111,7 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
      * Removes the given Role from this Agent. Called by the SetAgentRoles 
      * predefined step.
      * 
-     * @param roleName
+     * @param roleName the Name of the Role
      */
     @Override
     public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {

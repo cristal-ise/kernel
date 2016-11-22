@@ -50,8 +50,8 @@ public abstract class WfVertexDef extends GraphableVertex {
      * Copies Properties from vertex definition to vertex instance, and also set the Edges
      * 
      * @param newVertex the vertex instance to be configured
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
+     * @throws InvalidDataException inconsistent data
+     * @throws ObjectNotFoundException data was not found
      */
     public void configureInstance(WfVertex newVertex) throws InvalidDataException, ObjectNotFoundException {
         for (KeyValuePair element : getProperties().getKeyValuePairs()) {

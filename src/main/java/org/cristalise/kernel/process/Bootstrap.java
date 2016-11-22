@@ -85,8 +85,6 @@ public class Bootstrap
 
     /**
      * Run everything without timing-out the service wrapper
-     * 
-     * @throws Exception
      */
     public static void run() throws Exception {
         predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
@@ -147,8 +145,6 @@ public class Bootstrap
 
     /**
      * Checks all kernel descriptions stored in resources and create or update them if they were changed
-     * 
-     * @throws Exception
      */
     public static void verifyBootDataItems() throws Exception {
         String bootItems;
@@ -193,15 +189,6 @@ public class Bootstrap
 
     /**
      * Create a resource item from its module definition. The item should not already exist.
-     * 
-     * @param ns
-     * @param itemName
-     * @param version
-     * @param itemType
-     * @param outcomes
-     * @param reset
-     * @return Path of the newly created Resource
-     * @throws Exception
      */
     public static DomainPath createResource(String ns, String itemName, int version, String itemType, Set<Outcome> outcomes, boolean reset)
             throws Exception
@@ -212,16 +199,6 @@ public class Bootstrap
     /**
      * Verify a resource item against a module version, using a ResourceImportHandler configured 
      * to find outcomes at the given dataLocation
-     * 
-     * @param ns
-     * @param itemName
-     * @param version
-     * @param itemType
-     * @param itemPath
-     * @param dataLocation
-     * @param reset
-     * @return the Path of the resource either created or initialised from existing data
-     * @throws Exception
      */
     public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, String dataLocation, boolean reset)
             throws Exception
@@ -232,16 +209,6 @@ public class Bootstrap
     /**
      * Verify a resource item against a module version, but supplies the resource outcomes directly 
      * instead of through a location lookup
-     * 
-     * @param ns
-     * @param itemName
-     * @param version
-     * @param itemType
-     * @param itemPath
-     * @param outcomes
-     * @param reset
-     * @return the Path of the resource either created or initialised from existing data
-     * @throws Exception
      */
     public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, boolean reset)
             throws Exception
@@ -539,10 +506,6 @@ public class Bootstrap
         }
     }
 
-    /**
-     * 
-     * @throws Exception
-     */
     public static void checkAdminAgents() throws Exception {
         // check for administrative user & admin role
         RolePath rootRole = new RolePath();
@@ -563,10 +526,6 @@ public class Bootstrap
                    UUID.randomUUID().toString());
     }
 
-    /**
-     * 
-     * @throws Exception
-     */
     public static void createServerItem() throws Exception {
         LookupManager lookupManager = Gateway.getLookupManager();
         String serverName = Gateway.getProperties().getString("ItemServer.name", InetAddress.getLocalHost().getHostName());
@@ -595,10 +554,6 @@ public class Bootstrap
         Gateway.getProxyManager().connectToProxyServer(serverName, proxyPort);
     }
 
-    /**
-     * 
-     * @throws Exception
-     */
     public static void initServerItemWf() throws Exception {
         CompositeActivityDef serverWfCa = (CompositeActivityDef)LocalObjectLoader.getActDef("ServerItemWorkflow", 0);
         Workflow wf = new Workflow((CompositeActivity)serverWfCa.instantiate(), new ServerPredefinedStepContainer());

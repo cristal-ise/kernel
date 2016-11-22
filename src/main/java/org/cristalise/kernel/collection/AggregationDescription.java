@@ -44,7 +44,7 @@ public class AggregationDescription extends Aggregation implements CollectionDes
     }
 
     /**
-     * For each  member get the {@lin PropertyDescriptionList} of the member item and look for an explicit version
+     * For each  member get the {@link PropertyDescriptionList} of the member item and look for an explicit version
      * 
      */
     @Override

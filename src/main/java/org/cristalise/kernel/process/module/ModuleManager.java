@@ -71,8 +71,7 @@ public class ModuleManager {
      * in those Modules is returned 
      *  
      * @param urlOfModules the list URL of Module XMLs found in the classpacth
-     * @return the complete list of Poropeteis defined in the Modules
-     * @throws ModuleException
+     * @return the complete list of Properties defined in the Modules
      */
     public Properties loadModules(Enumeration<URL> urlOfModules) throws ModuleException {
         ArrayList<String> loadedModules = new ArrayList<String>();
@@ -181,10 +180,6 @@ public class ModuleManager {
         return allModuleProperties;
     }
 
-    /**
-     * 
-     * @param user
-     */
     public void setUser(AgentProxy user) {
         this.user = user;
     }
@@ -206,7 +201,7 @@ public class ModuleManager {
     /**
      * Runs the script defined for the event for all the Modules
      * 
-     * @param event
+     * @param event the name of the bootrtrap event
      */
     public void runScripts(String event) {
         for (Module thisMod : modules) {

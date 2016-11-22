@@ -23,7 +23,6 @@ package org.cristalise.kernel.test.persistency;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.cristalise.kernel.process.Gateway;
@@ -34,7 +33,6 @@ import org.cristalise.kernel.utils.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.Diff;
@@ -55,10 +53,8 @@ public class CastorXMLTest {
      * @param expected the reference XML
      * @param actual the xml under test
      * @return whether the two XMLs are identical or not
-     * @throws SAXException
-     * @throws IOException
      */
-    public static boolean compareXML(String expected, String actual) throws SAXException, IOException {
+    public static boolean compareXML(String expected, String actual)  {
         Diff diffIdentical = DiffBuilder.compare(expected).withTest(actual)
                 .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
                 .ignoreComments()

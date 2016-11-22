@@ -38,56 +38,59 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
  */
 public interface Authenticator {
 
-	/**
-	 * Authenticates a CRISTAL agent. If this method returns true, then the
-	 * connect method will create and return an AgentProxy for the given
-	 * username using the Lookup and ProxyManager.
-	 * 
-	 * @param agentName
-	 *            The username of the Agent to be authenticated. This must be
-	 *            already present as an Agent in the CRISTAL directory.
-	 * @param password
-	 *            The Agent's password
-	 * @param resource
-	 *            The authentication resource/domain/realm of the agent.
-	 *            Included so that domains may include CRISTAL users from
-	 *            different realms. This parameter is passed into the connect()
-	 *            method if required. May be null.
-	 * @return a boolean indicating if the authentication was successful. If so,
-	 *         then the Gateway will generate an AgentProxy for the given user.
-	 * @throws ObjectNotFoundException
-	 *             When the Agent doesn't exist
-	 * @throws InvalidDataException
-	 *             When authentication fails for another reason
-	 */
-	public boolean authenticate(String agentName, String password,
-			String resource) throws InvalidDataException,
-			ObjectNotFoundException;
+    /**
+     * Authenticates a CRISTAL agent. If this method returns true, then the
+     * connect method will create and return an AgentProxy for the given
+     * username using the Lookup and ProxyManager.
+     * 
+     * @param agentName
+     *            The username of the Agent to be authenticated. This must be
+     *            already present as an Agent in the CRISTAL directory.
+     * @param password
+     *            The Agent's password
+     * @param resource
+     *            The authentication resource/domain/realm of the agent.
+     *            Included so that domains may include CRISTAL users from
+     *            different realms. This parameter is passed into the connect()
+     *            method if required. May be null.
+     * @return a boolean indicating if the authentication was successful. If so,
+     *         then the Gateway will generate an AgentProxy for the given user.
+     * @throws ObjectNotFoundException
+     *             When the Agent doesn't exist
+     * @throws InvalidDataException
+     *             When authentication fails for another reason
+     */
+    public boolean authenticate(String agentName, String password, String resource) throws InvalidDataException, ObjectNotFoundException;
 
-	/**
-	 * Authenticates a superuser connection for the server. It must be able to
-	 * act on behalf of any other Agent, as the server needs to do this.
-	 * Credentials may be in the CRISTAL properties, or some other mechanism.
-	 * 
-	 * @param resource
-	 * @return
-	 * @throws InvalidDataException
-	 * @throws ObjectNotFoundException
-	 */
-	public boolean authenticate(String resource) throws InvalidDataException,
-			ObjectNotFoundException;
+    /**
+     * Authenticates a superuser connection for the server. It must be able to
+     * act on behalf of any other Agent, as the server needs to do this.
+     * Credentials may be in the CRISTAL properties, or some other mechanism.
+     * 
+     * @param resource
+     *            The authentication resource/domain/realm of the agent.
+     *            Included so that domains may include CRISTAL users from
+     *            different realms. This parameter is passed into the connect()
+     *            method if required. May be null.
+     * @return whether the superuser is authenticated or not 
+     * @throws ObjectNotFoundException
+     *             When the Agent doesn't exist
+     * @throws InvalidDataException
+     *             When authentication fails for another reason
+     */
+    public boolean authenticate(String resource) throws InvalidDataException, ObjectNotFoundException;
 
-	/**
-	 * Lookup and storage implementations that need to use user or superuser
-	 * authentication can retrieve it using this method. This will be highly
-	 * implementation specific.
-	 * 
-	 * @return the connection/token created during authentication
-	 */
-	public Object getAuthObject();
+    /**
+     * Lookup and storage implementations that need to use user or superuser
+     * authentication can retrieve it using this method. This will be highly
+     * implementation specific.
+     * 
+     * @return the connection/token created during authentication
+     */
+    public Object getAuthObject();
 
-	/**
-	 * Close or expire the connection as the CRISTAL process shuts down.
-	 */
-	public void disconnect();
+    /**
+     * Close or expire the connection as the CRISTAL process shuts down.
+     */
+    public void disconnect();
 }

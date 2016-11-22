@@ -34,8 +34,8 @@ import org.cristalise.kernel.utils.Logger;
 /**
  * 
  */
-public abstract class WfVertex extends GraphableVertex
-{
+public abstract class WfVertex extends GraphableVertex {
+
     public enum Types {
         Atomic,
         Composite,
@@ -48,13 +48,8 @@ public abstract class WfVertex extends GraphableVertex
     }
 
     /**
-     * sets the activity available to be executed on start of Workflow or composite activity 
+     * Sets the activity available to be executed on start of Workflow or composite activity 
      * (when it is the first one of the (sub)process)
-     * 
-     * @param agent
-     * @param itemPath
-     * @param locker
-     * @throws InvalidDataException
      */
     public abstract void runFirst(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
@@ -67,20 +62,8 @@ public abstract class WfVertex extends GraphableVertex
         setIsComposite(false);
     }
 
-    /**
-     * 
-     * @param agent
-     * @param itemPath
-     * @param locker
-     * @throws InvalidDataException
-     */
     public abstract void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
-    /**
-     * 
-     * @param idLoop
-     * @throws InvalidDataException
-     */
     public abstract void reinit( int idLoop ) throws InvalidDataException;
 
     public void abort() { }
@@ -97,13 +80,6 @@ public abstract class WfVertex extends GraphableVertex
      */
     public abstract String getErrors();
 
-    /**
-     * 
-     * @param agent
-     * @param itemPath
-     * @param locker
-     * @throws InvalidDataException
-     */
     public abstract void run(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException;
 
     /**
@@ -120,38 +96,13 @@ public abstract class WfVertex extends GraphableVertex
         return getPath().substring(0, getPath().lastIndexOf('/'));
     }
 
-    /**
-     * Method addNext.
-     * @param vertex
-     */
     public abstract Next addNext(WfVertex vertex);
 
-    /**
-     * 
-     * @param itemPath
-     * @param propName
-     * @param locker
-     * @return evaluated value
-     * @throws InvalidDataException
-     * @throws PersistencyException
-     * @throws ObjectNotFoundException
-     */
     public Object evaluateProperty(ItemPath itemPath, String propName, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         return evaluatePropertyValue(itemPath, getProperties().get(propName), locker);
     }
-
-    /**
-     * 
-     * @param itemPath
-     * @param propValue
-     * @param locker
-     * @return evaluated value
-     * @throws InvalidDataException
-     * @throws PersistencyException
-     * @throws ObjectNotFoundException
-     */
     public Object evaluatePropertyValue(ItemPath itemPath, Object propValue, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {

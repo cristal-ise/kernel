@@ -56,7 +56,7 @@ public class ActivitySlotDef extends WfVertexDef
 	/**
 	 * Method setActivityDef.
 	 *
-	 * @param oActivityDef
+	 * @param oActivityDef the name or UUID of the ActivityDef Item
 	 */
 	public void setActivityDef(String oActivityDef)
 	{

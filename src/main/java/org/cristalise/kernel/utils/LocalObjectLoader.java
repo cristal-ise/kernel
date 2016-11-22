@@ -67,11 +67,10 @@ public class LocalObjectLoader {
     }
 
     /**
+     * Retrieves a script from the database finding data in the Vertex properties
      * 
-     * @param properties
+     * @param properties vertex properties
      * @return Script
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
      */
     static public Script getScript(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
         return (Script)getDescObjectByProperty(properties, SCRIPT_NAME, SCRIPT_VERSION);
@@ -93,11 +92,10 @@ public class LocalObjectLoader {
     }
 
     /**
+     * Retrieves a query from the database finding data in the Vertex properties
      * 
-     * @param properties
+     * @param properties vertex properties
      * @return Query
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
      */
     static public Query getQuery(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
         return (Query)getDescObjectByProperty(properties, QUERY_NAME, QUERY_VERSION);
@@ -123,11 +121,10 @@ public class LocalObjectLoader {
     }
 
     /**
+     * Retrieves a schema from the database finding data in the Vertex properties
      * 
-     * @param properties
+     * @param properties vertex properties
      * @return Schema
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
      */
     static public Schema getSchema(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
         return (Schema)getDescObjectByProperty(properties, SCHEMA_NAME, SCHEMA_VERSION);
@@ -233,7 +230,6 @@ public class LocalObjectLoader {
      * 
      * @param value the Object containing a version number
      * @return the converted Version number. Set to null if value was null or-1
-     * @throws InvalidDataException
      */
     public static Integer deriveVersionNumber(Object value) throws InvalidDataException {
         if (value == null || "".equals(value)) return null;

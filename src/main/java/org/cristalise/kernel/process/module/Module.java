@@ -122,8 +122,7 @@ public class Module extends ImportItem {
      * 
      * @param serverEntity not used at the moment but required to implement the import as the workflow of the serverItem
      * @param systemAgent system agent used during the import
-     * @param reset 
-     * @throws Exception
+     * @param reset whether to reset or not the version of the created/updated resource
      */
     public void importAll(ItemProxy serverEntity, AgentProxy systemAgent, boolean reset) throws Exception {
         if (!Bootstrap.shutdown) importResources(systemAgent, reset);
@@ -203,9 +202,10 @@ public class Module extends ImportItem {
     }
 
     /**
-     * Returns all Properties 
-     * @param isServer
-     * @return the
+     * Returns all Properties
+     * 
+     * @param isServer is it a server Property or not
+     * @return the Properties
      */
     public Properties getProperties(boolean isServer) {
         Properties props = new Properties();
@@ -255,7 +255,7 @@ public class Module extends ImportItem {
     /**
      * Add dependency for all children
      * 
-     * @param theImports
+     * @param theImports imported resources
      */
     public void setImports(ModuleImports theImports) {
         imports = theImports;
@@ -277,12 +277,6 @@ public class Module extends ImportItem {
         addImports(contents);
     }
 
-    /**
-     * 
-     * @param contents
-     * @throws ObjectNotFoundException
-     * @throws InvalidDataException
-     */
     public void addImports(Collection<?> contents) throws ObjectNotFoundException, InvalidDataException {
         for (CollectionMember mem : contents.getMembers().list) {
             if (mem.getItemPath() != null) {

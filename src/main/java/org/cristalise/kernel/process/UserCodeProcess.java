@@ -133,17 +133,10 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
+     * Method called to handle the Start transition
      * 
-     * @param thisJob
-     * @param jobKey
-     * @throws AccessRightsException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws ScriptErrorException
-     * @throws InvalidCollectionModification
+     * @param thisJob the actual Job to be executed.
+     * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
     public void start(Job thisJob, String jobKey)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
@@ -161,10 +154,10 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
+     * Method called to handle the Complete transition
      * 
-     * @param thisJob
-     * @param jobKey
-     * @throws Exception
+     * @param thisJob the actual Job to be executed.
+     * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
     public void complete(Job thisJob, String jobKey) throws Exception {
         Logger.msg(5, "UserCodeProcess.complete() - job:"+thisJob);
@@ -174,19 +167,12 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
+     * Method called to handle the Resume transition
      * 
-     * @param thisJob
-     * @param jobKey
-     * @throws AccessRightsException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws ScriptErrorException
-     * @throws InvalidCollectionModification
+     * @param thisJob the actual Job to be executed.
+     * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
-    protected void resume(Job thisJob, String jobKey)
+    public void resume(Job thisJob, String jobKey)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
                    ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
     {
@@ -196,24 +182,12 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
+     * Method called to handle the Suspend transition
      * 
      * @param thisJob the actual Job to be executed.
-     * @param jobKey
-     * 
-     * @throws InvalidDataException
-     * @throws ObjectNotFoundException
-     * @throws IOException
-     * @throws MappingException
-     * @throws MarshalException
-     * @throws ValidationException
-     * @throws AccessRightsException
-     * @throws InvalidTransitionException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws ScriptErrorException
-     * @throws InvalidCollectionModification
+     * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
-    protected void suspend(Job thisJob, String jobKey) 
+    public void suspend(Job thisJob, String jobKey) 
             throws MarshalException, ValidationException, InvalidDataException, ObjectNotFoundException, IOException, MappingException, 
                    AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException, 
                    InvalidCollectionModification, ScriptErrorException 
@@ -245,15 +219,6 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
      * Default implementation - the agent execute any scripts, query or both defined
      * 
      * @param job the actual Job to be executed.
-     * 
-     * @throws AccessRightsException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws InvalidCollectionModification
-     * @throws ScriptErrorException
      */
     public void runUserCodeLogic(Job job)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
@@ -348,10 +313,6 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         active = false;
     }
 
-    /**
-     * 
-     * @param args
-     */
     static public void main(String[] args) {
         int status = 0;
 

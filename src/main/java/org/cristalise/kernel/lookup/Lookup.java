@@ -60,8 +60,6 @@ public interface Lookup {
      * 
      * @param domainPath The path to resolve
      * @return The ItemPath it points to (should be an AgentPath if the path references an Agent)
-     * @throws InvalidItemPathException
-     * @throws ObjectNotFoundException
      */
     public ItemPath resolvePath(DomainPath domainPath) throws InvalidItemPathException, ObjectNotFoundException;
 
@@ -122,34 +120,33 @@ public interface Lookup {
     public Iterator<Path> searchAliases(ItemPath itemPath);
 
     /**
-     * @param agentName
-     * @return
-     * @throws ObjectNotFoundException
+     * Find the AgentPath for the named Agent
+     * 
+     * @param agentName then name of the Agent
+     * @return the AgentPath representing the Agent
      */
     public AgentPath getAgentPath(String agentName) throws ObjectNotFoundException;
 
     /**
      * Find the RolePath for the named Role
      * 
-     * @param roleName
-     * @return
-     * @throws ObjectNotFoundException
+     * @param roleName the name of the Role
+     * @return the RolePath representing the Role
      */
     public RolePath getRolePath(String roleName) throws ObjectNotFoundException;
 
     /**
      * Returns all of the Agents in this centre who hold this role (including sub-roles)
      * 
-     * @param rolePath
+     * @param rolePath the path representing the given Role
      * @return the list of Agents
-     * @throws ObjectNotFoundException
      */
     public AgentPath[] getAgents(RolePath rolePath) throws ObjectNotFoundException;
 
     /**
      * Get all roles held by the given Agent
      * 
-     * @param agentPath
+     * @param agentPath the path representing the given Agent
      * @return the list of Roles
      */
     public RolePath[] getRoles(AgentPath agentPath);
@@ -157,17 +154,16 @@ public interface Lookup {
     /**
      * Checks if an agent qualifies as holding the stated Role, including any sub-role logic. 
      * 
-     * @param agentPath
-     * @param role
+     * @param agentPath the path representing the given Agent
+     * @param role the path representing the given Role
      * @return true or false 
      */
     public boolean hasRole(AgentPath agentPath, RolePath role);
 
     /**
      * Return the name of the Agent referenced by an AgentPath
-     * @param agentPath
+     * @param agentPath the path representing the given Agent
      * @return the name string
-     * @throws ObjectNotFoundException
      */
     public String getAgentName(AgentPath agentPath) throws ObjectNotFoundException;	
 }

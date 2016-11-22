@@ -73,10 +73,11 @@ public class JobList extends RemoteMap<Job> {
     }
 
     /**
+     * Find the list of JobKeys for the given Item and its Step
      * 
-     * @param itemPath
-     * @param stepPath
-     * @return
+     * @param itemPath the ItemPath (uuid)
+     * @param stepPath the Step path 
+     * @return the list of JobKeys mathcing the inputs
      */
     public List<String> getKeysForStep(ItemPath itemPath, String stepPath) {
         List<String> jobKeys = new ArrayList<String>();
@@ -90,11 +91,6 @@ public class JobList extends RemoteMap<Job> {
         return jobKeys;
     }
 
-    /**
-     * 
-     * @param itemPath
-     * @param stepPath
-     */
     public void removeJobsForStep(ItemPath itemPath, String stepPath) {
         List<String> staleJobs = getKeysForStep(itemPath, stepPath);
 

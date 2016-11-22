@@ -98,23 +98,24 @@ public class AgentProxy extends ItemProxy {
     }
 
     /**
-     * Standard execution of jobs. Note that this method should always be the
-     * one used from clients - all execution parameters are taken from the job
-     * where they're probably going to be correct.
+     * Standard execution of jobs. Note that this method should always be the one used from clients. 
+     * All execution parameters are taken from the job where they're probably going to be correct.
      *
-     * @param job
-     * @throws AccessRightsException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws ScriptErrorException
-     * @throws InvalidCollectionModification
+     * @param job the Actual Job to be executed
+     * @return The outcome after processing. May have been altered by the step.
+     * 
+     * @throws AccessRightsException The agent was not allowed to execute this step
+     * @throws InvalidDataException The parameters supplied were incorrect
+     * @throws InvalidTransitionException The step wasn't available
+     * @throws ObjectNotFoundException Thrown by some steps that try to locate additional objects
+     * @throws PersistencyException Problem writing or reading the database
+     * @throws ObjectAlreadyExistsException Thrown by steps that create additional object
+     * @throws ScriptErrorException Thrown by scripting classes
+     * @throws InvalidCollectionModification Thrown by steps that create/modify collections
      */
     public String execute(Job job)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
-            PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+                   PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
     {
         ItemProxy item = Gateway.getProxyManager().getProxy(job.getItemPath());
         Date startTime = new Date();
@@ -154,10 +155,11 @@ public class AgentProxy extends ItemProxy {
         if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
         job.setAgentPath(mAgentPath);
+
         Logger.msg(3, "AgentProxy.execute(job) - submitting job to item proxy");
 
         String result = item.requestAction(job);
-        
+
         if (Logger.doLog(3)) {
             Date timeNow = new Date();
             long secsNow = (timeNow.getTime() - startTime.getTime()) / 1000;
@@ -188,70 +190,43 @@ public class AgentProxy extends ItemProxy {
     }
 
     /**
-     * Multi-parameter execution. Wraps parameters up in a PredefinedStepOutcome
-     * if the schema of the requested step is such.
+     * Multi-parameter execution. Wraps parameters up in a PredefinedStepOutcome if the schema of the requested step is such.
      * 
-     * @param item
-     *            The item on which to execute the step
-     * @param predefStep
-     *            The step name to run
-     * @param params
-     *            An array of parameters to pass to the step. See each step's
-     *            documentation for its required parameters
+     * @param item The item on which to execute the step
+     * @param predefStep The step name to run
+     * @param params An array of parameters to pass to the step. See each step's documentation for its required parameters
      * 
      * @return The outcome after processing. May have been altered by the step.
      * 
-     * @throws AccessRightsException
-     *             The agent was not allowed to execute this step
-     * @throws InvalidDataException
-     *             The parameters supplied were incorrect
-     * @throws InvalidTransitionException
-     *             The step wasn't available
-     * @throws ObjectNotFoundException
-     *             Thrown by some steps that try to locate additional objects
-     * @throws PersistencyException
-     *             Problem writing or reading the database
-     * @throws ObjectAlreadyExistsException
-     *             Thrown by steps that create additional object
-     * @throws InvalidCollectionModification
+     * @throws AccessRightsException The agent was not allowed to execute this step
+     * @throws InvalidDataException The parameters supplied were incorrect
+     * @throws InvalidTransitionException The step wasn't available
+     * @throws ObjectNotFoundException Thrown by some steps that try to locate additional objects
+     * @throws PersistencyException Problem writing or reading the database
+     * @throws ObjectAlreadyExistsException Thrown by steps that create additional object
+     * @throws InvalidCollectionModification Thrown by steps that create/modify collections
      */
-    public String execute(ItemProxy item, String predefStep, String[] params) throws AccessRightsException, InvalidDataException,
-            InvalidTransitionException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException,
-            InvalidCollectionModification {
+    public String execute(ItemProxy item, String predefStep, String[] params)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
+                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
         String schemaName = PredefinedStep.getPredefStepSchemaName(predefStep);
         String param;
 
         if (schemaName.equals("PredefinedStepOutcome")) param = PredefinedStep.bundleData(params);
         else                                            param = params[0];
 
-        try {
-            return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/" + predefStep, PredefinedStep.DONE, param);
-        }
-        catch (Exception ex) {
-            Logger.error(ex);
-            throw ex;
-        }
+        return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/" + predefStep, PredefinedStep.DONE, param);
     }
 
     /**
-     * Single parameter execution
+     * Single parameter execution. Wraps parameters up in a PredefinedStepOutcome if the schema of the requested step is such.
      * 
      * @see #execute(ItemProxy, String, String[])
-     * 
-     * @param item
-     * @param predefStep
-     * @param param
-     * @return The outcome after processing. May have been altered by the step.
-     * @throws AccessRightsException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
-     * @throws ObjectAlreadyExistsException
-     * @throws InvalidCollectionModification
      */
     public String execute(ItemProxy item, String predefStep, String param) 
-            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException,InvalidCollectionModification
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
+                   PersistencyException, ObjectAlreadyExistsException,InvalidCollectionModification
     {
         return execute(item, predefStep, new String[] { param });
     }

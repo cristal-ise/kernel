@@ -25,18 +25,13 @@ package org.cristalise.kernel.querying;
  *
  */
 public class QueryParsingException extends Exception {
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = 3042839166747807890L;
 
     public QueryParsingException() {
         super();
     }
 
-    /**
-     * @param msg
-     */
     public QueryParsingException(String msg) {
         super(msg);
     }

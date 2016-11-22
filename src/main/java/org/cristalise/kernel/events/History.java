@@ -58,18 +58,6 @@ public class History extends RemoteMap<Event> {
         }
     }
 
-    /**
-     * 
-     * @param agentPath
-     * @param delegatePath
-     * @param agentRole
-     * @param stepName
-     * @param stepPath
-     * @param stepType
-     * @param stateMachine
-     * @param transitionId
-     * @return newly created Event
-     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
                           String stepName, String stepPath, String stepType, 
                           StateMachine stateMachine, int transitionId)
@@ -78,20 +66,6 @@ public class History extends RemoteMap<Event> {
                 new Event(mItemPath, agentPath, delegatePath, agentRole, stepName, stepPath, stepType, stateMachine, transitionId));
     }
 
-    /**
-     * 
-     * @param agentPath
-     * @param delegatePath
-     * @param agentRole
-     * @param stepName
-     * @param stepPath
-     * @param stepType
-     * @param schema
-     * @param stateMachine
-     * @param transitionId
-     * @param viewName
-     * @return newly created Event
-     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
                           String stepName, String stepPath, String stepType, Schema schema, 
                           StateMachine stateMachine, int transitionId, String viewName)
@@ -101,20 +75,6 @@ public class History extends RemoteMap<Event> {
         return storeNewEvent(newEvent);
     }
 
-    /**
-     * 
-     * @param agentPath
-     * @param delegatePath
-     * @param agentRole
-     * @param stepName
-     * @param stepPath
-     * @param stepType
-     * @param stateMachine
-     * @param transitionId
-     * @param timeString
-     * @return newly created Event
-     * @throws InvalidDataException
-     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath,	String agentRole,
                           String stepName, String stepPath, String stepType,
                           StateMachine stateMachine, int transitionId, String timeString) 
@@ -125,22 +85,6 @@ public class History extends RemoteMap<Event> {
         return storeNewEvent(newEvent);
     }
 
-    /**
-     * 
-     * @param agentPath
-     * @param delegatePath
-     * @param agentRole
-     * @param stepName
-     * @param stepPath
-     * @param stepType
-     * @param schema
-     * @param stateMachine
-     * @param transitionId
-     * @param viewName
-     * @param timeString
-     * @return newly created Event
-     * @throws InvalidDataException
-     */
     public Event addEvent(AgentPath agentPath, AgentPath delegatePath, String agentRole,
                           String stepName, String stepPath, String stepType, Schema schema, 
                           StateMachine stateMachine, int transitionId, String viewName, String timeString) 
