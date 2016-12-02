@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity.transfer;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -108,7 +110,7 @@ public class TransferItem {
     public void importItem(File dir) throws Exception {
         // check if already exists
         try {
-            Property name = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/Name", null);
+            Property name = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + NAME, null);
             throw new Exception("Item " + itemPath + " already in use as " + name.getValue());
         } catch (Exception ex) {
         }

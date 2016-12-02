@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class ProxyManager {
             Path thisServerResult = servers.next();
             try {
                 ItemPath thisServerPath = thisServerResult.getItemPath();
-                String remoteServer = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/Name", null)).getValue();
+                String remoteServer = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/"+NAME, null)).getValue();
                 String portStr = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/ProxyPort", null)).getValue();
                 int remotePort = Integer.parseInt(portStr);
                 connectToProxyServer(remoteServer, remotePort);

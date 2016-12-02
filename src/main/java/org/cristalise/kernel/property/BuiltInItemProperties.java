@@ -48,6 +48,8 @@ public enum BuiltInItemProperties {
 
     NAMESPACE("Namespace"),
 
+    MODULE("Module"),
+
     /**
      * The type of the Item, used in Dev module, but it is a good practice to set it as an immutable, fixed value 
      * Property. It is convenient to use in lookup searches for Description Items.

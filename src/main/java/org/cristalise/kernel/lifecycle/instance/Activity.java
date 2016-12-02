@@ -25,6 +25,7 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_RO
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.BREAKPOINT;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DESCRIPTION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POINT;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -541,7 +542,7 @@ public class Activity extends WfVertex {
         if (mTypeName == null) {
             try {
                 ItemPath actType = new ItemPath(mType);
-                Property nameProp = (Property) Gateway.getStorage().get(actType, ClusterStorage.PROPERTY + "/Name", null);
+                Property nameProp = (Property) Gateway.getStorage().get(actType, ClusterStorage.PROPERTY + "/" + NAME, null);
                 mTypeName = nameProp.getValue();
             }
             catch (Exception e) {

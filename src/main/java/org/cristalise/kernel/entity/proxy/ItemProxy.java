@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -402,7 +404,7 @@ public class ItemProxy
 
     public String getName() {
         try {
-            return getProperty("Name");
+            return getProperty(NAME);
         }
         catch (ObjectNotFoundException ex) {
             return null;

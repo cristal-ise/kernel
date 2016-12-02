@@ -174,7 +174,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         // set Name prop or create if not present
         boolean foundName = false;
         for (Property prop : props.list) {
-            if (prop.getName().equals("Name")) {
+            if (prop.getName().equals(NAME.toString())) {
                 foundName = true;
                 prop.setValue(newName);
                 break;

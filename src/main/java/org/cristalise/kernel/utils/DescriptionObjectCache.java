@@ -23,6 +23,8 @@
  */
 package org.cristalise.kernel.utils;
 
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -109,7 +111,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 
         // else search for it in the whole tree using property description
         Property[] searchProps = new Property[classIdProps.length + 1];
-        searchProps[0] = new Property("Name", name);
+        searchProps[0] = new Property(NAME, name);
         System.arraycopy(classIdProps, 0, searchProps, 1, classIdProps.length);
 
         Iterator<Path> e = Gateway.getLookup().search(new DomainPath(), searchProps);

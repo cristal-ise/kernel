@@ -32,7 +32,7 @@ import org.omg.CORBA.Object;
  */
 public class DomainPath extends Path {
 
-    private ItemPath itemPath = null;
+    private ItemPath target = null;
 
     public DomainPath() {
         super(Path.UNKNOWN);
@@ -78,12 +78,12 @@ public class DomainPath extends Path {
 
     public void setItemPath(ItemPath newTarget) {
         if (newTarget == null) { // clear
-            itemPath = null;
+            target = null;
             mType = Path.CONTEXT;
             return;
         }
 
-        itemPath = newTarget;
+        target = newTarget;
         mType = Path.ITEM;
     }
 
@@ -91,9 +91,9 @@ public class DomainPath extends Path {
     public ItemPath getItemPath() throws ObjectNotFoundException {
         if (mType == UNKNOWN) checkType();
 
-        if (itemPath == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
+        if (target == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
 
-        return itemPath;
+        return target;
     }
 
     @Override
@@ -106,14 +106,10 @@ public class DomainPath extends Path {
     protected void checkType() {
         try {
             setItemPath(Gateway.getLookup().resolvePath(this));
-        } 
-        catch (InvalidItemPathException ex) {
-            mType = CONTEXT;
-        } 
-        catch (ObjectNotFoundException ex) {
-            mType = CONTEXT;
         }
-
+        catch (InvalidItemPathException | ObjectNotFoundException ex) {
+            mType = CONTEXT;
+        } 
     }
 
     /**

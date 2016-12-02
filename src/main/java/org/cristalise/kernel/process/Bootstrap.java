@@ -22,6 +22,7 @@ package org.cristalise.kernel.process;
 
 import static org.cristalise.kernel.property.BuiltInItemProperties.KERNEL_VERSION;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.MODULE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.net.InetAddress;
@@ -433,10 +434,13 @@ public class Bootstrap
 
         for (int i = 0; i < pdList.list.size(); i++) {
             PropertyDescription pd = pdList.list.get(i);
+
             String propName = pd.getName();
-            String propVal = pd.getDefaultValue();
-            if (propName.equals("Name")) propVal = itemName;
-            if (propName.equals("Module")) propVal = ns==null?"kernel":ns;
+            String propVal  = pd.getDefaultValue();
+
+            if (propName.equals(NAME.toString()))        propVal = itemName;
+            else if (propName.equals(MODULE.toString())) propVal = (ns == null) ? "kernel" : ns;
+
             props.list.add(new Property(propName, propVal, pd.getIsMutable()));
         }
 
