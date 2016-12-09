@@ -34,7 +34,10 @@ import org.cristalise.kernel.utils.server.SimpleTCPIPServer;
 
 /**
  * <pre>
- * - message string should always contain the class name and the method name: Logger.msg(1,"ItemFact::createDir() - LifeCycle DB created"); - use meaningfull abbreviation and also use the dash to separate the 'header' from the message! - each method should start with this 'method signature' debug: Logger.msg(1,"ItemFact::createDir() - path:" + path);
+ * - message string should always contain the class name and the method name: Logger.msg(1,"ItemFact::createDir()
+ * - LifeCycle DB created");
+ * - use meaningfull abbreviation and also use the dash to separate the 'header' from the message!
+ * - each method should start with this 'method signature' debug: Logger.msg(1,"ItemFact::createDir() - path:" + path);
  * </pre>
  */
 public class Logger {
