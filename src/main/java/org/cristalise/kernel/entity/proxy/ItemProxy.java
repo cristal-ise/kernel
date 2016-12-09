@@ -290,6 +290,21 @@ public class ItemProxy
      * 
      * @param actName the name of the Activity to look for
      * @param transName the name of the Transition to look for
+     * @param agent The AgentProxy to fetch jobs for
+     * @return the JOB object or null if nothing was found
+     * @throws AccessRightsException Agent has not rights
+     * @throws ObjectNotFoundException objects were not found
+     * @throws PersistencyException Error loading the relevant objects
+     */
+    public Job getJobByTransitionName(String actName, String transName, AgentProxy agent) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
+        return getJobByTransitionName(actName, transName, agent.getPath());
+    }
+
+    /**
+     * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
+     * 
+     * @param actName the name of the Activity to look for
+     * @param transName the name of the Transition to look for
      * @param agentPath The agent to fetch jobs for
      * @return the JOB object or null if nothing was found
      * @throws AccessRightsException Agent has not rights
