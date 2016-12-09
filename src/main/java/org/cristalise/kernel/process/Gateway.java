@@ -231,8 +231,9 @@ public class Gateway
      *
      * @throws InvalidDataException - bad params
      * @throws PersistencyException - error starting storages
+     * @throws ObjectNotFoundException - object not found
      */
-    static public Authenticator connect() throws InvalidDataException, PersistencyException {
+    static public Authenticator connect() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
         try {
             Authenticator auth = getAuthenticator();
 
@@ -249,7 +250,7 @@ public class Gateway
             Logger.msg("Gateway.connect() - DONE.");
             return auth;
         }
-        catch (Exception ex) {
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
             Logger.error(ex);
             throw new InvalidDataException("Cannot connect server process. Please check config.");
         }
@@ -262,6 +263,10 @@ public class Gateway
      * @param agentName - username
      * @param agentPassword - password
      * @return an AgentProxy on the requested user
+     * 
+     * @throws InvalidDataException - bad params
+     * @throws PersistencyException - error starting storages
+     * @throws ObjectNotFoundException - object not found
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
@@ -272,11 +277,11 @@ public class Gateway
 
         try {
             if (mLookup != null) mLookup.close();
-            
+
             mLookup = (Lookup)mC2KProps.getInstance("Lookup");
         }
-        catch (Exception e) {
-            Logger.error(e);
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            Logger.error(ex);
             throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
         }
         mLookup.open(auth);
@@ -306,6 +311,9 @@ public class Gateway
      * @param agentPassword the password of the agent
      * @param resource check {@link Authenticator#authenticate(String, String, String)}
      * @return AgentProxy representing the logged in user/agent
+     * 
+     * @throws InvalidDataException - bad params
+     * @throws ObjectNotFoundException - object not found
      */
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
             throws InvalidDataException, ObjectNotFoundException
@@ -326,8 +334,8 @@ public class Gateway
         try {
             return (Authenticator)mC2KProps.getInstance("Authenticator");
         }
-        catch (Exception e) {
-            Logger.error(e);
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            Logger.error(ex);
             throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
         } 
     }
