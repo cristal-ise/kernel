@@ -259,6 +259,10 @@ public class ItemProxy
         return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
     }
 
+    public boolean checkViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
+        return checkContent(ClusterStorage.VIEWPOINT+"/"+schemaName, viewName);
+    }
+
     /** 
      * Gets the named viewpoint
      * 
@@ -357,6 +361,11 @@ public class ItemProxy
             Logger.error(e);
             return "<ERROR>"+e.getMessage()+"</ERROR>";
         }
+    }
+
+    public boolean checkContent( String path, String name ) throws ObjectNotFoundException {
+        for (String key : getContents(path)) if (key.equals(name)) return true;
+        return false;
     }
 
     public String[] getContents( String path ) throws ObjectNotFoundException {
