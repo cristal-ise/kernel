@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
+import org.castor.core.util.StringUtil;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.GTimeStamp;
@@ -161,11 +163,9 @@ public class Activity extends WfVertex {
 
         // Verify outcome
         Schema schema = null;
-        String viewName = null;
         boolean storeOutcome = false;
         if (transition.hasOutcome(getProperties())) {
             schema = transition.getSchema(getProperties());
-            viewName = (String) getBuiltInProperty(VIEW_POINT);
 
             if (requestData != null && requestData.length() > 0) storeOutcome = true;
             else if (transition.getOutcome().isRequired())
@@ -188,27 +188,18 @@ public class Activity extends WfVertex {
         try {
             History hist = getWf().getHistory(locker);
 
-            if (storeOutcome) newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewName);
+            if (storeOutcome) newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, getStateMachine(), transitionID, (String)getBuiltInProperty(VIEW_POINT));
             else              newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
 
             Logger.msg(7, "Activity::request() - Event:" + newEvent.getName() + " was added to the AuditTrail");
 
             if (storeOutcome) {
                 Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema);
-                // REVISIT: if we were ever going to validate outcomes on storage, it would be here.
-                // String errors = newOutcome.validate();
-                // if (errors.length() > 0) throw new
-                // InvalidDataException("Outcome was invalid: "+errors);
+                // TODO: if we were ever going to validate outcomes on storage, it would be here.
+                //newOutcome.validateAndCheck();
                 Gateway.getStorage().put(itemPath, newOutcome, locker);
 
-                // update specific view if defined
-                if (viewName != null && !viewName.equals("") && !viewName.equals("last")) {
-                    Viewpoint currentView = new Viewpoint(itemPath, schema, viewName, newEvent.getID());
-                    Gateway.getStorage().put(itemPath, currentView, locker);
-                }
-                // update last view
-                Viewpoint currentView = new Viewpoint(itemPath, schema, "last", newEvent.getID());
-                Gateway.getStorage().put(itemPath, currentView, locker);
+                updateViews(itemPath, schema, newEvent, locker);
             }
             Gateway.getStorage().commit(locker);
         }
@@ -228,6 +219,30 @@ public class Activity extends WfVertex {
         return outcome;
     }
 
+    /**
+     * Updates the possible list of Viewpoint defined in the Activity properties
+     * 
+     * @param itemPath the Item
+     * @param schema schema object
+     * @param newEvent event object
+     * @param locker transaction locker
+     * @throws PersistencyException Storage issue
+     */
+    private void updateViews(ItemPath itemPath, Schema schema, Event newEvent, Object locker)
+            throws PersistencyException
+    {
+        String viewpointString = (String) getBuiltInProperty(VIEW_POINT);
+
+        // update specific view(s) if defined
+        if (StringUtils.isNotBlank(viewpointString) && !viewpointString.equals("last")) {
+            //TODO: implement updating many Viewpoints defined as a comma separated list
+            Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, viewpointString, newEvent.getID()), locker);
+        }
+
+        //update the default "last" view
+        Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, "last", newEvent.getID()), locker);
+    }
+    
     /**
      * Overridden in predefined steps
      * 
