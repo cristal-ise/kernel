@@ -578,8 +578,8 @@ public class Script implements DescriptionObject {
 
         // execute the child scripts
         for (Script importScript : mIncludes) {
-            if (Logger.doLog(8))  Logger.msg(8, "Import script:\n"+importScript.mScript);
-            else                  Logger.msg(5, "Executing imported script "+importScript.getName()+" v"+importScript.getVersion());
+            if (Logger.doLog(8))  Logger.msg(8, "Script.execute() - Executing imported script:\n"+importScript.mScript);
+            else                  Logger.msg(5, "Script.execute() - Executing imported script name:"+importScript.getName()+" version:"+importScript.getVersion());
 
             importScript.execute();
         }
@@ -647,7 +647,7 @@ public class Script implements DescriptionObject {
         mScript = script;
         if (engine instanceof Compilable) {
             try {
-                Logger.msg(1, "Compiling script "+mName);
+                Logger.msg(1, "Script.setScriptData() - Compiling script "+mName);
                 engine.put(ScriptEngine.FILENAME, mName);
                 mCompScript = ((Compilable)engine).compile(mScript);
             }
