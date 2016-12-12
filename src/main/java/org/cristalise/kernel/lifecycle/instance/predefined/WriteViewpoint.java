@@ -43,7 +43,7 @@ public class WriteViewpoint extends PredefinedStep {
     }
 
     /**
-     * Outcometype, name and event Id. Event and Outcome should be checked so schema version should be discovered.
+     * SchemaName, name and event Id. Event and Outcome should be checked so schema version should be discovered.
      */
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
@@ -58,45 +58,29 @@ public class WriteViewpoint extends PredefinedStep {
 
         String schemaName = params[0];
         String viewName = params[1];
-        int evId;
+        int eventId;
 
         try {
-            evId = Integer.parseInt(params[2]);
+            eventId = Integer.parseInt(params[2]);
         }
         catch (NumberFormatException ex) {
             throw new InvalidDataException("WriteViewpoint: Parameter 3 (EventId) must be an integer");
         }
 
-        // Find event
-        Event ev;
-        try {
-            ev = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+evId, locker);
-        }
-        catch (PersistencyException e) {
-            Logger.error(e);
-            throw new PersistencyException("WriteViewpoint: Could not load event "+evId);
-        }
+        Event event = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+eventId, locker);
 
-        if (ev.getSchemaName() == null || ev.getSchemaName().length() == 0) {
-            throw new InvalidDataException("Event "+evId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
+        if (event.getSchemaName() == null || event.getSchemaName().length() == 0) {
+            throw new InvalidDataException("Event "+eventId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
         }
 
         // Write new viewpoint
-        Schema thisSchema = LocalObjectLoader.getSchema(schemaName, ev.getSchemaVersion());
+        Schema thisSchema = LocalObjectLoader.getSchema(schemaName, event.getSchemaVersion());
 
-        if (!ev.getSchemaName().equals(thisSchema.getItemID())) { 
-            throw new InvalidDataException("Event outcome schema is "+ev.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
+        if (!event.getSchemaName().equals(thisSchema.getItemID())) { 
+            throw new InvalidDataException("Event outcome schema is "+event.getSchemaName()+", and cannot be used for a "+schemaName+" Viewpoint");
         }
 
-        Viewpoint newView = new Viewpoint(item, thisSchema, viewName, evId);
-
-        try {
-            Gateway.getStorage().put(item, newView, locker);
-        }
-        catch (PersistencyException e) {
-            Logger.error(e);
-            throw new PersistencyException("WriteViewpoint: Could not store new viewpoint");
-        }
+        Gateway.getStorage().put(item, new Viewpoint(item, thisSchema, viewName, eventId), locker);
 
         return requestData;
     }
