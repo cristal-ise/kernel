@@ -34,8 +34,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.lang3.StringUtils;
-import org.castor.core.util.StringUtil;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.GTimeStamp;
@@ -162,12 +163,10 @@ public class Activity extends WfVertex {
         String usedRole = transition.getPerformingRole(this, agent);
 
         // Verify outcome
-        Schema schema = null;
         boolean storeOutcome = false;
         if (transition.hasOutcome(getProperties())) {
-            schema = transition.getSchema(getProperties());
-
-            if (requestData != null && requestData.length() > 0) storeOutcome = true;
+            if (StringUtils.isNotBlank(requestData))
+                storeOutcome = true;
             else if (transition.getOutcome().isRequired())
                 throw new InvalidDataException("Transition requires outcome data, but none was given");
         }
@@ -183,24 +182,35 @@ public class Activity extends WfVertex {
         setState(newState.getId());
         setBuiltInProperty(AGENT_NAME, transition.getReservation(this, agent));
 
-        // store new event
-        Event newEvent = null;
         try {
+            Event newEvent = null;
             History hist = getWf().getHistory(locker);
 
-            if (storeOutcome) newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, getStateMachine(), transitionID, (String)getBuiltInProperty(VIEW_POINT));
-            else              newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
-
-            Logger.msg(7, "Activity::request() - Event:" + newEvent.getName() + " was added to the AuditTrail");
-
             if (storeOutcome) {
-                Outcome newOutcome = new Outcome(newEvent.getID(), outcome, schema);
+                Schema schema = transition.getSchema(getProperties());
+                Outcome newOutcome = new Outcome(-1, outcome, schema);
                 // TODO: if we were ever going to validate outcomes on storage, it would be here.
                 //newOutcome.validateAndCheck();
+                
+                String viewpoint = resolveViewpointName(newOutcome);
+
+                newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint);
+                newOutcome.setID(newEvent.getID());
+
                 Gateway.getStorage().put(itemPath, newOutcome, locker);
 
-                updateViews(itemPath, schema, newEvent, locker);
+                // update specific view if defined
+                if (!viewpoint.equals("last")) {
+                    Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, viewpoint, newEvent.getID()), locker);
+                }
+
+                // update the default "last" view
+                Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, "last", newEvent.getID()), locker);
             }
+            else {
+                newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
+            }
+
             Gateway.getStorage().commit(locker);
         }
         catch (PersistencyException ex) {
@@ -219,30 +229,26 @@ public class Activity extends WfVertex {
         return outcome;
     }
 
-    /**
-     * Updates the possible list of Viewpoint defined in the Activity properties
-     * 
-     * @param itemPath the Item
-     * @param schema schema object
-     * @param newEvent event object
-     * @param locker transaction locker
-     * @throws PersistencyException Storage issue
-     */
-    private void updateViews(ItemPath itemPath, Schema schema, Event newEvent, Object locker)
-            throws PersistencyException
-    {
-        String viewpointString = (String) getBuiltInProperty(VIEW_POINT);
+    private String resolveViewpointName(Outcome outcome) throws InvalidDataException{
+        String viewpointString = (String)getBuiltInProperty(VIEW_POINT);
 
-        // update specific view(s) if defined
-        if (StringUtils.isNotBlank(viewpointString) && !viewpointString.equals("last")) {
-            //TODO: implement updating many Viewpoints defined as a comma separated list
-            Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, viewpointString, newEvent.getID()), locker);
+        if (StringUtils.isBlank(viewpointString)) return "last";
+
+        else if(viewpointString.startsWith("xpath:")) {
+            try {
+                viewpointString = outcome.getFieldByXPath(viewpointString.substring(6));
+            }
+            catch (XPathExpressionException e) {
+                throw new InvalidDataException(e.getMessage());
+            }
         }
+        
+        if (StringUtils.containsAny(viewpointString, ':', '.', '/'))
+            throw new InvalidDataException("Invalid Viewpoint:"+viewpointString);
 
-        //update the default "last" view
-        Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, "last", newEvent.getID()), locker);
+        return viewpointString;
     }
-    
+
     /**
      * Overridden in predefined steps
      * 

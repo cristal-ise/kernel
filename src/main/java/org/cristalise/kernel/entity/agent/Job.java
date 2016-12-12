@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -340,16 +341,20 @@ public class Job implements C2KLocalObject {
     }
 
     /**
-     * Returns the 'last' Viewpoint of the Outcome associated with this Job
+     * Returns the Outcome string associated with the 'last' Viewpoint
      * 
      * @return XML data of the last version of Outcome
-     * @throws InvalidDataException inconsistent data or persystency issue
+     * @throws InvalidDataException inconsistent data or persistency issue
      * @throws ObjectNotFoundException Schema or Outcome was not found
      */
     public String getLastView() throws InvalidDataException, ObjectNotFoundException {
         String viewName = getActPropString("Viewpoint");
 
-        if(viewName == null || "".equals(viewName)) viewName = "last";
+        if(StringUtils.isBlank(viewName)) viewName = "last";
+        else if(viewName.startsWith("xpath:")) {
+            Logger.debug(5, "Job.getLastView() - viewpoint xpath '"+viewName+"' -> retrieving 'last' view");
+            viewName = "last";
+        }
 
         // find schema
         String schemaName = getSchema().getName();
@@ -451,9 +456,8 @@ public class Job implements C2KLocalObject {
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
         if(outcome == null) {
             String outcomeData = getOutcomeString();
-            if(outcomeData != null && !"".equals(outcomeData)) { 
-                outcome = new Outcome(-1, outcomeData, transition.getSchema(actProps));
-            }
+
+            if(StringUtils.isNotBlank(outcomeData)) setOutcome(outcomeData);
         }
         return outcome;
     }
