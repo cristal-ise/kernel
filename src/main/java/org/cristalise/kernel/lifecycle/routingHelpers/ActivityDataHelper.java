@@ -85,12 +85,12 @@ public class ActivityDataHelper implements DataHelper {
         if (viewName == null || viewName.equals("")) viewName = "last";
 
         // get the viewpoint and outcome
-        Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
-        Outcome   oc   = (Outcome)   Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"  +schema.getName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
+        Outcome outcome = (Outcome)   view.getOutcome(locker);
 
         // apply the XPath to its outcome
         try {
-            return oc.getFieldByXPath(xpath);
+            return outcome.getFieldByXPath(xpath);
         }
         catch (XPathExpressionException e) {
             throw new InvalidDataException("Invalid xpath:"+xpath+" - item:"+itemPath+", actContext:"+actContext+", dataPath:"+dataPath);

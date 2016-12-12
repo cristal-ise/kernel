@@ -60,8 +60,8 @@ public class ViewpointDataHelper implements DataHelper {
         }
 
         // load Viewpoint and Outcome
-        Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT + "/" + viewpoint, locker);
-        Outcome outcome = (Outcome)Gateway.getStorage().get(itemPath, ClusterStorage.OUTCOME+"/"+view.getSchemaName()+"/"+view.getSchemaVersion()+"/"+view.getEventId(), locker);
+        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+viewpoint, locker);
+        Outcome outcome = (Outcome)   view.getOutcome(locker);
 
         // apply the XPath to its outcome
        	try {
