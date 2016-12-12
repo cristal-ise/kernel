@@ -134,6 +134,11 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
         return ClusterStorage.COLLECTION;
     }
 
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/"+mName+"/"+(mVersion == null ? "last" : String.valueOf(mVersion));
+    }
+
     public void setMembers(CollectionMemberList<E> newMembers) {
         mMembers = newMembers;
     }

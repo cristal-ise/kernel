@@ -190,6 +190,11 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
     }
 
     @Override
+    public String getClusterPath() {
+        return null;
+    }
+
+    @Override
     public synchronized void clear() {
         synchronized (this) {
             super.clear();

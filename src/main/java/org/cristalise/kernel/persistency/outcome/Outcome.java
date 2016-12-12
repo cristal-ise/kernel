@@ -222,7 +222,7 @@ public class Outcome implements C2KLocalObject {
      * @param data string containing the data
      */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
-        //if(data == null) data = "";
+        if(data == null) return;
 
         Node field = getNodeByXPath(xpath);
 
@@ -304,6 +304,12 @@ public class Outcome implements C2KLocalObject {
     public String getClusterType() {
         return ClusterStorage.OUTCOME;
     }
+
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/"+mSchema.getName()+"/"+mSchema.getVersion()+"/"+mID;
+    }
+
 
     // special script API methods
 

@@ -428,7 +428,6 @@ public class Job implements C2KLocalObject {
                 outcomeData = getLastView();
             }
             catch (ObjectNotFoundException ex) {
-                if(Logger.doLog(8)) Logger.error(ex);
                 // if no last view found, try to find an OutcomeInitiator
                 OutcomeInitiator ocInit = getOutcomeInitiator();
 
@@ -478,6 +477,11 @@ public class Job implements C2KLocalObject {
     @Override
     public String getClusterType() {
         return ClusterStorage.JOB;
+    }
+
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/"+id;
     }
 
     @Override

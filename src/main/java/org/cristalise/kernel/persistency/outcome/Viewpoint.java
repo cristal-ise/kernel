@@ -71,16 +71,26 @@ public class Viewpoint implements C2KLocalObject {
     }
 
     public Outcome getOutcome() throws ObjectNotFoundException, PersistencyException {
-        if (eventId == NONE)
-            throw new ObjectNotFoundException("No last eventId defined for path:" + itemPath + "/OUTCOME/" + schemaName + "/"
-                    + schemaVersion + "/" + eventId);
-        return (Outcome) Gateway.getStorage().get(itemPath,
-                ClusterStorage.OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, null);
+        return getOutcome(null);
+    }
+
+    public Outcome getOutcome(Object locker) throws ObjectNotFoundException, PersistencyException {
+        if (eventId == NONE) throw new ObjectNotFoundException("No last eventId defined for path:"+getClusterPath());
+
+        return (Outcome) Gateway.getStorage().get(
+                itemPath, 
+                ClusterStorage.OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, 
+                locker);
     }
 
     @Override
     public String getClusterType() {
         return ClusterStorage.VIEWPOINT;
+    }
+
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/"+schemaName+"/"+name;
     }
 
     public void setItemUUID(String uuid) throws InvalidItemPathException {
@@ -92,7 +102,7 @@ public class Viewpoint implements C2KLocalObject {
     }
 
     public Event getEvent() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-        if (eventId == NONE) throw new InvalidDataException("No last eventId defined");
+        if (eventId == NONE) throw new InvalidDataException("No last eventId defined for path:"+getClusterPath());
 
         return (Event) Gateway.getStorage().get(itemPath, ClusterStorage.HISTORY + "/" + eventId, null);
     }

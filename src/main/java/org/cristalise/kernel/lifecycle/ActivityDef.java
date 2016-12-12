@@ -113,6 +113,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         return null;
     }
 
+    @Override
+    public String getClusterPath() {
+        return null;
+    }
+
     public String getActName() {
         return getName();
     }

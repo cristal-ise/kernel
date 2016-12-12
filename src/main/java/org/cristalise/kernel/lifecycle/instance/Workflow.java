@@ -240,4 +240,8 @@ public class Workflow extends CompositeActivity implements C2KLocalObject {
     public String getClusterType() {
         return ClusterStorage.LIFECYCLE;
     }
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/workflow";
+    }
 }

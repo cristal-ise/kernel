@@ -20,11 +20,12 @@
  */
 package org.cristalise.kernel.entity;
 
-
 /**
- * Objects that are to be stored by Cristal Entities must implement this interface and be (un)marshallable by Castor
- * i.e. have a map file properly registered in the kernel. Domain implementors should not create new C2KLocalObjects
- * <p>Each object will be stored as the path /clustertype/name in most cases. Exceptions are:
+ * Objects that are to be stored by Cristal Entities must implement this interface and be
+ * (un)marshallable by Castor i.e. have a map file properly registered in the kernel. Domain
+ * implementors should not create new C2KLocalObjects
+ * <p>
+ * Each object will be stored as the path /clustertype/name in most cases. Exceptions are:
  * <ul>
  * <li>Collections - /Collection/Name/Version (default 'last')
  * <li>Outcomes - /Outcome/SchemaType/SchemaVersion/EventId
@@ -33,20 +34,15 @@ package org.cristalise.kernel.entity;
  *
  * @see org.cristalise.kernel.persistency.ClusterStorage
  * @see org.cristalise.kernel.persistency.ClusterStorageManager
- *
- * @author Andrew Branson
- *
- * $Revision: 1.5 $
- * $Date: 2004/01/22 11:10:41 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
  */
 
 public interface C2KLocalObject {
 
-	public void setName(String name);
-	public String getName();
+    public void setName(String name);
 
-	public String getClusterType();
+    public String getName();
+
+    public String getClusterType();
+
+    public String getClusterPath();
 }

@@ -158,6 +158,11 @@ public class Event implements C2KLocalObject {
         return ClusterStorage.HISTORY;
     }
 
+    @Override
+    public String getClusterPath() {
+        return getClusterType()+"/"+mID;
+    }
+
     public void addOutcomeDetails(Schema schema, String viewName) {
         setSchemaName(schema.getItemID());
         setSchemaVersion(schema.getVersion());
