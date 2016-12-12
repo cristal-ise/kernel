@@ -38,77 +38,65 @@ import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
- *
- * $Revision: 1.21 $
- * $Date: 2005/06/02 12:17:22 $
- *
- * Params: Schemaname_version:Viewpoint (optional), Outcome, Timestamp (optional
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-public class Import extends PredefinedStep
-{
-    public Import()
-    {
+public class Import extends PredefinedStep {
+    public Import() {
         super();
     }
 
-	//requestdata is xmlstring
+    /**
+     * Params: Schemaname_version:Viewpoint (optional), Outcome, Timestamp (optional)
+     */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "Import: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        
+        if (Logger.doLog(3))
+            Logger.msg(3, "Import: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
         int split1 = params[0].indexOf('_');
         int split2 = params[0].indexOf(':');
-        
-        if (split1 == -1)
-        	throw new InvalidDataException("Import: Invalid parameters "+Arrays.toString(params));
-        
+
+        if (split1 == -1) throw new InvalidDataException("Import: Invalid parameters " + Arrays.toString(params));
+
         requestData = params[1];
         Schema schema;
         String viewpoint = null;
 
         {
-        	String schemaName = params[0].substring(0, split1);
-        	int schemaVersion;
-        	if (split2 > -1) {
-        		schemaVersion = Integer.parseInt(params[0].substring(split1+1, split2));
-        		viewpoint = params[0].substring(split2+1);
-        	}
-        	else
-        		schemaVersion = Integer.parseInt(params[0].substring(split1+1));
+            String schemaName = params[0].substring(0, split1);
+            int schemaVersion;
+            if (split2 > -1) {
+                schemaVersion = Integer.parseInt(params[0].substring(split1 + 1, split2));
+                viewpoint = params[0].substring(split2 + 1);
+            }
+            else schemaVersion = Integer.parseInt(params[0].substring(split1 + 1));
 
-        	schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+            schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
         }
-        
+
         String timestamp;
-        if (params.length == 3)
-        	timestamp = params[2];
-        else
-        	timestamp = DateUtility.timeToString(DateUtility.getNow());
-        
+        if (params.length == 3) timestamp = params[2];
+        else timestamp = DateUtility.timeToString(DateUtility.getNow());
+
         // write event, outcome and viewpoints to storage
 
         TransactionManager storage = Gateway.getStorage();
         History hist = getWf().getHistory();
-		Event event = hist.addEvent(agent, null, getCurrentAgentRole(), getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint, timestamp);
+        Event event = hist.addEvent(agent, null, getCurrentAgentRole(), getName(), getPath(), getType(), schema,
+                getStateMachine(), transitionID, viewpoint, timestamp);
 
-		try {
-			storage.put(item, new Outcome(event.getID(), requestData, schema), locker);
-			storage.put(item, new Viewpoint(item, schema, viewpoint, event.getID()), locker);
-			if (!"last".equals(viewpoint))
-				storage.put(item, new Viewpoint(item, schema, "last", event.getID()), locker);
-		} catch (PersistencyException e) {
-			storage.abort(locker);
-			throw e;
-		}
-		storage.commit(locker);
-		return requestData;
+        try {
+            storage.put(item, new Outcome(event.getID(), requestData, schema), locker);
+            storage.put(item, new Viewpoint(item, schema, viewpoint, event.getID()), locker);
+            if (!"last".equals(viewpoint))
+                storage.put(item, new Viewpoint(item, schema, "last", event.getID()), locker);
+        }
+        catch (PersistencyException e) {
+            storage.abort(locker);
+            throw e;
+        }
+        storage.commit(locker);
+        return requestData;
     }
 }
