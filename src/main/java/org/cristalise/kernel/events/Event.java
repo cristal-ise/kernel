@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.entity.C2KLocalObject;
@@ -167,7 +168,7 @@ public class Event implements C2KLocalObject {
         setSchemaName(schema.getItemID());
         setSchemaVersion(schema.getVersion());
 
-        if (viewName == null || viewName.equals("")) setViewName("last");
-        else                                         setViewName(viewName);
+        if (StringUtils.isBlank(viewName)) setViewName("last");
+        else                               setViewName(viewName);
     }
 }
