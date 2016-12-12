@@ -26,6 +26,7 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POI
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -82,7 +83,7 @@ public class ActivityDataHelper implements DataHelper {
         Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
         String viewName   = act.getBuiltInProperty(VIEW_POINT).toString();
 
-        if (viewName == null || viewName.equals("")) viewName = "last";
+        if (StringUtils.isBlank(viewName)) viewName = "last";
 
         // get the viewpoint and outcome
         Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
