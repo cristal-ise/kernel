@@ -242,9 +242,6 @@ public class Activity extends WfVertex {
                 throw new InvalidDataException(e.getMessage());
             }
         }
-        
-        if (StringUtils.containsAny(viewpointString, ':', '.', '/'))
-            throw new InvalidDataException("Invalid Viewpoint:"+viewpointString);
 
         return viewpointString;
     }
