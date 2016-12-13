@@ -85,7 +85,7 @@ public class Viewpoint implements C2KLocalObject {
     }
 
     public void setName(String n) {
-        if (StringUtils.isAlphanumeric(n))
+        if (!StringUtils.isAlphanumeric(n))
             throw new IllegalArgumentException("Viewpoint name='"+n+"' must be alphanumeric only");
 
         name = n;
