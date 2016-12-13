@@ -20,12 +20,7 @@
  */
 package org.cristalise.kernel.events;
 
-import java.util.Calendar;
 import java.util.Date;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.GTimeStamp;
@@ -40,6 +35,10 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 
 /**
