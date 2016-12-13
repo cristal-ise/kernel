@@ -20,9 +20,7 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -32,6 +30,9 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Gateway;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter @Setter
 public class Viewpoint implements C2KLocalObject {
@@ -55,17 +56,17 @@ public class Viewpoint implements C2KLocalObject {
 
     @Deprecated
     public Viewpoint(ItemPath itemPath, String schemaName, String name, int schemaVersion, int eventId) {
+        setName(name);
         this.itemPath = itemPath;
         this.schemaName = schemaName;
-        this.name = name;
         this.schemaVersion = schemaVersion;
         this.eventId = eventId;
     }
 
     public Viewpoint(ItemPath itemPath, Schema schema, String name, int eventId) {
+        setName(name);
         this.itemPath = itemPath;
         this.schemaName = schema.getName();
-        this.name = name;
         this.schemaVersion = schema.getVersion();
         this.eventId = eventId;
     }
@@ -81,6 +82,13 @@ public class Viewpoint implements C2KLocalObject {
                 itemPath, 
                 ClusterStorage.OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, 
                 locker);
+    }
+
+    public void setName(String n) {
+        if (StringUtils.isAlphanumeric(n))
+            throw new IllegalArgumentException("Viewpoint name='"+n+"' must be alphanumeric only");
+
+        name = n;
     }
 
     @Override
