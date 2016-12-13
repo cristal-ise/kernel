@@ -22,6 +22,7 @@ package org.cristalise.kernel.lifecycle.instance.predefined;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -57,7 +58,7 @@ public class WriteViewpoint extends PredefinedStep {
         }
 
         String schemaName = params[0];
-        String viewName = params[1];
+        String viewName   = params[1];
         int eventId;
 
         try {
@@ -69,7 +70,7 @@ public class WriteViewpoint extends PredefinedStep {
 
         Event event = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+eventId, locker);
 
-        if (event.getSchemaName() == null || event.getSchemaName().length() == 0) {
+        if (StringUtils.isBlank(event.getSchemaName())) {
             throw new InvalidDataException("Event "+eventId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
         }
 
