@@ -19,6 +19,7 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.persistency.outcome;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -55,11 +56,28 @@ import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
+/**
+ * A C2KLocalObject encapsulating management of XML data. It has methods to manipulate and validate the XML,
+ * and with a valid ID it can be stored in ClusterStore.
+ */
+@Accessors(prefix = "m") @Getter @Setter
 public class Outcome implements C2KLocalObject {
+
+    private static final int NONE = -1;
+
+    /** ID is the eventID created when the Outcome is stored in History */
     Integer mID;
+
+    /** The Schema object associated with the Outcome */
     Schema mSchema;
+
+    /** The parsed XML document */
     Document mDOM;
+
     static DocumentBuilder parser;
     static XPath xpath;
 
@@ -80,8 +98,39 @@ public class Outcome implements C2KLocalObject {
         xpath = xPathFactory.newXPath();
     }
 
+    /**
+     * Use this constructor for XML manipulation only. This Outcome cannot be validate 
+     * not it can be stored in ClusterStore.
+     * 
+     * @param xml the XML string to be manipulated
+     * @throws InvalidDataException there was an error parsing the XML
+     */
+    public Outcome(String xml) throws InvalidDataException {
+        this(NONE, xml, null);
+    }
+
+    /**
+     * Use this constructor for XML manipulation and validation. This Outcome cannot be stored in ClusterStore.
+     * 
+     * @param xml the XML string to be manipulated
+     * @param schema the Schema of the XML
+     * @throws InvalidDataException there was an error parsing the XML
+     */
+    public Outcome(String xml, Schema schema) throws InvalidDataException {
+        this(NONE, xml, schema);
+    }
+
+    /**
+     * Use this constructor to manipulate, validate and store this outcome
+     * 
+     * @param id eventID
+     * @param xml the XML string to be manipulated
+     * @param schema the Schema of the XML
+     * @throws InvalidDataException there was an error parsing the XML
+     */
     public Outcome(int id, String xml, Schema schema) throws InvalidDataException {
         this(id, (Document)null, schema);
+
         try {
             mDOM = parse(xml);
         }
@@ -92,11 +141,94 @@ public class Outcome implements C2KLocalObject {
         }
     }
 
+    /**
+     * Very basic constructor to set all members
+     * 
+     * @param id eventID
+     * @param dom parsed XML Document
+     * @param schema the Schema instance
+     */
+    public Outcome(int id, Document dom, Schema schema) {
+        mID = id;
+        mDOM = dom;
+        mSchema = schema;
+    }
+
+    /**
+     * The constructor derives all the meta data (ID and Schema) from the path
+     * 
+     * @param path the actuals path used by the ClusterStorage
+     * @param xml the XML string to parse
+     * @throws PersistencyException there was DB error
+     * @throws InvalidDataException  Version or EventID was an invalid number
+     */
+    public Outcome(String path, String xml) throws PersistencyException, InvalidDataException {
+        setMetaDataFromPath(path);
+
+        try {
+            mDOM = parse(xml);
+        }
+        catch (IOException | SAXException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("XML not valid: "+ex.getMessage());
+        }
+    }
+
+    /**
+     * The constructor derives all the meta data (ID and Schema) from the path
+     * 
+     * @param path the actuals path used by the ClusterStorage
+     * @param data the parsed xml Document
+     * @throws PersistencyException there was DB error
+     * @throws InvalidDataException  Version or EventID was an invalid number
+     */
+    public Outcome(String path, Document data) throws PersistencyException, InvalidDataException {
+        setMetaDataFromPath(path);
+        mDOM = data;
+    }
+
+    protected void setMetaDataFromPath(String path) throws PersistencyException, InvalidDataException {
+        StringTokenizer tok = new StringTokenizer(path,"/");
+
+        if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
+            throw new PersistencyException("Outcome() - Outcome path must have three components:" + path);
+
+        String schemaName = tok.nextToken();
+        String verString  = tok.nextToken();
+        String objId      = tok.nextToken();
+
+        try {
+            Integer schemaVersion = Integer.valueOf(verString);
+            mSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+            mID = Integer.valueOf(objId);
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("Outcome() - Version or EventID was an invalid number version:"+verString + " eventID:" + objId);
+        }
+        catch (ObjectNotFoundException e) {
+            Logger.error(e);
+            throw new InvalidDataException("Outcome() - problem loading schema:"+schemaName+" version:"+verString);
+        }
+    }
+
+    /**
+     * Validates the actual XML Document against the provided Schema
+     * 
+     * @return the errors found 
+     * @throws InvalidDataException Schema was null
+     */
     public String validate() throws InvalidDataException {
+        if (mSchema == null) throw new InvalidDataException("");
+
         OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
         return validator.validate(mDOM);
     }
 
+    /**
+     * Validates the actual XML Document against the provided Schema
+     * 
+     * @throws InvalidDataException XML document is not valid instance of the Schema
+     */
     public void validateAndCheck() throws InvalidDataException {
         String error = validate();
 
@@ -107,64 +239,12 @@ public class Outcome implements C2KLocalObject {
         }
     }
 
-    //id is the eventID
-    public Outcome(int id, Document dom, Schema schema) {
-        mID = id;
-        mDOM = dom;
-        mSchema = schema;
-    }
-
-    public Outcome(String path, String xml) throws PersistencyException, InvalidDataException {
-        this(path, (Document)null);
-        try {
-            mDOM = parse(xml);
-        } catch (IOException | SAXException ex) {
-            Logger.error(ex);
-            throw new InvalidDataException("XML not valid: "+ex.getMessage());
-        }
-    }
-
-    public Outcome(String path, Document data) throws PersistencyException, InvalidDataException {
-        // derive all the meta data from the path
-        StringTokenizer tok = new StringTokenizer(path,"/");
-        if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
-            throw new PersistencyException("Outcome() - Outcome path must have three components: "+path);
-        String schemaName = tok.nextToken();
-        Integer schemaVersion;
-        String verstring = tok.nextToken();
-        String objId = tok.nextToken();
-        try {
-            schemaVersion = Integer.valueOf(verstring);
-        } catch (NumberFormatException ex) {
-            throw new PersistencyException("Outcome() - Outcome version was an invalid number: "+verstring);
-        }
-        try {
-            mSchema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-        } catch (ObjectNotFoundException e) {
-            Logger.error(e);
-            throw new PersistencyException("Outcome() - problem loading schema "+schemaName+" v"+schemaVersion);
-        }
-        try {
-            mID = Integer.valueOf(objId);
-        } catch (NumberFormatException ex) {
-            mID = null;
-        }
-        mDOM = data;
-    }
-
-    public void setID(Integer ID) {
-        mID = ID;
-    }
-
-    public Integer getID() {
-        return mID;
-    }
-
     @Override
     public void setName(String name) {
         try {
             mID = Integer.valueOf(name);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             Logger.error("Invalid id set on Outcome:"+name);
         }
     }
@@ -176,10 +256,6 @@ public class Outcome implements C2KLocalObject {
 
     public void setData(String xml) throws SAXException, IOException {
         mDOM = parse(xml);
-    }
-
-    public void setDOM(Document dom) {
-        mDOM = dom;
     }
 
     public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
@@ -278,25 +354,17 @@ public class Outcome implements C2KLocalObject {
         return serialize(mDOM, false);
     }
 
-    public Document getDOM() {
-        return mDOM;
-    }
-
-    public Schema getSchema() {
-        return mSchema;
-    }
-
-    public void setSchema(Schema schema) {
-        mSchema = schema;
-    }    
-
     @Deprecated
     public String getSchemaType() {
+        if (mSchema == null) throw new IllegalArgumentException("Outcome must have valid Schema");
+
         return mSchema.getName();
     }
 
     @Deprecated
     public int getSchemaVersion() {
+        if (mSchema == null) throw new IllegalArgumentException("Outcome must have valid Schema");
+
         return mSchema.getVersion();
     }
 
@@ -307,17 +375,19 @@ public class Outcome implements C2KLocalObject {
 
     @Override
     public String getClusterPath() {
+        if (mID == null || mID == NONE || mSchema == null) throw new IllegalArgumentException("Outcome must have valid ID and Schema");
+
         return getClusterType()+"/"+mSchema.getName()+"/"+mSchema.getVersion()+"/"+mID;
     }
-
-
-    // special script API methods
 
     /**
      * Parses the outcome into a DOM tree
      * 
      * @param xml string to be parsed
      * @return the parsed Document
+     * 
+     * @throws SAXException error parsing document
+     * @throws IOException any IO errors occur
      */
     public static Document parse(String xml) throws SAXException, IOException {
         synchronized (parser) {
@@ -343,6 +413,11 @@ public class Outcome implements C2KLocalObject {
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
         XPathExpression expr = xpath.compile(xpathExpr);
         return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
+    }
+
+    public Node removNodeByXPath(String xpathExpr) throws XPathExpressionException {
+        Node nodeToTemove = getNodeByXPath(xpathExpr);
+        return nodeToTemove.getParentNode().removeChild(nodeToTemove);
     }
 
     static public String serialize(Document doc, boolean prettyPrint) {

@@ -64,4 +64,17 @@ class OutcomeSpecs extends Specification {
         o.getSchemaType() == "Script";
         o.getSchemaVersion() == 0;
     }
+    
+    def 'Outcome can remove a Node using XPath'() {
+        given:
+        String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
+        Outcome o = new Outcome("/Outcome/Script/0/7", ocData)
+        assert o.getField("Field1") == "Field1contents"
+
+        when:
+        o.removNodeByXPath("/TestOutcome/Field1")
+
+        then:
+        o.getField("Field1") == null
+    }
 }
