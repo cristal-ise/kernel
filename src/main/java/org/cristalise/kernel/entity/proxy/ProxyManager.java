@@ -42,7 +42,6 @@ import org.cristalise.kernel.utils.SoftCache;
 
 /**
  * Manager of pool of Proxies and their subscribers
- *
  */
 public class ProxyManager {
     SoftCache<ItemPath, ItemProxy>             proxyPool       = new SoftCache<ItemPath, ItemProxy>(50);
@@ -52,7 +51,7 @@ public class ProxyManager {
     /**
      * Create a proxy manager to listen for proxy events and reap unused proxies
      */
-    public ProxyManager() {
+    public ProxyManager() throws InvalidDataException {
         Logger.msg(5, "ProxyManager() - Starting.....");
 
         Iterator<Path> servers = Gateway.getLookup().search(new DomainPath("/servers"), new Property(TYPE, "Server", false));
@@ -61,16 +60,19 @@ public class ProxyManager {
             Path thisServerResult = servers.next();
             try {
                 ItemPath thisServerPath = thisServerResult.getItemPath();
+
                 String remoteServer = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/"+NAME, null)).getValue();
-                String portStr = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/ProxyPort", null)).getValue();
-                int remotePort = Integer.parseInt(portStr);
-                connectToProxyServer(remoteServer, remotePort);
+                String portStr      = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/ProxyPort", null)).getValue();
+
+                connectToProxyServer(remoteServer, Integer.parseInt(portStr));
             }
             catch (Exception ex) {
                 Logger.error("Exception retrieving proxy server connection data for "+thisServerResult);
                 Logger.error(ex);
             }
         }
+
+         if (connections.size() == 0) throw new InvalidDataException("Change notification cannot work without any ProxyServerConnection");
     }
 
     public void connectToProxyServer(String name, int port) {
