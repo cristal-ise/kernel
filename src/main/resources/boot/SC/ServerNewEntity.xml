@@ -22,37 +22,35 @@
 
 -->
 <cristalscript>
-	<param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy"/>
-	<param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy"/>
-	<param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
-	<output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
-	<script language="javascript" name="ServerNewEntity"><![CDATA[
+    <param name="item" type="org.cristalise.kernel.entity.proxy.ItemProxy"/>
+    <param name="agent" type="org.cristalise.kernel.entity.proxy.AgentProxy"/>
+    <param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
+    <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
+    <script language="javascript" name="ServerNewEntity"><![CDATA[
+importClass(Packages.);
 
-        importClass(Packages.org.cristalise.kernel.utils.Logger);
+var predef = "";
+var schema = String(job.getActPropString("SchemaType"));
 
-        var predef = "";
-		var schema = String(job.getActPropString("SchemaType"));
+switch (schema) {
+    case "Item":
+        predef = "CreateNewItem";
+        break;
 
-		switch (schema) {
-            case "Item":
-                predef = "CreateNewItem";
-                break;
-                
-            case "Agent":
-                predef = "CreateNewAgent";
-                break;
+    case "Agent":
+        predef = "CreateNewAgent";
+        break;
 
-            case "Role":
-                predef = "CreateNewRole";
-                break;
+    case "Role":
+        predef = "CreateNewRole";
+        break;
 
-            default:
-                throw "Unhandled schema '" + schema + "'";
-        }
+    default:
+        throw "Unhandled schema '" + schema + "'";
+}
 
-        Logger.debug( "agent.execute - prede step:'" + predef + "'" );
+org.cristalise.kernel.utils.Logger.debug( "agent.execute - prede step:'" + predef + "'" );
 
-		agent.execute(item, predef, job.getOutcomeString());
-
-		]]></script>
+agent.execute(item, predef, job.getOutcomeString());
+    ]]></script>
 </cristalscript>

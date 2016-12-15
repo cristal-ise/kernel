@@ -26,13 +26,6 @@
     <param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
     <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
     <script language="javascript" name="DescriptionCollectionSetter"><![CDATA[
-importClass(org.cristalise.kernel.utils.Logger);
-importClass(org.cristalise.kernel.utils.LocalObjectLoader);
-importClass(org.cristalise.kernel.utils.CastorHashMap);
-importClass(org.cristalise.kernel.lookup.DomainPath);
-importClass(org.cristalise.kernel.process.Gateway);
-importClass(org.cristalise.kernel.property.Property);
-
 var objType = job.getActPropString("ObjectType");
 
 if (objType == null || objType.isEmpty()) 
@@ -52,17 +45,17 @@ var uuid;
 
 if (objName != null && !objName.isEmpty()) {
     try {
-        if      (objType.equals("Schema"))       newObj = LocalObjectLoader.getSchema(objName, objVer);
-        else if (objType.equals("Script"))       newObj = LocalObjectLoader.getScript(objName, objVer);
-        else if (objType.equals("Query"))        newObj = LocalObjectLoader.getQuery(objName, objVer);
-        else if (objType.equals("StateMachine")) newObj = LocalObjectLoader.getStateMachine(objName, objVer);
+        if      (objType.equals("Schema"))       newObj = org.cristalise.kernel.utils.LocalObjectLoader.getSchema(objName, objVer);
+        else if (objType.equals("Script"))       newObj = org.cristalise.kernel.utils.LocalObjectLoader.getScript(objName, objVer);
+        else if (objType.equals("Query"))        newObj = org.cristalise.kernel.utils.LocalObjectLoader.getQuery(objName, objVer);
+        else if (objType.equals("StateMachine")) newObj = org.cristalise.kernel.utils.LocalObjectLoader.getStateMachine(objName, objVer);
         else {
             var searchProps = new Array(2);
 
-            searchProps[0] = new Property("Name", objName);
-            searchProps[1] = new Property("Type", objType);
+            searchProps[0] = new org.cristalise.kernel.property.Property("Name", objName);
+            searchProps[1] = new org.cristalise.kernel.property.Property("Type", objType);
 
-            var foundItems = Gateway.getLookup().search(new DomainPath("/"), searchProps);
+            var foundItems = org.cristalise.kernel.process.Gateway.getLookup().search(new org.cristalise.kernel.lookup.DomainPath("/"), searchProps);
 
             if(foundItems.hasNext()) {
                 uuid = foundItems.next().getItemPath().getUUID();
@@ -78,13 +71,13 @@ if (objName != null && !objName.isEmpty()) {
 
         //TODO: implement multiplicity check (could be based on a property) instead of hardcoded value
         if ((objType.equals("Schema") || objType.equals("Script") || objType.equals("Query") || objType.equals("StateMachine")) && descColl.size() > 0) {
-            Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member for Schema/Script/Query/StateMachine");
+            org.cristalise.kernel.utils.Logger.msg(5, "Script:DescriptionCollectionSetter - Deleting existing member for Schema/Script/Query/StateMachine");
 
             params[1] = descColl.getMembers().list.iterator().next().getID();
             agent.execute(item, "RemoveSlotFromCollection", params);
         }
 
-        var props = new CastorHashMap();
+        var props = new org.cristalise.kernel.utils.CastorHashMap();
         props.put("Version", objVer, true);
 
         params = new Array(3);
@@ -94,12 +87,12 @@ if (objName != null && !objName.isEmpty()) {
         if(newObj != null) params[1] = newObj.getItemID();
         else               params[1] = uuid;
 
-        Logger.msg(5, "Script:DescriptionCollectionSetter - Adding new member:"+params);
+        org.cristalise.kernel.utils.Logger.msg(5, "Script:DescriptionCollectionSetter - Adding new member:"+params);
 
         agent.execute(item, "AddMemberToCollection", params);
     }
     catch (e) {
-        Logger.error(e);
+        org.cristalise.kernel.utils.Logger.error(e);
         throw e;
     }
 }
