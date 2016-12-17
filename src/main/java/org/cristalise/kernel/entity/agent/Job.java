@@ -352,7 +352,7 @@ public class Job implements C2KLocalObject {
 
         if(StringUtils.isBlank(viewName)) viewName = "last";
         else if(viewName.startsWith("xpath:")) {
-            Logger.debug(5, "Job.getLastView() - viewpoint xpath '"+viewName+"' -> retrieving 'last' view");
+            Logger.msg(5, "Job.getLastView() - viewpoint xpath '"+viewName+"' -> retrieving 'last' view");
             viewName = "last";
         }
 
