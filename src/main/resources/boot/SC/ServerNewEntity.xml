@@ -27,8 +27,6 @@
     <param name="job" type="org.cristalise.kernel.entity.agent.Job"/>
     <output name="errors" type="org.cristalise.kernel.scripting.ErrorInfo"/>
     <script language="javascript" name="ServerNewEntity"><![CDATA[
-importClass(Packages.);
-
 var predef = "";
 var schema = String(job.getActPropString("SchemaType"));
 
