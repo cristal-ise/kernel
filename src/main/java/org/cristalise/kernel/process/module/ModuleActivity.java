@@ -139,7 +139,7 @@ public class ModuleActivity extends ModuleResource {
 
         try {
             if (query != null)
-                actDef.setScript(LocalObjectLoader.getScript(query.id == null ? query.name : query.id, Integer.valueOf(query.version)));
+                actDef.setQuery(LocalObjectLoader.getQuery(query.id == null ? query.name : query.id, Integer.valueOf(query.version)));
         }
         catch (NumberFormatException | InvalidDataException e) {
             Logger.error(e);
