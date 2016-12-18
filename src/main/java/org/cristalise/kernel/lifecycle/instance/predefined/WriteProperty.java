@@ -33,48 +33,43 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.3 $
- **************************************************************************/
-public class WriteProperty extends PredefinedStep
-{
-	/**************************************************************************
-    * Constructor for Castror
-    **************************************************************************/
-    public WriteProperty()
-    {
+public class WriteProperty extends PredefinedStep {
+    /**
+     * Constructor for Castor
+     */
+    public WriteProperty() {
         super();
     }
 
-	//requestdata is xmlstring
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, PersistencyException {
-
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException, PersistencyException
+    {
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "WriteProperty: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+        if (Logger.doLog(3))
+            Logger.msg(3, "WriteProperty: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         if (params.length != 2)
-            throw new InvalidDataException("WriteProperty: invalid parameters "+Arrays.toString(params));
-        
+            throw new InvalidDataException("WriteProperty: invalid parameters " + Arrays.toString(params));
+
         String name = params[0];
-        String newValue = params[1];
-        
-        Property prop;
-        
-        try {
-			prop = (Property)Gateway.getStorage().get(item, ClusterStorage.PROPERTY+"/"+name, locker);
-			if (!prop.isMutable() && !newValue.equals(prop.getValue()))
-				throw new ObjectCannotBeUpdated("WriteProperty: Property '"+name+"' is not mutable.");
-			prop.setValue(newValue);
-			Gateway.getStorage().put(item, prop, locker);
-		} catch (ObjectNotFoundException e) {
-			throw new ObjectNotFoundException("WriteProperty: Property '"+name+"' not found.");
-		} 
+        String value = params[1];
+
+        write(item, name, value, locker);
 
         return requestData;
+    }
+
+    public static void write(ItemPath item, String name, String value, Object locker)
+            throws PersistencyException, ObjectCannotBeUpdated, ObjectNotFoundException
+    {
+        Property prop = (Property) Gateway.getStorage().get(item, ClusterStorage.PROPERTY + "/" + name, locker);
+
+        if (!prop.isMutable() && !value.equals(prop.getValue()))
+            throw new ObjectCannotBeUpdated("WriteProperty: Property '" + name + "' is not mutable.");
+
+        prop.setValue(value);
+
+        Gateway.getStorage().put(item, prop, locker);
     }
 }

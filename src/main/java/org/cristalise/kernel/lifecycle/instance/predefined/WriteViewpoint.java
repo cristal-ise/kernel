@@ -68,13 +68,21 @@ public class WriteViewpoint extends PredefinedStep {
             throw new InvalidDataException("WriteViewpoint: Parameter 3 (EventId) must be an integer");
         }
 
+        write(item, schemaName, viewName, eventId, locker);
+
+        return requestData;
+    }
+
+    public static void write(ItemPath item, String schemaName, String viewName, int eventId, Object locker)
+            throws PersistencyException, ObjectNotFoundException, InvalidDataException
+    {
         Event event = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+eventId, locker);
 
         if (StringUtils.isBlank(event.getSchemaName())) {
             throw new InvalidDataException("Event "+eventId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");
         }
 
-        // Write new viewpoint
+        //checks Schema name/version
         Schema thisSchema = LocalObjectLoader.getSchema(schemaName, event.getSchemaVersion());
 
         if (!event.getSchemaName().equals(thisSchema.getItemID())) { 
@@ -82,7 +90,5 @@ public class WriteViewpoint extends PredefinedStep {
         }
 
         Gateway.getStorage().put(item, new Viewpoint(item, thisSchema, viewName, eventId), locker);
-
-        return requestData;
     }
 }

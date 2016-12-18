@@ -48,10 +48,10 @@ import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.agent.Job;
-import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.WfCastorHashMap;
+import org.cristalise.kernel.lifecycle.instance.predefined.WriteProperty;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.State;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
@@ -183,7 +183,6 @@ public class Activity extends WfVertex {
         setBuiltInProperty(AGENT_NAME, transition.getReservation(this, agent));
 
         try {
-            Event newEvent = null;
             History hist = getWf().getHistory(locker);
 
             if (storeOutcome) {
@@ -191,24 +190,27 @@ public class Activity extends WfVertex {
                 Outcome newOutcome = new Outcome(-1, outcome, schema);
                 // TODO: if we were ever going to validate outcomes on storage, it would be here.
                 //newOutcome.validateAndCheck();
-                
+
                 String viewpoint = resolveViewpointName(newOutcome);
 
-                newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), schema, getStateMachine(), transitionID, viewpoint);
-                newOutcome.setID(newEvent.getID());
+                int eventID = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), 
+                                            schema, getStateMachine(), transitionID, viewpoint).getID();
+                newOutcome.setID(eventID);
 
                 Gateway.getStorage().put(itemPath, newOutcome, locker);
 
                 // update specific view if defined
                 if (!viewpoint.equals("last")) {
-                    Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, viewpoint, newEvent.getID()), locker);
+                    Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, viewpoint, eventID), locker);
                 }
 
                 // update the default "last" view
-                Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, "last", newEvent.getID()), locker);
+                Gateway.getStorage().put(itemPath, new Viewpoint(itemPath, schema, "last", eventID), locker);
+
+                updateItemProperties(itemPath, newOutcome, locker);
             }
             else {
-                newEvent = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
+                hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
             }
 
             Gateway.getStorage().commit(locker);
@@ -229,14 +231,16 @@ public class Activity extends WfVertex {
         return outcome;
     }
 
-    private String resolveViewpointName(Outcome outcome) throws InvalidDataException{
+    private String resolveViewpointName(Outcome outcome) throws InvalidDataException {
         String viewpointString = (String)getBuiltInProperty(VIEW_POINT);
 
-        if (StringUtils.isBlank(viewpointString)) return "last";
-
+        if (StringUtils.isBlank(viewpointString)) {
+            return "last";
+        }
+        //FIXME: use DataHelper if possible, because it will make code more general
         else if(viewpointString.startsWith("xpath:")) {
             try {
-                viewpointString = outcome.getFieldByXPath(viewpointString.substring(6));
+                return outcome.getFieldByXPath(viewpointString.substring(6));
             }
             catch (XPathExpressionException e) {
                 throw new InvalidDataException(e.getMessage());
@@ -244,6 +248,38 @@ public class Activity extends WfVertex {
         }
 
         return viewpointString;
+    }
+
+    private void updateItemProperties(ItemPath itemPath, Outcome outcome, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectCannotBeUpdated, ObjectNotFoundException
+    {
+        for(java.util.Map.Entry<String, Object> entry: getProperties().entrySet()) {
+            if(entry.getKey().startsWith("ItemProperty.")) {
+                String propName = entry.getKey().substring(13);
+
+                if(StringUtils.isNotBlank(propName)) {
+                    String propValue = entry.getValue().toString();
+
+                    //FIXME: use DataHelper if possible, because it will make code more general
+                    if (StringUtils.isNotBlank(propValue) && propValue.startsWith("xpath:")) {
+                        try {
+                            propValue = outcome.getFieldByXPath(propValue.substring(6));
+                        }
+                        catch (XPathExpressionException e) {
+                            throw new InvalidDataException(e.getMessage());
+                        }
+                    }
+
+                    if(StringUtils.isNotBlank(propValue)) {
+                        Logger.msg(5, "Activity.updateItemProperties() - propName:"+propName+" propValue:"+propValue);
+                        WriteProperty.write(itemPath, propName, propValue, locker);
+                    }
+                }
+                else {
+                    throw new InvalidDataException("Incomplete vertex property name:" + entry.getKey());
+                }
+            }
+        }
     }
 
     /**

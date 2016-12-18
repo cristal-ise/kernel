@@ -51,13 +51,15 @@ public class DataHelperUtility {
                 throw new InvalidDataException("Config value is not an instance of DataHelper - 'DataHelper."+id+"'=" +configHelper.toString());
         }
         else {
-            switch (id) {
-                case "viewpoint":
+            switch (BuiltInDataHelpers.getValue(id)) {
+                case VIEWPOINT_DH:
                     return new ViewpointDataHelper();
-                case "property":
+                case PROPERTY_DH:
                     return new PropertyDataHelper();
-                case "activity":
+                case ACTIVITY_DH:
                     return new ActivityDataHelper();
+                default:
+                    Logger.warning("DataHelperUtility.getDataHelper() - UNKOWN DataHelper id:"+id);
             }
         }
         return null;

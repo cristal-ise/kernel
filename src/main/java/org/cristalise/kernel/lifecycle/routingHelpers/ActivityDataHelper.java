@@ -60,7 +60,7 @@ public class ActivityDataHelper implements DataHelper {
 
         String[] paths = dataPath.split(":");
 
-        if (paths.length != 2) throw new InvalidDataException("Invalid path '"+dataPath+"' it must have only one colon (:)");
+        if (paths.length != 2) throw new InvalidDataException("Invalid path '"+dataPath+"' it must have one and only one colon (:)");
 
         String actPath = paths[0];
         String xpath   = paths[1];
@@ -78,12 +78,13 @@ public class ActivityDataHelper implements DataHelper {
         }
 
         // Get the schema and viewpoint names
-        String schemaName = act.getBuiltInProperty(SCHEMA_NAME).toString();
+        String schemaName     = act.getBuiltInProperty(SCHEMA_NAME).toString();
         Integer schemaVersion = Integer.valueOf(act.getBuiltInProperty(SCHEMA_VERSION).toString());
-        Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
-        String viewName   = act.getBuiltInProperty(VIEW_POINT).toString();
+        String viewName       = act.getBuiltInProperty(VIEW_POINT).toString();
 
         if (StringUtils.isBlank(viewName)) viewName = "last";
+
+        Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion); //checks if schema/version was correct
 
         // get the viewpoint and outcome
         Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
