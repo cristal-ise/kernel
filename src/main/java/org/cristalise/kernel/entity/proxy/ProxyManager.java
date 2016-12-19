@@ -44,6 +44,9 @@ import org.cristalise.kernel.utils.SoftCache;
  * Manager of pool of Proxies and their subscribers
  */
 public class ProxyManager {
+    
+    public static final String CONFIG_STRICT_POLICY = "ProxyManager.strictPolicy";
+
     SoftCache<ItemPath, ItemProxy>             proxyPool       = new SoftCache<ItemPath, ItemProxy>(50);
     HashMap<DomainPathSubscriber, DomainPath>  treeSubscribers = new HashMap<DomainPathSubscriber, DomainPath>();
     HashMap<String, ProxyServerConnection>     connections     = new HashMap<String, ProxyServerConnection>();
@@ -72,7 +75,10 @@ public class ProxyManager {
             }
         }
 
-         if (connections.size() == 0) throw new InvalidDataException("Change notification cannot work without any ProxyServerConnection");
+        //TODO: this configuration option could be replaced by disable cache functionality
+        boolean strictProxyManager = Gateway.getProperties().getBoolean(CONFIG_STRICT_POLICY, true);
+
+        if (strictProxyManager && connections.size() == 0) throw new InvalidDataException("Change notification cannot work without any ProxyServerConnection");
     }
 
     public void connectToProxyServer(String name, int port) {
