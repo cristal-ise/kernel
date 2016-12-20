@@ -74,11 +74,6 @@ public class ProxyManager {
                 Logger.error(ex);
             }
         }
-
-        //TODO: this configuration option could be replaced by disable cache functionality
-        boolean strictProxyManager = Gateway.getProperties().getBoolean(CONFIG_STRICT_POLICY, true);
-
-        if (strictProxyManager && connections.size() == 0) throw new InvalidDataException("Change notification cannot work without any ProxyServerConnection");
     }
 
     public void connectToProxyServer(String name, int port) {
