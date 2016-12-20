@@ -65,7 +65,7 @@ agent.execute(serverItem, predef, params);
 
 println("Testing predef step: AssignItemToSlot");
 var predef = "AssignItemToSlot"; var params = new Array(3);
-params[0] = "TestAgg"; params[1] = "0"; params[2] = "/desc/Script/system/dev/CreateNewNumberedVersionFromLast"; agent.execute(serverItem, predef, params);
+params[0] = "TestAgg"; params[1] = "0"; params[2] = "/desc/Script/dev/CreateNewNumberedVersionFromLast"; agent.execute(serverItem, predef, params);
 
 println("Testing predef step: ClearSlot");
 var predef = "ClearSlot"; var params = new Array(2);

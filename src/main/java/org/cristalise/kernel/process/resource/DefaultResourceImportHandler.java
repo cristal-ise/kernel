@@ -77,7 +77,8 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     @Override
     public DomainPath getPath(String name, String ns) throws Exception {
-        return new DomainPath(type.getTypeRoot()+"/system/"+(ns == null ? "kernel" : ns)+'/'+name);
+        //return new DomainPath(type.getTypeRoot()+"/system/"+(ns == null ? "kernel" : ns)+'/'+name);
+        return new DomainPath(type.getTypeRoot()+"/"+(ns == null ? "kernel" : ns)+'/'+name);
     }
 
     @Override
