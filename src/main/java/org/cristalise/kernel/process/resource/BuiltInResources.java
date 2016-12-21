@@ -28,15 +28,15 @@ import lombok.Getter;
  */
 @Getter
 public enum BuiltInResources {
-    PROPERTY_DESC_RESOURCE("property", "PropertyDescription",   null,                 null),
-    MODULE_RESOURCE(       "module",   "Module",                "/desc/Modules",      "NoWorkflow"),
-    SCHEMA_RESOURCE(       "OD",       "Schema",                "/desc/OutcomeDesc",  "ManageSchema"),
+    PROPERTY_DESC_RESOURCE("property", "PropertyDescription",   null,                 null), //'abstract' resource - does not have an Item
+    ACTIVITY_DESC_RESOURCE("AC",       "ActivityDef",           null,                 null), //'abstract' resource - does not have an Item
+    MODULE_RESOURCE(       "module",   "Module",                "/desc/Module",       "NoWorkflow"),
+    SCHEMA_RESOURCE(       "OD",       "Schema",                "/desc/Schema",       "ManageSchema"),
     SCRIPT_RESOURCE(       "SC",       "Script",                "/desc/Script",       "ManageScript"),
     QUERY_RESOURCE(        "query",    "Query",                 "/desc/Query",        "ManageQuery"),
     STATE_MACHINE_RESOURCE("SM",       "StateMachine",          "/desc/StateMachine", "ManageStateMachine"),
     COMP_ACT_DESC_RESOURCE("CA",       "CompositeActivityDef",  "/desc/ActivityDesc", "ManageCompositeActDef"),
-    ELEM_ACT_DESC_RESOURCE("EA",       "ElementaryActivityDef", "/desc/ActivityDesc", "ManageElementaryActDef"),
-    ACTIVITY_DESC_RESOURCE("AC",       "ActivityDef",           null,                 null);
+    ELEM_ACT_DESC_RESOURCE("EA",       "ElementaryActivityDef", "/desc/ActivityDesc", "ManageElementaryActDef");
 
     private String  typeCode;
     private String  schemaName;

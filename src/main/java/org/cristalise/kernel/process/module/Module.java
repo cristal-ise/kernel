@@ -298,7 +298,7 @@ public class Module extends ImportItem {
                     case "Script":
                     case "Query":
                     case "StateMachine":
-                    case "OutcomeDesc":
+                    case "Schema":
                         newImport = new ModuleResource();
                         break;
 
