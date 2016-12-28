@@ -46,7 +46,6 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.OutcomeInitiator;
 import org.cristalise.kernel.persistency.outcome.Schema;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.ErrorInfo;
@@ -87,7 +86,7 @@ public class Job implements C2KLocalObject {
     private ItemProxy  item = null;
     private boolean    transitionResolved = false;
 
-    private Outcome outcome = null;;
+    private Outcome outcome = null;
 
     /**
      * OutcomeInitiator cache
@@ -230,8 +229,7 @@ public class Job implements C2KLocalObject {
 
     public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
         if (getTransition().hasOutcome(actProps)) {
-            Schema schema = getTransition().getSchema(actProps);
-            return schema;
+            return getTransition().getSchema(actProps);
         }
         return null;
     }
@@ -240,7 +238,8 @@ public class Job implements C2KLocalObject {
     public String getSchemaName() throws InvalidDataException, ObjectNotFoundException {
         try {
             return getSchema().getName();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
     }
@@ -249,7 +248,8 @@ public class Job implements C2KLocalObject {
     public int getSchemaVersion() throws InvalidDataException, ObjectNotFoundException {
         try {
             return getSchema().getVersion();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return -1;
         }
     }
@@ -265,19 +265,20 @@ public class Job implements C2KLocalObject {
     }
 
     public Query getQuery() throws ObjectNotFoundException, InvalidDataException {
-        Query query = null;
         if (hasQuery()) {
-            query = getTransition().getQuery(actProps);
+            Query query = getTransition().getQuery(actProps);
             query.setParemeterValues(itemPath.getUUID().toString(), getSchemaName(), actProps);
+            return query;
         }
-        return query;
+        return null;
     }
 
     @Deprecated
     public String getScriptName() {
         try {
             return getScript().getName();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
     }
@@ -286,7 +287,8 @@ public class Job implements C2KLocalObject {
     public int getScriptVersion() throws InvalidDataException {
         try {
             return getScript().getVersion();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return -1;
         }
     }
@@ -310,8 +312,7 @@ public class Job implements C2KLocalObject {
     }
 
     public ItemProxy getItemProxy() throws ObjectNotFoundException, InvalidItemPathException {
-        if (item == null)
-            item = Gateway.getProxyManager().getProxy(itemPath);
+        if (item == null) item = Gateway.getProxyManager().getProxy(itemPath);
         return item;
     }
 
@@ -341,6 +342,33 @@ public class Job implements C2KLocalObject {
     }
 
     /**
+     * Returns the Outcome instance associated with the 'last' Viewpoint
+     * 
+     * @return Outcome instance
+     * @throws InvalidDataException inconsistent data or persistency issue
+     * @throws ObjectNotFoundException Schema or Outcome was not found
+     */
+    public Outcome getLastOutcome() throws InvalidDataException, ObjectNotFoundException {
+        String viewName = getActPropString("Viewpoint");
+
+        if(StringUtils.isBlank(viewName)) {
+            viewName = "last";
+        }
+        else if(viewName.startsWith("xpath:")) {
+            Logger.msg(5, "Job.getLastOutcome() - Viewpoint property contains xpath:'"+viewName+"' -> retrieving 'last' view instead");
+            viewName = "last";
+        }
+
+        try {
+            return item.getViewpoint(getSchema().getName(), viewName).getOutcome();
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new InvalidDataException("Error loading viewpoint:"+e.getMessage()); 
+        }
+    }
+
+    /**
      * Returns the Outcome string associated with the 'last' Viewpoint
      * 
      * @return XML data of the last version of Outcome
@@ -348,28 +376,7 @@ public class Job implements C2KLocalObject {
      * @throws ObjectNotFoundException Schema or Outcome was not found
      */
     public String getLastView() throws InvalidDataException, ObjectNotFoundException {
-        String viewName = getActPropString("Viewpoint");
-
-        if(StringUtils.isBlank(viewName)) viewName = "last";
-        else if(viewName.startsWith("xpath:")) {
-            Logger.msg(5, "Job.getLastView() - viewpoint xpath '"+viewName+"' -> retrieving 'last' view");
-            viewName = "last";
-        }
-
-        // find schema
-        String schemaName = getSchema().getName();
-
-        Logger.msg(5, "Job.getLastView() - "+itemPath+"/"+ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
-
-        try	{
-            Viewpoint view = (Viewpoint) Gateway.getStorage().get(itemPath,  ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName, null);
-            return view.getOutcome().getData();
-        }
-        catch (PersistencyException e) {
-            Logger.error(e);
-            throw new InvalidDataException("ViewpointOutcomeInitiator: PersistencyException loading viewpoint " 
-                    + ClusterStorage.VIEWPOINT + "/" + schemaName + "/" + viewName+" in item "+itemPath.getUUID());
-        }
+        return getLastOutcome().getData();
     }
 
     /**
@@ -392,22 +399,18 @@ public class Job implements C2KLocalObject {
                 ocInit = ocInitCache.get(ocConfigPropName);
 
                 if (ocInit == null) {
-                    Object ocInitObj;
-
                     if (!Gateway.getProperties().containsKey(ocConfigPropName)) {
                         throw new InvalidDataException("Property OutcomeInstantiator "+ocConfigPropName+" isn't defined. Check module.xml");
                     }
 
                     try {
-                        ocInitObj = Gateway.getProperties().getInstance(ocConfigPropName);
+                        ocInit = (OutcomeInitiator)Gateway.getProperties().getInstance(ocConfigPropName);
+                        ocInitCache.put(ocConfigPropName, ocInit);
                     }
-                    catch (Exception e) {
+                    catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                         Logger.error(e);
-                        throw new InvalidDataException("OutcomeInstantiator "+ocConfigPropName+" couldn't be instantiated");
+                        throw new InvalidDataException("OutcomeInstantiator "+ocConfigPropName+" couldn't be instantiated:"+e.getMessage());
                     }
-
-                    ocInit = (OutcomeInitiator)ocInitObj; // throw runtime class cast if it isn't one
-                    ocInitCache.put(ocConfigPropName, ocInit);
                 }
             }
             return ocInit;
@@ -417,47 +420,44 @@ public class Job implements C2KLocalObject {
     }
 
     /**
-     * Returns the Outcome string if exists otherwise tries to read the ViewPoint as well. If that does not exists
-     * it tries to use an OutcomeInitiator.
+     * Returns the Outcome string. It is based on {@link Job#getOutcome()}
      * 
-     * @return the Outcome xml
+     * @return the Outcome xml or null
      * @throws InvalidDataException inconsistent data
      */
-    public String getOutcomeString() throws InvalidDataException {
+    public String getOutcomeString() throws InvalidDataException, ObjectNotFoundException {
         if(outcome != null) { 
             return outcome.getData();
         }
-        else if (outcome == null && transition.hasOutcome(actProps)) {
-            String outcomeData = null;
-            try {
-                outcomeData = getLastView();
-            }
-            catch (ObjectNotFoundException ex) {
-                // if no last view found, try to find an OutcomeInitiator
-                OutcomeInitiator ocInit = getOutcomeInitiator();
-
-                if (ocInit != null) outcomeData = ocInit.initOutcome(this);
-            }
-            return outcomeData;
-        }
         else {
-            Logger.msg(8, "Job.getOutcomeString() - Job does not require Outcome item:"+itemPath+" step:"+stepName+" trans:"+transition.getName());
+            getOutcome();
+
+            //getOutcome() could return a null object
+            if(outcome != null) return outcome.getData();
         }
         return null;
     }
 
     /**
-     * Returns the Outcome instance. It is based on {@link Job#getOutcomeString()}
+     * Returns the Outcome if exists otherwise tries to read the 'last' ViewPoint as well. If that does not exists
+     * it tries to use an OutcomeInitiator.
      * 
-     * @return the Outcome object
+     * @return the Outcome object or null
      * @throws InvalidDataException inconsistent data
      * @throws ObjectNotFoundException Schema was not found
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
-        if(outcome == null) {
-            String outcomeData = getOutcomeString();
-
-            if(StringUtils.isNotBlank(outcomeData)) setOutcome(outcomeData);
+        if (outcome == null && transition.hasOutcome(actProps)) {
+            if( item.checkViewpoint(getSchema().getName(), "last") ) {
+                outcome = getLastOutcome();
+            }
+            else {
+                OutcomeInitiator ocInit = getOutcomeInitiator();
+                if (ocInit != null) outcome = ocInit.initOutcomeInstance(this);
+            }
+        }
+        else {
+            Logger.msg(8, "Job.getOutcome() - Job does not require Outcome job:"+this);
         }
         return outcome;
     }
