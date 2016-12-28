@@ -241,13 +241,9 @@ public class Bootstrap
         ItemProxy thisProxy;
         DomainPath modDomPath = typeImpHandler.getPath(itemName, ns);
 
-//        Iterator<Path> en = Gateway.getLookup().search(typeImpHandler.getTypeRoot(), itemName);
-
-//        if (en.hasNext()) {
         if (modDomPath.exists()) {
             Logger.msg(3, "Bootstrap.verifyResource() - Found "+typeImpHandler.getName()+" "+itemName + ".");
 
-//            thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName, itemPath, modDomPath, (DomainPath) en.next());
             thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName, itemPath, modDomPath, modDomPath);
         } 
         else {
