@@ -26,10 +26,6 @@ import org.w3c.dom.Document;
 
 public class SchemaValidator extends OutcomeValidator {
 
-    public SchemaValidator() {
-
-    }
-
     @Override
     public synchronized String validate(String outcome) {
         Schema schema = new Schema(outcome);
