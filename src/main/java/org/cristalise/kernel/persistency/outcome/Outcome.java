@@ -42,6 +42,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -218,7 +219,7 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException Schema was null
      */
     public String validate() throws InvalidDataException {
-        if (mSchema == null) throw new InvalidDataException("");
+        if (mSchema == null) throw new InvalidDataException("Schema was NOT provided");
 
         OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
         return validator.validate(mDOM);
@@ -232,9 +233,10 @@ public class Outcome implements C2KLocalObject {
     public void validateAndCheck() throws InvalidDataException {
         String error = validate();
 
-        if (error.length() > 0) {
-            Logger.error("Outcome.validateAndCheck() - Outcome not valid: \n " + error);
-            Logger.error(getData());
+        if (StringUtils.isNotBlank(error)) {
+            Logger.error("Outcome.validateAndCheck() - Outcome not valid: " + error);
+            Logger.msg("XML: \n"+getData());
+            Logger.msg("XSD: \n"+getSchema().getXSD());
             throw new InvalidDataException(error);
         }
     }
