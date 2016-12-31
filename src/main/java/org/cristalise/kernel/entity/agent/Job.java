@@ -95,7 +95,6 @@ public class Job implements C2KLocalObject {
 
     /**
      * Empty constructor required for Castor
-     * 
      */
     public Job() {
         setCreationDate(DateUtility.getNow());
@@ -117,6 +116,8 @@ public class Job implements C2KLocalObject {
         setAgentRole(role);
 
         setActPropsAndEvaluateValues(act);
+        
+        getItem();
     }
 
     public void setItemPath(ItemPath path) {
@@ -130,6 +131,15 @@ public class Job implements C2KLocalObject {
 
     public String getItemUUID() {
         return getItemPath().getUUID().toString();
+    }
+
+    public ItemProxy getItem() throws InvalidDataException {
+        try {
+            return getItemProxy();
+        }
+        catch (InvalidItemPathException | ObjectNotFoundException e) {
+            throw new InvalidDataException(e.getMessage());
+        }
     }
 
     public Transition getTransition() {
@@ -445,10 +455,11 @@ public class Job implements C2KLocalObject {
      * @return the Outcome object or null
      * @throws InvalidDataException inconsistent data
      * @throws ObjectNotFoundException Schema was not found
+     * @throws  
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
         if (outcome == null && transition.hasOutcome(actProps)) {
-            if( item.checkViewpoint(getSchema().getName(), "last") ) {
+            if( getItem().checkViewpoint(getSchema().getName(), "last") ) {
                 outcome = getLastOutcome();
             }
             else {
