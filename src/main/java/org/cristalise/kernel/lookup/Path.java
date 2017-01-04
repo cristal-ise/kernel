@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
@@ -93,32 +94,18 @@ public abstract class Path {
     }
 
     /**
-     * string array path e.g. { "Product", "Crystal", "Barrel", "2L", "331013013348" } system/domain node ABSENT
+     * String array path e.g. { "Product", "Crystal", "Barrel", "2L", "331013013348" }. 
+     * The root node name (i.e. entity, domain or role) is removed from the beginning.
      */
     public void setPath(String[] path) {
         mStringPath = null;
-        mPath = path.clone();
+
+        if(path[0].equals(getRoot())) mPath = Arrays.copyOfRange(path, 1, path.length);
+        else                          mPath = path.clone();
     }
 
-    /**
-     * string path e.g. /system/d000/d000/d001 system/domain node PRESENT
-     */
     public void setPath(String path) {
-        /*
-        ArrayList<String> newPath = new ArrayList<String>();
-        if (path != null) {
-            StringTokenizer tok = new StringTokenizer(path, delim);
-            if (tok.hasMoreTokens()) {
-                String first = tok.nextToken();
-                if (!first.equals(getRoot())) newPath.add(first);
-
-                while (tok.hasMoreTokens()) newPath.add(tok.nextToken());
-            }
-        }
-        mPath = (newPath.toArray(mPath));
-        */
-        mPath = path.split(delim);
-        mStringPath = null;
+        setPath(StringUtils.split(path, delim));
     }
 
     /**
@@ -176,12 +163,6 @@ public abstract class Path {
     public String toString() {
         return getStringPath();
     }
-
-    /*
-    public Type getType() {
-        return mType;
-    }
-    */
 
     @Override
     public boolean equals(Object path) {
