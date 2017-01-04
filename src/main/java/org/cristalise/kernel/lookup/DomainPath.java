@@ -36,19 +36,19 @@ public class DomainPath extends Path {
     private ItemPath target = null;
 
     public DomainPath() {
-        super(Type.CONTEXT);
+        super();
     }
 
     public DomainPath(String[] path) {
-        super(path, Type.CONTEXT);
+        super(path);
     }
 
     public DomainPath(String path) {
-        super(path, Type.CONTEXT);
+        super(path);
     }
 
     public DomainPath(String path, ItemPath entity) {
-        super(path, Type.CONTEXT);
+        super(path);
         setItemPath(entity);
     }
 
@@ -73,8 +73,6 @@ public class DomainPath extends Path {
     }
 
     public void setItemPath(ItemPath newTarget) {
-        if (newTarget != null) mType = Type.ITEM;
-
         target = newTarget;
     }
 
@@ -97,23 +95,14 @@ public class DomainPath extends Path {
         return target;
     }
 
+    /**
+     * Checks if the DomainPath represents a context node (i.e. its target ItemPath is null).
+     * Use this method when target was set already.
+     * 
+     * @return true if the DomainPath represents a context node
+     */
     public boolean isContext() {
         return target == null;
-/*
-        if (target == null) {
-            try {
-                //it is possible that the target was not resolved from Lookup yet
-                getItemPath();
-                return true;
-            }
-            catch (ObjectNotFoundException e) {
-                //FIXME: implement it without using exception, if possible
-                return false;
-            }
-        }
-        else
-            return false;
-*/
     }
 
     /**

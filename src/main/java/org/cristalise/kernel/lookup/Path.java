@@ -20,9 +20,7 @@
  */
 package org.cristalise.kernel.lookup;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.StringTokenizer;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,64 +31,35 @@ import org.cristalise.kernel.process.Gateway;
 public abstract class Path {
     public static final String delim = "/";
 
-    protected enum Type {UNKNOWN, CONTEXT, ITEM;};
-
-    /*
-    public static final short UNKNOWN = 0;
-    public static final short CONTEXT = 1;
-    public static final short ITEM    = 2;
-    */
-
     protected String[] mPath = new String[0];
 
     /**
      *  slash delimited path
      */
     protected String mStringPath = null;
-    /**
-     *  entity or context
-     */
-    protected Type mType = Type.UNKNOWN;
 
     public Path() {}
 
     /**
-     * Creates an empty path
-     */
-    public Path(Type type) {
-        mType = type;
-    }
-
-    /**
      * Creates a path with an arraylist of the path (big endian)
      */
-    public Path(String[] path, Type type) {
-        this(type);
+    protected Path(String[] path) {
         setPath(path);
     }
 
     /**
      * Creates a path from a slash separated string (big endian)
      */
-    public Path(String path, Type type) {
-        this(type);
+    protected Path(String path) {
         setPath(path);
     }
 
     /**
      * Create a path by appending a child string to an existing path
      */
-    public Path(Path parent, String child, Type type) {
-        this(type);
+    protected Path(Path parent, String child) {
         mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length + 1);
         mPath[mPath.length - 1] = child;
-    }
-
-    /**
-     * Create a path by appending a child
-     */
-    public Path(Path parent, String child) {
-        this(parent, child, Type.UNKNOWN);
     }
 
     /**
@@ -99,9 +68,13 @@ public abstract class Path {
      */
     public void setPath(String[] path) {
         mStringPath = null;
-
-        if(path[0].equals(getRoot())) mPath = Arrays.copyOfRange(path, 1, path.length);
-        else                          mPath = path.clone();
+        
+        if (path != null && path.length > 0) {
+            if(path[0].equals(getRoot())) mPath = Arrays.copyOfRange(path, 1, path.length);
+            else                          mPath = path.clone();
+        }
+        else 
+            mPath =  new String[0];
     }
 
     public void setPath(String path) {
@@ -137,11 +110,7 @@ public abstract class Path {
 
     public String getStringPath() {
         if (mStringPath == null) {
-            StringBuffer stringPathBuffer = new StringBuffer("/").append(getRoot());
-
-            for (String element : mPath) stringPathBuffer.append(delim).append(element);
-
-            mStringPath = stringPathBuffer.toString();
+            mStringPath = delim + getRoot() + delim + StringUtils.join(mPath, delim);
         }
         return mStringPath;
     }
@@ -180,7 +149,6 @@ public abstract class Path {
 
         for (String element : mPath) comp.append("'").append(element).append("' ");
 
-        return "Path - dump(): " + comp.toString() + "}\n        string=" + toString() + "\n        uuid=" + getUUID()
-                + "\n        type=" + mType;
+        return "Path - dump(): " + comp.toString() + "}\n        string=" + toString() + "\n        uuid=" + getUUID();
     }
 }
