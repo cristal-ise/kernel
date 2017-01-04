@@ -34,7 +34,7 @@ public class AgentPath extends ItemPath {
     private String mAgentName = null;
     private String mPassword  = null;
 
-    public AgentPath(SystemKey syskey) throws InvalidAgentPathException, InvalidItemPathException {
+    public AgentPath(SystemKey syskey) throws InvalidAgentPathException {
         super(syskey);
         try {
             findAgentName();
@@ -44,7 +44,7 @@ public class AgentPath extends ItemPath {
         }
     }
 
-    protected AgentPath(UUID uuid) throws InvalidAgentPathException, InvalidItemPathException {
+    protected AgentPath(UUID uuid) throws InvalidAgentPathException {
         super(uuid);
         try {
             findAgentName();
@@ -55,13 +55,7 @@ public class AgentPath extends ItemPath {
     }
 
     public AgentPath(ItemPath itemPath) throws InvalidAgentPathException {
-        super(itemPath.mUUID);
-        try {
-            findAgentName();
-        }
-        catch (ObjectNotFoundException e) {
-            throw new InvalidAgentPathException();
-        }
+        this(itemPath.mUUID);
     }
 
     public AgentPath(ItemPath itemPath, String agentName) {

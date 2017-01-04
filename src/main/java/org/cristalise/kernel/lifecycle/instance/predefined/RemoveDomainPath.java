@@ -29,7 +29,6 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -56,14 +55,8 @@ public class RemoveDomainPath extends PredefinedStep {
             throw new ObjectNotFoundException("RemoveDomainPath: Domain path "+domainPath+" does not exist.");
         }
 
-        if (domainPath.getType() != Path.ITEM) {
-            try {
-                if (!domainPath.getItemPath().equals(item))
-                    throw new InvalidDataException("RemoveDomainPath: Domain path "+domainPath+" is not an alias of the current Item "+item);
-            }
-            catch (ObjectNotFoundException ex) { 
-                throw new InvalidDataException("RemoveDomainPath: Domain path "+domainPath+" is a context (potentially has children).");
-            }
+        if (!domainPath.getItemPath().equals(item)) {
+            throw new InvalidDataException("RemoveDomainPath: Domain path "+domainPath+" is not an alias of the current Item "+item);
         }
 
         Gateway.getLookupManager().delete(domainPath);

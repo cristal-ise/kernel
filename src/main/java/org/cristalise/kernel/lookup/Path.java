@@ -32,10 +32,13 @@ import org.cristalise.kernel.process.Gateway;
 public abstract class Path {
     public static final String delim = "/";
 
-    // types
+    protected enum Type {UNKNOWN, CONTEXT, ITEM;};
+
+    /*
     public static final short UNKNOWN = 0;
     public static final short CONTEXT = 1;
     public static final short ITEM    = 2;
+    */
 
     protected String[] mPath = new String[0];
 
@@ -46,47 +49,47 @@ public abstract class Path {
     /**
      *  entity or context
      */
-    protected short mType = UNKNOWN;
+    protected Type mType = Type.UNKNOWN;
 
     public Path() {}
 
     /**
      * Creates an empty path
      */
-    public Path(short type) {
+    public Path(Type type) {
         mType = type;
     }
 
     /**
      * Creates a path with an arraylist of the path (big endian)
      */
-    public Path(String[] path, short type) {
+    public Path(String[] path, Type type) {
+        this(type);
         setPath(path);
-        mType = type;
     }
 
     /**
      * Creates a path from a slash separated string (big endian)
      */
-    public Path(String path, short type) {
+    public Path(String path, Type type) {
+        this(type);
         setPath(path);
-        mType = type;
     }
 
     /**
      * Create a path by appending a child string to an existing path
      */
-    public Path(Path parent, String child, short type) {
+    public Path(Path parent, String child, Type type) {
+        this(type);
         mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length + 1);
         mPath[mPath.length - 1] = child;
-        mType = type;
     }
 
     /**
      * Create a path by appending a child
      */
     public Path(Path parent, String child) {
-        this(parent, child, UNKNOWN);
+        this(parent, child, Type.UNKNOWN);
     }
 
     /**
@@ -101,6 +104,7 @@ public abstract class Path {
      * string path e.g. /system/d000/d000/d001 system/domain node PRESENT
      */
     public void setPath(String path) {
+        /*
         ArrayList<String> newPath = new ArrayList<String>();
         if (path != null) {
             StringTokenizer tok = new StringTokenizer(path, delim);
@@ -111,8 +115,9 @@ public abstract class Path {
                 while (tok.hasMoreTokens()) newPath.add(tok.nextToken());
             }
         }
-
         mPath = (newPath.toArray(mPath));
+        */
+        mPath = path.split(delim);
         mStringPath = null;
     }
 
@@ -143,14 +148,23 @@ public abstract class Path {
         return mPath;
     }
 
-    public String getString() {
+    public String getStringPath() {
         if (mStringPath == null) {
             StringBuffer stringPathBuffer = new StringBuffer("/").append(getRoot());
-            for (String element : mPath)
-                stringPathBuffer.append(delim).append(element);
+
+            for (String element : mPath) stringPathBuffer.append(delim).append(element);
+
             mStringPath = stringPathBuffer.toString();
         }
         return mStringPath;
+    }
+
+    /**
+     * @deprecated bad method name, use getStringPath() instead
+     */
+    @Deprecated
+    public String getString() {
+        return getStringPath();
     }
 
     public boolean exists() {
@@ -160,12 +174,14 @@ public abstract class Path {
 
     @Override
     public String toString() {
-        return getString();
+        return getStringPath();
     }
 
-    public short getType() {
+    /*
+    public Type getType() {
         return mType;
     }
+    */
 
     @Override
     public boolean equals(Object path) {

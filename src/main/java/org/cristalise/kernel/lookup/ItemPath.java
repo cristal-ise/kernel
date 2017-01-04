@@ -49,12 +49,12 @@ public class ItemPath extends Path {
     }
 
     public ItemPath(String[] path) throws InvalidItemPathException {
-        super(path, Path.CONTEXT);
+        super(path, Type.CONTEXT);
         getSysKeyFromPath();
     }
 
     public ItemPath(String path) throws InvalidItemPathException {
-        super(path, Path.CONTEXT);
+        super(path, Type.CONTEXT);
         if (path == null) throw new InvalidItemPathException("Path cannot be null");
 
         getSysKeyFromPath();
@@ -79,7 +79,7 @@ public class ItemPath extends Path {
         if (mPath.length == 1) {
             try {
                 setSysKey(UUID.fromString(mPath[0]));
-                mType = Path.ITEM;
+                mType = Type.ITEM;
             } catch (IllegalArgumentException ex) {
                 throw new InvalidItemPathException(mPath[0] + " is not a valid UUID");
             }
@@ -118,12 +118,12 @@ public class ItemPath extends Path {
     public void setIOR(org.omg.CORBA.Object IOR) {
         mIOR = IOR;
 
-        if (IOR == null) mType = Path.CONTEXT;
-        else             mType = Path.ITEM;
+        if (IOR == null) mType = Type.CONTEXT;
+        else             mType = Type.ITEM;
     }
 
     public byte[] getOID() {
-        if (mType == Path.CONTEXT) return null;
+        if (mType == Type.CONTEXT) return null;
 
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(mUUID.getMostSignificantBits());
@@ -145,7 +145,7 @@ public class ItemPath extends Path {
     private void setPathFromUUID(String uuid) {
         mPath = new String[1];
         mPath[0] = uuid;
-        mType = Path.ITEM;
+        mType = Type.ITEM;
     }
 
     @Override

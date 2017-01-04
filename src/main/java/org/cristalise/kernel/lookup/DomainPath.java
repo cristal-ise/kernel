@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 import org.omg.CORBA.Object;
 
 /**
@@ -35,24 +36,19 @@ public class DomainPath extends Path {
     private ItemPath target = null;
 
     public DomainPath() {
-        super(Path.UNKNOWN);
-    }
-
-    public DomainPath(short type) {
-        super();
-        mType = type;
+        super(Type.CONTEXT);
     }
 
     public DomainPath(String[] path) {
-        super(path, Path.UNKNOWN);
+        super(path, Type.CONTEXT);
     }
 
     public DomainPath(String path) {
-        super(path, Path.UNKNOWN);
+        super(path, Type.CONTEXT);
     }
 
     public DomainPath(String path, ItemPath entity) {
-        super(path, Path.UNKNOWN);
+        super(path, Type.CONTEXT);
         setItemPath(entity);
     }
 
@@ -77,39 +73,47 @@ public class DomainPath extends Path {
     }
 
     public void setItemPath(ItemPath newTarget) {
-        if (newTarget == null) { // clear
-            target = null;
-            mType = Path.CONTEXT;
-            return;
-        }
+        if (newTarget != null) mType = Type.ITEM;
 
         target = newTarget;
-        mType = Path.ITEM;
     }
 
-    @Override
-    public ItemPath getItemPath() throws ObjectNotFoundException {
-        if (mType == UNKNOWN) checkType();
-
-        if (target == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
-
+    public ItemPath getTarget() {
         return target;
     }
 
     @Override
-    public short getType() {
-        if (mType == UNKNOWN) checkType();
-
-        return mType;
+    public ItemPath getItemPath() throws ObjectNotFoundException {
+        if (target == null) {
+            try {
+                setItemPath( Gateway.getLookup().resolvePath(this) );
+                if (target == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
+            }
+            catch (InvalidItemPathException e) {
+                Logger.error(e);
+                throw new ObjectNotFoundException(e.getMessage());
+            } 
+        }
+        return target;
     }
 
-    protected void checkType() {
-        try {
-            setItemPath(Gateway.getLookup().resolvePath(this));
+    public boolean isContext() {
+        return target == null;
+/*
+        if (target == null) {
+            try {
+                //it is possible that the target was not resolved from Lookup yet
+                getItemPath();
+                return true;
+            }
+            catch (ObjectNotFoundException e) {
+                //FIXME: implement it without using exception, if possible
+                return false;
+            }
         }
-        catch (InvalidItemPathException | ObjectNotFoundException ex) {
-            mType = CONTEXT;
-        } 
+        else
+            return false;
+*/
     }
 
     /**

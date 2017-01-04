@@ -32,7 +32,7 @@ public class RolePath extends Path {
     private boolean hasJobList = false;
 
     public RolePath() {
-        super(Path.CONTEXT);
+        super(Type.CONTEXT);
     }
 
     public RolePath getParent() throws ObjectNotFoundException {
@@ -42,11 +42,11 @@ public class RolePath extends Path {
     }
 
     public RolePath(RolePath parent, String roleName) {
-        super(parent, roleName, Path.CONTEXT);
+        super(parent, roleName, Type.CONTEXT);
     }
 
     public RolePath(String[] path, boolean jobList) {
-        super(path, Path.CONTEXT);
+        super(path, Type.CONTEXT);
         hasJobList = jobList;
     }
 
