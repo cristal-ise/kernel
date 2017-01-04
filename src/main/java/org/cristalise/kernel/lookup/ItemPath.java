@@ -34,7 +34,6 @@ import org.cristalise.kernel.process.Gateway;
 public class ItemPath extends Path {
 
     protected UUID                 mUUID;
-    protected SystemKey            mSysKey;
     protected org.omg.CORBA.Object mIOR = null;
 
     public ItemPath() {
@@ -56,27 +55,24 @@ public class ItemPath extends Path {
 
     public ItemPath(String path) throws InvalidItemPathException {
         super(path, Path.CONTEXT);
-        if (path == null)
-            throw new InvalidItemPathException("Path cannot be null");
+        if (path == null) throw new InvalidItemPathException("Path cannot be null");
+
         getSysKeyFromPath();
     }
 
     public void setPath(String[] path) {
         super.setPath(path);
         mUUID = null;
-        mSysKey = null;
     }
 
     public void setPath(String path) {
         super.setPath(path);
         mUUID = null;
-        mSysKey = null;
     }
 
     public void setPath(Path path) {
         super.setPath(path);
         mUUID = null;
-        mSysKey = null;
     }
 
     private void getSysKeyFromPath() throws InvalidItemPathException {
@@ -130,19 +126,18 @@ public class ItemPath extends Path {
         if (mType == Path.CONTEXT) return null;
 
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(mSysKey.msb);
-        bb.putLong(mSysKey.lsb);
+        bb.putLong(mUUID.getMostSignificantBits());
+        bb.putLong(mUUID.getLeastSignificantBits());
+
         return bb.array();
     }
 
     protected void setSysKey(UUID uuid) {
         mUUID = uuid;
-        mSysKey = new SystemKey(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
         setPathFromUUID(mUUID.toString());
     }
 
     protected void setSysKey(SystemKey sysKey) {
-        mSysKey = sysKey;
         mUUID = new UUID(sysKey.msb, sysKey.lsb);
         setPathFromUUID(mUUID.toString());
     }
@@ -155,7 +150,7 @@ public class ItemPath extends Path {
 
     @Override
     public SystemKey getSystemKey() {
-        return mSysKey;
+        return new SystemKey(mUUID.getMostSignificantBits(), mUUID.getLeastSignificantBits());
     }
 
     @Override
