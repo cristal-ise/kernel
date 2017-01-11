@@ -21,28 +21,47 @@
 package org.cristalise.kernel.entity;
 
 /**
- * Objects that are to be stored by Cristal Entities must implement this interface and be
- * (un)marshallable by Castor i.e. have a map file properly registered in the kernel. Domain
- * implementors should not create new C2KLocalObjects
- * <p>
- * Each object will be stored as the path /clustertype/name in most cases. Exceptions are:
- * <ul>
- * <li>Collections - /Collection/Name/Version (default 'last')
- * <li>Outcomes - /Outcome/SchemaType/SchemaVersion/EventId
- * <li>Viewpoints - /ViewPoint/SchemaType/Name
- * </ul>
- *
+ * Objects that are to be stored by CRISTAL-iSE Items must implement this interface and be
+ * (un)marshallable by Castor i.e. have a map file properly registered in the kernel.
+ * Domain implementors shall not create new C2KLocalObjects
+ * 
  * @see org.cristalise.kernel.persistency.ClusterStorage
  * @see org.cristalise.kernel.persistency.ClusterStorageManager
  */
-
 public interface C2KLocalObject {
 
+    /**
+     * Sets the name of the C2KLocalObject
+     * 
+     * @param name Name of the C2KLocalObject
+     */
     public void setName(String name);
 
+    /**
+     * Gets the name of the C2KLocalObject
+     * @return name of the C2KLocalObject
+     */
     public String getName();
 
+    /**
+     * Each object belongs to a specific type defined in {@link org.cristalise.kernel.persistency.ClusterStorage}
+     * 
+     * @return string id of the type
+     */
     public String getClusterType();
 
+    /**
+     * Each C2KLocalObject is stored with a path identifier starting with the ClusterType:
+     * <ul>
+     * <li>Properties:  /Property/Name
+     * <li>Workflow:    /LifeCycle/workflow
+     * <li>Collections: /Collection/Name/Version (default Name='last')
+     * <li>Outcomes:    /Outcome/SchemaName/SchemaVersion/EventID
+     * <li>Viewpoints:  /ViewPoint/SchemaName/Name (default Name='last')
+     * <li>Events:      /AuditTrail/EventID
+     * <li>Jobs:        /Job/JobID
+     * </ul>
+     * @return The path identifier (i.e. primary key) of the object
+     */
     public String getClusterPath();
 }
