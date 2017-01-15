@@ -24,7 +24,6 @@ package org.cristalise.kernel.collection;
  * Instance of an Aggregation. Unlike in the description, Items may only be 
  * assigned to one slot.
  */
-
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.graph.model.GraphPoint;
@@ -32,22 +31,23 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.CastorHashMap;
 
 
-public class AggregationInstance extends Aggregation
-{
+public class AggregationInstance extends Aggregation {
 
-    public AggregationInstance()
-    {
-    	setName("AggregationInstance");
+    public AggregationInstance() {
+        setName("AggregationInstance");
     }
 
-    public AggregationInstance(String name)
-    {
-    	setName(name);
+    public AggregationInstance(String name) {
+        setName(name);
     }
 
+    public AggregationInstance(String name, Integer version) {
+        setName(name);
+        setVersion(version);
+    }
 
     @Override
-	public AggregationMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
+    public AggregationMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
         throws InvalidCollectionModification, ObjectAlreadyExistsException
     {
         if( itemPath != null && exists(itemPath))
@@ -56,14 +56,13 @@ public class AggregationInstance extends Aggregation
             return super.addMember(itemPath, props, classProps);
     }
 
-	@Override
-	public AggregationMember addMember(ItemPath itemPath, CastorHashMap props, String classProps, GraphPoint location, int w, int h)
+    @Override
+    public AggregationMember addMember(ItemPath itemPath, CastorHashMap props, String classProps, GraphPoint location, int w, int h)
         throws InvalidCollectionModification, ObjectAlreadyExistsException
     {
         if( itemPath != null && exists(itemPath))
-			throw new ObjectAlreadyExistsException(itemPath+" already exists in this collection.");
+            throw new ObjectAlreadyExistsException(itemPath+" already exists in this collection.");
         else
             return super.addMember(itemPath, props, classProps, location, w, h);
     }
 }
-

@@ -38,6 +38,11 @@ public class DependencyDescription extends Dependency implements CollectionDescr
         setName(name);
     }
 
+    public DependencyDescription(String name, Integer version) {
+        setName(name);
+        setVersion(version);
+    }
+
     @Override
     public Collection<DependencyMember> newInstance() throws ObjectNotFoundException {
         // HACK: Knock the special 'prime' off the end for the case of descriptions of descriptions

@@ -75,8 +75,17 @@ public class Dependency extends Collection<DependencyMember> {
         setName(name);
     }
 
+    public Dependency(String name, Integer version) {
+        setName(name);
+        setVersion(version);
+    }
+
     public Dependency(BuiltInCollections collection) {
-        setName(collection.getName());
+        this(collection.getName());
+    }
+
+    public Dependency(BuiltInCollections collection, Integer version) {
+        this(collection.getName(), version);
     }
 
     public CastorHashMap getProperties() {

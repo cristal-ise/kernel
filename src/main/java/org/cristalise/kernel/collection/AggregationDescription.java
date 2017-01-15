@@ -43,6 +43,11 @@ public class AggregationDescription extends Aggregation implements CollectionDes
         setName(name);
     }
 
+    public AggregationDescription(String name, Integer version) {
+        setName(name);
+        setVersion(version);
+    }
+
     /**
      * For each  member get the {@link PropertyDescriptionList} of the member item and look for an explicit version
      * 

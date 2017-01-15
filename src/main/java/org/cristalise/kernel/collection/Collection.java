@@ -57,24 +57,24 @@ import org.cristalise.kernel.utils.CastorHashMap;
  */
 abstract public class Collection<E extends CollectionMember> implements C2KLocalObject {
 
-    public static final short         EMPTY    = -1;
+    //public static final short         EMPTY    = -1;
     private int                       mCounter = -1;   // Contains next available Member ID
     protected CollectionMemberList<E> mMembers = new CollectionMemberList<E>();
     protected String                  mName    = "";   // Not checked for uniqueness
     protected Integer                 mVersion = null;
 
     /**
-     * Fetch the current highest member ID of the collection. This is found by scanning all the current members and kept in the mCounter
-     * field, but is not persistent.
+     * Fetch the current highest member ID of the collection. This is found by scanning all the current members
+     * and kept in the mCounter field, but is not persistent.
      * 
      * @return the current highest member ID
      */
     public int getCounter() {
-        if (mCounter == -1)
+        if (mCounter == -1) {
             for (E element : mMembers.list) {
-            if (mCounter < element.getID())
-                mCounter = element.getID();
+                if (mCounter < element.getID()) mCounter = element.getID();
             }
+        }
         return ++mCounter;
     }
 
@@ -136,7 +136,7 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
 
     @Override
     public String getClusterPath() {
-        return getClusterType()+"/"+mName+"/"+(mVersion == null ? "last" : String.valueOf(mVersion));
+        return getClusterType()+"/"+mName+"/"+getVersionName();
     }
 
     public void setMembers(CollectionMemberList<E> newMembers) {
@@ -233,33 +233,26 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((mMembers == null) ? 0 : mMembers.hashCode());
-        result = prime * result + ((mName == null) ? 0 : mName.hashCode());
+        result = prime * result + ((mMembers == null) ? 0 : mMembers.hashCode());
+        result = prime * result + ((mName == null)    ? 0 : mName.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+
+        if (obj == null)                  return false;
+        if (getClass() != obj.getClass()) return false;
+
         Collection<?> other = (Collection<?>) obj;
-        if (mMembers == null) {
-            if (other.mMembers != null)
-                return false;
-        }
-        else if (!mMembers.equals(other.mMembers))
-            return false;
-        if (mName == null) {
-            if (other.mName != null)
-                return false;
-        }
-        else if (!mName.equals(other.mName))
-            return false;
+
+        if (mMembers == null && other.mMembers != null) return false;
+        else if (!mMembers.equals(other.mMembers))      return false;
+
+        if (mName == null && other.mName != null) return false;
+        else if (!mName.equals(other.mName))      return false;
+
         return true;
     }
 }
