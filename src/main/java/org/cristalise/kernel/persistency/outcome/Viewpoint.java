@@ -54,7 +54,6 @@ public class Viewpoint implements C2KLocalObject {
         name = null;
     }
 
-    @Deprecated
     public Viewpoint(ItemPath itemPath, String schemaName, String name, int schemaVersion, int eventId) {
         setName(name);
         this.itemPath = itemPath;
