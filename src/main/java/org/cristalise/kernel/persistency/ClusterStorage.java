@@ -20,13 +20,10 @@
  */
 package org.cristalise.kernel.persistency;
 
-import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.outcome.Outcome;
-import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
@@ -224,20 +221,7 @@ public abstract class ClusterStorage {
 
         if (root == null) return null; // no storage allowed
 
-        if (obj instanceof Outcome) {
-            Outcome oc = (Outcome) obj;
-            return root + "/" + oc.getSchema().getName() + "/" + oc.getSchema().getVersion() + "/" + oc.getName();
-        }
-        else if (obj instanceof Viewpoint) {
-            Viewpoint vp = (Viewpoint) obj;
-            return root + "/" + vp.getSchemaName() + "/" + vp.getName();
-        }
-        else if (obj instanceof Collection) {
-            Collection<?> coll = (Collection<?>) obj;
-            return root + "/" + coll.getName() + "/" +coll.getVersionName();
-        }
-
-        return root + "/" + obj.getName();
+        return obj.getClusterPath();
     }
 
     /**
