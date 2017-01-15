@@ -88,7 +88,6 @@ public class DomainPath extends Path {
                 if (target == null) throw new ObjectNotFoundException("Path " + toString() + " does not resolve to an Item");
             }
             catch (InvalidItemPathException e) {
-                Logger.error(e);
                 throw new ObjectNotFoundException(e.getMessage());
             } 
         }
