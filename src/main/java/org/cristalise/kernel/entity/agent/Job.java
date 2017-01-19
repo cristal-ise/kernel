@@ -352,6 +352,26 @@ public class Job implements C2KLocalObject {
     }
 
     /**
+     * Checks the value of the 'Viewpoint' ActivityProperty and return 'last if value is blank or starts with 'xpath:'
+     * or it returns its value.
+     * 
+     * @return the 'calculated' Viewpoint name
+     */
+    public String getValidViewpointName() {
+        String viewName = getActPropString("Viewpoint");
+
+        Logger.msg(5, "Job.getValidViewpointName() - Activity properties Viewpoint:'"+viewName+"''");
+
+        if(StringUtils.isBlank(viewName) || viewName.startsWith("xpath:")) {
+            viewName = "last";
+        }
+
+        Logger.msg(5, "Job.getValidViewpointName() - returning Viewpoint:'"+viewName+"''");
+
+        return viewName;
+    }
+
+    /**
      * Returns the Outcome instance associated with the 'last' Viewpoint
      * 
      * @return Outcome instance
@@ -359,18 +379,8 @@ public class Job implements C2KLocalObject {
      * @throws ObjectNotFoundException Schema or Outcome was not found
      */
     public Outcome getLastOutcome() throws InvalidDataException, ObjectNotFoundException {
-        String viewName = getActPropString("Viewpoint");
-
-        if(StringUtils.isBlank(viewName)) {
-            viewName = "last";
-        }
-        else if(viewName.startsWith("xpath:")) {
-            Logger.msg(5, "Job.getLastOutcome() - Viewpoint property contains xpath:'"+viewName+"' -> retrieving 'last' view instead");
-            viewName = "last";
-        }
-
         try {
-            return item.getViewpoint(getSchema().getName(), viewName).getOutcome();
+            return item.getViewpoint(getSchema().getName(), getValidViewpointName()).getOutcome();
         }
         catch (PersistencyException e) {
             Logger.error(e);
@@ -459,7 +469,7 @@ public class Job implements C2KLocalObject {
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
         if (outcome == null && transition.hasOutcome(actProps)) {
-            if( getItem().checkViewpoint(getSchema().getName(), "last") ) {
+            if( getItem().checkViewpoint(getSchema().getName(), getValidViewpointName()) ) {
                 outcome = getLastOutcome();
             }
             else {
