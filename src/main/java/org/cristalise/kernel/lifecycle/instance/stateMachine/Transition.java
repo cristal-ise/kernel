@@ -204,14 +204,14 @@ public class Transition {
      * @throws ObjectNotFoundException Objects were not found while evaluating properties
      */
     public boolean isEnabled(Activity act) throws ObjectNotFoundException {
-        if (StringUtils.isEmpty(enabledProp)) return true;
+        if (StringUtils.isBlank(enabledProp)) return true;
 
         Logger.msg(5, "Transition.isEnabled() - trans:" + getName()+" enabledProp:"+enabledProp);
 
         try {
             Object propValue = act.evaluateProperty(null, enabledProp, null);
 
-            if(propValue == null) return true;
+            if(propValue == null) return false;
             else                  return new Boolean(propValue.toString());
         }
         catch ( InvalidDataException | PersistencyException e) {
