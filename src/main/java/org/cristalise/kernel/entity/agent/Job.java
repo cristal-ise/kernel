@@ -459,8 +459,8 @@ public class Job implements C2KLocalObject {
     }
 
     /**
-     * Returns the Outcome if exists otherwise tries to read the 'last' ViewPoint as well. If that does not exists
-     * it tries to use an OutcomeInitiator.
+     * Returns the Outcome if exists otherwise tries to read and duplicate the Outcome of 'last' ViewPoint. 
+     * If that does not exists it tries to use an OutcomeInitiator.
      * 
      * @return the Outcome object or null
      * @throws InvalidDataException inconsistent data
@@ -470,7 +470,8 @@ public class Job implements C2KLocalObject {
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
         if (outcome == null && transition.hasOutcome(actProps)) {
             if( getItem().checkViewpoint(getSchema().getName(), getValidViewpointName()) ) {
-                outcome = getLastOutcome();
+                Outcome tempOutcome = getLastOutcome();
+                outcome = new Outcome(tempOutcome.getData(), tempOutcome.getSchema());
             }
             else {
                 OutcomeInitiator ocInit = getOutcomeInitiator();
