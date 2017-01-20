@@ -264,7 +264,7 @@ public class Outcome implements C2KLocalObject {
         Node field = getNodeByXPath(xpath);
 
         if (field == null) {
-            throw new InvalidDataException(xpath);
+            throw new InvalidDataException("Outcome '"+getSchemaType()+"' cannot resolve xpath:"+xpath);
         }
         else if (field.getNodeType() == Node.TEXT_NODE || 
                  field.getNodeType() == Node.CDATA_SECTION_NODE ||
