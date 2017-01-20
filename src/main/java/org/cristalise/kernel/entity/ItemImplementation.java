@@ -25,10 +25,12 @@ import java.util.UUID;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.AccessRightsException;
+import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.InvalidTransitionException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
+import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
@@ -41,6 +43,7 @@ import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.ItemPredefinedStepContainer;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
@@ -206,34 +209,16 @@ public class ItemImplementation implements ItemOperations {
 
             return finalOutcome;
         }
-        catch (AccessRightsException ex) {
-            Logger.msg("Propagating AccessRightsException back to the calling agent: " + ex.getMessage());
+        catch (AccessRightsException | InvalidTransitionException   | ObjectNotFoundException |
+               InvalidDataException  | ObjectAlreadyExistsException | InvalidCollectionModification ex)
+        {
+            if(Logger.doLog(8)) Logger.error(ex);
             throw ex;
         }
-        catch (InvalidTransitionException ex) {
-            Logger.msg("Propagating InvalidTransitionException back to the calling agent: " + ex.getMessage());
-            throw ex;
-        }
-        catch (ObjectNotFoundException ex) {
-            Logger.msg("Propagating ObjectNotFoundException back to the calling agent: " + ex.getMessage());
-            throw ex;
-            // errors
-        }
-        catch (InvalidItemPathException ex) {
-            throw new AccessRightsException("Invalid Agent Id: " + agentId);
-        }
-        catch (InvalidDataException ex) {
-            Logger.msg("Propagating InvalidDataException back to the calling agent: " + ex.getMessage());
-            throw ex;
-        }
-        catch (ObjectAlreadyExistsException ex) {
-            Logger.msg("Propagating ObjectAlreadyExistsException back to the calling agent: " + ex.getMessage());
-            throw ex;
-        }
-        catch (InvalidCollectionModification ex) {
-            Logger.msg("Propagating InvalidCollectionModification back to the calling agent: " + ex.getMessage());
-            throw ex;
-        }
+        catch (InvalidAgentPathException | ObjectCannotBeUpdated | CannotManageException ex) {
+            if(Logger.doLog(8)) Logger.error(ex);
+            throw new InvalidDataException(ex.getClass().getName() + " - " + ex.getMessage());
+       }
         catch (Throwable ex) { // non-CORBA exception hasn't been caught!
             Logger.error("Unknown Error: requestAction on " + mItemPath + " by " + agentId + " executing " + stepPath);
             Logger.error(ex);
