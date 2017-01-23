@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.events;
 
-import java.util.Date;
-
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -78,6 +76,33 @@ public class Event implements C2KLocalObject {
         setTimeStamp(DateUtility.getNow());
     }
 
+    /**
+     * Constructor for recreating object from backend
+     */
+    public Event(int id, ItemPath itemPath, AgentPath agentPath, AgentPath delegatePath, String agentRole,
+            String stepName, String stepPath, String stepType, 
+            String smName, int smVersion, int transitionId, int originState, int targetState,
+            String schemaName, int schemaVersion, String viewName, GTimeStamp ts)
+    {
+        setID(id);
+        setItemPath(itemPath);
+        setAgentPath(agentPath);
+        setDelegatePath(delegatePath);
+        setAgentRole(agentRole);
+        setStepName(stepName);
+        setStepPath(stepPath);
+        setStepType(stepType);
+        setStateMachineName(smName);
+        setStateMachineVersion(smVersion);
+        setTransition(transitionId);
+        setOriginState(originState);
+        setTargetState(targetState);
+        setSchemaName(schemaName);
+        setSchemaVersion(schemaVersion);
+        setViewName(viewName);
+        setTimeStamp(ts);
+    }
+
     public Event() { }
 
     public void setID( Integer id ) {
@@ -102,11 +127,11 @@ public class Event implements C2KLocalObject {
            
             if (agentStr.length!=2) throw new InvalidItemPathException();
 
-            setAgentPath(AgentPath.fromUUIDString(agentStr[0]));
-            setDelegatePath(AgentPath.fromUUIDString(agentStr[1]));
+            setAgentPath(new AgentPath(agentStr[0]));
+            setDelegatePath(new AgentPath(agentStr[1]));
         }
         else
-            setAgentPath(AgentPath.fromUUIDString(uuid));
+            setAgentPath(new AgentPath(uuid));
     }
 
     public String getAgentUUID() {
@@ -133,20 +158,11 @@ public class Event implements C2KLocalObject {
     }
 
     /**
-     *  Return the TimeStamp in a form that will convert nicely to a String: YYYY-MM-DD HH:MI:SS
+     * Return the TimeStamp in a form that will convert nicely to a String: YYYY-MM-DD HH:MI:SS
      * @return Return the formatted TimeStamp 
      */
     public String getTimeString() {
         return DateUtility.timeToString(mTimeStamp);
-    }
-
-    /**
-     * Converts the timeStamp of the Event to java.util.Date
-     * 
-     * @return java.util.Date
-     */
-    public Date getTimeStampDate() {
-        return new Date(mTimeStamp.mYear-1900, mTimeStamp.mMonth-1, mTimeStamp.mDay, mTimeStamp.mHour, mTimeStamp.mMinute, mTimeStamp.mSecond);
     }
 
     public void setTimeString(String time) throws InvalidDataException {
@@ -167,7 +183,15 @@ public class Event implements C2KLocalObject {
         setSchemaName(schema.getItemID());
         setSchemaVersion(schema.getVersion());
 
-        if (StringUtils.isBlank(viewName)) setViewName("last");
-        else                               setViewName(viewName);
+        setViewName(viewName);
+    }
+
+    /**
+     * Set the ViewName 
+     * @param viewName name of the view or 'last if viewName is blank
+     */
+    public void setViewName(String viewName) {
+        if (StringUtils.isBlank(viewName)) mViewName = "last";
+        else                               mViewName = viewName;
     }
 }
