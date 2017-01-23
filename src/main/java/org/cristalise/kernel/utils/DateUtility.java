@@ -20,7 +20,11 @@
  */
 package org.cristalise.kernel.utils;
 
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -179,4 +183,41 @@ public class DateUtility {
 
         return time.toString();
     }
+
+    public static OffsetDateTime toOffsetDateTime(GTimeStamp ts) {
+        return OffsetDateTime.of(
+                ts.mYear, 
+                ts.mMonth, 
+                ts.mDay, 
+                ts.mHour, 
+                ts.mMinute, 
+                ts.mSecond, 
+                0,
+                ZoneOffset.ofTotalSeconds(ts.mTimeOffset/1000));
+    }
+
+    public static GTimeStamp fromOffsetDateTime(OffsetDateTime ts) {
+        return new GTimeStamp(
+                ts.getYear(), 
+                ts.getMonthValue(), 
+                ts.getDayOfMonth(), 
+                ts.getHour(), 
+                ts.getMinute(), 
+                ts.getSecond(), 
+                ts.getOffset().getTotalSeconds()*1000);
+    }
+
+    public static GTimeStamp fromSqlTimestamp(Timestamp ts) {
+        return new GTimeStamp(ts.getYear()+1900, ts.getMonth()+1, ts.getDay(), ts.getHours(), ts.getMinutes(), ts.getSeconds(), 0);
+    }
+    
+
+    public static Timestamp toSqlTimestamp(GTimeStamp gts) {
+        return new Timestamp(gts.mYear-1900, gts.mMonth-1, gts.mDay, gts.mHour, gts.mMinute, gts.mSecond, 0);
+    }
+
+    public static Date toDate(GTimeStamp gts) {
+        return new Date(gts.mYear-1900, gts.mMonth-1, gts.mDay, gts.mHour, gts.mMinute, gts.mSecond);
+    }
+
 }
