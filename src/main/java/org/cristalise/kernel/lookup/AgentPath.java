@@ -34,43 +34,28 @@ public class AgentPath extends ItemPath {
     private String mAgentName = null;
     private String mPassword  = null;
 
-    public AgentPath(SystemKey syskey) throws InvalidAgentPathException {
-        super(syskey);
-        try {
-            findAgentName();
-        }
-        catch (ObjectNotFoundException e) {
-            throw new InvalidAgentPathException();
-        }
+    public AgentPath(UUID uuid) throws InvalidAgentPathException {
+        super(uuid);
+
+        //This is commented so a AgentPath can be constructed without setting up Lookup
+        //if (getAgentName() == null) throw new InvalidAgentPathException();
     }
 
-    protected AgentPath(UUID uuid) throws InvalidAgentPathException {
-        super(uuid);
-        try {
-            findAgentName();
-        }
-        catch (ObjectNotFoundException e) {
-            throw new InvalidAgentPathException();
-        }
+    public AgentPath(SystemKey syskey) throws InvalidAgentPathException {
+        this(new UUID(syskey.msb, syskey.lsb));
     }
 
     public AgentPath(ItemPath itemPath) throws InvalidAgentPathException {
         this(itemPath.mUUID);
     }
 
+    public AgentPath(String path) throws InvalidItemPathException {
+        this(UUID.fromString(path));
+    }
+
     public AgentPath(ItemPath itemPath, String agentName) {
         super(itemPath.mUUID);
         mAgentName = agentName;
-    }
-
-    public AgentPath(String path) throws InvalidItemPathException {
-        super(path);
-        try {
-            findAgentName();
-        }
-        catch (ObjectNotFoundException e) {
-            throw new InvalidAgentPathException();
-        }
     }
 
     public void setAgentName(String agentID) {
@@ -80,17 +65,13 @@ public class AgentPath extends ItemPath {
     public String getAgentName() {
         if (mAgentName == null) {
             try {
-                findAgentName();
+                mAgentName = Gateway.getLookup().getAgentName(this);
             }
             catch (ObjectNotFoundException e) {
                 return null;
             }
         }
         return mAgentName;
-    }
-
-    private void findAgentName() throws ObjectNotFoundException {
-        mAgentName = Gateway.getLookup().getAgentName(this);
     }
 
     public RolePath[] getRoles() {
@@ -122,14 +103,4 @@ public class AgentPath extends ItemPath {
     public String dump() {
         return super.dump() + "\n        agentID=" + mAgentName;
     }
-
-    public static AgentPath fromUUIDString(String uuid) throws InvalidAgentPathException {
-        try {
-            return new AgentPath(new ItemPath(uuid));
-        }
-        catch (InvalidItemPathException ex) {
-            throw new InvalidAgentPathException(ex.getMessage());
-        }
-    }
-
 }
