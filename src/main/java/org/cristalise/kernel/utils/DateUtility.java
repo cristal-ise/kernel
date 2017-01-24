@@ -208,7 +208,7 @@ public class DateUtility {
     }
 
     public static GTimeStamp fromSqlTimestamp(Timestamp ts) {
-        return new GTimeStamp(ts.getYear()+1900, ts.getMonth()+1, ts.getDay(), ts.getHours(), ts.getMinutes(), ts.getSeconds(), 0);
+        return new GTimeStamp(ts.getYear()+1900, ts.getMonth()+1, ts.getDate(), ts.getHours(), ts.getMinutes(), ts.getSeconds(), 0);
     }
     
 
