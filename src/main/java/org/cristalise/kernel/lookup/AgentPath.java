@@ -50,11 +50,17 @@ public class AgentPath extends ItemPath {
     }
 
     public AgentPath(String path) throws InvalidItemPathException {
-        this(UUID.fromString(path));
+        //remove the '/entity/' string from the beginning if exists
+        this(UUID.fromString(path.substring( (path.lastIndexOf("/") == -1 ? 0 : path.lastIndexOf("/")+1) )));
     }
 
     public AgentPath(ItemPath itemPath, String agentName) {
         super(itemPath.mUUID);
+        mAgentName = agentName;
+    }
+
+    public AgentPath(UUID uuid, String agentName) {
+        super(uuid);
         mAgentName = agentName;
     }
 
