@@ -42,6 +42,11 @@ public enum BuiltInVertexProperties {
     AGENT_NAME("Agent Name"),
 
     /**
+     * String property. The name of the Dekegate Agent associated with Activities. Can be null or undefined.
+     */
+    DELEGATE_NAME("DelegateName"),
+
+    /**
      * String property. The role of the Agent associated with Activities. Can be null or undefined.
      */
     AGENT_ROLE("Agent Role"),
