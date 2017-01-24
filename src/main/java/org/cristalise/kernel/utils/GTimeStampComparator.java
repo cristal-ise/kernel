@@ -24,23 +24,22 @@ import java.util.Comparator;
 
 import org.cristalise.kernel.common.GTimeStamp;
 
-
 public class GTimeStampComparator implements Comparator<GTimeStamp> {
 
-	@Override
-	public int compare(GTimeStamp t0, GTimeStamp t1) {
+    @Override
+    public int compare(GTimeStamp t0, GTimeStamp t1) {
 
-		int retVal = compareInt(t0.mYear, t1.mYear);
-		if (retVal == 0) retVal = compareInt(t0.mMonth, t1.mMonth);
-		if (retVal == 0) retVal = compareInt(t0.mDay, t1.mDay);
-		if (retVal == 0) retVal = compareInt(t0.mHour-(t0.mTimeOffset/3600), t1.mHour-(t1.mTimeOffset/3600));
-		if (retVal == 0) retVal = compareInt(t0.mMinute, t1.mMinute);
-		if (retVal == 0) retVal = compareInt(t0.mSecond, t1.mSecond);
+        int retVal = compareInt(t0.mYear, t1.mYear);
+        if (retVal == 0) retVal = compareInt(t0.mMonth, t1.mMonth);
+        if (retVal == 0) retVal = compareInt(t0.mDay, t1.mDay);
+        if (retVal == 0) retVal = compareInt(t0.mHour - (t0.mTimeOffset / 3600), t1.mHour - (t1.mTimeOffset / 3600));
+        if (retVal == 0) retVal = compareInt(t0.mMinute, t1.mMinute);
+        if (retVal == 0) retVal = compareInt(t0.mSecond, t1.mSecond);
 
-		return retVal;
-	}
+        return retVal;
+    }
 
-	private static int compareInt(int i, int j) {
-		return i-j;
-	}
+    private static int compareInt(int i, int j) {
+        return i - j;
+    }
 }
