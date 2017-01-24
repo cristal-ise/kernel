@@ -29,6 +29,7 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCRIPT_V
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
@@ -204,7 +205,7 @@ public class LocalObjectLoader {
     {
         String resName = (String) properties.getBuiltInProperty(nameProp);
 
-        if (!(properties.isAbstract(nameProp)) && resName != null && resName.length() > 0) {
+        if (!(properties.isAbstract(nameProp)) && StringUtils.isNotBlank(resName)) {
             Integer resVer = deriveVersionNumber(properties.getBuiltInProperty(verProp));
 
             Logger.msg(5, "LocalObjectLoader.getDescObjectByProperty() - "+nameProp+":"+resName+" v"+resVer+")");
