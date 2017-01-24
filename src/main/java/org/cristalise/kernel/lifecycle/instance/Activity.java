@@ -499,7 +499,7 @@ public class Activity extends WfVertex {
             Logger.msg(7, "Activity.calculateJobsBase() - Got " + transitions.size() + " transitions.");
             for (Transition transition : transitions.keySet()) {
                 Logger.msg(7, "Activity.calculateJobsBase() - Creating Job object for transition " + transition.getName());
-                jobs.add(new Job(this, itemPath, transition, agent, transitions.get(transition)));
+                jobs.add(new Job(this, itemPath, transition, agent, null, transitions.get(transition)));
             }
         }
         return jobs;
