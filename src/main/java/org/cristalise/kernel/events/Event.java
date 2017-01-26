@@ -82,10 +82,10 @@ public class Event implements C2KLocalObject {
     /**
      * Constructor for recreating object from backend
      */
-    public Event(int id, ItemPath itemPath, AgentPath agentPath, AgentPath delegatePath, String agentRole,
+    public Event(Integer id, ItemPath itemPath, AgentPath agentPath, AgentPath delegatePath, String agentRole,
             String stepName, String stepPath, String stepType, 
-            String smName, int smVersion, int transitionId, int originState, int targetState,
-            String schemaName, int schemaVersion, String viewName, GTimeStamp ts)
+            String smName, Integer smVersion, int transitionId, int originState, int targetState,
+            String schemaName, Integer schemaVersion, String viewName, GTimeStamp ts)
     {
         setID(id);
         setItemPath(itemPath);
