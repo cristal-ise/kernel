@@ -71,8 +71,10 @@ public class ClusterStorageManager {
         }
 
         ArrayList<ClusterStorage> rootStores;
-        if (clusterStorageProp instanceof String)
+
+        if (clusterStorageProp instanceof String) {
             rootStores = instantiateStores((String)clusterStorageProp);
+        }
         else if (clusterStorageProp instanceof ArrayList<?>) {
             ArrayList<?> propStores = (ArrayList<?>)clusterStorageProp;
             rootStores = new ArrayList<ClusterStorage>();
@@ -92,7 +94,8 @@ public class ClusterStorageManager {
         for (ClusterStorage newStorage : rootStores) {
             try {
                 newStorage.open(auth);
-            }catch (PersistencyException ex) {
+            }
+            catch (PersistencyException ex) {
                 Logger.error(ex);
                 throw new PersistencyException("ClusterStorageManager.init() - Error initialising storage handler " + newStorage.getClass().getName() + ": " + ex.getMessage());
             }
@@ -114,21 +117,11 @@ public class ClusterStorageManager {
             ClusterStorage newStorage = null;
             String newStorageClass = tok.nextToken();
             try {
-                try {
-                    newStorage = (ClusterStorage)(Class.forName(newStorageClass).newInstance());
-                }
-                catch (ClassNotFoundException ex2) {
-                    newStorage = (ClusterStorage)(Class.forName("org.cristalise.storage."+newStorageClass).newInstance());
-                }
+                if (!newStorageClass.contains(".")) newStorageClass = "org.cristalise.storage."+newStorageClass;
+                newStorage = (ClusterStorage)(Class.forName(newStorageClass).newInstance());
             }
-            catch (ClassNotFoundException ex) {
+            catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" could not be found.");
-            }
-            catch (InstantiationException ex) {
-                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" could not be instantiated.");
-            }
-            catch (IllegalAccessException ex) {
-                throw new PersistencyException("ClusterStorageManager.init() - The cluster storage handler class "+newStorageClass+" was not allowed to be instantiated.");
             }
             rootStores.add(newStorage);
         }
