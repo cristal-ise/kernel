@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-//Java
 import java.util.Arrays;
 
 import org.cristalise.kernel.common.InvalidDataException;
@@ -33,45 +32,47 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
+public class ReplaceDomainWorkflow extends PredefinedStep {
+    public ReplaceDomainWorkflow() {
+        super();
+        getProperties().put("Agent Role", "Admin");
+    }
 
-public class ReplaceDomainWorkflow extends PredefinedStep
-{
-	public ReplaceDomainWorkflow()
-	{
-		super();
-		getProperties().put("Agent Role", "Admin");
-	}
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker) 
+            throws InvalidDataException, PersistencyException
+    {
+        Workflow lifeCycle = getWf();
 
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
-		
-		Workflow lifeCycle = getWf();
- 
-		String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1) throw new InvalidDataException("AddC2KObject: Invalid parameters "+Arrays.toString(params));
+        String[] params = getDataList(requestData);
+        if (Logger.doLog(3)) Logger.msg(3, "ReplaceDomainWorkflow: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        if (params.length != 1)
+            throw new InvalidDataException("ReplaceDomainWorkflow: Invalid parameters " + Arrays.toString(params));
 
         lifeCycle.getChildrenGraphModel().removeVertex(lifeCycle.search("workflow/domain"));
-		CompositeActivity domain;
-		try {
-			domain = (CompositeActivity) Gateway.getMarshaller().unmarshall(params[0]);
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new InvalidDataException("ReplaceDomainWorkflow: Could not unmarshall new workflow: "+e.getMessage());
-		}
-		domain.setName("domain");
-		lifeCycle.initChild(domain, true, new GraphPoint(150, 100));
-		// if new workflow, activate it, otherwise refresh the jobs
-		if (!domain.active) lifeCycle.run(agent, item, locker);
-		else lifeCycle.refreshJobs(item);
-		
-		// store new wf
-		try {
-			Gateway.getStorage().put(item, lifeCycle, locker);
-		} catch (PersistencyException e) {
-			throw new PersistencyException("ReplaceDomainWorkflow: Could not write new workflow to storage: "+e.getMessage());
-		}
-		return requestData;
-	}
+        CompositeActivity domain;
+        try {
+            domain = (CompositeActivity) Gateway.getMarshaller().unmarshall(params[0]);
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("ReplaceDomainWorkflow: Could not unmarshall new workflow: " + e.getMessage());
+        }
+        domain.setName("domain");
+        lifeCycle.initChild(domain, true, new GraphPoint(150, 100));
+
+        // if new workflow, activate it, otherwise refresh the jobs
+        if (!domain.active) lifeCycle.run(agent, item, locker);
+        else                lifeCycle.refreshJobs(item);
+
+        // store new wf
+        try {
+            Gateway.getStorage().put(item, lifeCycle, locker);
+        }
+        catch (PersistencyException e) {
+            throw new PersistencyException("ReplaceDomainWorkflow: Could not write new workflow to storage: " + e.getMessage());
+        }
+        return requestData;
+    }
 }
