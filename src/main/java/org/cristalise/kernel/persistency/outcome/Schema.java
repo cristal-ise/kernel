@@ -161,4 +161,16 @@ public class Schema implements DescriptionObject, ErrorHandler {
                           + "</Resource>\n");
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+
+        if (name.equals(((Schema) obj).getName()) && version == ((Schema) obj).getVersion()) {
+            return true;
+        }
+        else
+            return false;
+    }
+
 }
