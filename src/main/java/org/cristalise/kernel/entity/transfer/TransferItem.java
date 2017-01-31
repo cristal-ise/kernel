@@ -45,16 +45,16 @@ import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class TransferItem {
     private ArrayList<String> domainPaths;
-    protected ItemPath itemPath;
-    static AgentPath importAgentId;
+    protected ItemPath        itemPath;
+    static AgentPath          importAgentId;
 
     public TransferItem() throws Exception {
         try {
             importAgentId = Gateway.getLookup().getAgentPath("system");
-        } catch (ObjectNotFoundException e) {
+        }
+        catch (ObjectNotFoundException e) {
             Logger.error("TransferItem - System user not found!");
             throw e;
         }
@@ -65,28 +65,27 @@ public class TransferItem {
         domainPaths = new ArrayList<String>();
         Iterator<Path> paths = Gateway.getLookup().searchAliases(itemPath);
         while (paths.hasNext()) {
-            DomainPath thisPath = (DomainPath)paths.next();
+            DomainPath thisPath = (DomainPath) paths.next();
             domainPaths.add(thisPath.toString());
         }
     }
-    
+
     public ArrayList<String> getDomainPaths() {
-		return domainPaths;
-	}
-
-	public void setDomainPaths(ArrayList<String> domainPaths) {
-		this.domainPaths = domainPaths;
-	}
-
-	public void setUUID( String uuid ) throws InvalidItemPathException
-    {
-    	itemPath = new ItemPath(uuid);
+        return domainPaths;
     }
-    
+
+    public void setDomainPaths(ArrayList<String> domainPaths) {
+        this.domainPaths = domainPaths;
+    }
+
+    public void setUUID(String uuid) throws InvalidItemPathException {
+        itemPath = new ItemPath(uuid);
+    }
+
     public String getUUID() {
-    	return itemPath.getUUID().toString();
+        return itemPath.getUUID().toString();
     }
-    
+
     public void exportItem(File dir, String path) throws Exception {
         Logger.msg("Path " + path + " in " + itemPath);
         String[] contents = Gateway.getStorage().getClusterContents(itemPath, path);
@@ -95,25 +94,26 @@ public class TransferItem {
             for (String content : contents) {
                 exportItem(new File(dir, content), path + "/" + content);
             }
-        } else { //no children, try to dump object
+        }
+        else { // no children, try to dump object
             try {
                 C2KLocalObject obj = Gateway.getStorage().get(itemPath, path, null);
                 Logger.msg("Dumping object " + path + " in " + itemPath);
                 File dumpPath = new File(dir.getCanonicalPath() + ".xml");
                 FileStringUtility.string2File(dumpPath, Gateway.getMarshaller().marshall(obj));
                 return;
-            } catch (ObjectNotFoundException ex) {
-            } // not an object
+            }
+            catch (ObjectNotFoundException ex) {} // not an object
         }
     }
 
     public void importItem(File dir) throws Exception {
         // check if already exists
         try {
-            Property name = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + NAME, null);
+            Property name = (Property) Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + NAME, null);
             throw new Exception("Item " + itemPath + " already in use as " + name.getValue());
-        } catch (Exception ex) {
         }
+        catch (Exception ex) {}
 
         // retrieve objects
         ArrayList<String> objectFiles = FileStringUtility.listDir(dir.getCanonicalPath(), false, true);
@@ -121,12 +121,12 @@ public class TransferItem {
         for (String element : objectFiles) {
             String xmlFile = FileStringUtility.file2String(element);
             C2KLocalObject newObj;
-            String choppedPath = element.substring(dir.getCanonicalPath().length()+1, element.length()-4);
+            String choppedPath = element.substring(dir.getCanonicalPath().length() + 1, element.length() - 4);
+
             Logger.msg(choppedPath);
-            if (choppedPath.startsWith(ClusterStorage.OUTCOME))
-                newObj = new Outcome(choppedPath, xmlFile);
-            else
-                newObj = (C2KLocalObject)Gateway.getMarshaller().unmarshall(xmlFile);
+
+            if (choppedPath.startsWith(ClusterStorage.OUTCOME)) newObj = new Outcome(choppedPath, xmlFile);
+            else                                                newObj = (C2KLocalObject) Gateway.getMarshaller().unmarshall(xmlFile);
 
             objects.add(newObj);
         }
@@ -140,28 +140,25 @@ public class TransferItem {
         Workflow wf = null;
         // put objects
         for (C2KLocalObject obj : objects) {
-            if (obj instanceof Property)
-                props.list.add((Property)obj);
-            else if (obj instanceof Collection)
-            	colls.list.add((Collection<?>)obj);
-            else if (obj instanceof Workflow)
-                wf = (Workflow)obj;
+            if (obj instanceof Property)        props.list.add((Property) obj);
+            else if (obj instanceof Collection) colls.list.add((Collection<?>) obj);
+            else if (obj instanceof Workflow)   wf = (Workflow) obj;
         }
 
-        if (wf == null)
-            throw new Exception("No workflow found in import for "+itemPath);
+        if (wf == null) throw new Exception("No workflow found in import for " + itemPath);
 
         // init item
-        newItem.initialise(importAgentId.getSystemKey(), 
-        		Gateway.getMarshaller().marshall(props), 
-        		Gateway.getMarshaller().marshall(wf.search("workflow/domain")),
-        		Gateway.getMarshaller().marshall(colls));
+        newItem.initialise(importAgentId.getSystemKey(),
+                           Gateway.getMarshaller().marshall(props),
+                           Gateway.getMarshaller().marshall(wf.search("workflow/domain")),
+                           Gateway.getMarshaller().marshall(colls));
 
         // store objects
         importByType(ClusterStorage.HISTORY, objects);
         importByType(ClusterStorage.OUTCOME, objects);
         importByType(ClusterStorage.VIEWPOINT, objects);
         Gateway.getStorage().commit(this);
+
         // add domPaths
         for (String element : domainPaths) {
             DomainPath newPath = new DomainPath(element, itemPath);
@@ -171,8 +168,7 @@ public class TransferItem {
 
     private void importByType(String type, ArrayList<C2KLocalObject> objects) throws Exception {
         for (C2KLocalObject element : objects) {
-            if (element.getClusterType().equals(type))
-                Gateway.getStorage().put(itemPath, element, this);
+            if (element.getClusterType().equals(type)) Gateway.getStorage().put(itemPath, element, this);
         }
 
     }

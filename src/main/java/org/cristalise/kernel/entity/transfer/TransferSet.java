@@ -28,44 +28,35 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
- *
- * $Revision: 1.5 $
- * $Date: 2005/04/26 06:48:13 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
 public class TransferSet {
 
     public ArrayList<TransferItem> items;
 
-    public TransferSet() {
-    }
+    public TransferSet() {}
 
     public TransferSet(ItemPath[] itemPaths) {
         items = new ArrayList<TransferItem>();
         for (ItemPath item : itemPaths) {
             try {
                 items.add(new TransferItem(item));
-            } catch (Exception ex) {
-                Logger.error("Could not add item "+item);
+            }
+            catch (Exception ex) {
+                Logger.error("Could not add item " + item);
                 Logger.error(ex);
             }
         }
     }
 
     public void exportPackage(File dir) throws Exception {
-        if (items==null || items.size() == 0)
+        if (items == null || items.size() == 0)
             throw new Exception("Nothing to dump");
         FileStringUtility.createNewDir(dir.getAbsolutePath());
         for (TransferItem element : items) {
             try {
                 element.exportItem(new File(dir, element.itemPath.getUUID().toString()), "/");
-            } catch (Exception ex) {
-                Logger.error("Error dumping item "+element.itemPath);
+            }
+            catch (Exception ex) {
+                Logger.error("Error dumping item " + element.itemPath);
                 Logger.error(ex);
             }
         }
@@ -73,7 +64,8 @@ public class TransferSet {
         try {
             String self = Gateway.getMarshaller().marshall(this);
             FileStringUtility.string2File(new File(dir, "transferSet.xml"), self);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.error("Error writing header file");
             Logger.error(ex);
         }
@@ -81,11 +73,12 @@ public class TransferSet {
 
     public void importPackage(File rootDir) {
         for (TransferItem element : items) {
-            Logger.msg(5, "Importing "+element.itemPath);
+            Logger.msg(5, "Importing " + element.itemPath);
             try {
                 element.importItem(new File(rootDir, element.itemPath.getUUID().toString()));
-            } catch (Exception ex) {
-                Logger.error("Import of item "+element.itemPath+" failed. Rolling back");
+            }
+            catch (Exception ex) {
+                Logger.error("Import of item " + element.itemPath + " failed. Rolling back");
                 Logger.error(ex);
                 Gateway.getStorage().abort(element);
             }
