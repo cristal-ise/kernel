@@ -71,6 +71,8 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 public class Activity extends WfVertex {
+    protected static final String XPATH_TOKEN = "xpath:";
+
     /**
      * vector of errors (Strings) that is constructed each time verify() is
      * launched
@@ -238,7 +240,7 @@ public class Activity extends WfVertex {
             return "last";
         }
         //FIXME: use DataHelper if possible, because it will make code more general
-        else if(viewpointString.startsWith("xpath:")) {
+        else if(viewpointString.startsWith(XPATH_TOKEN)) {
             try {
                 return outcome.getFieldByXPath(viewpointString.substring(6));
             }
@@ -261,7 +263,7 @@ public class Activity extends WfVertex {
                     String propValue = entry.getValue().toString();
 
                     //FIXME: use DataHelper if possible, because it will make code more general
-                    if (StringUtils.isNotBlank(propValue) && propValue.startsWith("xpath:")) {
+                    if (StringUtils.isNotBlank(propValue) && propValue.startsWith(XPATH_TOKEN)) {
                         try {
                             propValue = outcome.getFieldByXPath(propValue.substring(6));
                         }
