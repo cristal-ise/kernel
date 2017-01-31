@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.common.InvalidDataException;
@@ -31,40 +29,26 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
-
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2005/11/15 15:56:38 $
- * @version $Revision: 1.28 $
- **************************************************************************/
-public class RemoveC2KObject extends PredefinedStep
-{
-    public RemoveC2KObject()
-    {
+public class RemoveC2KObject extends PredefinedStep {
+    public RemoveC2KObject() {
         super();
         getProperties().put("Agent Role", "Admin");
     }
 
-	//requestdata is xmlstring
+    // requestdata is xmlstring
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException {
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker) 
+            throws InvalidDataException, PersistencyException
+    {
+        String[] params = getDataList(requestData);
 
-    	String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "RemoveC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1)
-        	throw new InvalidDataException("RemoveC2KObject: Invalid parameters "+Arrays.toString(params));
-        String path  = params[0];
-        
-        try
-        {
-            Gateway.getStorage().remove( item, path, locker );
+        if (params.length != 1) {
+            throw new InvalidDataException("RemoveC2KObject: Invalid parameters - length != 1" + Arrays.toString(params));
         }
-        catch( PersistencyException ex )
-        {
-            throw new PersistencyException("RemoveC2KObject: Error removing object '"+path+"': "+ex.getMessage());
-        }
+
+        Logger.msg(3, "RemoveC2KObject: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        Gateway.getStorage().remove(item, params[0], locker);
         return requestData;
     }
 }
