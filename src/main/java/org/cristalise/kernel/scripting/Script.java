@@ -618,26 +618,22 @@ public class Script implements DescriptionObject {
             String outputName = outputParam.getName();
             Object outputValue;
 
-            if (outputName == null || outputName.length()==0)
+            if (StringUtils.isBlank(outputName)) {
                 outputValue = returnValue;
-            else 
-                outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-
-            if (outputValue!=null || outputName != null) {
-                Logger.msg(4, "Script.execute() - Output parameter "+(outputName==null ? "" : outputName+" ")+"= "+(outputValue==null?"null":outputValue.toString()));
             }
+            else {
+                outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
+            }
+
+            Logger.msg(4, "Script.execute() - Output "+(outputName==null ? "" : outputName+"= ")+(outputValue==null ? "null" : outputValue.toString()));
 
             // check the class
-            if (outputValue!=null && !(outputParam.getType().isInstance(outputValue)))  {
-                throw new ScriptingEngineException("Script output "+outputName+" was not null or instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+            if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
+                throw new ScriptingEngineException("Script output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
             }
 
-            Logger.msg(8, "Script.execute() - output "+outputValue);
+            if (mOutputParams.size() == 1) return outputValue;
 
-            if (mOutputParams.size() == 1) {
-                Logger.msg(6, "Script.execute() - only one parameter, returning '"+(outputValue==null ? "null" : outputValue.toString())+"'");
-                return outputValue;
-            }
             outputs.put(outputParam.getName(), outputValue);
         }
         return outputs;
