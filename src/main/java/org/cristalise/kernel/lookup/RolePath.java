@@ -35,12 +35,6 @@ public class RolePath extends Path {
         super();
     }
 
-    public RolePath getParent() throws ObjectNotFoundException {
-        if (mPath.length < 2) return null;
-
-        return Gateway.getLookup().getRolePath(mPath[mPath.length - 2]);
-    }
-
     public RolePath(RolePath parent, String roleName) {
         super(parent, roleName);
     }
@@ -53,6 +47,12 @@ public class RolePath extends Path {
     public RolePath(RolePath parent, String roleName, boolean jobList) {
         this(parent, roleName);
         hasJobList = jobList;
+    }
+
+    public RolePath getParent() throws ObjectNotFoundException {
+        if (mPath.length < 2) return null;
+
+        return Gateway.getLookup().getRolePath(mPath[mPath.length - 2]);
     }
 
     /**
@@ -92,7 +92,7 @@ public class RolePath extends Path {
 
     public String getName() {
         if (mPath.length > 0) return mPath[mPath.length - 1];
-        else                  return "role";
+        else                  return getRoot();
     }
 
     @Override

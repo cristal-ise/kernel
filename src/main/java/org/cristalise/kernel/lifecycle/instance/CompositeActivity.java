@@ -278,8 +278,9 @@ public class CompositeActivity extends Activity {
                     // Find the next transition for automatic procedure. A non-finishing transition will override a finishing one, 
                     // but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point. 
 
-                    if (trans == null || (trans.isFinishing() && !possTran.isFinishing()))
+                    if (trans == null || (trans.isFinishing() && !possTran.isFinishing())) {
                         trans = possTran;
+                    }
                     else if (trans.isFinishing() == possTran.isFinishing()) {
                         Logger.warning("Unclear choice of transition possible from current state for Composite Activity '"+getName()+"'. Cannot automatically proceed.");
                         setActive(true);
@@ -297,9 +298,8 @@ public class CompositeActivity extends Activity {
                 setActive(true);
                 return;
             }
-
-            // automatically execute the next outcome if it doesn't require an outcome.
-            if (trans != null) {
+            else {
+                // automatically execute the next outcome if it doesn't require an outcome.
                 if (trans.hasOutcome(getProperties()) || trans.hasScript(getProperties())) {
                     Logger.msg(3, "Composite activity '"+getName()+"' has script or schema defined. Cannot proceed automatically.");
                     setActive(true);
@@ -330,16 +330,18 @@ public class CompositeActivity extends Activity {
     {
         ArrayList<Job> jobs = new ArrayList<Job>();
         boolean childActive = false;
-        if (recurse)
-            for (int i = 0; i < getChildren().length; i++)
+        if (recurse) {
+            for (int i = 0; i < getChildren().length; i++) {
                 if (getChildren()[i] instanceof Activity) {
                     Activity child = (Activity) getChildren()[i];
                     jobs.addAll(child.calculateJobs(agent, itemPath, recurse));
                     childActive |= child.active;
                 }
-        
+            }
+        }
+
         if (!childActive) jobs.addAll(super.calculateJobs(agent, itemPath, recurse));
-        
+
         return jobs;
     }
 
@@ -395,11 +397,7 @@ public class CompositeActivity extends Activity {
 
     @Override
     public void abort() {
-        GraphableVertex[] vChildren = getChildren();
-        for (int i = 0; i < vChildren.length; i++)
-        {
-            ((WfVertex) vChildren[i]).abort();
-        }
+        for (GraphableVertex child : getChildren()) ((WfVertex) child).abort();
     }
 
     public boolean hasActive() {
