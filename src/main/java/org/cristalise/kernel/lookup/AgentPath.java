@@ -34,6 +34,11 @@ public class AgentPath extends ItemPath {
     private String mAgentName = null;
     private String mPassword  = null;
 
+    public AgentPath(UUID uuid, String ior, String pwd) {
+        super(uuid, ior);
+        setPassword(pwd);
+    }
+
     public AgentPath(UUID uuid) throws InvalidAgentPathException {
         super(uuid);
 
