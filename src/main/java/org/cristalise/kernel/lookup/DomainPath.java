@@ -25,7 +25,6 @@ import java.util.UUID;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.utils.Logger;
 import org.omg.CORBA.Object;
 
 /**
@@ -110,7 +109,8 @@ public class DomainPath extends Path {
      * @return the last path component;
      */
     public String getName() {
-        return mPath[mPath.length - 1];
+        if (mPath.length > 0) return mPath[mPath.length - 1];
+        else                  return getRoot();
     }
 
     @Override
