@@ -27,17 +27,23 @@ import java.util.UUID;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 
 /**
  * Extends Path to enforce SystemKey structure and support int form
  */
 public class ItemPath extends Path {
 
-    protected UUID                 mUUID;
-    protected org.omg.CORBA.Object mIOR = null;
+    protected UUID   mUUID;
+    protected String mIOR;
 
     public ItemPath() {
         setSysKey(UUID.randomUUID());
+    }
+
+    public ItemPath(UUID uuid, String ior) {
+        setSysKey(uuid);
+        setIORString(ior);
     }
 
     public ItemPath(UUID uuid) {
@@ -83,7 +89,8 @@ public class ItemPath extends Path {
             catch (IllegalArgumentException ex) {
                 throw new InvalidItemPathException(mPath[0] + " is not a valid UUID");
             }
-        } else
+        }
+        else
             throw new InvalidItemPathException("Not a valid item path: " + Arrays.toString(mPath));
     }
 
@@ -101,22 +108,28 @@ public class ItemPath extends Path {
     }
 
     public org.omg.CORBA.Object getIOR() {
-        org.omg.CORBA.Object newIOR = null;
-        if (mIOR == null) { // if not cached try to resolve
-            Lookup myLookup = Gateway.getLookup();
+        if (mIOR == null) {
             try {
-                String iorString = myLookup.getIOR(this);
-                newIOR = Gateway.getORB().string_to_object(iorString);
+                mIOR = Gateway.getLookup().getIOR(this);
             }
             catch (ObjectNotFoundException ex) {
+                Logger.warning(ex.getMessage());
+                return null;
             }
-            setIOR(newIOR);
         }
-        return mIOR;
+        return Gateway.getORB().string_to_object(mIOR);
     }
 
     public void setIOR(org.omg.CORBA.Object IOR) {
-        mIOR = IOR;
+        mIOR = Gateway.getORB().object_to_string(IOR);
+    }
+
+    public String getIORString() {
+        return mIOR;
+    }
+
+    public void setIORString(String ior) {
+        mIOR = ior;
     }
 
     public byte[] getOID() {
