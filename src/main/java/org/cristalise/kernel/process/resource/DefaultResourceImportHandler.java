@@ -20,16 +20,20 @@
  */
 package org.cristalise.kernel.process.resource;
 
+import static org.cristalise.kernel.process.resource.BuiltInResources.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import org.cristalise.kernel.collection.CollectionArrayList;
-import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyDescriptionList;
+import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 
 
@@ -52,17 +56,29 @@ public class DefaultResourceImportHandler implements ResourceImportHandler {
 
     @Override
     public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception {
-        if (type.getSchemaName().endsWith("ActivityDef")) {
-            String actData = Gateway.getResource().getTextResource(ns, location);
-            ActivityDef actDef = (ActivityDef)Gateway.getMarshaller().unmarshall(actData);
-            actDef.setVersion(version);
-            return actDef.makeDescCollections();
+        return getCollections(name, version,Gateway.getResource().getTextResource(ns, location));
+    }
+
+    @Override
+    public CollectionArrayList getCollections(String name, Integer version, Outcome outcome) throws Exception {
+        return getCollections(name, version, outcome.getData());
+    }
+
+    private CollectionArrayList getCollections(String name, Integer version, String xml) throws Exception {
+        if (type == SCHEMA_RESOURCE) {
+            return new Schema(name, version, null, xml).makeDescCollections();
         }
-        else if (type.getSchemaName().equals("Script")) {
-            Script thisScript = new Script(name, version, null, Gateway.getResource().getTextResource(ns, location));
-            return thisScript.makeDescCollections();
+        else if (type == SCRIPT_RESOURCE) {
+            return new Script(name, version, null, xml).makeDescCollections();
         }
-        return new CollectionArrayList();
+        else if (type == QUERY_RESOURCE) {
+            return new Query(name, version, null, xml).makeDescCollections();
+        }
+        else {
+            DescriptionObject descObject = (DescriptionObject)Gateway.getMarshaller().unmarshall(xml);
+            descObject.setVersion(version);
+            return descObject.makeDescCollections();
+        }
     }
 
     @Override

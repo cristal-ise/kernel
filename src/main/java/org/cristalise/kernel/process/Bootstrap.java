@@ -57,6 +57,7 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
@@ -233,7 +234,7 @@ public class Bootstrap
     private static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, String dataLocation, boolean reset)
             throws Exception
     {
-        ResourceImportHandler typeImpHandler = Gateway.getResourceImportHandler(itemType);
+        ResourceImportHandler typeImpHandler = Gateway.getResourceImportHandler(BuiltInResources.getValue(itemType));
 
         Logger.msg(1, "Bootstrap.verifyResource() - Verifying "+typeImpHandler.getName()+" "+ itemName+" v"+version);
 
@@ -263,26 +264,20 @@ public class Bootstrap
 
         for (Outcome newOutcome : outcomes) {
             if (checkToStoreOutcomeVersion(thisProxy, newOutcome, version, reset)) {
-                // validate it (but not for kernel objects because we need those to validate the rest
-                if (ns != null) {
-                    String error = newOutcome.validate();
-                    if (error != null && error.length() > 0) {
-                        Logger.error("Outcome not valid: \n " + error);
-                        throw new InvalidDataException(error);
-                    }
-                }
+                // validate it, but not for kernel objects (ns == null) because those are to validate the rest
+                if (ns != null) newOutcome.validateAndCheck();
 
                 storeOutcomeEventAndViews(thisProxy, newOutcome, version);
+
+                CollectionArrayList cols = typeImpHandler.getCollections(itemName, version, newOutcome);
+    
+                for (Collection<?> col : cols.list) {
+                    Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+                    Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
+                    col.setVersion(null);
+                    Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
+                }
             }
-        }
-
-        CollectionArrayList cols = typeImpHandler.getCollections(itemName, ns, dataLocation, version);
-
-        for (Collection<?> col : cols.list) {
-            Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
-            Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
-            col.setVersion(null);
-            Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
         }
         Gateway.getStorage().commit(thisProxy);
         return modDomPath;

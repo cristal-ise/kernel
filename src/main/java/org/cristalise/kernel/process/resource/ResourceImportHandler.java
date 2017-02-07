@@ -78,10 +78,25 @@ public interface ResourceImportHandler {
     /**
      * Returns any collections that this Resource Item should contain.
      * 
+     * @param name the name of the Resource Item
+     * @param ns the namaspace of the module declaring the Resource Item
+     * @param location the location of the XML file on the boot directory
+     * @param version the version of the Resource Item
      * @return CollectionArrayList
+     * @throws Exception something went wrong
      */
     public CollectionArrayList getCollections(String name, String ns, String location, Integer version) throws Exception;
 
+    /**
+     * Returns any collections that this Resource Item stored in the outcome should contain.
+     * 
+     * @param name the name of the Resource Item
+     * @param version the version of the Resource Item
+     * @param outcome Outcome containing the XML representing the Resource Item
+     * @return CollectionArrayList
+     * @throws Exception something went wrong
+     */
+    public CollectionArrayList getCollections(String name, Integer version, Outcome outcome) throws Exception;
 
     /**
      * The name of the imported resource managed by the handler
