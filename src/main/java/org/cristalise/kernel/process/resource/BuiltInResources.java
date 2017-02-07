@@ -28,6 +28,7 @@ import lombok.Getter;
  */
 @Getter
 public enum BuiltInResources {
+    //                     typeCode,   schemaName,              typeRoot,             workflowDef
     PROPERTY_DESC_RESOURCE("property", "PropertyDescription",   null,                 null), //'abstract' resource - does not have an Item
     ACTIVITY_DESC_RESOURCE("AC",       "ActivityDef",           null,                 null), //'abstract' resource - does not have an Item
     MODULE_RESOURCE(       "module",   "Module",                "/desc/Module",       "NoWorkflow"),
