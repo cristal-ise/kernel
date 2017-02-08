@@ -31,6 +31,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -474,8 +475,8 @@ public class Script implements DescriptionObject {
     public boolean setInputParamValue(String name, Object value) throws ParameterException {
         Parameter param = mInputParams.get(name);
         boolean wasUsed = false;
-        if (!mAllInputParams.containsKey(name))
-            return false;
+        
+        if (!mAllInputParams.containsKey(name)) return false;
 
         if (param != null) { // param is in this script
             if (!param.getType().isInstance(value)) {
@@ -483,15 +484,14 @@ public class Script implements DescriptionObject {
                         "Required: "+param.getType().toString()+"\n"+"Supplied: "+value.getClass().toString());
             }
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(name, value);
-            Logger.msg(7, "Script.setInputParamValue() - " + name + ": " + value.toString());
+            Logger.msg(7, "Script.setInputParamValue() - " + name + ": " + value);
             param.setInitialised(true);
             wasUsed = true;
         }
 
         // pass param down to child scripts
-        for (Script importScript : mIncludes) {
-            wasUsed |= importScript.setInputParamValue(name, value);
-        }
+        for (Script importScript : mIncludes) wasUsed |= importScript.setInputParamValue(name, value);
+
         return wasUsed;
     }
 
@@ -548,41 +548,21 @@ public class Script implements DescriptionObject {
      */
     public Object execute() throws ScriptingEngineException {
         //TODO: Split Script.execute() to several logically independent methods to make it easier to maintain
+        executeIncludedScripts();
+
         StringBuffer missingParams = new StringBuffer();
-        
+
         //check input params
         for (Parameter thisParam : mInputParams.values()) {
-            if (!thisParam.getInitialised())
-                missingParams.append(thisParam.getName()).append("\n");
+            if (!thisParam.getInitialised()) missingParams.append(thisParam.getName()).append("\n");
         }
+
         // croak if any missing
         if (missingParams.length() > 0) {
             throw new ScriptingEngineException("Execution aborted, the following declared parameters were not set: \n" + missingParams.toString());
         }
 
-        for (Parameter outputParam : mOutputParams.values()) {
-            //If the name is null then it's the return type. don't pre-register it
-            if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
-
-            Logger.msg(8, "Script.execute() - Initialising output bean '" + outputParam.getName() + "'");
-
-            Object emptyObject;
-            try {
-                emptyObject = outputParam.getType().newInstance();
-            }
-            catch (Exception e) {
-                emptyObject = null;
-            }
-            context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
-        }
-
-        // execute the child scripts
-        for (Script importScript : mIncludes) {
-            if (Logger.doLog(8))  Logger.msg(8, "Script.execute() - Executing imported script:\n"+importScript.mScript);
-            else                  Logger.msg(5, "Script.execute() - Executing imported script name:"+importScript.getName()+" version:"+importScript.getVersion());
-
-            importScript.execute();
-        }
+        initOutputParams();
 
         // run the script
         Object returnValue = null;
@@ -612,27 +592,87 @@ public class Script implements DescriptionObject {
             return null;
         }
 
+        return packScriptReturnValue(returnValue);
+    }
+
+    /**
+     * Executes included script and use output parameters as inputs parameters if their name match
+     * 
+     * @throws ScriptingEngineException execute() thrown exception
+     */
+    @SuppressWarnings("unchecked")
+    private void executeIncludedScripts() throws ScriptingEngineException {
+        for (Script importScript : mIncludes) {
+            Logger.msg(5, "Script.executeIncludedScripts() - name:"+importScript.getName()+" version:"+importScript.getVersion());
+
+            // execute the icluded scripts first, they might set input parameters
+            Object output = importScript.execute();
+
+            if (output == null || !(output instanceof Map)) return;
+
+            ((Map<String, Object>)output).forEach((outputKey, outputValue) -> {
+                if (mInputParams.containsKey(outputKey)) {
+                    try {
+                        Logger.msg(5, "Script.executeIncludedScripts() - setting inputs for parameter:"+outputKey);
+                        setInputParamValue(outputKey, outputValue);
+                    }
+                    catch (ParameterException e) {
+                        Logger.error(e);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Initialise the output parameters before execution
+     */
+    private void initOutputParams() {
+        for (Parameter outputParam : mOutputParams.values()) {
+            //If the name is null then it's the return type. don't pre-register it
+            if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
+
+            Logger.msg(8, "Script.initOutputParams() - Initialising output bean '" + outputParam.getName() + "'");
+
+            Object emptyObject;
+            try {
+                emptyObject = outputParam.getType().newInstance();
+            }
+            catch (Exception e) {
+                emptyObject = null;
+            }
+            context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
+        }
+    }
+
+    /**
+     * Packs the outputs of the Script to a return value
+     * 
+     * @param returnValue value is returned by engine.eval()
+     * @return returns the returnValue when a single output was defined with no name 
+     *         or a HashMap with data taken from the bindings using the output name
+     * @throws ScriptingEngineException
+     */
+    private Object packScriptReturnValue(Object returnValue) throws ScriptingEngineException {
         HashMap<String, Object> outputs = new HashMap<String, Object>();
 
         for (Parameter outputParam : mOutputParams.values()) {
             String outputName = outputParam.getName();
-            Object outputValue;
 
-            if (StringUtils.isBlank(outputName)) {
-                outputValue = returnValue;
-            }
-            else {
-                outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-            }
+            //return the value when a single output was defined with no name
+            if (mOutputParams.size() == 1 && StringUtils.isBlank(outputName)) return returnValue;
 
-            Logger.msg(4, "Script.execute() - Output "+(outputName==null ? "" : outputName+"= ")+(outputValue==null ? "null" : outputValue.toString()));
+            if (StringUtils.isBlank(outputName)) throw new ScriptingEngineException("Script "+getName()+" - All outputs must have a name.");
+
+            //otherwise take data from the bindings using the output name
+            Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
+
+            Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"= "+(outputValue==null ? "null" : outputValue.toString()));
 
             // check the class
             if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
-                throw new ScriptingEngineException("Script output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+                throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
             }
-
-            if (mOutputParams.size() == 1) return outputValue;
 
             outputs.put(outputParam.getName(), outputValue);
         }

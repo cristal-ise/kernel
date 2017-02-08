@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
@@ -48,6 +49,7 @@ import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.scripting.ErrorInfo;
+import org.cristalise.kernel.scripting.Parameter;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
@@ -129,7 +131,7 @@ public class AgentProxy extends ItemProxy {
                 if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
                 // load script
-                ErrorInfo scriptErrors = (ErrorInfo) callScript(item, job);
+                ErrorInfo scriptErrors = callScript(item, job);
                 String errorString = scriptErrors.toString();
                 if (scriptErrors.getFatal()) {
                     Logger.error("AgentProxy.execute(job) - fatal script errors:"+scriptErrors);
@@ -169,10 +171,23 @@ public class AgentProxy extends ItemProxy {
         return result;
     }
 
-    private Object callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
+    @SuppressWarnings("rawtypes")
+    private  ErrorInfo callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
         Script script = job.getScript();
-        script.setActExecEnvironment(item, this, job);
-        return script.execute();
+
+        if (script.getOutputParams().size() == 1) {
+            Parameter p = script.getOutputParams().values().iterator().next();
+
+            if (p.getType() == ErrorInfo.class ) {
+                script.setActExecEnvironment(item, this, job);
+                Object returnVal = script.execute();
+
+                if (returnVal instanceof Map) return (ErrorInfo) ((Map)returnVal).get(p.getName());
+                else                          return (ErrorInfo) returnVal;
+            }
+        }
+
+        throw new InvalidDataException("Script "+script.getName()+" must define single output of type org.cristalise.kernel.scripting.ErrorInfo");
     }
 
     public String execute(ItemProxy item, String predefStep, C2KLocalObject obj) throws AccessRightsException, InvalidDataException,
