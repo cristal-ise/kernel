@@ -22,26 +22,18 @@ package org.cristalise.kernel.scripting;
 
 import java.util.ArrayList;
 
-/**************************************************************************
- *
- * $Revision: 1.2 $
- * $Date: 2003/06/06 11:37:45 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
 public class ErrorInfo {
     ArrayList<String> msg;
-    boolean fatal = false;
+    boolean           fatal = false;
 
     public ErrorInfo() {
         super();
         msg = new ArrayList<String>();
     }
-    
+
     public ErrorInfo(String error) {
-    	this();
-    	msg.add(error);
+        this();
+        msg.add(error);
     }
 
     public void addError(String error) {
@@ -49,24 +41,24 @@ public class ErrorInfo {
     }
 
     @Override
-	public String toString() {
+    public String toString() {
         StringBuffer err = new StringBuffer();
         for (String element : msg) {
-            err.append(element+"\n");
+            err.append(element + "\n");
         }
         return err.toString();
     }
-    
+
     public void setErrors(ArrayList<String> msg) {
-    	this.msg = msg;
+        this.msg = msg;
     }
-    
+
     public ArrayList<String> getErrors() {
-    	return msg;
+        return msg;
     }
 
     public void setFatal() {
-        fatal=true;
+        fatal = true;
     }
 
     public boolean getFatal() {

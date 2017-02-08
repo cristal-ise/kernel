@@ -40,30 +40,18 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.server.SocketHandler;
 
-
-/**************************************************************************
- *
- * $Revision: 1.16 $
- * $Date: 2005/08/31 07:20:40 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
-
-
 public class ScriptConsole implements SocketHandler {
-    BufferedReader input;
-    PrintStream output;
-    Socket socket = null;
-    ScriptEngine engine;
-    Bindings beans;
-    static AgentProxy user;
-    static ArrayList<String> securityHosts = new ArrayList<String>();
-    public static final short NONE = 0;
-    public static final short ALLOW = 1;
-    public static final short DENY = 2;
-    static short securityMode;
+    BufferedReader            input;
+    PrintStream               output;
+    Socket                    socket        = null;
+    ScriptEngine              engine;
+    Bindings                  beans;
+    static AgentProxy         user;
+    static ArrayList<String>  securityHosts = new ArrayList<String>();
+    public static final short NONE          = 0;
+    public static final short ALLOW         = 1;
+    public static final short DENY          = 2;
+    static short              securityMode;
 
     static {
         securityMode = ALLOW;
@@ -76,60 +64,63 @@ public class ScriptConsole implements SocketHandler {
             securityMode = ALLOW;
             securityHosts.add("localhost");
             securityHosts.add("127.0.0.1");
-            securityHosts.add("0:0:0:0:0:0:0:1");//ipv6
+            securityHosts.add("0:0:0:0:0:0:0:1");// ipv6
         }
         else {
             StringTokenizer tok = new StringTokenizer(hosts, ",");
-            while(tok.hasMoreTokens()) {
-            	String wHostName = tok.nextToken();
+            while (tok.hasMoreTokens()) {
+                String wHostName = tok.nextToken();
                 try {
                     securityHosts.add(InetAddress.getByName(wHostName).getHostAddress());
-                    if ("localhost".equals(wHostName)){
+                    if ("localhost".equals(wHostName)) {
                         securityHosts.add("127.0.0.1");
-                        securityHosts.add("0:0:0:0:0:0:0:1");//ipv6
+                        securityHosts.add("0:0:0:0:0:0:0:1");// ipv6
                     }
-                } catch (UnknownHostException ex) {
-                    Logger.error("Host not found "+ex.getMessage());
+                }
+                catch (UnknownHostException ex) {
+                    Logger.error("Host not found " + ex.getMessage());
                 }
             }
         }
     }
+
     public ScriptConsole() {
     }
 
     @Override
-	public String getName() {
+    public String getName() {
         return "Script Console";
     }
 
     @Override
-	public boolean isBusy() {
+    public boolean isBusy() {
         return (socket != null);
     }
-    
+
     public static void setUser(AgentProxy agent) {
-    	user = agent;
+        user = agent;
     }
 
     @Override
-	public void setSocket(Socket newSocket) {
+    public void setSocket(Socket newSocket) {
         try {
             input = new BufferedReader(new InputStreamReader(newSocket.getInputStream()));
             output = new PrintStream(newSocket.getOutputStream());
             newSocket.setSoTimeout(0);
             socket = newSocket;
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             try {
                 newSocket.close();
-            } catch (IOException ex2) {
             }
+            catch (IOException ex2) {}
             socket = null;
             return;
         }
     }
 
     @Override
-	public void shutdown() {
+    public void shutdown() {
         Socket closingSocket = socket;
         socket = null;
         if (closingSocket == null)
@@ -139,32 +130,32 @@ public class ScriptConsole implements SocketHandler {
             closingSocket.shutdownInput();
             closingSocket.shutdownOutput();
             closingSocket.close();
-            Logger.msg("Script console to "+closingSocket.getInetAddress()+" closed");
-        } catch (IOException e) {
+            Logger.msg("Script console to " + closingSocket.getInetAddress() + " closed");
+        }
+        catch (IOException e) {
             Logger.error("Script Console to " + closingSocket.getInetAddress() + " - Error closing.");
             Logger.error(e);
         }
     }
 
-
     @Override
-	public void run() {
+    public void run() {
         // check permission
         boolean allowed = true;
-        if (securityMode!=NONE) {
-        	//ogattaz
-        	String wHostAddress = socket.getInetAddress().getHostAddress();
+        if (securityMode != NONE) {
+            // ogattaz
+            String wHostAddress = socket.getInetAddress().getHostAddress();
             if (securityHosts.contains(wHostAddress)) {
-                if (securityMode==DENY)
+                if (securityMode == DENY)
                     allowed = false;
             }
-            else if (securityMode==ALLOW)
+            else if (securityMode == ALLOW)
                 allowed = false;
         }
 
         if (!allowed) {
-            Logger.error("Host "+socket.getInetAddress()+" access denied");
-            output.println("Host "+socket.getInetAddress()+" access denied");
+            Logger.error("Host " + socket.getInetAddress() + " access denied");
+            output.println("Host " + socket.getInetAddress() + " access denied");
             shutdown();
             return;
         }
@@ -172,16 +163,17 @@ public class ScriptConsole implements SocketHandler {
         // get system objects
         try {
             Logger.addLogStream(output, 0);
-            Script context;           
+            Script context;
             try {
-            	context = new Script("javascript", user, output);
-            } catch (Exception ex) {
-            	output.println("Error initializing console script context");
-            	ex.printStackTrace(output);
-            	shutdown();
-            	return;
+                context = new Script("javascript", user, output);
             }
- 
+            catch (Exception ex) {
+                output.println("Error initializing console script context");
+                ex.printStackTrace(output);
+                shutdown();
+                return;
+            }
+
             StringBuffer commandBuffer = new StringBuffer();
             while (socket != null) {
 
@@ -194,8 +186,8 @@ public class ScriptConsole implements SocketHandler {
                     try {
                         command = input.readLine();
                         gotCommand = true;
-                    } catch (InterruptedIOException ex) {
                     }
+                    catch (InterruptedIOException ex) {}
                 }
                 if (command == null) // disconnected
                     shutdown();
@@ -206,33 +198,35 @@ public class ScriptConsole implements SocketHandler {
                     }
                     try {
                         if (command.endsWith("\\")) {
-                            commandBuffer.append(command.substring(0,command.length()-1));
+                            commandBuffer.append(command.substring(0, command.length() - 1));
                             continue;
                         }
                         commandBuffer.append(command);
                         command = commandBuffer.toString();
                         commandBuffer = new StringBuffer();
-                        Logger.msg("Console command from "+socket.getInetAddress()+": "+command);
+                        Logger.msg("Console command from " + socket.getInetAddress() + ": " + command);
 
                         // process control
                         if (command.equals("shutdown")) {
-                        	AbstractMain.shutdown(0);
+                            AbstractMain.shutdown(0);
                         }
                         else {
-                        	context.setScriptData(command);
-                        	Object response = context.execute();
-                        	if (response == null)
-                        		output.println("Ok");
-                        	else
-                        		output.println(response);
+                            context.setScriptData(command);
+                            Object response = context.execute();
+                            if (response == null)
+                                output.println("Ok");
+                            else
+                                output.println(response);
                         }
-                    } catch (Throwable ex) {
-                       	ex.printStackTrace(output);
+                    }
+                    catch (Throwable ex) {
+                        ex.printStackTrace(output);
                     }
                     output.flush();
                 }
             }
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             Logger.error("IO Exception reading from script console socket");
             shutdown();
         }
