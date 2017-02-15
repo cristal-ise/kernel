@@ -300,7 +300,7 @@ public class Outcome implements C2KLocalObject {
      * @param data string containing the data
      */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
-        if(data == null) return;
+        if(data == null) data = "";
 
         Node field = getNodeByXPath(xpath);
 
@@ -325,7 +325,7 @@ public class Outcome implements C2KLocalObject {
                 }
             }
             else 
-                throw new InvalidDataException("Element "+xpath+" has too many children");
+                throw new InvalidDataException("Element "+xpath+" must have zero or one children node");
         }
         else if (field.getNodeType()==Node.ATTRIBUTE_NODE)
             field.setNodeValue(data);
