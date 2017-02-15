@@ -357,21 +357,21 @@ public class Job implements C2KLocalObject {
     }
 
     /**
-     * Checks the value of the 'Viewpoint' ActivityProperty and return 'last if value is blank or starts with 'xpath:'
-     * or it returns its value.
+     * Checks the value of the 'Viewpoint' ActivityProperty and return 'last' if value is blank 
+     * or starts with 'xpath:'. In all other cases it returns its value.
      * 
      * @return the 'calculated' Viewpoint name
      */
     public String getValidViewpointName() {
         String viewName = getActPropString("Viewpoint");
 
-        Logger.msg(5, "Job.getValidViewpointName() - Activity properties Viewpoint:'"+viewName+"''");
+        Logger.msg(5, "Job.getValidViewpointName() - Activity properties Viewpoint:'"+viewName+"'");
 
         if(StringUtils.isBlank(viewName) || viewName.startsWith("xpath:")) {
             viewName = "last";
         }
 
-        Logger.msg(5, "Job.getValidViewpointName() - returning Viewpoint:'"+viewName+"''");
+        Logger.msg(5, "Job.getValidViewpointName() - returning Viewpoint:'"+viewName+"'");
 
         return viewName;
     }
