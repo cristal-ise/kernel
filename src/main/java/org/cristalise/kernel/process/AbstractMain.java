@@ -33,26 +33,19 @@ import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/25 15:27:35 $
- * @version $Revision: 1.67 $
- **************************************************************************/
-abstract public class AbstractMain
-{
-    public static boolean isServer = false;
+abstract public class AbstractMain {
+
+    public static boolean          isServer = false;
     private static ShutdownHandler shutdownHandler;
 
     public static String MAIN_ARG_NONEWLOGSTREAM = "noNewLogStream";
-    public static String MAIN_ARG_CONFIG = "config";
-    public static String MAIN_ARG_LOGLEVEL = "logLevel";
-    public static String MAIN_ARG_LOGFILE = "logFile";
-    public static String MAIN_ARG_CONNECT = "connect";
-
-
+    public static String MAIN_ARG_CONFIG         = "config";
+    public static String MAIN_ARG_LOGLEVEL       = "logLevel";
+    public static String MAIN_ARG_LOGFILE        = "logFile";
+    public static String MAIN_ARG_CONNECT        = "connect";
 
     /**************************************************************************
-     * reading and setting input paramaters
+     * Reading and setting input paramaters
      ************************************************************************** 
      * 
      * Known arguments :
@@ -81,27 +74,29 @@ abstract public class AbstractMain
         while( i < args.length ) {
             if (args[i].startsWith("-") && args[i].length()>1) {
                 String key = args[i].substring(1);
-                if (argProps.containsKey(key))
-                    throw new BadArgumentsException("Argument "+args[i]+" given twice");
+
+                if (argProps.containsKey(key)) throw new BadArgumentsException("Argument "+args[i]+" given twice");
+
                 String value = "";
-                if (!args[i+1].startsWith("-"))
-                    value = args[++i];
+
+                if (!args[i+1].startsWith("-")) value = args[++i];
+
                 argProps.put(key, value);
                 i++;
             }
             else
                 throw new BadArgumentsException("Bad argument: "+args[i]);
-
         }
 
         if (argProps.containsKey("logFile"))
             try {
-                logStream = new PrintStream(new FileOutputStream(argProps.getProperty("logFile"), true));
-            } catch (FileNotFoundException e) {
+                logStream = new PrintStream(new FileOutputStream(argProps.getProperty("logFile")), true);
+                System.setErr(logStream);
+            }
+            catch (FileNotFoundException e) {
                 e.printStackTrace();
                 throw new BadArgumentsException("Logfile "+argProps.getProperty("logFile")+" cannot be created");
             }
-
 
         // if the optional arg "noNewLogStream" isn't present => add a
         // new LogStream
@@ -109,11 +104,11 @@ abstract public class AbstractMain
         if (wMustAddNewLogStream) {
 
             // Set up log stream
-            if (argProps.containsKey("logLevel"))
-                logLevel = Integer.parseInt(argProps.getProperty("logLevel"));
+            if (argProps.containsKey("logLevel")) logLevel = Integer.parseInt(argProps.getProperty("logLevel"));
 
             Logger.addLogStream(logStream, logLevel);
         }
+
         if (wMustAddNewLogStream) Logger.msg(
                 String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
 
@@ -126,9 +121,8 @@ abstract public class AbstractMain
         }
 
         String configPath = argProps.getProperty("config");
-        if (configPath == null)
-            throw new BadArgumentsException("Config file not specified");
 
+        if (configPath == null) throw new BadArgumentsException("Config file not specified");
 
         // Load config & connect files into c2kprops
         try {
@@ -165,14 +159,15 @@ abstract public class AbstractMain
 
     public static void shutdown(int errCode) {
         Bootstrap.abort();
-        if (shutdownHandler!= null)
-            shutdownHandler.shutdown(errCode, isServer);
+
+        if (shutdownHandler!= null) shutdownHandler.shutdown(errCode, isServer);
+
         try {
             Gateway.close();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             Logger.error(ex);
         }
         throw new ThreadDeath(); // if we get here, we get out
-
     }
 }
