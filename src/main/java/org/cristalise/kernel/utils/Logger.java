@@ -51,8 +51,8 @@ public class Logger {
 
     static private void printMessage(String message, int msgLogLevel) {
         synchronized (logStreams) {
-            if (logStreams.isEmpty())
-                System.out.println(message);
+            if (logStreams.isEmpty()) System.out.println(message);
+
             for (Iterator<PrintStream> iter = logStreams.keySet().iterator(); iter.hasNext();) {
                 PrintStream element = iter.next();
                 int logLevel = logStreams.get(element);
@@ -60,11 +60,11 @@ public class Logger {
                 if ((logLevel > 9 && logLevel - 10 < msgLogLevel) ||
                         (msgLogLevel > 9 && logLevel < msgLogLevel - 10) ||
                         (logLevel < 10 && msgLogLevel < 10 && logLevel < msgLogLevel))
+                {
                     continue;
-
-                if (logLevel > 9 || msgLogLevel > 9) {
-                    message = reportTime() + " - " + message;
                 }
+
+                if (logLevel > 9 || msgLogLevel > 9)  message = reportTime() + " - " + message;
 
                 try {
                     element.println(message);
