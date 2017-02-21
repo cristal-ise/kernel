@@ -72,7 +72,7 @@ class OutcomeSpecs extends Specification {
         assert o.getField("Field1") == "Field1contents"
 
         when:
-        o.removNodeByXPath("/TestOutcome/Field1")
+        o.removeNodeByXPath("/TestOutcome/Field1")
 
         then:
         o.getField("Field1") == null

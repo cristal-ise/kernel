@@ -51,6 +51,7 @@ import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -87,10 +88,12 @@ public class Outcome implements C2KLocalObject {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
         dbf.setNamespaceAware(false);
+
         try {
             parser = dbf.newDocumentBuilder();
-            Logger.msg(7, "DocumentBuilder: "+parser.getClass().getName());
-        } catch (ParserConfigurationException e) {
+            Logger.msg(7, "Outcome static class init: "+parser.getClass().getName());
+        }
+        catch (ParserConfigurationException e) {
             Logger.error(e);
             Logger.die("Cannot function without XML parser");
         }
@@ -260,6 +263,14 @@ public class Outcome implements C2KLocalObject {
         mDOM = parse(xml);
     }
 
+    /**
+     * Retrieves the text, CDATA or attribute value of the Node selected by the XPath
+     * 
+     * @param xpath The path to access the selected Node
+     * @return the value of the selected Node
+     * @throws XPathExpressionException xpath was not valid (e.g. there is no such node)
+     * @throws InvalidDataException xpath result is not text, CDATA or attribute
+     */
     public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
         Node field = getNodeByXPath(xpath);
 
@@ -272,43 +283,66 @@ public class Outcome implements C2KLocalObject {
         {
             return field.getNodeValue();
         }
-        else if (field.getNodeType()==Node.ELEMENT_NODE) {
+        else if (field.getNodeType() == Node.ELEMENT_NODE) {
             NodeList fieldChildren = field.getChildNodes();
 
             if (fieldChildren.getLength() == 0) {
-                throw new InvalidDataException("No child node for element");
+                throw new InvalidDataException("No child/text node for element '"+field.getNodeName()+"'");
             }
             else if (fieldChildren.getLength() == 1) {
                 Node child = fieldChildren.item(0);
 
-                if (child.getNodeType()==Node.TEXT_NODE || child.getNodeType()==Node.CDATA_SECTION_NODE)
+                if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE)
                     return child.getNodeValue();
                 else
-                    throw new InvalidDataException("Can't get data from child node of type "+child.getNodeName());
+                    throw new InvalidDataException("Element '"+field.getNodeName()+"' can't get data from child node of type '"+child.getNodeName()+"'");
             }
             else 
                 throw new InvalidDataException("Element "+xpath+" has too many children");
         }
         else
-            throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
+            throw new InvalidDataException("Don't know what to do with node '"+field.getNodeName()+"'");
     }
 
     /**
-     * Sets the text, CDATA or attribute value of the Node selected by the XPath
+     * Sets the text, CDATA or attribute value of the Node selected by the XPath. It only updates existing Nodes.
      * 
      * @param xpath the selected Node to be updated
      * @param data string containing the data
+     * @throws XPathExpressionException xpath is invalid
+     * @throws InvalidDataException xpath result is not text, CDATA or attribute
      */
     public void setFieldByXPath(String xpath, String data) throws XPathExpressionException, InvalidDataException {
-        if(data == null) data = "";
+        setFieldByXPath(xpath, data, false);
+    }
+
+    /**
+     * Sets the text, CDATA or attribute value of the Node selected by the XPath. It only updates existing Nodes.
+     * If data is null and the node exists, the node is removed
+     * 
+     * @param xpath the selected Node to be updated
+     * @param data string containing the data, it can be null
+     * @param remove flag to remove existing node when data is null
+     * @throws XPathExpressionException xpath is invalid
+     * @throws InvalidDataException xpath result is not text, CDATA or attribute
+     */
+    public void setFieldByXPath(String xpath, String data, boolean remove) throws XPathExpressionException, InvalidDataException {
+        if (StringUtils.isBlank(xpath)) throw new InvalidDataException("Xpath is null or empty string");
+
+        if (data == null && remove) {
+            Logger.msg(7, "Outcome.setFieldByXPath() - removing field xpath");
+
+            removeNodeByXPath(xpath);
+            return;
+        }
 
         Node field = getNodeByXPath(xpath);
 
         if (field == null) {
             Logger.error(getData());
-            throw new InvalidDataException(xpath);
+            throw new InvalidDataException("Xpath '"+xpath+"' is invalid");
         }
-        else if (field.getNodeType()==Node.ELEMENT_NODE) {
+        else if (field.getNodeType() == Node.ELEMENT_NODE) {
             NodeList fieldChildren = field.getChildNodes();
             if (fieldChildren.getLength() == 0) {
                 field.appendChild(mDOM.createTextNode(data));
@@ -327,14 +361,14 @@ public class Outcome implements C2KLocalObject {
             else 
                 throw new InvalidDataException("Element "+xpath+" must have zero or one children node");
         }
-        else if (field.getNodeType()==Node.ATTRIBUTE_NODE)
+        else if (field.getNodeType() == Node.ATTRIBUTE_NODE)
             field.setNodeValue(data);
         else
             throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
     }
 
     /**
-     * Append the Node created from xmlFragment as a child of the Node selected by the XPath
+     * Append the new Node created from xmlFragment as a child of the Node selected by the XPath
      * 
      * @param xpath the selected parent node
      * @param xmlFragment string containing the xml fragment
@@ -398,6 +432,45 @@ public class Outcome implements C2KLocalObject {
         }
     }
 
+    /**
+     * Retrieves an Attribute value by name of the root Element.
+     * 
+     * @param name The name of the attribute to retrieve.
+     * @return The value as a string, or null if that attribute does not have a specified or default value.
+     */
+    public String getAttribute(String name) {
+        String value = mDOM.getDocumentElement().getAttribute(name);
+
+        if (StringUtils.isNotBlank(value)) return value;
+        else                               return null;
+    }
+
+    /**
+     * Retrieves an Attribute value by name from the named Element.
+     * 
+     * @param field The name of the field.
+     * @param attribute The name of the attribute to retrieve.
+     * @return The value as a string, or null if that attribute does not have a specified or default value.
+     */
+    public String getAttributeOfField(String field, String attribute) {
+        NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
+
+        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text) {
+            String value = ((Element)elements.item(0)).getAttribute(attribute);
+
+            if (StringUtils.isNotBlank(value)) return value;
+            else                               return null;
+        }
+        else
+            return null;
+    }
+
+    /**
+     * Retrieves the textNode value of the named Element of the root Element.
+     * 
+     * @param name The name of the Element
+     * @return The value as a string, or null if that field does not exists
+     */
     public String getField(String name) {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
 
@@ -417,8 +490,16 @@ public class Outcome implements C2KLocalObject {
         return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
     }
 
-    public Node removNodeByXPath(String xpathExpr) throws XPathExpressionException {
+    public Node removeNodeByXPath(String xpathExpr) throws XPathExpressionException, InvalidDataException {
+        if (StringUtils.isBlank(xpathExpr)) throw new InvalidDataException("Xpath is null or empty string");
+
         Node nodeToTemove = getNodeByXPath(xpathExpr);
+
+        if (nodeToTemove == null) {
+            Logger.error("Xpath '"+xpathExpr+"' is invalid\n" + getData());
+            throw new InvalidDataException("Xpath '"+xpathExpr+"' is invalid");
+        }
+
         return nodeToTemove.getParentNode().removeChild(nodeToTemove);
     }
 

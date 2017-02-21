@@ -22,15 +22,20 @@ package org.cristalise.kernel.test.persistency;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,38 +44,93 @@ public class OutcomeTest {
 
     Outcome testOc;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
         Logger.addLogStream(System.out, 1);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        Gateway.close();
+    }
 
+    @Before
+    public void setup() throws Exception {
         String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
         testOc = new Outcome("/Outcome/Script/0/0", ocData);
     }
 
     @Test
-    public void testDOMAccess() throws Exception {
+    public void testAttributeAccess() {
+        assertEquals("/TestOutcome/@attr0 has value attribute0", "attribute0", testOc.getAttribute("attr0"));
+        assertNull  ("/TestOutcome/@attr00 deos not exists", testOc.getAttribute("attr00"));
+
+        assertEquals("/TestOutcome/Field1/@attr1 has value 'attribute1'", "attribute1", testOc.getAttributeOfField("Field1", "attr1"));
+        assertNull  ("/TestOutcome/Field1/@attr11 does not exists", testOc.getAttributeOfField("Field1", "attr11"));
+    }
+
+    @Test
+    public void testFieldAccess() {
         assert "Field1contents".equals(testOc.getField("Field1")) : "getField() failed";
     }
 
     @Test
-    public void testXPath() throws Exception {
+    public void testXPathAccess() throws Exception {
         Node field1Node = testOc.getNodeByXPath("//Field1/text()");
         assert field1Node != null : "XPath for Element query failed";
         assert field1Node.getNodeValue() != null : "Field1 node was null";
         assert field1Node.getNodeValue().equals("Field1contents") : "Incorrect value for element node through XPath";
         assert "Field1contents".equals(testOc.getFieldByXPath("//Field1")) : "getFieldByXPath failed";
+
+        Node field1attr = testOc.getNodeByXPath("//Field1/@attr1");
+        assert field1attr.getNodeValue().equals("attribute1") : "Invalid value for attribute 'attr1'";
+
+        try {
+            testOc.getFieldByXPath("//Field2");
+            fail("testOc.getFieldByXPath('//Field2') shall throw InvalidDataException");
+        }
+        catch (InvalidDataException e) {}
+
+        NodeList field3nodes = testOc.getNodesByXPath("//Field3");
+        assert field3nodes.getLength() == 2 : "getNodesByXPath returned wrong number of nodes";
+    }
+
+    @Test
+    public void testSetFieldByXPath_RemoveNode() throws Exception {
+        testOc.setFieldByXPath("//Field2", null);
+
+        assertNotNull(testOc.getNodeByXPath("//Field2"));
+        assertNull(testOc.getField("Field2"));
+
+        testOc.setFieldByXPath("//Field2", null, true);
+        assertNull(testOc.getNodeByXPath("//Field2"));
+    }
+
+    @Test
+    public void testSetFieldByXPath() throws Exception {
+        testOc.setFieldByXPath("//Field1/@attr1", "attribute11");
+        assertEquals("Invalid value for attribute 'attr1'", "attribute11", testOc.getAttributeOfField("Field1", "attr1"));
+
         testOc.setFieldByXPath("//Field2", "NewField2");
         assert "NewField2".equals(testOc.getFieldByXPath("//Field2")) : "getFieldByXPath failed to retrieve updated value";
         assert testOc.getNodeByXPath("//Field2/text()").getNodeValue() != null : "Field2 text node is null";
         assert testOc.getNodeByXPath("//Field2/text()").getNodeValue().equals("NewField2") : "Failed to setFieldByXPath for element";
-        Node field2attr = testOc.getNodeByXPath("//Field2/@attr");
-        assert field2attr.getNodeValue().equals("attribute") : "Failed to retrieve attribute value via XPath";
-        NodeList field3nodes = testOc.getNodesByXPath("//Field3");
-        assert field3nodes.getLength() == 2 : "getNodesByXPath returned wrong number of nodes";
     }
-    
+
+    @Test
+    public void testRemoveFieldByXPath() throws Exception {
+        testOc.removeNodeByXPath("/TestOutcome/Field1");
+        assertNull(testOc.getField("Field1"));
+
+        try {
+            testOc.removeNodeByXPath("/TestOutcome/Field10");
+            fail("testOc.removeNodeByXPath('/TestOutcome/Field10') shall throw InvalidDataException");
+        }
+        catch (InvalidDataException e) {}
+    }
+
     @Test
     public void testValidation() throws Exception {
     	String errors = testOc.validate();
@@ -93,7 +153,7 @@ public class OutcomeTest {
             NodeList children = fields.item(i).getChildNodes();
 
             //There are actually 5 nodes, becuase of the text nodes
-            //assertEquals(2,  children.getLength());
+            assertEquals(5,  children.getLength());
 
             String fieldName  = "";
             String fieldValue = "";
@@ -104,14 +164,14 @@ public class OutcomeTest {
                     else if (children.item(j).getNodeName().equals("FieldValue")) fieldValue = children.item(j).getTextContent().trim();
                 }
                 else  {
-                    Logger.msg("Script:XPathOutcomeInitTest_DetailsInstantiator - SKIPPING nodeName:"+children.item(j).getNodeName()+" nodeType:"+children.item(j).getNodeType());
+                    Logger.msg("testComplexXpath() - SKIPPING nodeName:"+children.item(j).getNodeName()+" nodeType:"+children.item(j).getNodeType());
                 }
             }
 
             assertNotNull(fieldName, "fieldName shall not be null");
             assertNotNull(fieldValue, "fieldValue shall not be null");
 
-            Logger.msg("Script:XPathOutcomeInitTest_DetailsInstantiator - slotID:"+slotID+" fieldName:"+fieldName+" fieldValue:"+fieldValue);
+            Logger.msg("testComplexXpath() - slotID:"+slotID+" fieldName:"+fieldName+" fieldValue:"+fieldValue);
         }
     }
 }
