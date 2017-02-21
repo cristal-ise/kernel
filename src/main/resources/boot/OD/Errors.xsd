@@ -21,14 +21,13 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xs:element name="Errors">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="Message" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-			</xs:sequence>	
-		<xs:attribute name="fatal" type="xs:boolean"/>
-		</xs:complexType>
-	</xs:element>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="Errors">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Message" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="fatal" type="xs:boolean" use="optional" />
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
