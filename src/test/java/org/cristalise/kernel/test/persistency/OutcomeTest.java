@@ -102,10 +102,12 @@ public class OutcomeTest {
         testOc.setFieldByXPath("//Field2", null);
 
         assertNotNull(testOc.getNodeByXPath("//Field2"));
-        assertNull(testOc.getField("Field2"));
+        assertEquals("", testOc.getField("Field2"));
+        assertNotNull(testOc.getData());
 
         testOc.setFieldByXPath("//Field2", null, true);
         assertNull(testOc.getNodeByXPath("//Field2"));
+        assertNotNull(testOc.getData());
     }
 
     @Test

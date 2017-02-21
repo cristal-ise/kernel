@@ -22,6 +22,8 @@ package org.cristalise.kernel.persistency.outcome;
 
 import java.io.IOException;
 
+import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
 
 public class SchemaValidator extends OutcomeValidator {
@@ -39,6 +41,12 @@ public class SchemaValidator extends OutcomeValidator {
 
     @Override
     public synchronized String validate(Document outcome) {
-        return validate(Outcome.serialize(outcome, false));
+        try {
+            return validate(Outcome.serialize(outcome, false));
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            return null;
+        }
     }
 }

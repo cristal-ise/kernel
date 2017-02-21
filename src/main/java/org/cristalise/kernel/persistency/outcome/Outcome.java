@@ -222,7 +222,10 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException Schema was null
      */
     public String validate() throws InvalidDataException {
-        if (mSchema == null) throw new InvalidDataException("Schema was NOT provided");
+        if (mSchema == null) {
+            mDOM.normalize();
+            //throw new InvalidDataException("Schema was NOT provided");
+        }
 
         OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
         return validator.validate(mDOM);
@@ -336,6 +339,8 @@ public class Outcome implements C2KLocalObject {
             return;
         }
 
+        if (data == null) data = "";
+
         Node field = getNodeByXPath(xpath);
 
         if (field == null) {
@@ -387,7 +392,13 @@ public class Outcome implements C2KLocalObject {
     }
 
     public String getData() {
-        return serialize(mDOM, false);
+        try {
+            return serialize(mDOM, false);
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            return null;
+        }
     }
 
     @Deprecated
@@ -503,7 +514,7 @@ public class Outcome implements C2KLocalObject {
         return nodeToTemove.getParentNode().removeChild(nodeToTemove);
     }
 
-    static public String serialize(Document doc, boolean prettyPrint) {
+    static public String serialize(Document doc, boolean prettyPrint) throws InvalidDataException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer;
         try {
@@ -523,6 +534,7 @@ public class Outcome implements C2KLocalObject {
         }
         catch (TransformerException e) {
             Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
         }
         return out.toString();
     }
