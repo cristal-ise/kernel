@@ -47,10 +47,6 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.Logger;
 
 
-/**
- * @version $Revision: 1.86 $ $Date: 2005/10/05 07:39:37 $
- * @author $Author: abranson $
- */
 public class CompositeActivity extends Activity {
     
     public CompositeActivity() {

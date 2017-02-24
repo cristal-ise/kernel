@@ -201,13 +201,12 @@ public abstract class Split extends WfVertex {
             }
         }
         else
-            throw new InvalidDataException("XORSplit encountered without valid routing script nor expression");
+            throw new InvalidDataException("Split is invalid without valid routing script or expression");
 
         StringTokenizer tok = new StringTokenizer(nexts, ",");
         String[] nextsTab = new String[tok.countTokens()];
 
-        for (int i = 0; i < nextsTab.length; i++)
-            nextsTab[i] = tok.nextToken();
+        for (int i = 0; i < nextsTab.length; i++) nextsTab[i] = tok.nextToken();
 
         return nextsTab;
     }
@@ -215,17 +214,19 @@ public abstract class Split extends WfVertex {
     public String[] nextNames() {
         Vertex[] vs = getOutGraphables();
         String[] result = new String[vs.length];
-        for (int i = 0; i < vs.length; i++)
-            result[i] = vs[i].getName();
+
+        for (int i = 0; i < vs.length; i++) result[i] = vs[i].getName();
+
         return result;
     }
 
     protected boolean isInTable(String test, String[] list) {
-        if (test == null)
-            return false;
-        for (String element : list)
-            if (test.equals(element))
-                return true;
+        if (test == null) return false;
+
+        for (String element : list) {
+            if (test.equals(element)) return true;
+        }
+
         return false;
     }
 

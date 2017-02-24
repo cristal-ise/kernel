@@ -19,6 +19,7 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance;
+
 import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
 
 import org.cristalise.kernel.common.InvalidDataException;
@@ -27,47 +28,41 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.Logger;
 
-/**
- */
-public class OrSplit extends Split
-{
-	/**
-	 * @see java.lang.Object#Object()
-	 */
-	public OrSplit()
-	{
-		super();
-	}
-	@Override
-	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException 
-	{
-		String[] nextsTab = calculateNexts(itemPath, locker);
-		
-		int active = 0;
-		DirectedEdge[] outEdges = getOutEdges();
-		for (String thisNext : nextsTab) {
-			Logger.msg(7, "Finding next " + thisNext);
-			for (DirectedEdge outEdge : outEdges) {
-				Next nextEdge = (Next) outEdge;
-				if (thisNext != null && thisNext.equals(nextEdge.getBuiltInProperty(ALIAS)))
-				{
+public class OrSplit extends Split {
+
+    public OrSplit() {
+        super();
+    }
+
+    @Override
+    public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
+        String[] nextsTab = calculateNexts(itemPath, locker);
+
+        int active = 0;
+        DirectedEdge[] outEdges = getOutEdges();
+        for (String thisNext : nextsTab) {
+            Logger.msg(7, "OrSplit.runNext() - Finding next " + thisNext);
+
+            for (DirectedEdge outEdge : outEdges) {
+                Next nextEdge = (Next) outEdge;
+                if (thisNext != null && thisNext.equals(nextEdge.getBuiltInProperty(ALIAS))) {
                     WfVertex term = nextEdge.getTerminusVertex();
                     try {
-						term.run(agent, itemPath, locker);
-					} catch (InvalidDataException e) {
-						Logger.error(e);
-						throw new InvalidDataException("Error enabling next "+thisNext);
-					}
-					Logger.msg(7, "Running " + nextEdge.getBuiltInProperty(ALIAS));
-					active++;
-				}
-			}
-		}
+                        term.run(agent, itemPath, locker);
+                    }
+                    catch (InvalidDataException e) {
+                        Logger.error(e);
+                        throw new InvalidDataException("Error enabling next " + thisNext);
+                    }
+                    Logger.msg(7, "OrSplit.runNext() - Running " + nextEdge.getBuiltInProperty(ALIAS));
+                    active++;
+                }
+            }
+        }
 
-		// if no active nexts throw exception
-		if (active == 0)
-			throw new InvalidDataException("No nexts were activated!");
-	}
-
+        // if no active nexts throw exception
+        if (active == 0)
+            throw new InvalidDataException("No nexts were activated!");
+    }
 
 }

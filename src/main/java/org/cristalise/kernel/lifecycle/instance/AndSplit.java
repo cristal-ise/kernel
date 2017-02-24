@@ -19,31 +19,24 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 
-/**
- * @version $Revision: 1.16 $ $Date: 2005/05/10 15:14:54 $
- * @author $Author: abranson $
- */
-public class AndSplit extends Split
-{
-	/**
-	 * @see java.lang.Object#Object()
-	 */
-	public AndSplit()
-	{
-		super();
-	}
-	@Override
-	public void runNext(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException
-	{
-//		AdvancementCalculator adv = new AdvancementCalculator();
-//		adv.calculate((CompositeActivity) getParent());
-		Vertex[] outVertices = getOutGraphables();
-		for (Vertex outVertice : outVertices)
-			((WfVertex) outVertice).run(agent, item, locker);
+public class AndSplit extends Split {
+
+    public AndSplit() {
+        super();
+    }
+
+    @Override
+    public void runNext(AgentPath agent, ItemPath item, Object locker) throws InvalidDataException {
+        // AdvancementCalculator adv = new AdvancementCalculator();
+        // adv.calculate((CompositeActivity) getParent());
+        Vertex[] outVertices = getOutGraphables();
+        for (Vertex outVertice : outVertices)
+            ((WfVertex) outVertice).run(agent, item, locker);
     }
 }

@@ -29,30 +29,20 @@ import org.cristalise.kernel.graph.model.DirectedEdge;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 
-
-/**
- * @version $Revision: 1.23 $ $Date: 2006/03/03 13:52:21 $
- * @author  $Author: abranson $
- */
-public class XOrSplit extends Split
-{
-    /**
-     * @see java.lang.Object#Object()
-     */
-    public XOrSplit()
-    {
+public class XOrSplit extends Split {
+    
+    public XOrSplit() {
         super();
     }
 
     @Override
-	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException
-    {
-
+	public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
         String[] nextsTab = calculateNexts(itemPath, locker);
 
         ArrayList<DirectedEdge> nextsToFollow = new ArrayList<DirectedEdge>();
 
         DirectedEdge[] outEdges = getOutEdges();
+
         for (DirectedEdge outEdge : outEdges) {
             if (isInTable((String)((Next)outEdge).getBuiltInProperty(ALIAS), nextsTab))
                 nextsToFollow.add(outEdge);
@@ -62,11 +52,9 @@ public class XOrSplit extends Split
             throw new InvalidDataException("not good number of active next");
 
         followNext((Next)nextsToFollow.get(0), agent, itemPath, locker);
-
     }
 
     public void followNext(Next activeNext, AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
         activeNext.getTerminusVertex().run(agent, itemPath, locker);
     }
-
 }
