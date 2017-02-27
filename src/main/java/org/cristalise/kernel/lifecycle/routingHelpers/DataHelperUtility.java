@@ -37,7 +37,7 @@ public class DataHelperUtility {
      * If there is such no property, it uses the given id to instantiate one of these classes:
      * {@link ViewpointDataHelper}, {@link PropertyDataHelper}, {@link ActivityDataHelper}
      * 
-     * @param id the string user to identify the DataHelper in the cristal-ise configuration
+     * @param id the string used to identify the DataHelper in the cristal-ise configuration
      * @return the DataHelper instance
      * @throws InvalidDataException could not configure DataHelper
      */

@@ -70,11 +70,11 @@ public class Module extends ImportItem {
         //imports.list.add(this);
     }
 
-    public void runScript(String event, AgentProxy user, boolean isServer) throws ScriptingEngineException {
+    public void runScript(String event, AgentProxy agent, boolean isServer) throws ScriptingEngineException {
         for (ModuleScript script : scripts) {
             if (script.shouldRun(event, isServer)) {
                 Logger.msg("Running "+script.event+" "+script.target+" script from "+name);
-                Object result = script.getScript(ns, user).execute();
+                Object result = script.getScript(ns, agent).execute();
                 if (result instanceof ErrorInfo) {
                     ErrorInfo error = (ErrorInfo) result;
                     Logger.error(error.toString());
@@ -159,12 +159,12 @@ public class Module extends ImportItem {
 
             try {
                 Gateway.getLookup().getAgentPath(thisAgent.name);
-                Logger.msg(3, "Module.importAgents() - User '"+thisAgent.name+"' found.");
+                Logger.msg(3, "Module.importAgents() - Agent '"+thisAgent.name+"' found.");
                 continue;
             }
             catch (ObjectNotFoundException ex) { }
 
-            Logger.msg("Module.importAgents() - User '"+thisAgent.name+"' not found. Creating.");
+            Logger.msg("Module.importAgents() - Agent '"+thisAgent.name+"' not found. Creating.");
             thisAgent.create(systemAgent.getPath(), reset);
         }
     }

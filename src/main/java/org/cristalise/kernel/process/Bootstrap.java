@@ -457,7 +457,7 @@ public class Bootstrap
     }
 
     /**
-     * Checks for the existence of a users so it can be used
+     * Checks for the existence of a agents so it can be used
      * 
      * @param name
      * @param pass
@@ -467,18 +467,18 @@ public class Bootstrap
      * @throws Exception
      */
     private static AgentProxy checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
-        Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' user.");
+        Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' agent.");
         LookupManager lookup = Gateway.getLookupManager();
 
         try {
             AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(lookup.getAgentPath(name));
             systemAgents.put(name, agentProxy);
-            Logger.msg(3, "Bootstrap.checkAgent() - User '"+name+"' found.");
+            Logger.msg(3, "Bootstrap.checkAgent() - Agent '"+name+"' found.");
             return agentProxy;
         }
         catch (ObjectNotFoundException ex) { }
 
-        Logger.msg("Bootstrap.checkAgent() - User '"+name+"' not found. Creating.");
+        Logger.msg("Bootstrap.checkAgent() - Agent '"+name+"' not found. Creating.");
 
         try {
             AgentPath agentPath = new AgentPath(new ItemPath(uuid), name);
@@ -498,7 +498,7 @@ public class Bootstrap
             return agentProxy;
         }
         catch (Exception ex) {
-            Logger.error("Unable to create "+name+" user.");
+            Logger.error("Unable to create '"+name+"' Agent.");
             throw ex;
         }
     }
@@ -510,7 +510,7 @@ public class Bootstrap
         RolePath adminRole = new RolePath(rootRole, "Admin", false);
         if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
 
-        // check for import user
+        // check for import Agent
         AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 0).toString());
         ScriptConsole.setUser(system);
 

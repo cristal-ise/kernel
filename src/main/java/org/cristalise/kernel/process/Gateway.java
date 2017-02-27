@@ -291,17 +291,17 @@ public class Gateway
 
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
-        AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
-        userProxy.setAuthObj(auth);
-        ScriptConsole.setUser(userProxy);
+        AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
+        agent.setAuthObj(auth);
+        ScriptConsole.setUser(agent);
 
         // Run module startup scripts. Server does this during bootstrap
-        mModules.setUser(userProxy);
+        mModules.setUser(agent);
         mModules.runScripts("startup");
 
         Logger.msg("Gateway.connect(agent) - DONE.");
 
-        return userProxy;
+        return agent;
     }
 
     /**
@@ -324,10 +324,10 @@ public class Gateway
 
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
-        AgentProxy userProxy = (AgentProxy) mProxyManager.getProxy(agentPath);
-        userProxy.setAuthObj(auth);
+        AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
+        agent.setAuthObj(auth);
 
-        return userProxy;
+        return agent;
     }
 
     static public Authenticator getAuthenticator() throws InvalidDataException {

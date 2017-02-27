@@ -45,7 +45,7 @@ public class ModuleManager {
     private ArrayList<Module> modules = new ArrayList<Module>();
     private HashMap<String, String> modulesXML = new HashMap<String, String>();
     
-    private AgentProxy user;
+    private AgentProxy agent;
 
     private boolean isServer;
     private OutcomeValidator moduleValidator;
@@ -180,8 +180,8 @@ public class ModuleManager {
         return allModuleProperties;
     }
 
-    public void setUser(AgentProxy user) {
-        this.user = user;
+    public void setUser(AgentProxy agent) {
+        this.agent = agent;
     }
 
     /**
@@ -208,7 +208,7 @@ public class ModuleManager {
             if (Bootstrap.shutdown) return;
 
             try {
-                thisMod.runScript(event, user, isServer);
+                thisMod.runScript(event, agent, isServer);
             }
             catch (ScriptingEngineException e) {
                 Logger.error(e);
@@ -244,7 +244,7 @@ public class ModuleManager {
                 }
 
                 thisMod.setModuleXML(modulesXML.get(thisMod.getNamespace()));
-                thisMod.importAll(serverItem, user, thisReset);
+                thisMod.importAll(serverItem, agent, thisReset);
             }
             catch (Exception e) {
                 Logger.error(e);
@@ -254,7 +254,7 @@ public class ModuleManager {
             Logger.msg("ModuleManager.registerModules() - Module "+thisMod.getName()+" registered");
 
             try {
-                thisMod.runScript("startup", user, true);
+                thisMod.runScript("startup", agent, true);
             }
             catch (ScriptingEngineException e) {
                 Logger.error(e);

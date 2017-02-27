@@ -38,7 +38,7 @@ abstract public class StandardClient extends AbstractMain {
      * @throws InvalidDataException
      */
     protected void login(String agentName, String agentPass, String resource) throws InvalidDataException {
-        // login - try for a while in case server hasn't imported our user yet
+        // login - try for a while in case server hasn't imported our agent yet
         for (int i=1; i < 6; i++) {
             try {
                 Logger.msg("Login attempt "+i+" of 5");

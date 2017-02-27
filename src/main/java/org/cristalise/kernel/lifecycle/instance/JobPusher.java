@@ -53,7 +53,7 @@ final class JobPusher extends Thread {
                 Logger.msg(7, "JobPusher.run() - Calculating jobs for agent:" + nextAgent);
 
                 try {
-                    // get joblist for user
+                    // get joblist for agent
                     JobArrayList jobList = new JobArrayList(this.activity.calculateJobs(nextAgent, itemPath, false));
                     if (jobList.list.size() !=  0) {
                         // push it to the agent

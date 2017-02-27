@@ -46,7 +46,7 @@ public class ScriptConsole implements SocketHandler {
     Socket                    socket        = null;
     ScriptEngine              engine;
     Bindings                  beans;
-    static AgentProxy         user;
+    static AgentProxy         agent;
     static ArrayList<String>  securityHosts = new ArrayList<String>();
     public static final short NONE          = 0;
     public static final short ALLOW         = 1;
@@ -97,8 +97,8 @@ public class ScriptConsole implements SocketHandler {
         return (socket != null);
     }
 
-    public static void setUser(AgentProxy agent) {
-        user = agent;
+    public static void setUser(AgentProxy a) {
+        agent = a;
     }
 
     @Override
@@ -165,7 +165,7 @@ public class ScriptConsole implements SocketHandler {
             Logger.addLogStream(output, 0);
             Script context;
             try {
-                context = new Script("javascript", user, output);
+                context = new Script("javascript", agent, output);
             }
             catch (Exception ex) {
                 output.println("Error initializing console script context");

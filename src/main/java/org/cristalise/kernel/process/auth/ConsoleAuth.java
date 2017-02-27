@@ -34,7 +34,7 @@ public class ConsoleAuth implements ProxyLogin {
 
     @Override
     public AgentProxy authenticate(String resource) throws Exception {
-        AgentProxy user = null;
+        AgentProxy agent = null;
 
         if (resource != null) System.out.println("Please log in" + (resource.length() > 0 ? "to " + resource : ""));
 
@@ -42,15 +42,15 @@ public class ConsoleAuth implements ProxyLogin {
 
         int loginAttempts = 0;
 
-        while (user == null && loginAttempts++ < 3) {
-            System.out.print("User:");
-            String username = scan.nextLine();
+        while (agent == null && loginAttempts++ < 3) {
+            System.out.print("Agent:");
+            String name = scan.nextLine();
 
             System.out.print("Password:");
             String pass = scan.nextLine();
 
             try {
-                user = Gateway.connect(username, pass, resource);
+                agent = Gateway.connect(name, pass, resource);
             }
             catch (Exception ex) {
                 System.err.println(ex.getMessage());
@@ -58,10 +58,10 @@ public class ConsoleAuth implements ProxyLogin {
         }
         scan.close();
 
-        if (user == null) {
+        if (agent == null) {
             System.err.println("Bye");
             System.exit(0);
         }
-        return user;
+        return agent;
     }
 }

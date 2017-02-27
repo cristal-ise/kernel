@@ -156,7 +156,7 @@ public class Script implements DescriptionObject {
      * For consoles
      * 
      * @param lang - script language
-     * @param agent - AgentProxy of the console user
+     * @param agent - Proxy of the console Agent(user)
      * @param out - the output PrintStream for reporting results that don't go to the log
      */
     public Script(String lang, AgentProxy agent, PrintStream out) throws Exception {

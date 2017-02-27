@@ -67,7 +67,7 @@ public class SetAgentPassword extends PredefinedStep {
             throw new InvalidDataException("Cryptographic libraries for password hashing not found.");
 		} 
 		
-		params[0] = "REDACTED"; // censor user's password from outcome
+		params[0] = "REDACTED"; // censor password from outcome
 		return bundleData(params);
 	}
 	

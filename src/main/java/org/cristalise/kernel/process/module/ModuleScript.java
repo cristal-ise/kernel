@@ -42,8 +42,8 @@ public class ModuleScript {
 		this.script = script;
 	}
 	
-	public Script getScript(String ns, AgentProxy user) throws ScriptingEngineException {
-        return new Script(lang, ns+" "+target+" "+event, script, user);
+	public Script getScript(String ns, AgentProxy agent) throws ScriptingEngineException {
+        return new Script(lang, ns+" "+target+" "+event, script, agent);
 	}
 
 	public boolean shouldRun(String event, boolean isServer) {

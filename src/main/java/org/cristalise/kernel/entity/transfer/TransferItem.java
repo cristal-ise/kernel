@@ -55,7 +55,7 @@ public class TransferItem {
             importAgentId = Gateway.getLookup().getAgentPath("system");
         }
         catch (ObjectNotFoundException e) {
-            Logger.error("TransferItem - System user not found!");
+            Logger.error("TransferItem - System agent not found!");
             throw e;
         }
     }
