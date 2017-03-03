@@ -39,6 +39,11 @@ public class RolePath extends Path {
         super(parent, roleName);
     }
 
+    public RolePath(String path, boolean jobList) {
+        super(path);
+        hasJobList = jobList;
+    }
+
     public RolePath(String[] path, boolean jobList) {
         super(path);
         hasJobList = jobList;
