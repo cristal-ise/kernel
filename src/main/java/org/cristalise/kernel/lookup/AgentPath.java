@@ -27,16 +27,15 @@ import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
 
 /**
- * Extends Path to enforce SystemKey structure and support int form
+ * Extends ItemPath with Agent specific codes
  **/
 public class AgentPath extends ItemPath {
 
     private String mAgentName = null;
-    private String mPassword  = null;
 
-    public AgentPath(UUID uuid, String ior, String pwd) {
+    public AgentPath(UUID uuid, String ior, String agentName) {
         super(uuid, ior);
-        setPassword(pwd);
+        mAgentName = agentName;
     }
 
     public AgentPath(UUID uuid) throws InvalidAgentPathException {
@@ -100,14 +99,6 @@ public class AgentPath extends ItemPath {
         catch (ObjectNotFoundException ex) {
             return false;
         }
-    }
-
-    public void setPassword(String passwd) {
-        mPassword = passwd;
-    }
-
-    public String getPassword() {
-        return mPassword;
     }
 
     @Override

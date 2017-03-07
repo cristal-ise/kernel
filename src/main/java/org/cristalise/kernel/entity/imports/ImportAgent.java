@@ -25,6 +25,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
@@ -64,7 +65,7 @@ public class ImportAgent extends ModuleImport {
         if (roles.isEmpty()) throw new ObjectNotFoundException("Agent '"+name+"' must declare at least one Role ");
 
         AgentPath newAgent = new AgentPath(getItemPath(), name);
-        newAgent.setPassword(password);
+
         ActiveEntity newAgentEnt = Gateway.getCorbaServer().createAgent(newAgent);
         Gateway.getLookupManager().add(newAgent);
 
@@ -73,6 +74,8 @@ public class ImportAgent extends ModuleImport {
         properties.add(new Property(TYPE, "Agent", false));
 
         try {
+            if (StringUtils.isNotBlank(password)) Gateway.getLookupManager().setAgentPassword(newAgent, password);
+
             newAgentEnt.initialise(
                     agentPath.getSystemKey(), 
                     Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), 

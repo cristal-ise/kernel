@@ -21,17 +21,17 @@
 package org.cristalise.kernel.process;
 
 import static org.cristalise.kernel.property.BuiltInItemProperties.KERNEL_VERSION;
-import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.MODULE;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -51,7 +51,6 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.LookupManager;
-import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Outcome;
@@ -482,9 +481,11 @@ public class Bootstrap
 
         try {
             AgentPath agentPath = new AgentPath(new ItemPath(uuid), name);
-            agentPath.setPassword(pass);
+
             Gateway.getCorbaServer().createAgent(agentPath);
             lookup.add(agentPath);
+
+            if (StringUtils.isNotBlank(pass)) lookup.setAgentPassword(agentPath, pass);
 
             // assign admin role
             Logger.msg("Bootstrap.checkAgent() - Assigning role '"+rolePath.getName()+"'");
