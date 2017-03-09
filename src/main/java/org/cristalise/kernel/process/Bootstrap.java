@@ -512,7 +512,7 @@ public class Bootstrap
         if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
 
         // check for import Agent
-        AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 0).toString());
+        AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 1).toString());
         ScriptConsole.setUser(system);
 
         // check for local usercode user & role
