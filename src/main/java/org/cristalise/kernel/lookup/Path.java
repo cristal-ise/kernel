@@ -110,7 +110,8 @@ public abstract class Path {
 
     public String getStringPath() {
         if (mStringPath == null) {
-            mStringPath = delim + getRoot() + delim + StringUtils.join(mPath, delim);
+            if (mPath.length == 0) mStringPath = delim + getRoot();
+            else                   mStringPath = delim + getRoot() + delim + StringUtils.join(mPath, delim);
         }
         return mStringPath;
     }
