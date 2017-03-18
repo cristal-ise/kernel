@@ -33,11 +33,6 @@ public abstract class Path {
 
     protected String[] mPath = new String[0];
 
-    /**
-     *  slash delimited path
-     */
-    protected String mStringPath = null;
-
     public Path() {}
 
     /**
@@ -67,8 +62,6 @@ public abstract class Path {
      * The root node name (i.e. entity, domain or role) is removed from the beginning.
      */
     public void setPath(String[] path) {
-        mStringPath = null;
-        
         if (path != null && path.length > 0) {
             if(path[0].equals(getRoot())) mPath = Arrays.copyOfRange(path, 1, path.length);
             else                          mPath = path.clone();
@@ -99,7 +92,6 @@ public abstract class Path {
      * clones the path object
      */
     public void setPath(Path path) {
-        mStringPath = null;
         mPath = (path.getPath().clone());
     }
 
@@ -109,11 +101,8 @@ public abstract class Path {
     }
 
     public String getStringPath() {
-        if (mStringPath == null) {
-            if (mPath.length == 0) mStringPath = delim + getRoot();
-            else                   mStringPath = delim + getRoot() + delim + StringUtils.join(mPath, delim);
-        }
-        return mStringPath;
+        if (mPath.length == 0) return delim + getRoot();
+        else                   return delim + getRoot() + delim + StringUtils.join(mPath, delim);
     }
 
     /**
