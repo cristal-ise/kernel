@@ -21,92 +21,59 @@
 #ifndef __com_CommonExceptions_Idl__
 #define __com_CommonExceptions_Idl__
 
-/*
- * Copyright (C) 2001 CERN - European Organization for Nuclear Research
- * All rights reserved.
- *
- * @author $Author: abranson $ $Date: 2004/01/21 16:17:18 $
- * @version $Revision: 1.6 $
- */
-
 #pragma prefix "org.cristalise.kernel"
 
-module common
-{
-    /**************************************************************************
+module common {
+
+   /**************************************************************************
     * Thrown when the process isn't privileged enough to make the requested 
     * change, either because it is a client process, or its management objects
     * are incorrect.
     **************************************************************************/
-    exception CannotManageException
-    {
-    };
+    exception CannotManageException {};
 
-
-
-    /**************************************************************************
+   /**************************************************************************
     * The requested transition is not currently available, or does not exist.
     * Most commonly occurs when the Activity is in a different state than the
     * caller has assumed.
     **************************************************************************/
-    exception InvalidTransitionException
-    {
-    };
+    exception InvalidTransitionException {};
     
     /**************************************************************************
     * The modification to the collection could not be performed, due to rules
     * within the collection itself.
     **************************************************************************/
-    exception InvalidCollectionModification
-    {
-    };
+    exception InvalidCollectionModification {};
 
-
-    /**************************************************************************
+   /**************************************************************************
     * Either the supplied data, or the relevant description, was invalid.
     **************************************************************************/
-    exception InvalidDataException
-    {
-    };
+    exception InvalidDataExceptio {};
 
-
-    /**************************************************************************
+   /**************************************************************************
     * The given agent is not permitted to perform the requested action.
     **************************************************************************/
-    exception AccessRightsException
-    {
-    };
+    exception AccessRightsException {};
 
-
-    /**************************************************************************
+   /**************************************************************************
     * The requested object was not found
     **************************************************************************/
-    exception ObjectNotFoundException
-    {
-    };
+    exception ObjectNotFoundException {};
 
-
-    /**************************************************************************
+   /**************************************************************************
     * Error during storing/retrieving objects
     **************************************************************************/
-    exception PersistencyException
-    {
-    };
+    exception PersistencyException {};
 
-    /**************************************************************************
+   /**************************************************************************
     * The object already exists.
     **************************************************************************/
-    exception ObjectAlreadyExistsException
-    {
-    };
+    exception ObjectAlreadyExistsException {};
 
-
-    /**************************************************************************
+   /**************************************************************************
     * The object cannot be changed.
     **************************************************************************/
-    exception ObjectCannotBeUpdated
-    {
-    };
+    exception ObjectCannotBeUpdated {};
 
 }; //end of module common
 
