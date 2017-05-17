@@ -124,9 +124,4 @@ public class DomainPath extends Path {
 
     @Override
     public void setIOR(Object IOR) {}
-
-    @Override
-    public String toString() {
-        return super.toString() + " target:"+target;
-    }
 }
