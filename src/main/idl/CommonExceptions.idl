@@ -48,7 +48,7 @@ module common {
    /**************************************************************************
     * Either the supplied data, or the relevant description, was invalid.
     **************************************************************************/
-    exception InvalidDataExceptio {};
+    exception InvalidDataException {};
 
    /**************************************************************************
     * The given agent is not permitted to perform the requested action.
