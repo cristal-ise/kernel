@@ -22,10 +22,18 @@ package org.cristalise.kernel.test.persistency;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
+import static org.unitils.reflectionassert.ReflectionComparatorMode.LENIENT_ORDER;
 
 import java.util.Properties;
+import java.util.UUID;
 
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.security.ACLTarget;
+import org.cristalise.kernel.process.security.ACLType;
+import org.cristalise.kernel.process.security.AccessControlList;
+import org.cristalise.kernel.process.security.ReadAccessControl;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
@@ -100,5 +108,18 @@ public class CastorXMLTest {
 
         assertTrue(q.getQuery().startsWith("\n<TRList>"));
         assertTrue(q.getQuery().endsWith("</TRList>\n    "));
+    }
+
+    @Test 
+    public void testACLMapping() throws Exception {
+        AccessControlList aclOrig = new AccessControlList(ClusterType.OUTCOME+"/"+"SchemaName/0/10");
+        aclOrig.list.add(new ReadAccessControl(ACLType.ALLOW, ACLTarget.ROLE, "DummyRole"));
+        aclOrig.list.add(new ReadAccessControl(ACLType.DENY,  ACLTarget.AGENT, UUID.randomUUID().toString()));
+
+        AccessControlList aclNew = (AccessControlList) 
+                Gateway.getMarshaller().unmarshall(
+                        Gateway.getMarshaller().marshall(aclOrig));
+
+        assertReflectionEquals(aclOrig, aclNew, LENIENT_ORDER);
     }
 }

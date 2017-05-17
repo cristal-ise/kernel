@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<mapping>
+    <class name="org.cristalise.kernel.process.security.ReadAccessControl">
+        <map-to xml="ReadAccessControl" />
+        <field name="accessType" type="org.cristalise.kernel.process.security.ACLType">
+            <bind-xml name="accessType" node="attribute" />
+        </field>
+        <field name="targetType" type="org.cristalise.kernel.process.security.ACLTarget">
+            <bind-xml name="targetType" node="attribute" />
+        </field>
+        <field name="targetID" type="string" direct="false">
+            <bind-xml node="text" />
+        </field>
+    </class>
+
+    <class name="org.cristalise.kernel.process.security.AccessControlList">
+        <map-to xml="AccessControlList" />
+
+        <field name="clusterPath">
+            <bind-xml name="clusterPath" node="attribute" />
+        </field>
+
+        <field name="list" collection="arraylist" direct="true" type="org.cristalise.kernel.process.security.ReadAccessControl">
+            <bind-xml name="AccessControlEntry" node="element" />
+        </field>
+    </class>
+</mapping>
