@@ -262,20 +262,53 @@ public class AgentProxy extends ItemProxy {
     /** Let scripts resolve items */
     public ItemProxy searchItem(Path root, String name) throws ObjectNotFoundException {
         Iterator<Path> results = Gateway.getLookup().search(root, name);
-
         Path returnPath = null;
-        if (!results.hasNext()) throw new ObjectNotFoundException(name);
-
-        while (results.hasNext()) {
-            Path nextMatch = results.next();
-            if (returnPath != null && nextMatch.getUUID() != null && !returnPath.getUUID().equals(nextMatch.getUUID()))
-                throw new ObjectNotFoundException("Too many items with that name");
-            returnPath = nextMatch;
+        if (!results.hasNext()) {
+        	throw new ObjectNotFoundException(name);
+        } else {
+	        while (results.hasNext()) {
+	            Path nextMatch = results.next();
+	            if (returnPath != null) {
+	            	// found already one
+	            	// but search if there are another, which is an error
+	            	if (isItemPathAndNotNull(nextMatch)) {
+	            		// test if another itemPath with same name
+	                	if (!returnPath.getItemPath().getUUID().equals(nextMatch.getItemPath().getUUID())) {
+	                		throw new ObjectNotFoundException("Too many different items with that name");
+	                	} else {
+	                		returnPath = nextMatch;
+	                	} 
+	            	}else{
+	            		// continue
+	            	}
+	            } else {
+	            	if (isItemPathAndNotNull(nextMatch)) {            	
+	            		returnPath = nextMatch;
+	            		// found one but continue search
+	            		Logger.msg(5, "AgentProxy.searchItem() - found for "+name+" UUID = "+returnPath.getItemPath().getUUID());
+		            } else {
+		            	// continue
+		            }
+	            }
+	        }
         }
-
+        // test if nothing found in the results
+        if (returnPath == null) {
+        	throw new ObjectNotFoundException(name);
+        }
         return Gateway.getProxyManager().getProxy(returnPath);
     }
 
+    private boolean isItemPathAndNotNull(Path pPath) {
+    	boolean ok = false;
+    	try {
+			ok = pPath.getItemPath() != null;
+		} catch (ObjectNotFoundException e) {
+			// false;
+		}
+    	return ok;
+    }
+    
     public List<ItemProxy> searchItems(Path start, PropertyDescriptionList props) {
         Iterator<Path> results = Gateway.getLookup().search(start, props);
         return createItemProxyList(results);
