@@ -44,12 +44,12 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-public class TokenChipher {
+public class TokenCipher {
 
     private Cipher encryptCipher;
     private Cipher decryptCipher;
 
-    public TokenChipher()  throws InvalidDataException {
+    public TokenCipher()  throws InvalidDataException {
         try {
             try {
                 initChiphers(256);

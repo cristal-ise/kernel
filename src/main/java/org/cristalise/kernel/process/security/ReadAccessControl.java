@@ -31,7 +31,13 @@ import lombok.RequiredArgsConstructor;
  */
 @NoArgsConstructor @RequiredArgsConstructor @Data
 public class ReadAccessControl {
-    
+
+    /**
+     * 
+     */
+    @NonNull
+    private Integer priorityIndex = 0;
+
     /**
      * This AccessControlEntry allows or denies the access
      */

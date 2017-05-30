@@ -44,6 +44,7 @@ import org.cristalise.kernel.process.resource.DefaultResourceImportHandler;
 import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceLoader;
+import org.cristalise.kernel.process.security.SecurityManager;
 import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -79,6 +80,8 @@ public class Gateway
     static private CorbaServer          mCorbaServer;
     static private CastorXMLUtility     mMarshaller;
     static private ResourceLoader       mResource;
+
+    static private SecurityManager      mSecurityManager;
 
     //FIXME: Move this cache to Resource class - requires to extend ResourceLoader with getResourceImportHandler()
     static private HashMap<BuiltInResources, ResourceImportHandler> resourceImportHandlerCache = new HashMap<BuiltInResources, ResourceImportHandler>();
@@ -117,6 +120,13 @@ public class Gateway
 
         // report version info
         Logger.msg("Gateway.init() - Kernel version: "+getKernelVersion());
+
+        try {
+            mSecurityManager = new SecurityManager();
+        }
+        catch (Exception e1) {
+            throw new InvalidDataException("Invalid Resource Location");
+        }
 
         // load kernel mapfiles giving the resourse loader and the properties of
         // the application to be able to configure castor
@@ -442,6 +452,10 @@ public class Gateway
 
     public static ProxyServer getProxyServer() {
         return mProxyServer;
+    }
+
+    public static SecurityManager getSecurityManager() {
+        return mSecurityManager;
     }
 
     static public String getCentreId() {

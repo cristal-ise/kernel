@@ -27,7 +27,7 @@ import java.util.UUID;
 
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.process.security.TokenChipher;
+import org.cristalise.kernel.process.security.TokenCipher;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -46,7 +46,7 @@ public class TokenChipherTest {
 
     @Test
     public void testTokenEncodeDecode() throws Exception {
-        TokenChipher chipher = new TokenChipher();
+        TokenCipher chipher = new TokenCipher();
 
         AgentPath agentOrig = new AgentPath(UUID.randomUUID(), "IOR:DHGHJHsaf4232345", "agentName");
         AgentPath agentNew  = chipher.checkToken( chipher.generateToken(agentOrig) );

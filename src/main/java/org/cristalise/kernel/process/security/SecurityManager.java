@@ -20,9 +20,24 @@
  */
 package org.cristalise.kernel.process.security;
 
+import org.cristalise.kernel.common.AccessRightsException;
+import org.cristalise.kernel.lookup.AgentPath;
+
 public class SecurityManager {
+    
+    TokenCipher cipher;
 
     public SecurityManager() {
     }
 
+    public void checkReadAccess(String token, String clusterPath) {
+        //
+    }
+
+    public AgentPath decodeAgentPath(String token) throws AccessRightsException {
+      
+        // TODO check
+        return cipher.checkToken(token);
+    }
+    
 }

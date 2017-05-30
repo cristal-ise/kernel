@@ -391,6 +391,7 @@ public class ItemProxy
     public C2KLocalObject getObject( String xpath ) throws ObjectNotFoundException {
         // load from storage, falling back to proxy loader if not found in others
         try {
+            Gateway.getSecurityManager().checkReadAccess("token", xpath);
             return Gateway.getStorage().get( mItemPath, xpath , null);
         }
         catch( PersistencyException ex ) {
