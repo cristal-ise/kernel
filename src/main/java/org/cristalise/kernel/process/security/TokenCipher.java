@@ -1,6 +1,6 @@
 /**
- * This file is part of the CRISTAL-iSE REST API.
- * Copyright (c) 2001-2016 The CRISTAL Consortium. All rights reserved.
+ * This file is part of the CRISTAL-iSE kernel.
+ * Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -108,7 +108,12 @@ public class TokenCipher {
             throws InvalidAgentPathException, IllegalBlockSizeException, BadPaddingException, InvalidDataException
     {
         byte[] bytes = DatatypeConverter.parseBase64Binary(authData);
-        return new AuthData(decryptCipher.doFinal(bytes));
+        try {
+        	return new AuthData(decryptCipher.doFinal(bytes));
+        }
+        finally {
+        	// reset decrypter if exception
+        }
     }
 
     /**
@@ -119,7 +124,12 @@ public class TokenCipher {
      * @throws BadPaddingException
      */
     protected String encryptAuthData(AuthData auth) throws IllegalBlockSizeException, BadPaddingException {
-        byte[] bytes = encryptCipher.doFinal(auth.getBytes());
+        byte[] bytes = null;
+		try {
+			bytes = encryptCipher.doFinal(auth.getBytes());
+		} catch (Exception e) {
+        	// reset encrypter if exception
+		}
         return DatatypeConverter.printBase64Binary(bytes);
     }
 

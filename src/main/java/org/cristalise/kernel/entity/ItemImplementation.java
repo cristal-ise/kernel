@@ -188,6 +188,7 @@ public class ItemImplementation implements ItemOperations {
                    PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
         try {
+        	// TODO token az agentId helyett
             AgentPath agent = new AgentPath(agentId);
             AgentPath delegate = null;
             if (delegateId != null) delegate = new AgentPath(delegateId);
