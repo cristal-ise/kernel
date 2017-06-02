@@ -91,7 +91,7 @@ public class ProxyLoader extends ClusterStorage {
             String type = getClusterType(path);
 
             // fetch the xml from the item
-            String queryData = thisEntity.queryData(path);
+            String queryData = thisEntity.queryData(null, path);  // TODO implement authToken
 
             if (Logger.doLog(8)) Logger.msg("ProxyLoader.get() - "+thisItem+" : "+path+" = "+queryData);
 
@@ -133,7 +133,7 @@ public class ProxyLoader extends ClusterStorage {
     public String[] getClusterContents(ItemPath thisItem, String path) throws PersistencyException {
         try {
             Item thisEntity = getIOR(thisItem);
-            String contents = thisEntity.queryData(path+"/all");
+            String contents = thisEntity.queryData(null, path+"/all");  // TODO implement authToken
             StringTokenizer tok = new StringTokenizer(contents, ",");
             String[] result = new String[tok.countTokens()];
 

@@ -25,26 +25,26 @@ import static org.junit.Assert.assertEquals;
 import java.util.Base64;
 import java.util.UUID;
 
-import org.castor.core.util.Base64Decoder;
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.process.security.SecurityManager;
+import org.cristalise.kernel.process.security.AuthManager;
 import org.junit.Test;
 
-public class SecurityManagerTest {
+public class AuthManagerTest {
 
 	@Test
-	public void test() throws InvalidItemPathException {
+	public void test() throws InvalidItemPathException, AccessRightsException {
 		UUID uuid = UUID.randomUUID();
 		AgentPath agentPath = new AgentPath(new ItemPath(uuid.toString()), "toto");
 		
-		SecurityManager securityManager = new SecurityManager();
-		String token = securityManager.generateToken(agentPath);
+		AuthManager authManager = new AuthManager();
+		String token = authManager.generateToken(agentPath);
 		System.out.println("JWT: " + token);
 		System.out.println("Payload: " + new String(Base64.getUrlDecoder().decode(token.split("\\.")[1])) );
 
-		AgentPath actualAgentPath = securityManager.decodeAgentPath(token);
+		AgentPath actualAgentPath = authManager.decodeAgentPath(token);
 		assertEquals(agentPath.getAgentName(), actualAgentPath.getAgentName());
 		assertEquals(agentPath.getUUID(), actualAgentPath.getUUID());
 	}

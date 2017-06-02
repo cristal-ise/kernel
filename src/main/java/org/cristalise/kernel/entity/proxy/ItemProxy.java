@@ -22,14 +22,12 @@ package org.cristalise.kernel.entity.proxy;
 
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Collection;
-import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -42,22 +40,15 @@ import org.cristalise.kernel.entity.Item;
 import org.cristalise.kernel.entity.ItemHelper;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.agent.JobArrayList;
-import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
-import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
-import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.querying.Query;
-import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
-import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.ValidationException;
 
 
 /**
@@ -99,28 +90,6 @@ public class ItemProxy
         throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down.");
     }
 
-    public void initialise( AgentPath           agentId,
-                            PropertyArrayList   itemProps,
-                            CompositeActivity   workflow,
-                            CollectionArrayList colls
-                          )
-                    throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
-    {
-        Logger.msg(7, "ItemProxy.initialise() - started");
-
-        CastorXMLUtility xml = Gateway.getMarshaller();
-        if (itemProps == null) throw new InvalidDataException("ItemProxy.initialise() - No initial properties supplied");
-        String propString = xml.marshall(itemProps);
-
-        String wfString = "";
-        if (workflow != null) wfString = xml.marshall(workflow);
-
-        String collString = "";
-        if (colls != null) collString = xml.marshall(colls);
-
-        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString);
-    }
-
     public void setProperty(AgentProxy agent, String name, String value)
             throws AccessRightsException, PersistencyException, InvalidDataException
     {
@@ -145,7 +114,7 @@ public class ItemProxy
         }
     }
 
-    public String requestAction( Job thisJob )
+    public String requestAction( String authToken, Job thisJob )
             throws AccessRightsException,
                    InvalidTransitionException,
                    ObjectNotFoundException,
@@ -167,18 +136,18 @@ public class ItemProxy
         Logger.msg(7, "ItemProxy.requestAction() - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
 
         if (thisJob.getDelegatePath() == null)
-            return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
+            return getItem().requestAction (authToken, thisJob.getStepPath(),
                                             thisJob.getTransition().getId(), outcome);
         else
-            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
+            return getItem().delegatedAction(authToken, thisJob.getDelegatePath().getSystemKey(), 
                                              thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
-    private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
+    private ArrayList<Job> getJobList(String authToken, boolean filter)
             throws AccessRightsException, ObjectNotFoundException, PersistencyException
     {
         JobArrayList thisJobList;
-        String jobs =  getItem().queryLifeCycle(agentPath.getSystemKey(), filter);
+        String jobs =  getItem().queryLifeCycle(authToken, filter);
 
         try {
             thisJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(jobs);
@@ -191,11 +160,11 @@ public class ItemProxy
     }
 
     public ArrayList<Job> getJobList(AgentProxy agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
-        return getJobList(agent.getPath(), true);
+        return getJobList(agent.getAuthToken(), true);
     }
 
-    private Job getJobByName(String actName, AgentPath agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
-        ArrayList<Job> jobList = getJobList(agent, true);
+    private Job getJobByName(String actName, String authToken) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+        ArrayList<Job> jobList = getJobList(authToken, true);
         for (Job job : jobList) {
             if (job.getStepName().equals(actName) && job.getTransition().isFinishing())
                 return job;
@@ -286,7 +255,7 @@ public class ItemProxy
      * @throws PersistencyException Error loading the relevant objects
      */
     public Job getJobByName(String actName, AgentProxy agent) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
-        return getJobByName(actName, agent.getPath());
+        return getJobByName(actName, agent.getAuthToken());
     }
 
     /**
@@ -301,7 +270,7 @@ public class ItemProxy
      * @throws PersistencyException Error loading the relevant objects
      */
     public Job getJobByTransitionName(String actName, String transName, AgentProxy agent) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
-        return getJobByTransitionName(actName, transName, agent.getPath());
+        return getJobByTransitionName(actName, transName, agent.getAuthToken());
     }
 
     /**
@@ -315,8 +284,8 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      * @throws PersistencyException Error loading the relevant objects
      */
-    public Job getJobByTransitionName(String actName, String transName, AgentPath agentPath) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
-        for (Job job : getJobList(agentPath, true)) {
+    public Job getJobByTransitionName(String actName, String transName, String authToken) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
+        for (Job job : getJobList(authToken, true)) {
             if (job.getStepName().equals(actName) && job.getTransition().getName().equals(transName))
                 return job;
         }
@@ -391,10 +360,10 @@ public class ItemProxy
     public C2KLocalObject getObject( String xpath ) throws ObjectNotFoundException {
         // load from storage, falling back to proxy loader if not found in others
         try {
-            Gateway.getSecurityManager().checkReadAccess("token", xpath);
+            Gateway.getAuthManager().checkReadAccess("token", xpath);
             return Gateway.getStorage().get( mItemPath, xpath , null);
         }
-        catch( PersistencyException ex ) {
+        catch( PersistencyException | AccessRightsException ex ) {
             Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+xpath);
             Logger.error(ex);
             throw new ObjectNotFoundException( ex.toString() );

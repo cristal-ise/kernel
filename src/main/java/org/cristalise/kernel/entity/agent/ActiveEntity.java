@@ -85,13 +85,13 @@ public class ActiveEntity extends AgentPOA
     *
     **************************************************************************/
     @Override
-	public String queryData(String path)
+	public String queryData(String authToken, String path)
         throws AccessRightsException,
                ObjectNotFoundException,
                PersistencyException
     {
         synchronized (this) {
-			return mAgentImpl.queryData(path);
+			return mAgentImpl.queryData(authToken, path);
 		}
     }
 
@@ -122,7 +122,6 @@ public class ActiveEntity extends AgentPOA
     	}
     }
     
-	@Override
 	public void initialise(SystemKey agentId, String propString, String initWfString,
 			String initCollsString) throws AccessRightsException,
 			InvalidDataException, PersistencyException, ObjectNotFoundException {
@@ -133,35 +132,35 @@ public class ActiveEntity extends AgentPOA
 	}
 
 	@Override
-	public String requestAction(SystemKey agentID, String stepPath, int transitionID,
+	public String requestAction(String authToken, String stepPath, int transitionID,
 			String requestData) throws AccessRightsException,
 			InvalidTransitionException, ObjectNotFoundException,
 			InvalidDataException, PersistencyException,
 			ObjectAlreadyExistsException, InvalidCollectionModification {
 		
 		synchronized (this) {
-            return mAgentImpl.requestAction(agentID, stepPath, transitionID, requestData);
+            return mAgentImpl.requestAction(authToken, stepPath, transitionID, requestData);
         }
 		
 	}
 	
     @Override
-	public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId, 
+	public String delegatedAction(String authToken, SystemKey delegateAgentId, 
 			String stepPath, int transitionID, String requestData) throws AccessRightsException,
 			InvalidTransitionException, ObjectNotFoundException,
 			InvalidDataException, PersistencyException,
 			ObjectAlreadyExistsException, InvalidCollectionModification {
         synchronized (this) {
-            return mAgentImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
+            return mAgentImpl.delegatedAction(authToken, delegateAgentId, stepPath, transitionID, requestData);
         }
     }
 	
 	@Override
-	public String queryLifeCycle(SystemKey agentId, boolean filter)
+	public String queryLifeCycle(String authToken, boolean filter)
 			throws AccessRightsException, ObjectNotFoundException,
 			PersistencyException {
 		synchronized (this) {
-			return mAgentImpl.queryLifeCycle(agentId, filter);
+			return mAgentImpl.queryLifeCycle(authToken, filter);
 		}
 	}
 }

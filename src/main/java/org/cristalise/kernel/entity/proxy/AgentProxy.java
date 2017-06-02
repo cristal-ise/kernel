@@ -64,6 +64,7 @@ public class AgentProxy extends ItemProxy {
     AgentPath     mAgentPath;
     String        mAgentName;
     Authenticator auth;
+    String        authToken;
 
     /**************************************************************************
      * Creates an AgentProxy without cache and change notification
@@ -160,7 +161,7 @@ public class AgentProxy extends ItemProxy {
 
         Logger.msg(3, "AgentProxy.execute(job) - submitting job to item proxy");
 
-        String result = item.requestAction(job);
+        String result = item.requestAction(authToken, job);
 
         if (Logger.doLog(3)) {
             Date timeNow = new Date();
@@ -231,7 +232,7 @@ public class AgentProxy extends ItemProxy {
         if (schemaName.equals("PredefinedStepOutcome")) param = PredefinedStep.bundleData(params);
         else                                            param = params[0];
 
-        return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/" + predefStep, PredefinedStep.DONE, param);
+        return item.getItem().requestAction(authToken, "workflow/predefined/" + predefStep, PredefinedStep.DONE, param);
     }
 
     /**
@@ -341,6 +342,14 @@ public class AgentProxy extends ItemProxy {
     public AgentPath getPath() {
         return mAgentPath;
     }
+    
+    public void setAuthToken(String authToken) {
+		this.authToken = authToken;
+	}
+    
+    public String getAuthToken() {
+		return authToken;
+	}
 
     public ItemProxy getItem(Path itemPath) throws ObjectNotFoundException {
         return Gateway.getProxyManager().getProxy(itemPath);

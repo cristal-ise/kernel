@@ -188,16 +188,6 @@
             <artifactId>java-jwt</artifactId>
             <version>3.2.0</version>
         </dependency>
-        <dependency>
-          <groupId>org.bitbucket.b_c</groupId>
-          <artifactId>jose4j</artifactId>
-          <version>0.5.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-core</artifactId>
-            <version>1.4.0</version>
-        </dependency>
       </dependencies>
 
     <dependencyManagement>

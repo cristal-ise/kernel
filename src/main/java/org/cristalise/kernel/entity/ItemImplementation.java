@@ -77,7 +77,6 @@ public class ItemImplementation implements ItemOperations {
         return mItemPath.getUUID();
     }
 
-    @Override
     public void initialise(SystemKey agentId, String propString, String initWfString, String initCollsString)
             throws AccessRightsException, InvalidDataException, PersistencyException
     {
@@ -175,21 +174,22 @@ public class ItemImplementation implements ItemOperations {
     }
 
     @Override
-    public String requestAction(SystemKey agentId, String stepPath, int transitionID, String requestData)
+    public String requestAction(String authToken, String stepPath, int transitionID, String requestData)
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException, 
                    PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
-        return delegatedAction(agentId, null, stepPath, transitionID, requestData);
+        return delegatedAction(authToken, null, stepPath, transitionID, requestData);
     }
 
     @Override
-    public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID, String requestData)
+    public String delegatedAction(String authToken, SystemKey delegateId, String stepPath, int transitionID, String requestData)
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
                    PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
+    	AgentPath agent = null;
         try {
-        	// TODO token az agentId helyett
-            AgentPath agent = new AgentPath(agentId);
+        	agent = Gateway.getAuthManager().decodeAgentPath(authToken);
+
             AgentPath delegate = null;
             if (delegateId != null) delegate = new AgentPath(delegateId);
             Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
@@ -221,24 +221,20 @@ public class ItemImplementation implements ItemOperations {
             throw new InvalidDataException(ex.getClass().getName() + " - " + ex.getMessage());
        }
         catch (Throwable ex) { // non-CORBA exception hasn't been caught!
-            Logger.error("Unknown Error: requestAction on " + mItemPath + " by " + agentId + " executing " + stepPath);
+            Logger.error("Unknown Error: requestAction on " + mItemPath + (agent == null ? "" : " by " + agent.getAgentName()) + " executing " + stepPath);
             Logger.error(ex);
             throw new InvalidDataException("Extraordinary Exception during execution:" + ex.getClass().getName() + " - " + ex.getMessage());
         }
     }
 
     @Override
-    public String queryLifeCycle(SystemKey agentId, boolean filter)
+    public String queryLifeCycle(String authToken, boolean filter)
             throws AccessRightsException, ObjectNotFoundException, PersistencyException {
-        Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - agent: " + agentId);
+        Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ")");
         try {
-            AgentPath agent;
-            try {
-                agent = new AgentPath(agentId);
-            }
-            catch (InvalidItemPathException e) {
-                throw new AccessRightsException("Agent " + agentId + " doesn't exist");
-            }
+        	AgentPath agent = Gateway.getAuthManager().decodeAgentPath(authToken);
+            Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - agent: " + agent.getAgentName());
+
             Workflow wf = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
 
             JobArrayList jobBag = new JobArrayList();
@@ -263,7 +259,10 @@ public class ItemImplementation implements ItemOperations {
     }
 
     @Override
-    public String queryData(String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+    public String queryData(String authToken, String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+    	
+    	// TODO read permissions
+    	
         String result = "";
 
         Logger.msg(1, "ItemImplementation::queryData(" + mItemPath + ") - " + path);

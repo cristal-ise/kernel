@@ -37,6 +37,7 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
+import org.cristalise.kernel.entity.TraceableEntity;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.events.History;
@@ -445,14 +446,19 @@ public class Bootstrap
             Logger.error("Module resource workflow "+impHandler.getWorkflowName()+" not found. Using empty.");
         }
 
-        Gateway.getCorbaServer().createItem(itemPath);
+        TraceableEntity entity = Gateway.getCorbaServer().createItem(itemPath);
         lookupManager.add(itemPath);
         DomainPath newDomPath = impHandler.getPath(itemName, ns);
         newDomPath.setItemPath(itemPath);
         lookupManager.add(newDomPath);
-        ItemProxy newItemProxy = Gateway.getProxyManager().getProxy(itemPath);
-        newItemProxy.initialise( systemAgents.get("system").getPath(), props, ca, null);
-        return newItemProxy;
+        
+        entity.initialise( 
+        		systemAgents.get("system").getPath().getSystemKey(), 
+        		Gateway.getMarshaller().marshall(props), 
+        		Gateway.getMarshaller().marshall(ca),
+        		null);
+        
+        return Gateway.getProxyManager().getProxy(itemPath);
     }
 
     /**

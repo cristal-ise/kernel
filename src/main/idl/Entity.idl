@@ -58,16 +58,17 @@ module entity {
         * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
         * @exception ObjectNotFoundException
         **/
-        void initialise( in common::SystemKey  agentKey,
-                         in string             itemProps,
-                         in string             workflow,
-                         in string             collections )
+/*
+        void initialise( in string authToken,
+                         in string itemProps,
+                         in string workflow,
+                         in string collections )
             raises( common::AccessRightsException,
                     common::InvalidDataException,
                     common::PersistencyException,
                     common::ObjectNotFoundException,
                     common::InvalidCollectionModification );
-                    
+*/                    
        /**
         * Returns a chunk of XML which may be a serialized C2KLocalObject, or in the case of Outcomes is merely a fragment of XML.
         * 
@@ -82,7 +83,8 @@ module entity {
         * @exception AccessRightsException whent the Agent hes no rights to access the data. Check AccessControlList wiki pages.
         * @exception PersistencyException when the path could not be loaded because of a problem with the storage subsystem.
         **/
-        string queryData( in string path )
+        string queryData( in string authToken,
+                          in string path )
             raises( common::AccessRightsException,
                     common::ObjectNotFoundException,
                     common::PersistencyException );
@@ -113,10 +115,10 @@ module entity {
         * @throws PersistencyException There was a problem committing the changes to storage.
         * @throws ObjectAlreadyExistsException Not normally thrown, but reserved for PredefinedSteps to throw if they need to.
         **/
-        string requestAction( in common::SystemKey agentKey,
-                              in string            stepPath,
-                              in unsigned long     transitionID,
-                              in string            requestData
+        string requestAction( in string        authToken,
+                              in string        stepPath,
+                              in unsigned long transitionID,
+                              in string        requestData
                             )
             raises( common::AccessRightsException,
                     common::InvalidTransitionException,
@@ -153,7 +155,7 @@ module entity {
         * @throws PersistencyException There was a problem committing the changes to storage.
         * @throws ObjectAlreadyExistsException Not normally thrown, but reserved for PredefinedSteps to throw if they need to.
         **/
-        string delegatedAction( in common::SystemKey agentKey,
+        string delegatedAction( in string            authToken,
                                 in common::SystemKey delegateAgentKey,
                                 in string            stepPath,
                                 in unsigned long     transitionID,
@@ -180,8 +182,8 @@ module entity {
         * @throws ObjectNotFoundException - when the Item doesn't have a lifecycle
         * @throws PersistencyException - when there was a storage or other unknown error
         **/
-        string queryLifeCycle( in common::SystemKey   agentKey,
-                               in boolean             filter )
+        string queryLifeCycle( in string  authToken,
+                               in boolean filter )
             raises( common::AccessRightsException,
                     common::ObjectNotFoundException,
                     common::PersistencyException );

@@ -20,8 +20,7 @@
  */
 package org.cristalise.kernel.process.auth;
 
-import org.cristalise.kernel.common.InvalidDataException;
-import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.AccessRightsException;
 
 /**
  * This interface is used by the kernel to store an authenticated connection
@@ -53,14 +52,14 @@ public interface Authenticator {
      *            Included so that domains may include CRISTAL users from
      *            different realms. This parameter is passed into the connect()
      *            method if required. May be null.
-     * @return a boolean indicating if the authentication was successful. If so,
-     *         then the Gateway will generate an AgentProxy for the given user.
+     * @return a String containing a JWT authentication token
      * @throws ObjectNotFoundException
      *             When the Agent doesn't exist
      * @throws InvalidDataException
      *             When authentication fails for another reason
+     * @throws AccessRightsException 
      */
-    public boolean authenticate(String agentName, String password, String resource) throws InvalidDataException, ObjectNotFoundException;
+    public String authenticate(String agentName, String password, String resource) throws AccessRightsException;
 
     /**
      * Authenticates a superuser connection for the server. It must be able to
@@ -78,7 +77,7 @@ public interface Authenticator {
      * @throws InvalidDataException
      *             When authentication fails for another reason
      */
-    public boolean authenticate(String resource) throws InvalidDataException, ObjectNotFoundException;
+    public boolean authenticate(String resource) throws AccessRightsException;
 
     /**
      * Lookup and storage implementations that need to use user or superuser

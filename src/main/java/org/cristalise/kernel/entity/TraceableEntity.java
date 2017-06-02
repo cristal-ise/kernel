@@ -94,7 +94,6 @@ public class TraceableEntity extends ItemPOA
         return mItemImpl.getSystemKey();
     }
 
-    @Override
 	public void initialise( SystemKey agentId,
                             String  propString,
                             String  initWfString,
@@ -110,11 +109,11 @@ public class TraceableEntity extends ItemPOA
     }
 
     @Override
-	public String requestAction( SystemKey agentId,
-                               String stepPath,
-                               int transitionID,
-                               String requestData
-                              )
+	public String requestAction(String authToken, 
+                                String stepPath,
+                                int    transitionID,
+                                String requestData
+                                )
         throws AccessRightsException,
                InvalidTransitionException,
                ObjectNotFoundException,
@@ -123,17 +122,17 @@ public class TraceableEntity extends ItemPOA
                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mItemImpl.requestAction(agentId, stepPath, transitionID, requestData);
+            return mItemImpl.requestAction(authToken, stepPath, transitionID, requestData);
         }
     }
     
     @Override
-	public String delegatedAction( SystemKey agentId,
-							   SystemKey delegateAgentId,
-                               String stepPath,
-                               int transitionID,
-                               String requestData
-                              )
+	public String delegatedAction(String    authToken,
+							      SystemKey delegateAgentId,
+                                  String    stepPath,
+                                  int       transitionID,
+                                  String    requestData
+                                  )
         throws AccessRightsException,
                InvalidTransitionException,
                ObjectNotFoundException,
@@ -142,31 +141,31 @@ public class TraceableEntity extends ItemPOA
                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mItemImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
+            return mItemImpl.delegatedAction(authToken, delegateAgentId, stepPath, transitionID, requestData);
         }
     }
 
     @Override
-	public String queryLifeCycle( SystemKey agentId,
-                                  boolean     filter
+	public String queryLifeCycle( String  authToken,
+                                  boolean filter
                                 )
         throws AccessRightsException,
                ObjectNotFoundException,
                PersistencyException
     {
         synchronized (this) {
-            return mItemImpl.queryLifeCycle(agentId, filter);
+            return mItemImpl.queryLifeCycle(authToken, filter);
         }
     }
 
     @Override
-	public String queryData(String path)
+	public String queryData(String authToken, String path)
         throws AccessRightsException,
                ObjectNotFoundException,
                PersistencyException
     {
         synchronized (this) {
-            return mItemImpl.queryData(path);
+            return mItemImpl.queryData(authToken, path);
         }
     }
 }

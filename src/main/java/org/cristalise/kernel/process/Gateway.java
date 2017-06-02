@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -44,7 +45,7 @@ import org.cristalise.kernel.process.resource.DefaultResourceImportHandler;
 import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceLoader;
-import org.cristalise.kernel.process.security.SecurityManager;
+import org.cristalise.kernel.process.security.AuthManager;
 import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -80,8 +81,7 @@ public class Gateway
     static private CorbaServer          mCorbaServer;
     static private CastorXMLUtility     mMarshaller;
     static private ResourceLoader       mResource;
-
-    static private SecurityManager      mSecurityManager;
+    static private AuthManager          mAuthManager;
 
     //FIXME: Move this cache to Resource class - requires to extend ResourceLoader with getResourceImportHandler()
     static private HashMap<BuiltInResources, ResourceImportHandler> resourceImportHandlerCache = new HashMap<BuiltInResources, ResourceImportHandler>();
@@ -122,7 +122,7 @@ public class Gateway
         Logger.msg("Gateway.init() - Kernel version: "+getKernelVersion());
 
         try {
-            mSecurityManager = new SecurityManager();
+            mAuthManager = new AuthManager();
         }
         catch (Exception e1) {
             throw new InvalidDataException("Invalid Resource Location");
@@ -241,13 +241,13 @@ public class Gateway
      *
      * @throws InvalidDataException - bad params
      * @throws PersistencyException - error starting storages
-     * @throws ObjectNotFoundException - object not found
+     * @throws AccessRightsException - could not initialize Authenticator
      */
-    static public Authenticator connect() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+    static public Authenticator connect() throws InvalidDataException, PersistencyException, AccessRightsException {
         try {
             Authenticator auth = getAuthenticator();
 
-            if (!auth.authenticate("System")) throw new InvalidDataException("Server authentication failed");
+            auth.authenticate("System");
 
             if (mLookup != null) mLookup.close();
 
@@ -277,13 +277,14 @@ public class Gateway
      * @throws InvalidDataException - bad params
      * @throws PersistencyException - error starting storages
      * @throws ObjectNotFoundException - object not found
+     * @throws AccessRightsException - login failed
      */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
-            throws InvalidDataException, ObjectNotFoundException, PersistencyException
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, AccessRightsException
     {
         Authenticator auth = getAuthenticator();
 
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        String authToken = auth.authenticate(agentName, agentPassword, resource);
 
         try {
             if (mLookup != null) mLookup.close();
@@ -303,6 +304,7 @@ public class Gateway
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
         agent.setAuthObj(auth);
+        agent.setAuthToken(authToken);
         ScriptConsole.setUser(agent);
 
         // Run module startup scripts. Server does this during bootstrap
@@ -324,18 +326,20 @@ public class Gateway
      * 
      * @throws InvalidDataException - bad params
      * @throws ObjectNotFoundException - object not found
+     * @throws AccessRightsException 
      */
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
-            throws InvalidDataException, ObjectNotFoundException
+            throws AccessRightsException, ObjectNotFoundException, InvalidDataException
     {
         Authenticator auth = getAuthenticator();
 
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        String authToken = auth.authenticate(agentName, agentPassword, resource);
 
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
         agent.setAuthObj(auth);
+        agent.setAuthToken(authToken);
 
         return agent;
     }
@@ -351,7 +355,7 @@ public class Gateway
     }
 
     static public AgentProxy connect(String agentName, String agentPassword) 
-            throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, AccessRightsException
     {
         return connect(agentName, agentPassword, null);
     }
@@ -454,8 +458,8 @@ public class Gateway
         return mProxyServer;
     }
 
-    public static SecurityManager getSecurityManager() {
-        return mSecurityManager;
+    public static AuthManager getAuthManager() {
+        return mAuthManager;
     }
 
     static public String getCentreId() {
