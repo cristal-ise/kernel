@@ -94,6 +94,16 @@ public class TraceableEntity extends ItemPOA
         return mItemImpl.getSystemKey();
     }
 
+    /**
+     * Initialises a new Item. Initial properties and the lifecycle are supplied. They should come from the Item's description.
+     *
+     * @param agentKey the Agent doing the initialisation
+     * @param itemProps The XML marshalled {@link org.cristalise.kernel.Property.PropertyArrayList PropertyArrayList} containing the initial
+ 	 * Property objects of the Item
+     * @param workflow The XML marshalled new lifecycle of the Item
+     * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
+     * @exception ObjectNotFoundException
+     **/
 	public void initialise( SystemKey agentId,
                             String  propString,
                             String  initWfString,

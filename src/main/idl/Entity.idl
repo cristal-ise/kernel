@@ -49,27 +49,6 @@ module entity {
         common::SystemKey getSystemKey();
 
        /**
-        * Initialises a new Item. Initial properties and the lifecycle are supplied. They should come from the Item's description.
-        *
-        * @param agentKey the Agent doing the initialisation
-        * @param itemProps The XML marshalled {@link org.cristalise.kernel.Property.PropertyArrayList PropertyArrayList} containing the initial
-    	* Property objects of the Item
-        * @param workflow The XML marshalled new lifecycle of the Item
-        * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
-        * @exception ObjectNotFoundException
-        **/
-/*
-        void initialise( in string authToken,
-                         in string itemProps,
-                         in string workflow,
-                         in string collections )
-            raises( common::AccessRightsException,
-                    common::InvalidDataException,
-                    common::PersistencyException,
-                    common::ObjectNotFoundException,
-                    common::InvalidCollectionModification );
-*/                    
-       /**
         * Returns a chunk of XML which may be a serialized C2KLocalObject, or in the case of Outcomes is merely a fragment of XML.
         * 
         * @param path - All Entity data is arranged in a tree structure which uniquely identifies that object within the Entity 
