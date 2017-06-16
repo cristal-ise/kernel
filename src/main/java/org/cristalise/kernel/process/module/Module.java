@@ -32,6 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -270,17 +271,6 @@ public class Module extends ImportItem {
      */
     public void setImports(ModuleImports theImports) {
         imports = theImports;
-        /*
-        ImportDependency contents = new ImportDependency(CONTENTS);
-
-        for (ModuleImport thisImport : imports.list) {
-            DomainPath path = thisImport.domainPath;
-
-            if (path != null) contents.dependencyMemberList.add(new ImportDependencyMember(path.toString()));
-            else              Logger.warning("Module.setImports() - CANNOT add to dependency name:"+thisImport.getName());
-        }
-        dependencyList.add(contents);
-        */
     }
 
     /**
@@ -297,7 +287,7 @@ public class Module extends ImportItem {
 
     /**
      * Adds the members of this Collection recursively to the imports of this Module. It checks if the Item
-     * referenced by its member has a Collections or not, and adds all of members of those Collection as well.
+     * referenced by the member has a Collections or not, and adds all of members of those Collection as well.
      * 
      * @param contents the Collection to be added as a list of imports
      * @throws ObjectNotFoundException the data was not found
@@ -340,7 +330,7 @@ public class Module extends ImportItem {
                     try {
                         // check if child already assigned to a different module
                         String childModule = child.getProperty(MODULE);
-                        if (childModule != null && childModule.length() > 0 && !childModule.equals(getNamespace())) 
+                        if (StringUtils.isNotBlank(childModule) && !childModule.equals(getNamespace())) 
                             return;
                     }
                     catch (ObjectNotFoundException ex) { }// no module property, ok to include
