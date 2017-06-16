@@ -213,12 +213,7 @@ public class ImportItem extends ModuleImport {
 
             // parse new outcome and validate
             Outcome newOutcome = new Outcome(-1, outcomeData, schema);
-            String errors = newOutcome.validate();
-            
-            if (errors != null && errors.length() > 0) {
-                Logger.error("ImportItem.create() - Invalid XML errors:" + errors);
-                throw new ObjectCannotBeUpdated("Invalid XML for " + thisOutcome.schema + "/" + thisOutcome.viewname + " in " + ns + "/" + name);
-            }
+            newOutcome.validateAndCheck();
 
             Viewpoint impView;
             try {
