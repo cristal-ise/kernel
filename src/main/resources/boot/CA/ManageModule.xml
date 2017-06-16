@@ -1,7 +1,7 @@
 <!--
 
-    This file is part of the CRISTAL-iSE Development Module.
-    Copyright (c) 2001-2017 The CRISTAL Consortium. All rights reserved.
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
 
     This library is free software; you can redistribute it and/or modify it
     under the terms of the GNU Lesser General Public License as published
@@ -20,8 +20,7 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<CompositeActivityDef ID="-1" Name="ManageModule"
-	Height="0" Width="0" IsLayoutable="false" IsComposite="true">
+<CompositeActivityDef ID="-1" Name="ManageModule" Height="0" Width="0" IsLayoutable="false" IsComposite="true">
 	<childrenGraphModel>
 		<GraphModelCastorData StartVertexId="0" NextId="38">
 			<JoinDef ID="26" Name="" Height="24" Width="60" IsLayoutable="true"

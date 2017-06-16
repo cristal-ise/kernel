@@ -71,12 +71,10 @@
 				</xs:element>
 				<xs:element name="Imports" minOccurs="0">
 					<xs:annotation>
-						<xs:documentation>Items to import into or verify within the
-							Cristal server upon launch.
-						</xs:documentation>
+						<xs:documentation>Items to import into or verify within the Cristal server upon launch.</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
-						<xs:choice maxOccurs="unbounded">
+						<xs:sequence maxOccurs="unbounded">
 							<xs:element name="Resource" minOccurs="0">
 								<xs:complexType>
 									<xs:simpleContent>
@@ -224,7 +222,7 @@
 									<xs:attribute name="password" type="xs:string"
 										use="required" />
 								</xs:complexType>
-							</xs:element>						</xs:choice>
+							</xs:element>						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
