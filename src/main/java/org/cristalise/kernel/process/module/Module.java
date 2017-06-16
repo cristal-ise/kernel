@@ -22,7 +22,11 @@ package org.cristalise.kernel.process.module;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.CONTENTS;
 import static org.cristalise.kernel.property.BuiltInItemProperties.COMPLEXITY;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAMESPACE;
+import static org.cristalise.kernel.property.BuiltInItemProperties.MODULE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
+import static org.cristalise.kernel.property.BuiltInItemProperties.VERSION;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,12 +44,11 @@ import org.cristalise.kernel.entity.imports.ImportOutcome;
 import org.cristalise.kernel.entity.imports.ImportRole;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
-import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.resource.BuiltInResources;
-import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
@@ -67,7 +70,8 @@ public class Module extends ImportItem {
         setWorkflow(   BuiltInResources.MODULE_RESOURCE.getWorkflowDef());
         setWorkflowVer(0);
 
-        //imports.list.add(this);
+        //Module has one built-in Dependency
+        dependencyList.add(new ImportDependency(CONTENTS));
     }
 
     public void runScript(String event, AgentProxy agent, boolean isServer) throws ScriptingEngineException {
@@ -97,18 +101,18 @@ public class Module extends ImportItem {
     @Override
     public void setNamespace(String ns) {
         super.setNamespace(ns);
-        replaceProp(new Property(BuiltInItemProperties.NAMESPACE, ns, false));
+        replaceProp(new Property(NAMESPACE, ns, false));
     }
 
     @Override
     public void setName(String name) {
         super.setName(name);
-        replaceProp(new Property(BuiltInItemProperties.NAME, name, false));
+        replaceProp(new Property(NAME, name, false));
     }
 
     private void replaceProp(Property newProp) {
         for (Property prop : properties) {
-            if (prop.getName().equals("Namespace")) {
+            if (prop.getName().equals(newProp.getName())) {
                 prop.setMutable(newProp.isMutable());
                 prop.setValue(newProp.getValue());
                 return;
@@ -116,13 +120,20 @@ public class Module extends ImportItem {
         }
         properties.add(newProp);
     }
+    
+    private void addItemToContents(Path itemPath) {
+        ImportDependency contents = dependencyList.get(0);
+        
+        contents.dependencyMemberList.add(new ImportDependencyMember(itemPath.toString()));
+    }
 
     /**
-     * Imports all resources defined in the Module in this order: Resources, Roles, Agents, Items and the Module itself
+     * Imports all resources defined in the Module in this order: Resources, Roles, Agents, Items and Module itself
      * 
      * @param serverEntity not used at the moment but required to implement the import as the workflow of the serverItem
      * @param systemAgent system agent used during the import
      * @param reset whether to reset or not the version of the created/updated resource
+     * @throws Exception All possible exceptions
      */
     public void importAll(ItemProxy serverEntity, AgentProxy systemAgent, boolean reset) throws Exception {
         if (!Bootstrap.shutdown) importResources(systemAgent, reset);
@@ -144,7 +155,7 @@ public class Module extends ImportItem {
             if (Bootstrap.shutdown) return;
 
             thisItem.setNamespace(ns);
-            thisItem.create(systemAgent.getPath(), reset);
+            addItemToContents( thisItem.create(systemAgent.getPath(), reset) );
         }
     }
 
@@ -165,7 +176,7 @@ public class Module extends ImportItem {
             catch (ObjectNotFoundException ex) { }
 
             Logger.msg("Module.importAgents() - Agent '"+thisAgent.name+"' not found. Creating.");
-            thisAgent.create(systemAgent.getPath(), reset);
+            addItemToContents( thisAgent.create(systemAgent.getPath(), reset) );
         }
     }
 
@@ -192,7 +203,7 @@ public class Module extends ImportItem {
 
             try {
                 thisRes.setNamespace(ns);
-                thisRes.create(systemAgent.getPath(), reset);
+                addItemToContents( thisRes.create(systemAgent.getPath(), reset) );
             }
             catch (Exception ex) {
                 Logger.error(ex);
@@ -245,7 +256,7 @@ public class Module extends ImportItem {
 
     public void setInfo(ModuleInfo info) {
         this.info = info;
-        replaceProp(new Property(BuiltInItemProperties.VERSION, info.version, true));
+        replaceProp(new Property(VERSION, info.version, true));
     }
 
     public ModuleImports getImports() {
@@ -259,30 +270,45 @@ public class Module extends ImportItem {
      */
     public void setImports(ModuleImports theImports) {
         imports = theImports;
-
-        ImportDependency children = new ImportDependency(CONTENTS);
+        /*
+        ImportDependency contents = new ImportDependency(CONTENTS);
 
         for (ModuleImport thisImport : imports.list) {
             DomainPath path = thisImport.domainPath;
 
-            if (path != null) {
-                children.dependencyMemberList.add(new ImportDependencyMember(path.toString()));
-            }
+            if (path != null) contents.dependencyMemberList.add(new ImportDependencyMember(path.toString()));
+            else              Logger.warning("Module.setImports() - CANNOT add to dependency name:"+thisImport.getName());
         }
-        dependencyList.add(children);
+        dependencyList.add(contents);
+        */
     }
 
+    /**
+     * Overwrites the imports with the content of this Collection  
+     * 
+     * @param contents the Collection to be used as a list of imports
+     * @throws ObjectNotFoundException the data was not found
+     * @throws InvalidDataException the data was invalid
+     */
     public void setImports(Collection<?> contents) throws ObjectNotFoundException, InvalidDataException {
         imports.list.clear();
         addImports(contents);
     }
 
+    /**
+     * Adds the members of this Collection recursively to the imports of this Module. It checks if the Item
+     * referenced by its member has a Collections or not, and adds all of members of those Collection as well.
+     * 
+     * @param contents the Collection to be added as a list of imports
+     * @throws ObjectNotFoundException the data was not found
+     * @throws InvalidDataException the data was invalid
+     */
     public void addImports(Collection<?> contents) throws ObjectNotFoundException, InvalidDataException {
         for (CollectionMember mem : contents.getMembers().list) {
             if (mem.getItemPath() != null) {
                 ItemProxy    child   = mem.resolveItem();
                 String       name    = child.getName();
-                Integer      version = Integer.valueOf(mem.getProperties().get("Version").toString());
+                Integer      version = Integer.valueOf(mem.getProperties().get(VERSION.getName()).toString());
                 String       type    = child.getProperty(TYPE);
                 ModuleImport newImport;
                 
@@ -313,7 +339,7 @@ public class Module extends ImportItem {
                 if (!imports.list.contains(newImport)) {
                     try {
                         // check if child already assigned to a different module
-                        String childModule = child.getProperty("Module");
+                        String childModule = child.getProperty(MODULE);
                         if (childModule != null && childModule.length() > 0 && !childModule.equals(getNamespace())) 
                             return;
                     }
