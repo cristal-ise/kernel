@@ -26,28 +26,27 @@ import org.cristalise.kernel.scripting.ScriptingEngineException;
 
 public class ModuleScript {
 
+    public String target;
+    public String event;
+    public String lang;
+    public String script;
 
-	public String target;
-	public String event;
-	public String lang;
-	public String script;
-	public ModuleScript() {
-	}
-	
-	public ModuleScript(String target, String event, String lang, String script) {
-		super();
-		this.target = target;
-		this.event = event;
-		this.lang = lang;
-		this.script = script;
-	}
-	
-	public Script getScript(String ns, AgentProxy agent) throws ScriptingEngineException {
-        return new Script(lang, ns+" "+target+" "+event, script, agent);
-	}
+    public ModuleScript() {}
 
-	public boolean shouldRun(String event, boolean isServer) {
-		return ((this.target == null || this.target.length() == 0 || isServer == target.equals("server")) && 
-				(this.event == null || this.event.length() == 0 || event.equals(this.event)));
-	}
+    public ModuleScript(String target, String event, String lang, String script) {
+        super();
+        this.target = target;
+        this.event = event;
+        this.lang = lang;
+        this.script = script;
+    }
+
+    public Script getScript(String ns, AgentProxy agent) throws ScriptingEngineException {
+        return new Script(lang, ns + " " + target + " " + event, script, agent);
+    }
+
+    public boolean shouldRun(String event, boolean isServer) {
+        return ((this.target == null || this.target.length() == 0 || isServer == target.equals("server")) &&
+                (this.event  == null || this.event.length()  == 0 || event.equals(this.event)));
+    }
 }
