@@ -381,17 +381,15 @@ public class CompositeActivityDef extends ActivityDef {
 
         // TODO: property include routing scripts in another dependency collection
 
-        // export routing scripts and schemas
-        for (int i = 0; i < getChildren().length; i++) {
-            GraphableVertex vert = getChildren()[i];
+        //export child activitz defs, routing scripts and schemas
+        for (GraphableVertex vert: getChildren()) {
             if (vert instanceof AndSplitDef) {
                 try {
                     ((AndSplitDef) vert).getRoutingScript().export(imports, dir);
                 }
                 catch (ObjectNotFoundException ex) {}
             }
-
-            if (vert instanceof ActivitySlotDef) {
+            else if (vert instanceof ActivitySlotDef) {
                 ActivityDef refAct = ((ActivitySlotDef) vert).getTheActivityDef();
                 refAct.export(imports, dir);
             }

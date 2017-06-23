@@ -24,6 +24,7 @@ import static org.cristalise.kernel.collection.BuiltInCollections.QUERY;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 import static org.cristalise.kernel.process.resource.BuiltInResources.ELEM_ACT_DESC_RESOURCE;
 
@@ -189,55 +190,82 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
     public Schema getSchema() throws InvalidDataException, ObjectNotFoundException {
         if (actSchema == null) {
-            Logger.msg(1, "ActivityDef.getSchema(actName:"+getName()+") - Loading ...");
-            actSchema = LocalObjectLoader.getSchema(getProperties());
+            DescriptionObject[] descObjects = getBuiltInCollectionResource(SCHEMA);
+            if (descObjects.length > 0) actSchema = (Schema)descObjects[0];
+
+            if (actSchema == null) {
+                Logger.msg(1, "ActivityDef.getSchema(actName:"+getName()+") - Loading ...");
+                actSchema = LocalObjectLoader.getSchema(getProperties());
+            }
         }
         return actSchema;
     }
 
     public Script getScript() throws InvalidDataException, ObjectNotFoundException {
         if (actScript == null) {
-            Logger.msg(1, "ActivityDef.getScript(actName:"+getName()+") - Loading ...");
-            actScript = LocalObjectLoader.getScript(getProperties());
+            DescriptionObject[] descObjects = getBuiltInCollectionResource(SCRIPT);
+            if (descObjects.length > 0) actScript = (Script)descObjects[0];
+
+            if (actScript == null) {
+                Logger.msg(1, "ActivityDef.getScript(actName:"+getName()+") - Loading ...");
+                actScript = LocalObjectLoader.getScript(getProperties());
+            }
         }
         return actScript;
     }
 
     public Query getQuery() throws InvalidDataException, ObjectNotFoundException {
         if (actQuery == null) {
-            Logger.msg(1, "ActivityDef.getQuery(actName:"+getName()+") - Loading ...");
-            actQuery = LocalObjectLoader.getQuery(getProperties());
+            DescriptionObject[] descObjects = getBuiltInCollectionResource(QUERY);
+            if (descObjects.length > 0) actQuery = (Query)descObjects[0];
+
+            if (actQuery == null) {
+                Logger.msg(1, "ActivityDef.getQuery(actName:"+getName()+") - Loading ...");
+                actQuery = LocalObjectLoader.getQuery(getProperties());
+            }
         }
         return actQuery;
     }
 
     public StateMachine getStateMachine() throws InvalidDataException, ObjectNotFoundException {
         if (actStateMachine == null) {
-            Logger.msg(1, "ActivityDef.getStateMachine(actName:"+getName()+") - Loading ...");
-            actStateMachine = LocalObjectLoader.getStateMachine(getProperties());
+            DescriptionObject[] descObjects = getBuiltInCollectionResource(STATE_MACHINE);
+            if (descObjects.length > 0) actStateMachine = (StateMachine)descObjects[0];
+
+            if (actStateMachine == null) {
+                Logger.msg(1, "ActivityDef.getStateMachine(actName:"+getName()+") - Loading ...");
+                actStateMachine = LocalObjectLoader.getStateMachine(getProperties());
+            }
         }
         return actStateMachine;
     }
 
-    @Deprecated
     protected DescriptionObject[] getBuiltInCollectionResource(BuiltInCollections collection) throws ObjectNotFoundException, InvalidDataException {
-        // not stored yet
-        if (itemPath == null) throw new ObjectNotFoundException(); 
+        ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
+
+        if (itemPath == null) {
+            Logger.warning("ActivityDef.getCollectionResource(actName:"+getName()+") - itemPath is null! CANNOT resolve anythink in Storage");
+            return retArr.toArray(new DescriptionObject[retArr.size()]);
+        }
 
         Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collection);
 
         Dependency resColl;
 
         try {
-            String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
-            resColl = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collection + "/" + verStr, null);
+            String clusterPath = ClusterStorage.COLLECTION + "/" + collection + "/" + 
+                    ((mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion));
+            
+            String[] contents = Gateway.getStorage().getClusterContents(itemPath, clusterPath);
+            if (contents != null && contents.length > 0)
+                resColl = (Dependency) Gateway.getStorage().get(itemPath, clusterPath, null);
+            else
+                return retArr.toArray(new DescriptionObject[retArr.size()]);
         }
         catch (PersistencyException e) {
             Logger.error(e);
             throw new InvalidDataException("Error loading description collection " + collection);
         }
-
-        ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
 
         for (DependencyMember resMem : resColl.getMembers().list) {
             String resUUID = resMem.getChildUUID();
@@ -245,6 +273,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
 
             if (resVer == null) {
                 throw new InvalidDataException("Version is null for Item:" + itemPath + ", Collection:" + collection + ", DependencyMember:" + resUUID);
+            }
+
+            if (collection != ACTIVITY && retArr.size() > 0) {
+                throw new InvalidDataException("actName:"+getName()+ " has an invalid dependency:" + collection);
             }
 
             switch (collection) {
@@ -267,9 +299,6 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
                     throw new InvalidDataException("");
             }
         }
-        
-        if (retArr.size() == 0) throw new ObjectNotFoundException();
-        
         return retArr.toArray(new DescriptionObject[retArr.size()]);
     }
 
@@ -327,6 +356,8 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         String actXML;
         String tc = ELEM_ACT_DESC_RESOURCE.getTypeCode();
 
+        exportCollections(imports, dir);
+
         try {
             actXML = Gateway.getMarshaller().marshall(this);
         }
@@ -334,12 +365,19 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
             Logger.error(e);
             throw new InvalidDataException("Couldn't marshall activity def " + getActName());
         }
-        
+
         FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), actXML);
 
         if (imports != null) {
             imports.write("<Activity " + getExportAttributes(tc) + ">" + getExportCollections() + "</Activity>\n");
         }
+    }
+
+    protected void exportCollections(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+        if (getStateMachine() != null) getStateMachine().export(imports, dir);
+        if (getSchema()       != null) getSchema().export(imports, dir);
+        if (getScript()       != null) getScript().export(imports, dir);
+        if (getQuery()        != null) getQuery().export(imports, dir);
     }
 
     protected String getExportAttributes(String type) throws InvalidDataException, ObjectNotFoundException, IOException {
