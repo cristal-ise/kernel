@@ -35,97 +35,70 @@ import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 
-/**
- * @version $Revision: 1.19 $ $Date: 2005/09/29 10:18:31 $
- * @author  $Author: abranson $
- */
+public class AndSplitDef extends WfVertexDef {
 
-public class AndSplitDef extends WfVertexDef
-{
-	/**
-	 * @see java.lang.Object#Object()
-	 */
-	public AndSplitDef()
-	{
-		mErrors = new Vector<String>(0, 1);
+    public AndSplitDef() {
+        mErrors = new Vector<String>(0, 1);
 
-		setBuiltInProperty(ROUTING_SCRIPT_NAME, "");
-		setBuiltInProperty(ROUTING_SCRIPT_VERSION, "");
-		setBuiltInProperty(ROUTING_EXPR, "");
-	}
-
-	/**
-	 * @see org.cristalise.kernel.lifecycle.WfVertexDef#verify()
-	 */
-	@Override
-	public boolean verify()
-	{
-		mErrors.removeAllElements();
-		boolean err = true;
-		int nbInEdges = getInEdges().length;
-		if (nbInEdges == 0 && this.getID() != getParent().getChildrenGraphModel().getStartVertexId())
-		{
-			mErrors.add("Unreachable");
-			err = false;
-		}
-		else if (nbInEdges > 1)
-		{
-			mErrors.add("Bad nb of previous");
-			err = false;
-		}
-		else
-		{
-			if (getOutEdges().length <= 1)
-			{
-				mErrors.add("not enough next");
-				err = false;
-			}
-			else if (!(this instanceof LoopDef))
-			{
-				Vertex[] outV = getOutGraphables();
-				Vertex[] anteVertices =
-					GraphTraversal.getTraversal(getParent().getChildrenGraphModel(), this, GraphTraversal.kUp, false);
-				boolean loop = false;
-				boolean errInLoop = true;
-				for (int i = 0; i < outV.length; i++)
-				{
-					for (int j = 0; j < anteVertices.length; j++)
-						if (!loop && outV[i].getID() == anteVertices[j].getID())
-						{
-							if (outV[i] instanceof LoopDef)
-							{
-								loop = true;
-								j = anteVertices.length;
-								i = outV.length;
-							}
-							else
-							{
-								errInLoop = false;
-							}
-						}
-				}
-				if (errInLoop && loop)
-				{
-					mErrors.add("Problem in Loop");
-					err = false;
-				}
-			}
-		}
-		return err;
-	}
+        setBuiltInProperty(ROUTING_SCRIPT_NAME, "");
+        setBuiltInProperty(ROUTING_SCRIPT_VERSION, "");
+        setBuiltInProperty(ROUTING_EXPR, "");
+    }
 
     @Override
-	public boolean loop()
-    {
+    public boolean verify() {
+        mErrors.removeAllElements();
+        boolean err = true;
+        int nbInEdges = getInEdges().length;
+        if (nbInEdges == 0 && this.getID() != getParent().getChildrenGraphModel().getStartVertexId()) {
+            mErrors.add("Unreachable");
+            err = false;
+        }
+        else if (nbInEdges > 1) {
+            mErrors.add("Bad nb of previous");
+            err = false;
+        }
+        else {
+            if (getOutEdges().length <= 1) {
+                mErrors.add("not enough next");
+                err = false;
+            }
+            else if (!(this instanceof LoopDef)) {
+                Vertex[] outV = getOutGraphables();
+                Vertex[] anteVertices = GraphTraversal.getTraversal(getParent().getChildrenGraphModel(), this, GraphTraversal.kUp, false);
+                boolean loop = false;
+                boolean errInLoop = true;
+
+                for (int i = 0; i < outV.length; i++) {
+                    for (int j = 0; j < anteVertices.length; j++)
+                        if (!loop && outV[i].getID() == anteVertices[j].getID()) {
+                            if (outV[i] instanceof LoopDef) {
+                                loop = true;
+                                j = anteVertices.length;
+                                i = outV.length;
+                            }
+                            else {
+                                errInLoop = false;
+                            }
+                        }
+                }
+                if (errInLoop && loop) {
+                    mErrors.add("Problem in Loop");
+                    err = false;
+                }
+            }
+        }
+        return err;
+    }
+
+    @Override
+    public boolean loop() {
         boolean loop2 = false;
-        if (!loopTested)
-        {
+        if (!loopTested) {
             loopTested = true;
-            if (getOutGraphables().length != 0)
-            {
+            if (getOutGraphables().length != 0) {
                 Vertex[] outVertices = getOutGraphables();
-                for (int i = 0; i < outVertices.length; i++)
-                {
+                for (int i = 0; i < outVertices.length; i++) {
                     WfVertexDef tmp = (WfVertexDef) getOutGraphables()[i];
                     loop2 = loop2 || tmp.loop();
                 }
@@ -135,23 +108,27 @@ public class AndSplitDef extends WfVertexDef
         return loop2;
     }
 
-	@Override
-	public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
-		AndSplit newSplit = new AndSplit();
-		configureInstance(newSplit);
-		return newSplit;
-	}
-	
-	public Script getRoutingScript() throws ObjectNotFoundException, InvalidDataException {
-		String scriptName = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
-		Integer scriptVersion;
-		try {
-			String scriptVerStr = (String) getBuiltInProperty(ROUTING_SCRIPT_VERSION);
-			if (scriptVerStr!=null && !scriptVerStr.isEmpty()) 
-				scriptVersion = Integer.valueOf(scriptVerStr.toString());
-			else throw new ObjectNotFoundException();
-		} catch (NumberFormatException e) { throw new InvalidDataException(); }
-		return LocalObjectLoader.getScript(scriptName, scriptVersion);
-	}
+    @Override
+    public WfVertex instantiate() throws InvalidDataException, ObjectNotFoundException {
+        AndSplit newSplit = new AndSplit();
+        configureInstance(newSplit);
+        return newSplit;
+    }
+
+    public Script getRoutingScript() throws ObjectNotFoundException, InvalidDataException {
+        String scriptName = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
+        Integer scriptVersion;
+        try {
+            String scriptVerStr = (String) getBuiltInProperty(ROUTING_SCRIPT_VERSION);
+            if (scriptVerStr != null && !scriptVerStr.isEmpty())
+                scriptVersion = Integer.valueOf(scriptVerStr.toString());
+            else
+                throw new ObjectNotFoundException();
+        }
+        catch (NumberFormatException e) {
+            throw new InvalidDataException(e.getMessage());
+        }
+        return LocalObjectLoader.getScript(scriptName, scriptVersion);
+    }
 
 }
