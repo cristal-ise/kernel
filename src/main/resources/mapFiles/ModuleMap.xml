@@ -45,8 +45,8 @@
         <field name="config" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleConfig">
             <bind-xml name="Config" node="element" />
         </field>
-        <field name="scripts" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleScript">
-            <bind-xml name="Script" node="element" />
+        <field name="scripts" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleEmbeddedScript">
+            <bind-xml name="EmbeddedScript" node="element" />
         </field>
     </class>
     <class name="org.cristalise.kernel.process.module.ModuleImports">
@@ -89,6 +89,18 @@
         <field name="resourceLocation" direct="false" type="string">
             <bind-xml node="text" />
         </field>
+    </class>
+    <class name="org.cristalise.kernel.process.module.ModuleSchema" extends="org.cristalise.kernel.process.module.ModuleResource">
+        <map-to xml="SchemaResource" />
+    </class>
+    <class name="org.cristalise.kernel.process.module.ModuleScript" extends="org.cristalise.kernel.process.module.ModuleResource">
+        <map-to xml="ScriptResource" />
+    </class>
+    <class name="org.cristalise.kernel.process.module.ModuleQuery" extends="org.cristalise.kernel.process.module.ModuleResource">
+        <map-to xml="QueryResource" />
+    </class>
+    <class name="org.cristalise.kernel.process.module.ModuleStateMachine" extends="org.cristalise.kernel.process.module.ModuleResource">
+        <map-to xml="StateMachineResource" />
     </class>
     <class name="org.cristalise.kernel.process.module.ModuleActivity">
         <map-to xml="Activity" />
@@ -146,8 +158,8 @@
             <bind-xml node="text" />
         </field>
     </class>
-    <class name="org.cristalise.kernel.process.module.ModuleScript">
-        <map-to xml="Script" />
+    <class name="org.cristalise.kernel.process.module.ModuleEmbeddedScript">
+        <map-to xml="EmbeddedScript" />
         <field name="target" direct="true" type="string">
             <bind-xml name="target" node="attribute" />
         </field>

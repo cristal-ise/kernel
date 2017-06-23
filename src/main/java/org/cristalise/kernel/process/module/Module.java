@@ -59,9 +59,10 @@ public class Module extends ImportItem {
 
     private ModuleInfo info;
     private String resURL;
-    private ModuleImports imports = new ModuleImports();
     private ArrayList<ModuleConfig> config = new ArrayList<ModuleConfig>();
-    private ArrayList<ModuleScript> scripts = new ArrayList<ModuleScript>();
+    private ModuleImports imports = new ModuleImports();
+
+    private ArrayList<ModuleEmbeddedScript> scripts = new ArrayList<ModuleEmbeddedScript>();
 
     public Module() {
         super();
@@ -76,7 +77,7 @@ public class Module extends ImportItem {
     }
 
     public void runScript(String event, AgentProxy agent, boolean isServer) throws ScriptingEngineException {
-        for (ModuleScript script : scripts) {
+        for (ModuleEmbeddedScript script : scripts) {
             if (script.shouldRun(event, isServer)) {
                 Logger.msg("Running "+script.event+" "+script.target+" script from "+name);
                 Object result = script.getScript(ns, agent).execute();
@@ -228,7 +229,7 @@ public class Module extends ImportItem {
         return props;
     }
 
-    public ArrayList<ModuleScript> getScripts() {
+    public ArrayList<ModuleEmbeddedScript> getScripts() {
         return scripts;
     }
 
@@ -350,7 +351,7 @@ public class Module extends ImportItem {
         this.config = config;
     }
 
-    public void setScripts(ArrayList<ModuleScript> scripts) {
+    public void setScripts(ArrayList<ModuleEmbeddedScript> scripts) {
         this.scripts = scripts;
     }
 

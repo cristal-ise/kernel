@@ -20,7 +20,7 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
-import static org.cristalise.kernel.process.resource.BuiltInResources.SCRIPT_RESOURCE;
+import static org.cristalise.kernel.process.resource.BuiltInResources.SCHEMA_RESOURCE;
 
 import java.io.File;
 import java.io.IOException;
@@ -151,7 +151,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
     @Override
     public void export(Writer imports, File dir) throws IOException {
         String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xsd";
-        String typeCode = SCRIPT_RESOURCE.getTypeCode();
+        String typeCode = SCHEMA_RESOURCE.getTypeCode();
 
         FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), schemaData);
 

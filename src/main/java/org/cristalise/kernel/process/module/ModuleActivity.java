@@ -55,7 +55,7 @@ public class ModuleActivity extends ModuleResource {
 
     public ModuleActivity() {
         super();
-        resourceType = BuiltInResources.ELEM_ACT_DESC_RESOURCE.getTypeCode();
+        type = BuiltInResources.ELEM_ACT_DESC_RESOURCE;
     }
 
     public ModuleActivity(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
@@ -82,7 +82,7 @@ public class ModuleActivity extends ModuleResource {
             throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidDataException
     {
         try {
-            domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
+            domainPath = Bootstrap.verifyResource(ns, name, version, type.getTypeCode(), itemPath, getResourceLocation(), reset);
             itemPath = domainPath.getItemPath();
         }
         catch (Exception e) {

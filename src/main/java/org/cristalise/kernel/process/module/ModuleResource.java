@@ -23,6 +23,7 @@ package org.cristalise.kernel.process.module;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -31,25 +32,50 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Bootstrap;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.Logger;
 
 @Getter @Setter
 public class ModuleResource extends ModuleImport {
 
-    public int    version;
-    public String resourceType;
-    public String resourceLocation;
+    public int              version;
+    public BuiltInResources type;
+    public String           resourceLocation;
 
     public ModuleResource() {
         // if not given, version defaults to 0
         version = 0;
     }
 
+    /**
+     * Get the string code of the ResourceType
+     * @return typeCode of the Resource
+     */
+    public String getResourceType() {
+        return type.getTypeCode();
+    }
+
+    /**
+     * Set the type uing the string code
+     * @param typeCode the string code of the Resource
+     */
+    public void setResourceType(String typeCode) {
+        type = BuiltInResources.getValue(typeCode);
+    }
+
+    public String getResourceLocation() {
+        if (StringUtils.isBlank(resourceLocation)) resourceLocation = 
+                "boot/" + type.getTypeCode() + "/" + name + "." + (type == BuiltInResources.SCHEMA_RESOURCE ? "xsd": "xml");
+
+        return resourceLocation;
+    }
+
     @Override
-    public Path create(AgentPath agentPath, boolean reset) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException,
-            ObjectAlreadyExistsException, InvalidDataException {
+    public Path create(AgentPath agentPath, boolean reset) 
+            throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException, InvalidDataException
+    {
         try {
-            return domainPath = Bootstrap.verifyResource(ns, name, version, resourceType, itemPath, resourceLocation, reset);
+            return domainPath = Bootstrap.verifyResource(ns, name, version, type.getTypeCode(), itemPath, getResourceLocation(), reset);
         }
         catch (Exception e) {
             Logger.error(e);
@@ -59,6 +85,6 @@ public class ModuleResource extends ModuleImport {
 
     @Override
     public int hashCode() {
-        return super.hashCode() + resourceType.hashCode() + version;
+        return super.hashCode() + type.getTypeCode().hashCode() + version;
     }
 }

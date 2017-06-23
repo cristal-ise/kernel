@@ -21,277 +21,263 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xs:element name="CristalModule">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="Info">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Description" type="xs:string">
-								<xs:annotation>
-									<xs:documentation>Detailed description of this module.</xs:documentation>
-								</xs:annotation>
-							</xs:element>
-							<xs:element name="Version" type="xs:string" />
-							<xs:element name="KernelVersion" type="xs:string" minOccurs="0"/>
-							<xs:element name="Dependency" type="xs:string"
-								minOccurs="0" maxOccurs="unbounded" />
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="ResourceURL" type="xs:string"
-					minOccurs="0" />
-				<xs:element name="Config" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation>
-						<xs:documentation>Configuration parameters to add to the Cristal
-							VM on launch. May target either client or server processes.
-						</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:simpleContent>
-							<xs:extension base="xs:string">
-								<xs:attribute name="name" type="xs:string" use="required" />
-								<xs:attribute ref="target" />
-							</xs:extension>
-						</xs:simpleContent>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="Script" minOccurs="0" maxOccurs="unbounded">
-					<xs:complexType>
-						<xs:simpleContent>
-							<xs:extension base="xs:string">
-								<xs:attribute ref="event" />
-								<xs:attribute ref="target" />
-								<xs:attribute name="lang" type="xs:string" />
-							</xs:extension>
-						</xs:simpleContent>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="Imports" minOccurs="0">
-					<xs:annotation>
-						<xs:documentation>Items to import into or verify within the Cristal server upon launch.</xs:documentation>
-					</xs:annotation>
-					<xs:complexType>
-						<xs:sequence maxOccurs="unbounded">
-							<xs:element name="Resource" minOccurs="0">
-								<xs:complexType>
-									<xs:simpleContent>
-										<xs:extension base="xs:string">
-											<xs:attribute name="name" type="xs:string" use="required" />
-											<xs:attribute name="version" type="xs:integer" use="optional" />
-											<xs:attribute name="id" type="uuid" use="optional" />
-											<xs:attribute name="type" type="xs:string" use="required" />
-										</xs:extension>
-									</xs:simpleContent>
-								</xs:complexType>
-							</xs:element>
-							<xs:element name="Activity" type="activity" minOccurs="0"/>
-							<xs:element name="Workflow" minOccurs="0">
-								<xs:complexType>
-									<xs:complexContent>
-										<xs:extension base="activity">
-											<xs:sequence>
-												<xs:element name="Activity" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
-											</xs:sequence>
-										</xs:extension>
-									</xs:complexContent>
-								</xs:complexType>
-							</xs:element>
-							<xs:element name="Item" minOccurs="0">
-								<xs:complexType>
-									<xs:sequence>
-										<xs:element name="Property" type="property"
-											minOccurs="0" maxOccurs="unbounded" />
-										<xs:element name="Outcome" minOccurs="0" maxOccurs="unbounded">
-											<xs:complexType>
-												<xs:simpleContent>
-													<xs:extension base="xs:string">
-														<xs:attribute name="schema" type="xs:string"
-															use="required" />
-														<xs:attribute name="version" type="xs:string"
-															use="required" />
-														<xs:attribute name="viewname" type="xs:string"
-															use="required" />
-													</xs:extension>
-												</xs:simpleContent>
-											</xs:complexType>
-										</xs:element>
-										<xs:element name="Dependency" minOccurs="0"
-											maxOccurs="unbounded">
-											<xs:complexType>
-												<xs:sequence>
-													<xs:element name="DependencyMember" minOccurs="0"
-														maxOccurs="unbounded">
-														<xs:complexType>
-															<xs:sequence>
-																<xs:element name="MemberProperties" type="collprops"
-																	minOccurs="0" />
-															</xs:sequence>
-															<xs:attribute name="itemPath" type="xs:string"
-																use="required" />
-														</xs:complexType>
-													</xs:element>
-													<xs:element name="CollectionProperties" type="collprops"
-														minOccurs="0" />
-												</xs:sequence>
-												<xs:attribute name="name" type="xs:string" use="required" />
-												<xs:attribute name="version" type="xs:integer" use="optional" />
-												<xs:attribute name="isDescription" type="xs:boolean"
-													use="optional" default="false" />
-												<xs:attribute name="itemDescriptionPath" type="xs:string"
-													use="optional" />
-												<xs:attribute name="itemDescriptionVersion" type="xs:string"
-													use="optional" />
-											</xs:complexType>
-										</xs:element>
-										<xs:element name="Aggregation" minOccurs="0"
-											maxOccurs="unbounded">
-											<xs:annotation>
-												<xs:documentation> A new collection with layout</xs:documentation>
-											</xs:annotation>
-											<xs:complexType>
-												<xs:sequence>
-													<xs:element name="AggregationMember" minOccurs="0"
-														maxOccurs="unbounded">
-														<xs:complexType>
-															<xs:sequence>
-																<xs:element name="Geometry" minOccurs="1"
-																	maxOccurs="1">
-																	<xs:annotation>
-																		<xs:documentation>X,Y specify centre point</xs:documentation>
-																	</xs:annotation>
-																	<xs:complexType>
-																		<xs:attribute name="x" type="xs:int" use="required" />
-																		<xs:attribute name="y" type="xs:int" use="required" />
-																		<xs:attribute name="width" type="xs:int"
-																			use="required" />
-																		<xs:attribute name="height" type="xs:int"
-																			use="required" />
-																	</xs:complexType>
-																</xs:element>
-																<xs:element name="MemberProperties" type="collprops"
-																	minOccurs="0" />
-															</xs:sequence>
-															<xs:attribute name="slotNo" type="xs:int"
-																use="required" />
-															<xs:attribute name="itemDescriptionPath"
-																type="xs:string" use="optional" />
-															<xs:attribute name="itemDescriptionVersion" 
-																type="xs:string" use="optional" />
-															<xs:attribute name="itemPath" type="xs:string"
-																use="optional" />
-														</xs:complexType>
-													</xs:element>
-												</xs:sequence>
-												<xs:attribute name="name" type="xs:string" use="required" />
-												<xs:attribute name="version" type="xs:integer" use="optional" />
-												<xs:attribute name="isDescription" type="xs:boolean"
-													use="required" />
-											</xs:complexType>
-										</xs:element>
-									</xs:sequence>
-									<xs:attribute name="name" type="xs:string" use="required" />
-									<xs:attribute name="id" type="uuid" use="optional" />
-									<xs:attribute name="workflow" type="xs:string"
-										use="required" />
-									<xs:attribute name="workflowVer" type="xs:int"
-										use="optional" />
-									<xs:attribute name="initialPath" type="xs:string"
-										use="optional" />
-								</xs:complexType>
-							</xs:element>
-							<xs:element name="Role" minOccurs="0">
-								<xs:complexType>
-									<xs:simpleContent>
-										<xs:extension base="xs:string">
-											<xs:attribute name="jobList" type="xs:boolean" use="required" />
-										</xs:extension>
-									</xs:simpleContent>
-								</xs:complexType>
-							</xs:element>
-							<xs:element name="Agent" minOccurs="0">
-								<xs:complexType>
-									<xs:sequence>
-										<xs:element name="Role" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
-										<xs:element name="Property" type="property"
-											minOccurs="0" maxOccurs="unbounded" />
-									</xs:sequence>
-									<xs:attribute name="name" type="xs:string" use="required" />
-									<xs:attribute name="password" type="xs:string"
-										use="required" />
-								</xs:complexType>
-							</xs:element>						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-			</xs:sequence>
-			<xs:attribute name="name" type="xs:string" use="required" />
-			<xs:attribute name="ns" type="xs:string" use="required">
-				<xs:annotation>
-					<xs:documentation>Prefix for module components</xs:documentation>
-				</xs:annotation>
-			</xs:attribute>
-		</xs:complexType>
-	</xs:element>
-	<xs:attribute name="target">
-		<xs:simpleType>
-			<xs:restriction base="xs:string">
-				<xs:enumeration value="client" />
-				<xs:enumeration value="server" />
-			</xs:restriction>
-		</xs:simpleType>
-	</xs:attribute>
-	<xs:attribute name="event">
-		<xs:simpleType>
-			<xs:restriction base="xs:string">
-				<xs:enumeration value="startup" />
-				<xs:enumeration value="initialized" />
-				<xs:enumeration value="shutdown" />
-				<xs:enumeration value="install" />
-				<xs:enumeration value="uninstall" />
-			</xs:restriction>
-		</xs:simpleType>
-	</xs:attribute>
-	<xs:complexType name="property">
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="name" type="xs:string" />
-				<xs:attribute name="mutable" type="xs:boolean" default="true" use="optional" />
-			</xs:extension>
-		</xs:simpleContent>
-	</xs:complexType>
-	<xs:complexType name="collprops">
-		<xs:sequence>
-			<xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:attribute name="Key" type="xs:string" use="optional" />
-					<xs:attribute name="Boolean" type="xs:boolean" use="optional" />
-					<xs:attribute name="String" type="xs:string" use="optional" />
-					<xs:attribute name="Integer" type="xs:int" use="optional" />
-					<xs:attribute name="Float" type="xs:double" use="optional" />
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="activity">
-		<xs:sequence>
-			<xs:element name="StateMachine" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
-			<xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
-			<xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
-            <xs:element name="Query" minOccurs="0" maxOccurs="unbounded" type="itemref"/>
-		</xs:sequence>
-		<xs:attribute name="name" type="xs:string" use="required" />
-		<xs:attribute name="version" type="xs:integer" use="optional" />
-		<xs:attribute name="id" type="uuid" use="optional" />
-		<xs:attribute name="resource" type="xs:string" use="required" />
-	</xs:complexType>
-	<xs:complexType name="itemref">
-		<xs:attribute name="id" type="uuid" use="optional"/>
-		<xs:attribute name="name" type="xs:string" use="required"/>
-		<xs:attribute name="version" type="xs:int" use="required"/>
-	</xs:complexType>
-	<xs:simpleType name="uuid">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="CristalModule">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Info">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Description" type="xs:string">
+                                <xs:annotation>
+                                    <xs:documentation>Detailed description of this module.</xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                            <xs:element name="Version" type="xs:string" />
+                            <xs:element name="KernelVersion" type="xs:string" minOccurs="0" />
+                            <xs:element name="Dependency" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="ResourceURL" type="xs:string" minOccurs="0" />
+                <xs:element name="Config" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Configuration parameters to add to the Cristal
+                            VM on launch. May target either client or server processes.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                                <xs:attribute name="name" type="xs:string" use="required" />
+                                <xs:attribute ref="target" />
+                            </xs:extension>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="EmbeddedScript" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base="xs:string">
+                                <xs:attribute ref="event" />
+                                <xs:attribute ref="target" />
+                                <xs:attribute name="lang" type="xs:string" />
+                            </xs:extension>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Imports" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>Items to import into or verify within the Cristal server upon launch.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence maxOccurs="unbounded">
+                            <xs:element name="Resource" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:complexContent>
+                                        <xs:extension base="resource">
+                                            <xs:attribute name="type" type="xs:string" use="required" />
+                                        </xs:extension>
+                                    </xs:complexContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="SchemaResource" type="resource" minOccurs="0" />
+                            <xs:element name="ScriptResource" type="resource" minOccurs="0" />
+                            <xs:element name="QueryResource" type="resource" minOccurs="0" />
+                            <xs:element name="StateMachineResource" type="resource" minOccurs="0" />
+                            <xs:element name="Activity" type="activity" minOccurs="0" />
+                            <xs:element name="Workflow" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:complexContent>
+                                        <xs:extension base="activity">
+                                            <xs:sequence>
+                                                <xs:element name="Activity" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+                                            </xs:sequence>
+                                        </xs:extension>
+                                    </xs:complexContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Item" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Property" type="property" minOccurs="0" maxOccurs="unbounded" />
+                                        <xs:element name="Outcome" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="xs:string">
+                                                        <xs:attribute name="schema" type="xs:string" use="required" />
+                                                        <xs:attribute name="version" type="xs:string" use="required" />
+                                                        <xs:attribute name="viewname" type="xs:string" use="required" />
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Dependency" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="DependencyMember" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="MemberProperties" type="collprops"
+                                                                    minOccurs="0" />
+                                                            </xs:sequence>
+                                                            <xs:attribute name="itemPath" type="xs:string" use="required" />
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="CollectionProperties" type="collprops" minOccurs="0" />
+                                                </xs:sequence>
+                                                <xs:attribute name="name" type="xs:string" use="required" />
+                                                <xs:attribute name="version" type="xs:integer" use="optional" />
+                                                <xs:attribute name="isDescription" type="xs:boolean" use="optional"
+                                                    default="false" />
+                                                <xs:attribute name="itemDescriptionPath" type="xs:string" use="optional" />
+                                                <xs:attribute name="itemDescriptionVersion" type="xs:string" use="optional" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Aggregation" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:annotation>
+                                                <xs:documentation> A new collection with layout</xs:documentation>
+                                            </xs:annotation>
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="AggregationMember" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="Geometry" minOccurs="1" maxOccurs="1">
+                                                                    <xs:annotation>
+                                                                        <xs:documentation>X,Y specify centre point
+                                                                        </xs:documentation>
+                                                                    </xs:annotation>
+                                                                    <xs:complexType>
+                                                                        <xs:attribute name="x" type="xs:int" use="required" />
+                                                                        <xs:attribute name="y" type="xs:int" use="required" />
+                                                                        <xs:attribute name="width" type="xs:int" use="required" />
+                                                                        <xs:attribute name="height" type="xs:int"
+                                                                            use="required" />
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="MemberProperties" type="collprops"
+                                                                    minOccurs="0" />
+                                                            </xs:sequence>
+                                                            <xs:attribute name="slotNo" type="xs:int" use="required" />
+                                                            <xs:attribute name="itemDescriptionPath" type="xs:string"
+                                                                use="optional" />
+                                                            <xs:attribute name="itemDescriptionVersion" type="xs:string"
+                                                                use="optional" />
+                                                            <xs:attribute name="itemPath" type="xs:string" use="optional" />
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="name" type="xs:string" use="required" />
+                                                <xs:attribute name="version" type="xs:integer" use="optional" />
+                                                <xs:attribute name="isDescription" type="xs:boolean" use="required" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="name" type="xs:string" use="required" />
+                                    <xs:attribute name="id" type="uuid" use="optional" />
+                                    <xs:attribute name="workflow" type="xs:string" use="required" />
+                                    <xs:attribute name="workflowVer" type="xs:int" use="optional" />
+                                    <xs:attribute name="initialPath" type="xs:string" use="optional" />
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Role" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string">
+                                            <xs:attribute name="jobList" type="xs:boolean" use="required" />
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Agent" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Role" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                                        <xs:element name="Property" type="property" minOccurs="0" maxOccurs="unbounded" />
+                                    </xs:sequence>
+                                    <xs:attribute name="name" type="xs:string" use="required" />
+                                    <xs:attribute name="password" type="xs:string" use="required" />
+                                </xs:complexType>
+                            </xs:element>                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="ns" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>Prefix for module components</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:attribute name="target">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="client" />
+                <xs:enumeration value="server" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="event">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="startup" />
+                <xs:enumeration value="initialized" />
+                <xs:enumeration value="shutdown" />
+                <xs:enumeration value="install" />
+                <xs:enumeration value="uninstall" />
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:complexType name="property">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" />
+                <xs:attribute name="mutable" type="xs:boolean" default="true" use="optional" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="collprops">
+        <xs:sequence>
+            <xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="Key" type="xs:string" use="optional" />
+                    <xs:attribute name="Boolean" type="xs:boolean" use="optional" />
+                    <xs:attribute name="String" type="xs:string" use="optional" />
+                    <xs:attribute name="Integer" type="xs:int" use="optional" />
+                    <xs:attribute name="Float" type="xs:double" use="optional" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="resource">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required" />
+                <xs:attribute name="version" type="xs:integer" use="optional" />
+                <xs:attribute name="id" type="uuid" use="optional" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="activity">
+        <xs:sequence>
+            <xs:element name="StateMachine" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+            <xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+            <xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+            <xs:element name="Query" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="version" type="xs:integer" use="optional" />
+        <xs:attribute name="id" type="uuid" use="optional" />
+        <xs:attribute name="resource" type="xs:string" use="optional" />
+    </xs:complexType>
+    <xs:complexType name="itemref">
+        <xs:attribute name="id" type="uuid" use="optional" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="version" type="xs:int" use="required" />
+    </xs:complexType>
+    <xs:simpleType name="uuid">
         <xs:restriction base="xs:string">
             <xs:length value="36" fixed="true" />
             <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />

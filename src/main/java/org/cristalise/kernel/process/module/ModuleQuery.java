@@ -29,14 +29,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class ModuleScript extends ModuleResource {
+public class ModuleQuery extends ModuleResource {
 
-    public ModuleScript() {
+    public ModuleQuery() {
         super();
-        type = BuiltInResources.SCRIPT_RESOURCE;
+        type = BuiltInResources.QUERY_RESOURCE;
     }
 
-    public ModuleScript(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
+    public ModuleQuery(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
         this();
         this.version = version;
     }

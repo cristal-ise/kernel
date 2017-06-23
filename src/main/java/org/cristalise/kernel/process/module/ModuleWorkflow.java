@@ -1,5 +1,4 @@
 /**
- * This file is part of the CRISTAL-iSE kernel.
  * Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -41,7 +40,7 @@ public class ModuleWorkflow extends ModuleActivity {
 
     public ModuleWorkflow() {
         super();
-        resourceType = BuiltInResources.COMP_ACT_DESC_RESOURCE.getTypeCode();
+        type = BuiltInResources.COMP_ACT_DESC_RESOURCE;
     }
 
     public ModuleWorkflow(ItemProxy child, Integer version) throws ObjectNotFoundException, InvalidDataException {
