@@ -331,6 +331,7 @@ public class StateMachine implements DescriptionObject {
     public void export(Writer imports, File dir) throws IOException, InvalidDataException {
         String smXML;
         String typeCode = BuiltInResources.STATE_MACHINE_RESOURCE.getTypeCode();
+        String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml";
 
         try {
             smXML = Gateway.getMarshaller().marshall(this);
@@ -340,12 +341,15 @@ public class StateMachine implements DescriptionObject {
             throw new InvalidDataException("Couldn't marshall state machine " + getName());
         }
 
-        FileStringUtility.string2File(new File(new File(dir, typeCode), getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), smXML);
+        FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), smXML);
 
         if (imports != null) {
-            imports.write("<Resource name=\"" + getName() + "\" " + (getItemPath() == null ? "" : "id=\"" + getItemID() + "\" ")
-                    + (getVersion() == null ? "" : "version=\"" + getVersion() + "\" ") + "type=\""+typeCode+"\">boot/"+typeCode+"/" + getName()
-                    + (getVersion() == null ? "" : "_" + getVersion()) + ".xml</Resource>\n");
+            imports.write("<StateMachineResource "
+                    + "name=\"" + getName() + "\" "
+                    + (getItemPath() == null ? "" : "id=\""      + getItemID() + "\" ")
+                    + (getVersion()  == null ? "" : "version=\"" + getVersion() + "\">") 
+                    + "boot/" + typeCode + "/" + fileName
+                    + "</StateMachineResource>\n");
         }
     }
 }
