@@ -53,22 +53,25 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
      * <li>Comma-delimited Role names to assign to the agent. Must already exist.</li>
      * <li>Initial properties to set in the new Agent</li>
      * </ol>
-     * @throws ObjectNotFoundException 
+     * @throws ObjectNotFoundException
      * @throws InvalidDataException The input parameters were incorrect
      * @throws ObjectAlreadyExistsException The Agent already exists
      * @throws CannotManageException The Agent could not be created
      * @throws ObjectCannotBeUpdated The addition of the new entries into the LookupManager failed
-     * @throws PersistencyException 
+     * @throws PersistencyException
      * @see org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription#runActivityLogic(AgentPath, ItemPath, int, String, Object)
      */
     @Override
-    protected String runActivityLogic(AgentPath agentPath, ItemPath itemPath, int transitionID, String requestData, Object locker) 
+    protected String runActivityLogic(final AgentPath agentPath, final ItemPath itemPath, final int transitionID, final String requestData, final Object locker)
             throws ObjectNotFoundException, InvalidDataException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated, PersistencyException
     {
         String[] input = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "CreateAgentFromDescription: called by "+agentPath+" on "+itemPath+" with parameters "+Arrays.toString(input));
-        //if (input.length < 3 || input.length > 4) 
-        //    throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
+        if (Logger.doLog(3))
+		 {
+			Logger.msg(3, "CreateAgentFromDescription: called by "+agentPath+" on "+itemPath+" with parameters "+Arrays.toString(input));
+			//if (input.length < 3 || input.length > 4)
+			//    throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
+		}
 
         String newName = input[0];
         String domPath = input[1];
@@ -80,12 +83,13 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
         try {
             Gateway.getLookup().getAgentPath(newName);
             throw new ObjectAlreadyExistsException("The agent name " +newName+ " exists already.");
-        } 
+        }
         catch (ObjectNotFoundException ex) { }
 
         DomainPath context = new DomainPath(new DomainPath(domPath), newName);
-        if (context.exists())
-            throw new ObjectAlreadyExistsException("The path " +context+ " exists already.");
+        if (context.exists()) {
+			throw new ObjectAlreadyExistsException("The path " +context+ " exists already.");
+		}
 
         // generate new agent path with new UUID
         Logger.msg(6, "CreateAgentFromDescription - Requesting new agent path");
@@ -94,13 +98,13 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
         // create the Agent object
         Logger.msg(3, "CreateAgentFromDescription - Creating Agent");
         CorbaServer factory = Gateway.getCorbaServer();
-        if (factory == null) throw new CannotManageException("This process cannot create new Items");
+        if (factory == null) {
+			throw new CannotManageException("This process cannot create new Items");
+		}
         ActiveEntity newAgent = factory.createAgent(newAgentPath);
         Gateway.getLookupManager().add(newAgentPath);
 
-        // give it the base role
-        Gateway.getLookupManager().addRole(newAgentPath, Gateway.getLookup().getRolePath(""));
-
+        
         Logger.msg(3, "CreateAgentFromDescription - Initializing Agent");
 
         // initialise it with its properties and workflow
