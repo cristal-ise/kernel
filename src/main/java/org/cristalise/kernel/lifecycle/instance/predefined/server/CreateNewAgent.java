@@ -22,6 +22,8 @@ package org.cristalise.kernel.lifecycle.instance.predefined.server;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 
+import java.io.IOException;
+
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -33,38 +35,31 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
+import org.exolab.castor.mapping.MappingException;
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.ValidationException;
 
-
-public class CreateNewAgent extends PredefinedStep
-{
-    public CreateNewAgent()
-    {
+public class CreateNewAgent extends PredefinedStep {
+    public CreateNewAgent() {
         super();
-		setBuiltInProperty(SCHEMA_NAME, "Agent");
+        setBuiltInProperty(SCHEMA_NAME, "Agent");
     }
 
-	//requestdata is xmlstring
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException {
-    	
-        String redactedRequestData;
-
-        ImportAgent newAgent;
-		try {
-			newAgent = (ImportAgent)Gateway.getMarshaller().unmarshall(requestData);
-		} catch (Exception e1) {
-			Logger.error(e1);
-			throw new InvalidDataException("CreateNewAgent: Couldn't unmarshall new Agent: "+requestData);
-		}
-        newAgent.create(agent, true);
-        newAgent.setPassword("REDACTED");
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, ObjectAlreadyExistsException
+    {
         try {
-			redactedRequestData = Gateway.getMarshaller().marshall(newAgent);
-		} catch (Exception e) {
-			Logger.error(e);
-			throw new InvalidDataException("CreateNewAgent: Couldn't marshall new Agent for outcome: "+newAgent);
-		}
-        return redactedRequestData;
+            ImportAgent newAgent = (ImportAgent) Gateway.getMarshaller().unmarshall(requestData);
+            newAgent.create(agent, true);
+
+            newAgent.setPassword("REDACTED");
+
+            return Gateway.getMarshaller().marshall(newAgent);
+        }
+        catch (MarshalException | ValidationException | IOException | MappingException e) {
+            Logger.error(e);
+            throw new InvalidDataException("CreateNewAgent: Couldn't unmarshall new Agent: " + requestData);
+        }
     }
 }
