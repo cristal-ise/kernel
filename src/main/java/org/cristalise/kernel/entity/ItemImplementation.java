@@ -117,8 +117,8 @@ public class ItemImplementation implements ItemOperations {
             Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", initSchema, Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
             initOutcome.setID(newEvent.getID());
             Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
-            Gateway.getStorage().put(mItemPath, initOutcome, locker);
-            Gateway.getStorage().put(mItemPath, newLastView, locker);
+            mStorage.put(mItemPath, initOutcome, locker);
+            mStorage.put(mItemPath, newLastView, locker);
         }
         catch (Throwable ex) {
             Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
@@ -187,6 +187,8 @@ public class ItemImplementation implements ItemOperations {
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
                    PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
+        Workflow lifeCycle = null;
+
         try {
             AgentPath agent = new AgentPath(agentId);
             AgentPath delegate = null;
@@ -194,12 +196,12 @@ public class ItemImplementation implements ItemOperations {
             Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
 
             // TODO: check if delegate is allowed valid for agent
-            Workflow lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
+            lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
 
             String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData);
 
             // store the workflow if we've changed the state of the domain wf
-            if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, null);
+            if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, lifeCycle);
 
             // remove entity path if transaction was successful
             if (stepPath.equals("workflow/predefined/Erase")) {
@@ -207,28 +209,33 @@ public class ItemImplementation implements ItemOperations {
                 Gateway.getLookupManager().delete(mItemPath);
             }
 
+            mStorage.commit(lifeCycle);
+
             return finalOutcome;
         }
-        catch (AccessRightsException | InvalidTransitionException   | ObjectNotFoundException |
+        catch (AccessRightsException | InvalidTransitionException   | ObjectNotFoundException | PersistencyException |
                InvalidDataException  | ObjectAlreadyExistsException | InvalidCollectionModification ex)
         {
             if(Logger.doLog(8)) Logger.error(ex);
+            mStorage.abort(lifeCycle);
             throw ex;
         }
         catch (InvalidAgentPathException | ObjectCannotBeUpdated | CannotManageException ex) {
             if(Logger.doLog(8)) Logger.error(ex);
+            mStorage.abort(lifeCycle);
             throw new InvalidDataException(ex.getClass().getName() + " - " + ex.getMessage());
        }
         catch (Throwable ex) { // non-CORBA exception hasn't been caught!
             Logger.error("Unknown Error: requestAction on " + mItemPath + " by " + agentId + " executing " + stepPath);
             Logger.error(ex);
+            mStorage.abort(lifeCycle);
             throw new InvalidDataException("Extraordinary Exception during execution:" + ex.getClass().getName() + " - " + ex.getMessage());
         }
     }
 
     @Override
-    public String queryLifeCycle(SystemKey agentId, boolean filter)
-            throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+    public String queryLifeCycle(SystemKey agentId, boolean filter) throws AccessRightsException, ObjectNotFoundException, PersistencyException
+    {
         Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - agent: " + agentId);
         try {
             AgentPath agent;

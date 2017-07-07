@@ -214,12 +214,9 @@ public class Activity extends WfVertex {
             else {
                 hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
             }
-
-            Gateway.getStorage().commit(locker);
         }
         catch (PersistencyException ex) {
             Logger.error(ex);
-            Gateway.getStorage().abort(locker);
             throw ex;
         }
 

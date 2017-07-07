@@ -69,7 +69,7 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
             JobArrayList newJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(newJobs);
 
             // get our joblist
-            if (currentJobs == null) currentJobs = new JobList( mAgentPath, null);
+            if (currentJobs == null) currentJobs = new JobList(mAgentPath, mAgentPath);
 
             List<String> keysToRemove = currentJobs.getKeysForStep(itemPath, stepPath);
 
@@ -82,10 +82,13 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
 
             // remove old jobs for this item0
             for(String key: keysToRemove) currentJobs.remove(key);
+
+            Gateway.getStorage().commit(mAgentPath);
         }
         catch (Throwable ex) {
             Logger.error("Could not refresh job list.");
             Logger.error(ex);
+            Gateway.getStorage().abort(mAgentPath);
         }
     }
 
