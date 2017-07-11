@@ -90,7 +90,7 @@ public class CorbaServer {
      * 
      * @throws Exception different exceptions
      */
-    public void setupPOA() throws Exception {
+    private void setupPOA() throws Exception {
 
         //Initialise the RootPOA
         mRootPOA = org.omg.PortableServer.POAHelper.narrow(Gateway.getORB().resolve_initial_references("RootPOA"));
