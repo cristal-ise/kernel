@@ -19,6 +19,7 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
+
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
@@ -51,163 +52,149 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
-/***********************************************************************************************************************************************************************************************************************************************************************************************************
- * @author $Author: sgaspard $ $Date: 2004/09/21 10:32:17 $
- * @version $Revision: 1.14 $
- **********************************************************************************************************************************************************************************************************************************************************************************************************/
-public abstract class PredefinedStep extends Activity
-{
-	/*******************************************************************************************************************************************************************************************************************************************************************************************************
-	 * predefined Steps are always Active, and have only one transition subclasses could override this method (if necessary)
-	 ******************************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * PredefinedStep are always Active, and have only one transition. 
+ * Subclasses could override this method (if necessary)
+ */
+public abstract class PredefinedStep extends Activity {
 
-	private boolean isPredefined = false;
-	public static final int DONE = 0;
-	public static final int AVAILABLE = 0;
-	
-	public PredefinedStep() {
-		super();
-		setBuiltInProperty(STATE_MACHINE_NAME, "PredefinedStep");
-		setBuiltInProperty(SCHEMA_NAME, "PredefinedStepOutcome");
-		setBuiltInProperty(SCHEMA_VERSION, "0");
-	}
+    private boolean         isPredefined = false;
+    public static final int DONE         = 0;
+    public static final int AVAILABLE    = 0;
 
-	@Override
-	public boolean getActive()
-	{
-		if (isPredefined)
-			return true;
-		else
-			return super.getActive();
-	}
-	
+    public PredefinedStep() {
+        super();
+        setBuiltInProperty(STATE_MACHINE_NAME, "PredefinedStep");
+        setBuiltInProperty(SCHEMA_NAME, "PredefinedStepOutcome");
+        setBuiltInProperty(SCHEMA_VERSION, "0");
+    }
 
-	@Override
-	public String getErrors()
-	{
-		if (isPredefined)
-			return getName();
-		else
-			return super.getErrors();
-	}
-	@Override
-	public boolean verify()
-	{
-		if (isPredefined)
-			return true;
-		else
-			return super.verify();
-	}
-	/**
-	 * Returns the isPredefined.
-	 *
-	 * @return boolean
-	 */
-	public boolean getIsPredefined()
-	{
-		return isPredefined;
-	}
-	/**
-	 * Sets the isPredefined.
-	 *
-	 * @param isPredefined
-	 *            The isPredefined to set
-	 */
-	public void setIsPredefined(boolean isPredefined)
-	{
-		this.isPredefined = isPredefined;
-	}
-	@Override
-	public String getType()
-	{
-		return getName();
-	}
-	
-	static public String getPredefStepSchemaName(String stepName) {
-		PredefinedStepContainer[] allSteps = { new ItemPredefinedStepContainer(), new AgentPredefinedStepContainer(), new ServerPredefinedStepContainer() };
-		for (PredefinedStepContainer thisContainer : allSteps) {
-			String stepPath = thisContainer.getName()+"/"+stepName;
-			Activity step = (Activity)thisContainer.search(stepPath);
-			if (step != null) {
-				return (String)step.getBuiltInProperty(SCHEMA_NAME);
-			}
-		}
-		return "PredefinedStepOutcome"; // default to standard if not found - server may be a newer version
-	}
-	
-	/**
-	 * All predefined steps must override this to implement their action
-	 */
-	@Override
-	protected abstract String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData, Object locker) throws 
-			InvalidDataException, 
-			InvalidCollectionModification, 
-			ObjectAlreadyExistsException, 
-			ObjectCannotBeUpdated,
-			ObjectNotFoundException, 
-			PersistencyException, 
-			CannotManageException;
-	
-	// generic bundling of parameters
-	static public String bundleData(String[] data)
-	{
-		try
-		{
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document dom = builder.newDocument();
-			Element root = dom.createElement("PredefinedStepOutcome");
-			dom.appendChild(root);
-			for (String element : data) {
-				Element param = dom.createElement("param");
-				Text t = dom.createTextNode(element);
-				param.appendChild(t);
-				root.appendChild(param);
-			}
-			
-			return Outcome.serialize(dom, false);
+    @Override
+    public boolean getActive() {
+        if (isPredefined)
+            return true;
+        else
+            return super.getActive();
+    }
 
-		}
-		catch (Exception e)
-		{
-            Logger.error(e);
-			StringBuffer xmlData = new StringBuffer().append("<PredefinedStepOutcome>");
-			for (String element : data)
-				xmlData.append("<param><![CDATA[").append(element).append("]]></param>");
-			xmlData.append("</PredefinedStepOutcome>");
-			return xmlData.toString();
-		}
-	}
-	
-	// generic bundling of single parameter
-	static public String bundleData(String data)
-	{
-		return bundleData(new String[]{ data });
-	}
-	
-	public static String[] getDataList(String xmlData)
-	{
-		try
-		{
-			Document scriptDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(xmlData)));
-			NodeList nodeList = scriptDoc.getElementsByTagName("param");
-			String[] result = new String[nodeList.getLength()];
-			for (int i = 0; i < nodeList.getLength(); i++)
-            {
-                Node n = nodeList.item(i).getFirstChild();
-                if (n instanceof CDATASection)
-                	result[i] = ((CDATASection) n).getData();
-                else if (n instanceof Text)
-                    result[i] = ((Text) n).getData();
+    @Override
+    public String getErrors() {
+        if (isPredefined)
+            return getName();
+        else
+            return super.getErrors();
+    }
+
+    @Override
+    public boolean verify() {
+        if (isPredefined)
+            return true;
+        else
+            return super.verify();
+    }
+
+    /**
+     * Returns the isPredefined.
+     *
+     * @return boolean
+     */
+    public boolean getIsPredefined() {
+        return isPredefined;
+    }
+
+    /**
+     * Sets the isPredefined.
+     *
+     * @param isPredefined
+     *            The isPredefined to set
+     */
+    public void setIsPredefined(boolean isPredefined) {
+        this.isPredefined = isPredefined;
+    }
+
+    @Override
+    public String getType() {
+        return getName();
+    }
+
+    static public String getPredefStepSchemaName(String stepName) {
+        PredefinedStepContainer[] allSteps = { new ItemPredefinedStepContainer(), new AgentPredefinedStepContainer(),
+                new ServerPredefinedStepContainer() };
+        for (PredefinedStepContainer thisContainer : allSteps) {
+            String stepPath = thisContainer.getName() + "/" + stepName;
+            Activity step = (Activity) thisContainer.search(stepPath);
+            if (step != null) {
+                return (String) step.getBuiltInProperty(SCHEMA_NAME);
             }
-			return result;
-		}
-		catch (Exception ex)
-		{
-			Logger.error("Exception::PredefinedStep::getDataList()");
-			Logger.error(ex);
-		}
-		return null;
-	}
+        }
+        return "PredefinedStepOutcome"; // default to standard if not found - server may be a newer version
+    }
+
+    /**
+     * All predefined steps must override this to implement their action
+     */
+    @Override
+    protected abstract String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker) 
+            throws  InvalidDataException,
+                    InvalidCollectionModification,
+                    ObjectAlreadyExistsException,
+                    ObjectCannotBeUpdated,
+                    ObjectNotFoundException,
+                    PersistencyException,
+                    CannotManageException;
+
+    // generic bundling of parameters
+    static public String bundleData(String[] data) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document dom = builder.newDocument();
+            Element root = dom.createElement("PredefinedStepOutcome");
+            dom.appendChild(root);
+
+            for (String element : data) {
+                Element param = dom.createElement("param");
+                Text t = dom.createTextNode(element);
+                param.appendChild(t);
+                root.appendChild(param);
+            }
+            return Outcome.serialize(dom, false);
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            StringBuffer xmlData = new StringBuffer().append("<PredefinedStepOutcome>");
+
+            for (String element : data)
+                xmlData.append("<param><![CDATA[").append(element).append("]]></param>");
+
+            xmlData.append("</PredefinedStepOutcome>");
+            return xmlData.toString();
+        }
+    }
+
+    // generic bundling of single parameter
+    static public String bundleData(String data) {
+        return bundleData(new String[] { data });
+    }
+
+    public static String[] getDataList(String xmlData) {
+        try {
+            Document scriptDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(xmlData)));
+            NodeList nodeList = scriptDoc.getElementsByTagName("param");
+            String[] result = new String[nodeList.getLength()];
+
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node n = nodeList.item(i).getFirstChild();
+                if (n instanceof CDATASection) result[i] = ((CDATASection) n).getData();
+                else if (n instanceof Text)    result[i] = ((Text) n).getData();
+            }
+            return result;
+        }
+        catch (Exception ex) {
+            Logger.error("Exception::PredefinedStep::getDataList()");
+            Logger.error(ex);
+        }
+        return null;
+    }
 }

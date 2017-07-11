@@ -41,13 +41,12 @@ public class AddDomainContext extends PredefinedStep {
     }
 
     @Override
-    protected String runActivityLogic(AgentPath agent, ItemPath item,
-            int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException {
-
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException
+    {
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3))
-            Logger.msg(3, "AddDomainContext: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+        Logger.msg(3, "AddDomainContext: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
         if (params.length != 1) throw new InvalidDataException("AddDomainContext: Invalid parameters " + Arrays.toString(params));
 
         DomainPath pathToAdd = new DomainPath(params[0]);

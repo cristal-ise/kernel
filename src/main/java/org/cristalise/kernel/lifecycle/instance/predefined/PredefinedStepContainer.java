@@ -19,22 +19,23 @@
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
+
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
-public abstract class PredefinedStepContainer extends CompositeActivity
-{
-	protected int num = 0;
 
-	public PredefinedStepContainer()
-	{
-		super();
-		setName("predefined");
-		getProperties().put("Description", "Contains all predefined Steps");
-		createChildren();
-	}
-	public void createChildren()
-	{
-		predInit("AddDomainPath", "Adds a new path to this item in the LDAP domain tree", new AddDomainPath());
+
+public abstract class PredefinedStepContainer extends CompositeActivity {
+    protected int num = 0;
+
+    public PredefinedStepContainer() {
+        super();
+        setName("predefined");
+        getProperties().put("Description", "Contains all predefined Steps");
+        createChildren();
+    }
+
+    public void createChildren() {
+        predInit("AddDomainPath", "Adds a new path to this item in the LDAP domain tree", new AddDomainPath());
         predInit("RemoveDomainPath", "Removes an existing path to this item from the LDAP domain tree", new RemoveDomainPath());
         predInit("ReplaceDomainWorkflow", "Replaces the domain CA with the supplied one. Used by the GUI to save new Wf layout", new ReplaceDomainWorkflow());
         predInit("AddC2KObject", "Adds or overwrites a C2Kernel object for this Item", new AddC2KObject());
@@ -50,30 +51,29 @@ public abstract class PredefinedStepContainer extends CompositeActivity
         predInit("AddMemberToCollection", "Creates a new member slot for the given item in a dependency, and assigns the item", new AddMemberToCollection());
         predInit("Import", "Imports an outcome into the Item, with a given schema and viewpoint", new Import());
         predInit("CreateAgentFromDescription", "Create a new agent using this item as its description", new CreateAgentFromDescription());
-	}
+    }
 
-	public void predInit(String alias, String Description, PredefinedStep act)
-	{
-		act.setName(alias);
-		act.setType(alias);
-		act.getProperties().put("Description", Description);
-		act.setCentrePoint(new GraphPoint());
-		act.setIsPredefined(true);
-		addChild(act, new GraphPoint(100, 75 * ++num));
-	}
-	@Override
-	public boolean verify()
-	{
-		return true;
-	}
-	@Override
-	public String getErrors()
-	{
-		return "predefined";
-	}
-	@Override
-	public boolean getActive()
-	{
-		return true;
-	}
+    public void predInit(String alias, String Description, PredefinedStep act) {
+        act.setName(alias);
+        act.setType(alias);
+        act.getProperties().put("Description", Description);
+        act.setCentrePoint(new GraphPoint());
+        act.setIsPredefined(true);
+        addChild(act, new GraphPoint(100, 75 * ++num));
+    }
+
+    @Override
+    public boolean verify() {
+        return true;
+    }
+
+    @Override
+    public String getErrors() {
+        return "predefined";
+    }
+
+    @Override
+    public boolean getActive() {
+        return true;
+    }
 }

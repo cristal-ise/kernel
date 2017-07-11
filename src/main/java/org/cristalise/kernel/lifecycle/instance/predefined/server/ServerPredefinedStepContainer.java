@@ -29,13 +29,12 @@ public class ServerPredefinedStepContainer extends PredefinedStepContainer {
     @Override
     public void createChildren() {
         super.createChildren();
-        serverPredInit("CreateNewItem", "Creates a new Item in this Server without description.", new CreateNewItem());
-        serverPredInit("CreateNewAgent", "Creates a new Agent in this Server without description.", new CreateNewAgent());
-        serverPredInit("CreateNewRole", "Creates a new Role in this Server.", new CreateNewRole());
-        serverPredInit("RemoveRole", "Removes a Role from this Server.", new RemoveRole());
-        serverPredInit("RemoveDomainContext", "Deletes an existing context in the domain tree, but only if empty",
-                new RemoveDomainContext());
-        serverPredInit("AddDomainContext", "Creates an empty domain context in the tree", new AddDomainContext());
+        serverPredInit("CreateNewItem",       "Creates a new Item in this Server without description.", new CreateNewItem());
+        serverPredInit("CreateNewAgent",      "Creates a new Agent in this Server without description.", new CreateNewAgent());
+        serverPredInit("CreateNewRole",       "Creates a new Role in this Server.", new CreateNewRole());
+        serverPredInit("RemoveRole",          "Removes a Role from this Server.", new RemoveRole());
+        serverPredInit("RemoveDomainContext", "Deletes an existing context in the domain tree, but only if empty", new RemoveDomainContext());
+        serverPredInit("AddDomainContext",    "Creates an empty domain context in the tree", new AddDomainContext());
     }
 
     public void serverPredInit(String alias, String Description, PredefinedStep act) {
@@ -47,5 +46,4 @@ public class ServerPredefinedStepContainer extends PredefinedStepContainer {
         act.setIsPredefined(true);
         addChild(act, new GraphPoint(100, 75 * ++num));
     }
-
 }
