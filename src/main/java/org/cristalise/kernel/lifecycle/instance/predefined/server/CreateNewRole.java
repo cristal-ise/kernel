@@ -33,6 +33,7 @@ import org.cristalise.kernel.entity.imports.ImportRole;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
@@ -47,7 +48,8 @@ public class CreateNewRole extends PredefinedStep {
 
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException 
+            throws InvalidDataException, ObjectAlreadyExistsException, ObjectCannotBeUpdated, 
+                   CannotManageException, ObjectNotFoundException 
     {
         try {
             ImportRole newRole = (ImportRole) Gateway.getMarshaller().unmarshall(requestData);

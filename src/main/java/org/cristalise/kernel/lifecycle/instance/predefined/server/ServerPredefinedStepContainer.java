@@ -24,21 +24,11 @@ import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 
-/**************************************************************************
- *
- * $Revision: 1.2 $
- * $Date: 2005/06/02 10:19:33 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
 public class ServerPredefinedStepContainer extends PredefinedStepContainer {
 
 
     @Override
-	public void createChildren()
-    {
+    public void createChildren() {
         super.createChildren();
         serverPredInit("CreateNewItem", "Creates a new Item in this Server without description.", new CreateNewItem());
         serverPredInit("CreateNewAgent", "Creates a new Agent in this Server without description.", new CreateNewAgent());

@@ -34,34 +34,40 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class AddDomainContext extends PredefinedStep {
-	
-	public AddDomainContext() {
+
+    public AddDomainContext() {
         super();
-	}
-	
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException {
-	
-		String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "AddDomainContext: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1) throw new InvalidDataException("AddDomainContext: Invalid parameters "+Arrays.toString(params));
-		
-		DomainPath pathToAdd = new DomainPath(params[0]);
-		if (pathToAdd.exists())
-			throw new ObjectAlreadyExistsException("Context "+pathToAdd+" already exists");
-		// collect parent paths if they don't exist
-		Stack<DomainPath> pathsToAdd = new Stack<DomainPath>();
-		while(pathToAdd!= null && !pathToAdd.exists()) { 
-			pathsToAdd.push(pathToAdd);
-			pathToAdd = pathToAdd.getParent();
-		}
-		while(!pathsToAdd.empty()) {
-			pathToAdd = pathsToAdd.pop();
-			Gateway.getLookupManager().add(pathToAdd);
-		}
-		return requestData;
-	}
+    }
+
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item,
+            int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectCannotBeUpdated, ObjectAlreadyExistsException, CannotManageException {
+
+        String[] params = getDataList(requestData);
+        if (Logger.doLog(3))
+            Logger.msg(3, "AddDomainContext: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+        if (params.length != 1) throw new InvalidDataException("AddDomainContext: Invalid parameters " + Arrays.toString(params));
+
+        DomainPath pathToAdd = new DomainPath(params[0]);
+
+        if (pathToAdd.exists())
+            throw new ObjectAlreadyExistsException("Context " + pathToAdd + " already exists");
+
+        // collect parent paths if they don't exist
+        Stack<DomainPath> pathsToAdd = new Stack<DomainPath>();
+
+        while (pathToAdd != null && !pathToAdd.exists()) {
+            pathsToAdd.push(pathToAdd);
+            pathToAdd = pathToAdd.getParent();
+        }
+
+        while (!pathsToAdd.empty()) {
+            pathToAdd = pathsToAdd.pop();
+            Gateway.getLookupManager().add(pathToAdd);
+        }
+
+        return requestData;
+    }
 }

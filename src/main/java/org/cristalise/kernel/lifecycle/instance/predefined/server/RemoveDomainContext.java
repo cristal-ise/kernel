@@ -33,34 +33,37 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class RemoveDomainContext extends PredefinedStep {
-	public RemoveDomainContext() {
+
+    public RemoveDomainContext() {
         super();
-	}
-	
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) 
-					throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
-	
-		String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "RemoveDomainContext: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1) throw new InvalidDataException("RemoveDomainContext: Invalid parameters "+Arrays.toString(params));
-        
-		DomainPath pathToDelete = new DomainPath(params[0]);
-		if (!pathToDelete.exists())
-			throw new ObjectNotFoundException("Context "+pathToDelete+" does not exist");
-		
-		try {
-			pathToDelete.getItemPath();
-			throw new InvalidDataException("Path "+pathToDelete+" is an Entity. Use its own Erase step instead, or RemoveAgent.");
-		} catch (ObjectNotFoundException ex) { }
-		
-		if (Gateway.getLookup().getChildren(pathToDelete).hasNext())
-			throw new ObjectCannotBeUpdated("Context "+pathToDelete+" is not empty. Cannot delete.");
-		
-		Gateway.getLookupManager().delete(pathToDelete);
-		return requestData;
-	}
+    }
+
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException
+    {
+        String[] params = getDataList(requestData);
+        Logger.msg(3, "RemoveDomainContext: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        if (params.length != 1) throw new InvalidDataException("RemoveDomainContext: Invalid parameters " + Arrays.toString(params));
+
+        DomainPath pathToDelete = new DomainPath(params[0]);
+
+        if (!pathToDelete.exists())
+            throw new ObjectNotFoundException("Context " + pathToDelete + " does not exist");
+
+        try {
+            pathToDelete.getItemPath();
+            throw new InvalidDataException("Path " + pathToDelete + " is an Entity. Use its own Erase step instead, or RemoveAgent.");
+        }
+        catch (ObjectNotFoundException ex) {}
+
+        if (Gateway.getLookup().getChildren(pathToDelete).hasNext())
+            throw new ObjectCannotBeUpdated("Context " + pathToDelete + " is not empty. Cannot delete.");
+
+        Gateway.getLookupManager().delete(pathToDelete);
+
+        return requestData;
+    }
 }

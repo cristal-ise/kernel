@@ -34,37 +34,32 @@ import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
-public class RemoveRole extends PredefinedStep
-{
-    public RemoveRole()
-    {
+public class RemoveRole extends PredefinedStep {
+    public RemoveRole() {
         super();
         getProperties().put("Agent Role", "Admin");
     }
 
-	//requestdata is xmlstring
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) 
-					throws InvalidDataException, CannotManageException, ObjectNotFoundException, ObjectCannotBeUpdated {
-    	
-		String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "RemoveRole: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1) throw new InvalidDataException("RemoveRole: Invalid parameters "+Arrays.toString(params));
-        
-    	LookupManager lookup = Gateway.getLookupManager();
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, CannotManageException, ObjectNotFoundException, ObjectCannotBeUpdated
+    {
+        String[] params = getDataList(requestData);
 
-    	RolePath thisRole; AgentPath[] agents;
-		thisRole = lookup.getRolePath(params[0]);
-		agents = Gateway.getLookup().getAgents(thisRole);
-       	
-       	if (agents.length > 0)
-       		throw new ObjectCannotBeUpdated("Cannot remove role. "+agents.length+" agents still hold it.");
+        Logger.msg(3, "RemoveRole: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
-		lookup.delete(thisRole);
+        if (params.length != 1) throw new InvalidDataException("RemoveRole must have one paramater:" + Arrays.toString(params));
+
+        LookupManager lookup = Gateway.getLookupManager();
+
+        RolePath thisRole = lookup.getRolePath(params[0]);
+        AgentPath[] agents = Gateway.getLookup().getAgents(thisRole);
+
+        if (agents.length > 0)
+            throw new ObjectCannotBeUpdated("Cannot remove role as " + agents.length + " other agents still hold it.");
+
+        lookup.delete(thisRole);
 
         return requestData;
-
     }
 }
