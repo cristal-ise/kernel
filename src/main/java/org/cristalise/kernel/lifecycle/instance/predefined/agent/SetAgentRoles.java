@@ -33,70 +33,80 @@ import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class SetAgentRoles extends PredefinedStep {
 
-	public SetAgentRoles() {
+    public SetAgentRoles() {
         super();
         getProperties().put("Agent Role", "Admin");
-	}
-	
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException {
-	
-		String[] params = getDataList(requestData);
-		if (Logger.doLog(3)) Logger.msg(3, "AddC2KObject: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-		AgentPath targetAgent;
-		try {
-			targetAgent = new AgentPath(item);
-		} catch (InvalidItemPathException ex) {
-			throw new InvalidDataException("Could not resolve syskey "+item+" as an Agent.");
-		}
-		
-		RolePath[] currentRoles = targetAgent.getRoles();
-		ArrayList<RolePath> requestedRoles = new ArrayList<RolePath>();
-		for (int i=0; i<params.length; i++)
-			try {
-				requestedRoles.add(Gateway.getLookup().getRolePath(params[i]));
-			} catch (ObjectNotFoundException e) {
-				throw new InvalidDataException("Role "+params[i]+" not found");
-			}
-		// if no roles given, place the agent in the base role
-		if (requestedRoles.isEmpty())
-			try {
-				requestedRoles.add(Gateway.getLookup().getRolePath(""));
-			} catch (ObjectNotFoundException e1) {
-				throw new InvalidDataException("No roles given for Agent, and base role does not exist");
-			}
-		
-		ArrayList<RolePath> rolesToRemove = new ArrayList<RolePath>();
-		for (RolePath existingRole : currentRoles) { //
-			if (requestedRoles.contains(existingRole)) // if we have it, and it's requested, then it will be kept
-				requestedRoles.remove(existingRole); // so remove it from request - this will be left with roles to be added
-			else
-				rolesToRemove.add(existingRole); // else this role will be removed
-		}
-		
-		// remove roles not in new list
-		for (RolePath roleToRemove : rolesToRemove)
-			try {
-				Gateway.getLookupManager().removeRole(targetAgent, roleToRemove);
-			} catch (Exception e) {
-				Logger.error(e);
-				throw new InvalidDataException("Error removing role "+roleToRemove.getName());
-			}
-		
-		// add requested roles we don't already have
-		for (RolePath roleToAdd : requestedRoles)
-			try {
-				Gateway.getLookupManager().addRole(targetAgent, roleToAdd);
-			} catch (Exception e) {
-				Logger.error(e);
-				throw new InvalidDataException("Error adding role "+roleToAdd.getName());
-			}
-		
-		return requestData;
-	}
+    }
+
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker) 
+            throws InvalidDataException
+    {
+        String[] params = getDataList(requestData);
+
+        Logger.msg(3, "AddC2KObject: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        AgentPath targetAgent;
+        try {
+            targetAgent = new AgentPath(item);
+        }
+        catch (InvalidItemPathException ex) {
+            throw new InvalidDataException("Could not resolve syskey " + item + " as an Agent.");
+        }
+
+        RolePath[] currentRoles = targetAgent.getRoles();
+        ArrayList<RolePath> requestedRoles = new ArrayList<RolePath>();
+        for (int i = 0; i < params.length; i++) {
+            try {
+                requestedRoles.add(Gateway.getLookup().getRolePath(params[i]));
+            }
+            catch (ObjectNotFoundException e) {
+                throw new InvalidDataException("Role " + params[i] + " not found");
+            }
+        }
+
+        // if no roles given, place the agent in the base role
+        if (requestedRoles.isEmpty()) {
+            try {
+                requestedRoles.add(Gateway.getLookup().getRolePath(""));
+            }
+            catch (ObjectNotFoundException e1) {
+                throw new InvalidDataException("No roles given for Agent, and base role does not exist");
+            }
+        }
+
+        ArrayList<RolePath> rolesToRemove = new ArrayList<RolePath>();
+        for (RolePath existingRole : currentRoles) { //
+            if (requestedRoles.contains(existingRole)) // if we have it, and it's requested, then it will be kept
+                requestedRoles.remove(existingRole); // so remove it from request - this will be left with roles to be added
+            else
+                rolesToRemove.add(existingRole); // else this role will be removed
+        }
+
+        // remove roles not in new list
+        for (RolePath roleToRemove : rolesToRemove)
+            try {
+                Gateway.getLookupManager().removeRole(targetAgent, roleToRemove);
+            }
+            catch (Exception e) {
+                Logger.error(e);
+                throw new InvalidDataException("Error removing role " + roleToRemove.getName());
+            }
+
+        // add requested roles we don't already have
+        for (RolePath roleToAdd : requestedRoles) {
+            try {
+                Gateway.getLookupManager().addRole(targetAgent, roleToAdd);
+            }
+            catch (Exception e) {
+                Logger.error(e);
+                throw new InvalidDataException("Error adding role " + roleToAdd.getName());
+            }
+        }
+
+        return requestData;
+    }
 
 }

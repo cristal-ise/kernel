@@ -26,7 +26,6 @@ import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContain
 
 public class ServerPredefinedStepContainer extends PredefinedStepContainer {
 
-
     @Override
     public void createChildren() {
         super.createChildren();
@@ -34,12 +33,12 @@ public class ServerPredefinedStepContainer extends PredefinedStepContainer {
         serverPredInit("CreateNewAgent", "Creates a new Agent in this Server without description.", new CreateNewAgent());
         serverPredInit("CreateNewRole", "Creates a new Role in this Server.", new CreateNewRole());
         serverPredInit("RemoveRole", "Removes a Role from this Server.", new RemoveRole());
-        serverPredInit("RemoveDomainContext", "Deletes an existing context in the domain tree, but only if empty", new RemoveDomainContext());
+        serverPredInit("RemoveDomainContext", "Deletes an existing context in the domain tree, but only if empty",
+                new RemoveDomainContext());
         serverPredInit("AddDomainContext", "Creates an empty domain context in the tree", new AddDomainContext());
     }
 
-    public void serverPredInit(String alias, String Description, PredefinedStep act)
-    {
+    public void serverPredInit(String alias, String Description, PredefinedStep act) {
         act.setName(alias);
         act.setType(alias);
         act.getProperties().put("Description", Description);

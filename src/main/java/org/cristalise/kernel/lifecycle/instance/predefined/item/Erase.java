@@ -20,8 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
-
-
 import java.util.Iterator;
 
 import org.cristalise.kernel.common.CannotManageException;
@@ -37,41 +35,31 @@ import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
-
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2005/11/15 15:56:38 $
- * @version $Revision: 1.10 $
- **************************************************************************/
-public class Erase extends PredefinedStep
-{
-    public Erase()
-    {
+public class Erase extends PredefinedStep {
+    public Erase() {
         super();
         getProperties().put("Agent Role", "Admin");
     }
 
-	//requestdata is xmlstring
+    // requestdata is xmlstring
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException {
-    	
-        Logger.msg(1, "Erase::request() - Starting.");
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException
+    {
+        Logger.msg(1, "Erase::request() - Starting item:"+item.getUUID());
 
         Iterator<Path> domPaths = Gateway.getLookup().searchAliases(item);
+
         while (domPaths.hasNext()) {
-            DomainPath path = (DomainPath)domPaths.next();
+            DomainPath path = (DomainPath) domPaths.next();
             // delete them
-            if (path.getItemPath().equals(item))
-                Gateway.getLookupManager().delete(path);
+            if (path.getItemPath().equals(item)) Gateway.getLookupManager().delete(path);
         }
 
-        //clear out all storages
+        // clear out all storages
         Gateway.getStorage().removeCluster(item, "", locker);
 
-        Logger.msg(1, "Erase::request() - DONE.");
+        Logger.msg(1, "Erase::request() - DONE item:"+item.getUUID());
         return requestData;
     }
-
 }

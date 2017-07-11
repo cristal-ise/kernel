@@ -34,41 +34,39 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class SetAgentPassword extends PredefinedStep {
-	
-	public SetAgentPassword() {
-        super();
-	}
-	
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
 
-		String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "SetAgentPassword: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-        if (params.length != 1) throw new InvalidDataException("SetAgentPassword: Invalid parameters "+Arrays.toString(params));
-		
-		AgentPath targetAgent;
-		try {
-			targetAgent = new AgentPath(item);
-		} catch (InvalidItemPathException ex) {
-			throw new InvalidDataException("Can only set password on an Agent. "+item+" is an Item.");
-		}
-		
-		if (!targetAgent.equals(agent) && !agent.hasRole("Admin")) {
-			throw new InvalidDataException("Agent passwords may only be set by those Agents or by an Administrator");
-		}
-		
-		try {
-			Gateway.getLookupManager().setAgentPassword(targetAgent, params[0]);
-		} catch (NoSuchAlgorithmException e) {
-			Logger.error(e);
+    public SetAgentPassword() {
+        super();
+    }
+
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException
+    {
+        String[] params = getDataList(requestData);
+
+        Logger.msg(3, "SetAgentPassword: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        if (params.length != 1) throw new InvalidDataException("SetAgentPassword: Invalid parameters " + Arrays.toString(params));
+
+        try {
+            AgentPath targetAgent = new AgentPath(item);
+            if (!targetAgent.equals(agent) && !agent.hasRole("Admin")) {
+                throw new InvalidDataException("Agent passwords may only be set by those Agents or by an Administrator");
+            }
+            Gateway.getLookupManager().setAgentPassword(targetAgent, params[0]);
+
+            params[0] = "REDACTED"; // censor password from outcome
+
+            return bundleData(params);
+        }
+        catch (InvalidItemPathException ex) {
+            throw new InvalidDataException("Can only set password on an Agent. " + item + " is an Item.");
+        }
+        catch (NoSuchAlgorithmException e) {
+            Logger.error(e);
             throw new InvalidDataException("Cryptographic libraries for password hashing not found.");
-		} 
-		
-		params[0] = "REDACTED"; // censor password from outcome
-		return bundleData(params);
-	}
-	
+        }
+    }
 }

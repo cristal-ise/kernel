@@ -33,45 +33,42 @@ import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-
 public class RemoveAgent extends Erase {
 
-	public RemoveAgent() {
+    public RemoveAgent() {
         super();
         getProperties().put("Agent Role", "Admin");
-	}
-	
-	@Override
-	protected String runActivityLogic(AgentPath agent, ItemPath itemPath,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException {
-	
-		Logger.msg(1, "RemoveAgent::request() - Starting.");
-		
-		AgentPath targetAgent;
-		try {
-			targetAgent = new AgentPath(itemPath);
-		} catch (InvalidAgentPathException ex) {
-			throw new InvalidDataException("Could not resolve "+itemPath+" as an Agent.");
-		}
-		String agentName = targetAgent.getAgentName();
-		
-		//remove from roles
-		for (RolePath role: targetAgent.getRoles()) {
-			try {
-				Gateway.getLookupManager().removeRole(targetAgent, role);
-			} catch (ObjectCannotBeUpdated e) {
-				Logger.error(e);
-				throw new InvalidDataException("Error removing "+agentName+" from Role "+role.getName());
-			} catch (ObjectNotFoundException e) {
-				Logger.error(e);
-				throw new InvalidDataException("Tried to remove "+agentName+" from Role "+role.getName()+" that doesn't exist.");
-			} catch (CannotManageException e) {
-				throw new InvalidDataException("Tried to alter roles in a non-server process.");
-			}
-		}
-		
-		return super.runActivityLogic(agent, itemPath, transitionID, requestData, locker);
+    }
 
-	}
+    @Override
+    protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException
+    {
+        Logger.msg(1, "RemoveAgent::request() - Starting.");
+
+        AgentPath targetAgent;
+
+        try {
+            targetAgent = new AgentPath(itemPath);
+        }
+        catch (InvalidAgentPathException ex) {
+            throw new InvalidDataException("Could not resolve " + itemPath + " as an Agent.");
+        }
+
+        String agentName = targetAgent.getAgentName();
+
+        // remove from roles
+        for (RolePath role : targetAgent.getRoles()) {
+            try {
+                Gateway.getLookupManager().removeRole(targetAgent, role);
+            }
+            catch (ObjectCannotBeUpdated | ObjectNotFoundException | CannotManageException e) {
+                Logger.error(e);
+                throw new InvalidDataException("Error removing " + agentName + " from Role " + role.getName() + " exceptoin message:" + e.getMessage());
+            }
+        }
+
+        return super.runActivityLogic(agent, itemPath, transitionID, requestData, locker);
+    }
 
 }

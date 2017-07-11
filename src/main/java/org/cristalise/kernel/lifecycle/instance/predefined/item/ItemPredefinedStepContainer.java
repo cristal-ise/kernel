@@ -22,22 +22,10 @@ package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 
-
-/**************************************************************************
- *
- * $Revision: 1.2 $
- * $Date: 2005/06/02 10:19:33 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
 public class ItemPredefinedStepContainer extends PredefinedStepContainer {
 
-
     @Override
-	public void createChildren()
-    {
+    public void createChildren() {
         super.createChildren();
         predInit("CreateItemFromDescription", "Create a new item using this item as its description", new CreateItemFromDescription());
         predInit("Erase", "Deletes all objects and domain paths for this item.", new Erase());

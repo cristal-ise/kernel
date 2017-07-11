@@ -22,22 +22,10 @@ package org.cristalise.kernel.lifecycle.instance.predefined.agent;
 
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer;
 
-
-/**************************************************************************
- *
- * $Revision: 1.2 $
- * $Date: 2005/06/02 10:19:33 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
 public class AgentPredefinedStepContainer extends PredefinedStepContainer {
 
-
     @Override
-	public void createChildren()
-    {
+    public void createChildren() {
         super.createChildren();
         predInit("RemoveAgent", "Deletes the Agent", new RemoveAgent());
         predInit("SetAgentPassword", "Changes the Agent's password", new SetAgentPassword());
