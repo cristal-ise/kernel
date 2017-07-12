@@ -46,7 +46,7 @@ public class SetAgentRoles extends PredefinedStep {
     {
         String[] params = getDataList(requestData);
 
-        Logger.msg(3, "AddC2KObject: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+        Logger.msg(3, "SetAgentRoles: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         AgentPath targetAgent;
         try {
@@ -64,16 +64,6 @@ public class SetAgentRoles extends PredefinedStep {
             }
             catch (ObjectNotFoundException e) {
                 throw new InvalidDataException("Role " + params[i] + " not found");
-            }
-        }
-
-        // if no roles given, place the agent in the base role
-        if (requestedRoles.isEmpty()) {
-            try {
-                requestedRoles.add(Gateway.getLookup().getRolePath(""));
-            }
-            catch (ObjectNotFoundException e1) {
-                throw new InvalidDataException("No roles given for Agent, and base role does not exist");
             }
         }
 
