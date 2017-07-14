@@ -44,6 +44,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
+import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
@@ -347,5 +348,9 @@ public class AgentProxy extends ItemProxy {
 
     public ItemProxy getItemByUUID(String uuid) throws ObjectNotFoundException, InvalidItemPathException {
         return Gateway.getProxyManager().getProxy(new ItemPath(uuid));
+    }
+
+    public RolePath[] getRoles() {
+        return Gateway.getLookup().getRoles(mAgentPath);
     }
 }
