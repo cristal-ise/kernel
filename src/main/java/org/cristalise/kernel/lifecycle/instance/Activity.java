@@ -28,6 +28,7 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VIEW_POI
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -351,12 +352,14 @@ public class Activity extends WfVertex {
     @Override
     public void runNext(AgentPath agent, ItemPath itemPath, Object locker) throws InvalidDataException {
         setActive(false);
+
         try {
             Vertex[] outVertices = getOutGraphables();
             Vertex[] outVertices2 = getOutGraphables();
             boolean hasNoNext = false;
             boolean out = false;
-            while (!out)
+
+            while (!out) {
                 if (outVertices2.length > 0) {
                     if (outVertices2[0] instanceof Join) outVertices2 = ((WfVertex) outVertices2[0]).getOutGraphables();
                     else                                 out = true;
@@ -365,16 +368,22 @@ public class Activity extends WfVertex {
                     hasNoNext = true;
                     out = true;
                 }
-            // Logger.msg(8, Arrays.toString(outVertices) + " " +
-            // Arrays.toString(outVertices2));
-            if (!hasNoNext) ((WfVertex) outVertices[0]).run(agent, itemPath, locker);
-            else {
-                if (getParent() != null && getParent().getName().equals("domain")) // workflow finished
+            }
+
+            if (Logger.doLog(8)) Logger.msg("Activity.next() - " + Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
+
+            if (hasNoNext) {
+                if (getParent() != null && getParent().getName().equals("domain")) {
+                    // workflow finished
                     setActive(true);
+                }
                 else {
                     CompositeActivity parent = (CompositeActivity) getParent();
                     if (parent != null) parent.runNext(agent, itemPath, locker);
                 }
+            }
+            else {
+                ((WfVertex) outVertices[0]).run(agent, itemPath, locker);
             }
         }
         catch (InvalidDataException s) {
