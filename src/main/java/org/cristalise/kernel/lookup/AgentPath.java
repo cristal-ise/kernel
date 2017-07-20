@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lookup;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -86,6 +87,13 @@ public class AgentPath extends ItemPath {
 
     public RolePath[] getRoles() {
         return Gateway.getLookup().getRoles(this);
+    }
+
+    public RolePath getFirstMatchingRole(List<RolePath> roles) {
+        for (RolePath role : roles) {
+            if (Gateway.getLookup().hasRole(this, role)) return role;
+        }
+        return null;
     }
 
     public boolean hasRole(RolePath role) {

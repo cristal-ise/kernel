@@ -20,7 +20,10 @@
  */
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,36 +136,42 @@ public class Transition {
         if (isRequiresActive() && !act.getActive()) 
             throw new AccessRightsException("Activity must be active to perform trans:"+ toString());
 
-        RolePath role = null;
         String overridingRole = getRoleOverride(act.getProperties());
         boolean override = overridingRole != null;
         boolean isOwner = false, isOwned = true;
 
         // Check agent name
         String agentName = act.getCurrentAgentName();
-        if (!StringUtils.isEmpty(agentName)) {
+        if (StringUtils.isNotEmpty(agentName)) {
             if (agent.getAgentName().equals(agentName)) isOwner = true;
         }
         else isOwned = false;
 
+        List<RolePath> roles = new ArrayList<RolePath>();
         // determine transition role
         if (override) {
-            role = Gateway.getLookup().getRolePath(overridingRole);
+            roles.add(Gateway.getLookup().getRolePath(overridingRole));
         }
         else {
             String actRole = act.getCurrentAgentRole();
-            if (!StringUtils.isEmpty(actRole)) role = Gateway.getLookup().getRolePath(actRole);
+            if (StringUtils.isNotEmpty(actRole)) {
+                for (String role: actRole.split(",")) {
+                    roles.add(Gateway.getLookup().getRolePath(role.trim()));
+                }
+            }
         }
 
         // Decide the access
         if (isOwned && !override && !isOwner)
             throw new AccessRightsException("Agent '" + agent.getAgentName() + "' cannot perform this trans:"+toString()+" because the activity '" + act.getName() + "' is currently owned by " + agentName);
 
-        if (role != null) {
-            if (agent.hasRole(role))         return role.getName();
-            else if (agent.hasRole("Admin")) return "Admin";
+        if (roles.size() != 0) {
+            RolePath matchingRole = agent.getFirstMatchingRole(roles);
+
+            if (matchingRole != null)         return matchingRole.getName();
+            else if (agent.hasRole("Admin"))  return "Admin";
             else 
-                throw new AccessRightsException("Agent '" + agent.getAgentName() + "' does not hold a suitable role '" + role.getName() + "' for the activity " + act.getName());
+                throw new AccessRightsException("Agent '" + agent.getAgentName() + "' does not hold a suitable role '" + act.getCurrentAgentRole() + "' for the activity " + act.getName());
         }
         else return null;
     }
