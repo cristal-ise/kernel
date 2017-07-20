@@ -261,6 +261,10 @@ public class ItemImplementation implements ItemOperations {
                 throw new PersistencyException("Error marshalling job bag");
             }
         }
+        catch (AccessRightsException | ObjectNotFoundException | PersistencyException e) {
+            Logger.error(e);
+            throw e;
+        }
         catch (Throwable ex) {
             Logger.error("ItemImplementation::queryLifeCycle(" + mItemPath + ") - Unknown error");
             Logger.error(ex);
