@@ -108,4 +108,14 @@ public interface LookupManager extends Lookup {
      * @param hasJobList boolean flag
      */
     public void setHasJobList(RolePath role, boolean hasJobList) throws ObjectNotFoundException, ObjectCannotBeUpdated;
+
+    /**
+     * Set the IOR of the Item
+     * 
+     * @param item the Item to be updated
+     * @param ior the new ior
+     * @throws ObjectNotFoundException Item does not exists
+     * @throws ObjectCannotBeUpdated there was a probelm updating the ior
+     */
+    public void setIOR(ItemPath item, String ior) throws ObjectNotFoundException, ObjectCannotBeUpdated;
 }
