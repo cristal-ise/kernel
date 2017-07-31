@@ -20,13 +20,52 @@
  */
 package org.cristalise.kernel.process;
 
+import java.util.Iterator;
+
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
+import org.cristalise.kernel.lookup.Path;
+import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.utils.Logger;
 
-/**************************************************************************
+/**
  * Base class for all servers i.e. c2k processes that serve Entities
- **************************************************************************/
+ */
 public class StandardServer extends AbstractMain {
     protected static StandardServer server;
+
+    public static void resetItemIORs(DomainPath root) throws ObjectNotFoundException {
+        Iterator<Path> pathes = Gateway.getLookup().getChildren(root);
+
+        while (pathes.hasNext()) {
+            DomainPath domain = (DomainPath) pathes.next();
+
+            if (domain.isContext()) {
+                Logger.msg(5, "+++ Context:"+domain);
+                resetItemIORs(domain);
+            }
+            else {
+                Logger.msg(5, "+++ Domain:"+domain + " Item:"+domain.getItemPath() 
+                + " " + Gateway.getORB().object_to_string(Gateway.getCorbaServer().getItemIOR(domain.getItemPath())));
+            }
+        }
+    }
+
+    public static void resetAgentIORs(RolePath root) throws ObjectNotFoundException {
+        Iterator<Path> roles = Gateway.getLookup().getChildren(root);
+
+        while (roles.hasNext()) {
+            RolePath role = (RolePath) roles.next();
+
+            resetAgentIORs(role);
+
+            for (AgentPath agent :  Gateway.getLookup().getAgents(role)) {
+                Logger.msg(5, "+++ Role:"+role + " agent:" + agent.getAgentName() + " " + agent.getItemPath() 
+                + " " + Gateway.getORB().object_to_string(Gateway.getCorbaServer().getItemIOR(agent.getItemPath())));
+            }
+        }
+    }
 
     /**
      * Set-up calls to ORB, POA and Factorys, both optional and required.
@@ -49,7 +88,20 @@ public class StandardServer extends AbstractMain {
         //initialize the server objects
         Gateway.startServer();
 
-        Logger.msg(5, "StandardServer::standardInitialisation - complete.");
+        if (Gateway.getProperties().containsKey(AbstractMain.MAIN_ARG_RESETIOR)) {
+            Logger.msg(5, "StandardServer.standardInitialisation() - RESETTING IORs");
+
+            //resetItemIORs(new DomainPath(""));
+            resetAgentIORs(new RolePath());
+
+            AbstractMain.shutdown(0);
+        }
+        else {
+            //start checking bootstrap & module items
+            Bootstrap.run();
+        }
+
+        Logger.msg(5, "StandardServer.standardInitialisation() - complete.");
     }
 
     public static void main(String[] args) throws Exception {

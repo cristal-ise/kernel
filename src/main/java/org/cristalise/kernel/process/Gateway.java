@@ -155,8 +155,7 @@ public class Gateway
 
     /**
      * Makes this process capable of creating and managing server entities. Runs the
-     * bootstrap to create the root LDAP contexts, initialises the CORBA server and
-     * time-out manager.
+     * Creates the LookupManager, ProxyServer, initialises the ORB and CORBAServer
      * 
      * @param auth - this is NOT USED
      */
@@ -167,8 +166,7 @@ public class Gateway
 
     /**
      * Makes this process capable of creating and managing server entities. Runs the
-     * bootstrap to create the root LDAP contexts, initialises the CORBA server and
-     * time-out manager.
+     * Creates the LookupManager, ProxyServer, initialises the ORB and CORBAServer
      */
     static public void startServer() throws InvalidDataException, CannotManageException {
         try {
@@ -205,8 +203,6 @@ public class Gateway
             // start corba server components
             mCorbaServer = new CorbaServer();
 
-            // start checking bootstrap & module items
-            Bootstrap.run();
             Logger.msg("Gateway.startServer() - Server '"+serverName+"' STARTED.");
         }
         catch (Exception ex) {
@@ -225,8 +221,8 @@ public class Gateway
     }
 
     /**
-     * Connects to the LDAP server in an administrative context - using the admin username and
-     * password given in the LDAP.user and LDAP.password props of the kernel properties. It shall be
+     * Connects to the Lookup server in an administrative context - using the admin username and
+     * password available in the implementation of the Authenticator. It shall be
      * used in server processes only.
      *
      * @throws InvalidDataException - bad params
@@ -361,7 +357,7 @@ public class Gateway
         if (mStorage != null) mStorage.close();
         mStorage = null;
 
-        // disconnect from ldap
+        // disconnect from lookup
         if (mLookup != null) mLookup.close();
         mLookup = null;
         mLookupManager = null;
