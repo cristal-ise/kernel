@@ -21,6 +21,7 @@
 package org.cristalise.kernel.process;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
@@ -29,6 +30,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
+import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -37,7 +39,7 @@ import org.cristalise.kernel.utils.Logger;
 public class StandardServer extends AbstractMain {
     protected static StandardServer server;
 
-    private static void resetItemIORs(DomainPath root) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
+    public static void resetItemIORs(DomainPath root) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
         Logger.msg("StandardServer.resetItemIORs() - root:"+root);
 
         Iterator<Path> pathes = Gateway.getLookup().getChildren(root);
@@ -58,7 +60,7 @@ public class StandardServer extends AbstractMain {
         }
     }
 
-    private static void resetAgentIORs(RolePath root) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
+    public static void resetAgentIORs(RolePath root) throws ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException {
         Logger.msg("StandardServer.resetAgentIORs() - root:"+root);
 
         Iterator<Path> roles = Gateway.getLookup().getChildren(root);
@@ -79,16 +81,17 @@ public class StandardServer extends AbstractMain {
     }
 
     /**
-     * Set-up calls to ORB, POA and Factorys, both optional and required.
+     * Initialise the server
      * 
-     * @param args CLI parapeters
-     * @throws Exception
+     * @param props initiliased Properties
+     * @param res the instantiated ResourceLoader
+     * @throws Exception throw whatever happens
      */
-    protected static void standardInitialisation( String[] args ) throws Exception {
+    public static void standardInitialisation(Properties props, ResourceLoader res) throws Exception {
         isServer = true;
 
         // read args and init Gateway
-        Gateway.init(readC2KArgs(args));
+        Gateway.init(props, res);
 
         // connect to LDAP as root
         Gateway.connect();
@@ -115,6 +118,22 @@ public class StandardServer extends AbstractMain {
         Logger.msg(5, "StandardServer.standardInitialisation() - complete.");
     }
 
+    /**
+     * Initialise the server
+     * 
+     * @param args command line parameters
+     * @throws Exception throw whatever happens
+     */
+    public static void standardInitialisation(String[] args) throws Exception {
+        standardInitialisation(readC2KArgs(args), null);
+    }
+
+    /**
+     * Main to launch a Standard Server process
+     * 
+     * @param args command line parameters
+     * @throws Exception  throw whatever happens
+     */
     public static void main(String[] args) throws Exception {
         //initialise everything
         standardInitialisation( args );
