@@ -604,8 +604,10 @@ public class Script implements DescriptionObject {
     private void executeIncludedScripts() throws ScriptingEngineException {
         for (Script importScript : mIncludes) {
             Logger.msg(5, "Script.executeIncludedScripts() - name:"+importScript.getName()+" version:"+importScript.getVersion());
-
-            // execute the icluded scripts first, they might set input parameters
+            
+            // set current context to the included script before executing it? (issue #124)            
+            importScript.setContext(context);
+            // execute the icluded scripts first, they might set input parameters            
             Object output = importScript.execute();
 
             if (output == null || !(output instanceof Map)) return;

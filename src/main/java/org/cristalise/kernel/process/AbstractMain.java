@@ -38,28 +38,26 @@ abstract public class AbstractMain {
     public static boolean          isServer = false;
     private static ShutdownHandler shutdownHandler;
 
-    public static String MAIN_ARG_NONEWLOGSTREAM = "noNewLogStream";
-    public static String MAIN_ARG_CONFIG         = "config";
-    public static String MAIN_ARG_LOGLEVEL       = "logLevel";
-    public static String MAIN_ARG_LOGFILE        = "logFile";
-    public static String MAIN_ARG_CONNECT        = "connect";
+    public static final String MAIN_ARG_NONEWLOGSTREAM = "noNewLogStream";
+    public static final String MAIN_ARG_CONFIG         = "config";
+    public static final String MAIN_ARG_LOGLEVEL       = "logLevel";
+    public static final String MAIN_ARG_LOGFILE        = "logFile";
+    public static final String MAIN_ARG_CONNECT        = "connect";
+    public static final String MAIN_ARG_RESETIOR       = "resetIOR";
 
-    /**************************************************************************
+    /**
      * Reading and setting input paramaters
-     ************************************************************************** 
      * 
      * Known arguments :
      * <ul>
      * <li>logLevel: the log level 0-9 (+10 to have time, +20 to have only one level)</li>
      * <li>logFile: the full path of the target log file. if none, the Logstream is the stdOut</li>
-     * <li>noNewLogStream: if present no new Logstream is added to the logger (
-     * considers that the Logger is already configured)</li>
-     * 
-     * <li>config</li>
-     * <li>connect</li>
-     * <li>LocalCentre</li>
+     * <li>noNewLogStream: if present no new Logstream is added to the logger (considers that the Logger is already configured)</li>
+     * <li>config</li> specifies the connect file
+     * <li>connect</li> specifies the clc file
+     * <li>LocalCentre</li> sets the local centre id
+     * <li>resetIOR</li> simple argument with no value to trigger the reset ior feature
      * </ul>
-     *  
      * 
      * @param args arguments normally passed by the main()
      * @return the initialised Properties
@@ -79,7 +77,7 @@ abstract public class AbstractMain {
 
                 String value = "";
 
-                if (!args[i+1].startsWith("-")) value = args[++i];
+                if (args.length > i+1 && !args[i+1].startsWith("-")) value = args[++i];
 
                 argProps.put(key, value);
                 i++;
@@ -88,29 +86,27 @@ abstract public class AbstractMain {
                 throw new BadArgumentsException("Bad argument: "+args[i]);
         }
 
-        if (argProps.containsKey("logFile"))
+        if (argProps.containsKey(MAIN_ARG_LOGFILE))
             try {
-                logStream = new PrintStream(new FileOutputStream(argProps.getProperty("logFile")), true);
+                logStream = new PrintStream(new FileOutputStream(argProps.getProperty(MAIN_ARG_LOGFILE)), true);
                 System.setErr(logStream);
             }
             catch (FileNotFoundException e) {
                 e.printStackTrace();
-                throw new BadArgumentsException("Logfile "+argProps.getProperty("logFile")+" cannot be created");
+                throw new BadArgumentsException("Logfile "+argProps.getProperty(MAIN_ARG_LOGFILE)+" cannot be created");
             }
 
         // if the optional arg "noNewLogStream" isn't present => add a
         // new LogStream
         boolean wMustAddNewLogStream = !argProps.contains(MAIN_ARG_NONEWLOGSTREAM);
         if (wMustAddNewLogStream) {
-
             // Set up log stream
-            if (argProps.containsKey("logLevel")) logLevel = Integer.parseInt(argProps.getProperty("logLevel"));
+            if (argProps.containsKey(MAIN_ARG_LOGLEVEL)) logLevel = Integer.parseInt(argProps.getProperty(MAIN_ARG_LOGLEVEL));
 
             Logger.addLogStream(logStream, logLevel);
         }
 
-        if (wMustAddNewLogStream) Logger.msg(
-                String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
+        if (wMustAddNewLogStream) Logger.msg(String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
 
 
         // Dump params if log high enough
@@ -120,16 +116,16 @@ abstract public class AbstractMain {
             System.out.println("AbstractMain: Param "+next+": "+argProps.getProperty(next));
         }
 
-        String configPath = argProps.getProperty("config");
+        String configPath = argProps.getProperty(MAIN_ARG_CONFIG);
 
         if (configPath == null) throw new BadArgumentsException("Config file not specified");
 
         // Load config & connect files into c2kprops
         try {
-            c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty("config") );
+            c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty(MAIN_ARG_CONFIG) );
             c2kProps.putAll(argProps); // args overlap config
 
-            String connectFile = c2kProps.getProperty("connect");
+            String connectFile = c2kProps.getProperty(MAIN_ARG_CONNECT);
             if (connectFile == null)
                 throw new BadArgumentsException("Connect file not specified");
 
