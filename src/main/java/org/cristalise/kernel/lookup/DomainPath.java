@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.Logger;
 import org.omg.CORBA.Object;
 
 /**
@@ -91,6 +92,20 @@ public class DomainPath extends Path {
             } 
         }
         return target;
+    }
+
+    public String getTargetUUID() {
+        if (target != null) return target.getUUID().toString();
+        return null;
+    }
+
+    public void setTargetUUID(String uuid) {
+        try {
+            target = new ItemPath(uuid);
+        }
+        catch (InvalidItemPathException e) {
+            Logger.error(e);
+        }
     }
 
     /**

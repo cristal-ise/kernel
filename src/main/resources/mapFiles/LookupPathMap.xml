@@ -27,16 +27,32 @@
             <bind-xml name="path" node="attribute" />
         </field>
     </class>
+
     <class name="org.cristalise.kernel.lookup.ItemPath" extends="org.cristalise.kernel.lookup.Path">
         <map-to xml="ItemPath" />
         <field name="mIOR" type="string" direct="false" get-method="getIORString" set-method="setIORString">
-            <bind-xml name="uuid" node="text" />
+            <bind-xml node="text" />
         </field>
-	</class>
+    </class>
+
     <class name="org.cristalise.kernel.lookup.AgentPath" extends="org.cristalise.kernel.lookup.ItemPath">
         <map-to xml="AgentPath" />
         <field name="mAgentName" type="string" direct="false" get-method="getAgentName" set-method="setAgentName">
             <bind-xml name="agentName" node="attribute" />
+        </field>
+    </class>
+
+    <class name="org.cristalise.kernel.lookup.DomainPath" extends="org.cristalise.kernel.lookup.Path">
+        <map-to xml="DomainPath" />
+        <field name="target" type="string" direct="false" get-method="getTargetUUID" set-method="setTargetUUID">
+            <bind-xml node="text" />
+        </field>
+    </class>
+
+    <class name="org.cristalise.kernel.lookup.RolePath" extends="org.cristalise.kernel.lookup.Path">
+        <map-to xml="RolePath" />
+        <field name="hasJobList" type="boolean" direct="false" get-method="hasJobList" set-method="setHasJobList">
+            <bind-xml name="hasJobList" node="attribute" />
         </field>
     </class>
 </mapping>

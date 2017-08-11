@@ -27,7 +27,9 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.test.process.MainTest;
@@ -119,6 +121,8 @@ public class CastorXMLTest {
 
         assertEquals( item.getUUID(),      itemPrime.getUUID());
         assertEquals( item.getIORString(), itemPrime.getIORString());
+
+        Logger.msg(marshaller.marshall(itemPrime));
     }
 
     @Test 
@@ -132,7 +136,44 @@ public class CastorXMLTest {
         assertEquals( agent.getIORString(), agentPrime.getIORString());
         assertEquals( agent.getAgentName(), agentPrime.getAgentName());
 
-        //Logger.msg(marshaller.marshall(agentPrime));
+        Logger.msg(marshaller.marshall(agentPrime));
     }
 
+    @Test 
+    public void testCastorDomainPath_Context() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        DomainPath domain      = new DomainPath("/domain/path");
+        DomainPath domainPrime = (DomainPath) marshaller.unmarshall(marshaller.marshall(domain));
+        
+        assertEquals( domain.getStringPath(), domainPrime.getStringPath());
+
+        Logger.msg(marshaller.marshall(domainPrime));
+    }
+
+    @Test 
+    public void testCastorDomainPath_WithTarget() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        DomainPath domain      = new DomainPath("/domain/path", new ItemPath());
+        DomainPath domainPrime = (DomainPath) marshaller.unmarshall(marshaller.marshall(domain));
+
+        assertEquals( domain.getStringPath(), domainPrime.getStringPath());
+        assertEquals( domain.getTargetUUID(), domainPrime.getTargetUUID());
+
+        Logger.msg(marshaller.marshall(domainPrime));
+    }
+
+    @Test 
+    public void testCastorRolePath() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+        
+        RolePath role      = new RolePath("Minion", false);
+        RolePath rolePrime = (RolePath) marshaller.unmarshall(marshaller.marshall(role));
+
+        assertEquals( role.getStringPath(), rolePrime.getStringPath());
+        assertEquals( role.hasJobList(), rolePrime.hasJobList());
+
+        Logger.msg(marshaller.marshall(rolePrime));
+    }
 }
