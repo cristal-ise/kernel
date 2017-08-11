@@ -34,6 +34,10 @@ public class AgentPath extends ItemPath {
 
     private String mAgentName = null;
 
+    public AgentPath() {
+        super();
+    }
+
     public AgentPath(UUID uuid, String ior, String agentName) {
         super(uuid, ior);
         mAgentName = agentName;
@@ -51,7 +55,7 @@ public class AgentPath extends ItemPath {
     }
 
     public AgentPath(ItemPath itemPath) throws InvalidAgentPathException {
-        this(itemPath.mUUID);
+        this(itemPath.getUUID());
     }
 
     public AgentPath(String path) throws InvalidItemPathException {
@@ -60,7 +64,7 @@ public class AgentPath extends ItemPath {
     }
 
     public AgentPath(ItemPath itemPath, String agentName) {
-        super(itemPath.mUUID);
+        super(itemPath.getUUID());
         mAgentName = agentName;
     }
 

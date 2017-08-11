@@ -26,9 +26,10 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.process.Gateway;
 
-public abstract class Path {
+public abstract class Path implements C2KLocalObject {
     public static final String delim = "/";
 
     protected String[] mPath = new String[0];
@@ -140,5 +141,29 @@ public abstract class Path {
         for (String element : mPath) comp.append("'").append(element).append("' ");
 
         return "Path - dump(): " + comp.toString() + "}\n        string=" + toString() + "\n        uuid=" + getUUID();
+    }
+
+    @Override
+    public void setName(String name) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getClusterType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getClusterPath() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

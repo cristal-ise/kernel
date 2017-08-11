@@ -24,10 +24,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
+import java.util.UUID;
 
+import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.test.process.MainTest;
+import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.junit.Before;
@@ -39,6 +43,10 @@ import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.ElementSelectors;
 
 public class CastorXMLTest {
+    
+    String ior = "IOR:005858580000001549444C3A69646C746573742F746573743A312E3000585858"+
+                 "0000000100000000000000350001005800000006636F726261009B44000000214F52"+
+                 "424C696E6B3A3A636F7262613A33393734383A3A736B656C65746F6E202330";
 
     @Before
     public void setup() throws Exception {
@@ -101,4 +109,30 @@ public class CastorXMLTest {
         assertTrue(q.getQuery().startsWith("\n<TRList>"));
         assertTrue(q.getQuery().endsWith("</TRList>\n    "));
     }
+    
+    @Test 
+    public void testCastorItemPath() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        ItemPath item      = new ItemPath(UUID.randomUUID(), ior);
+        ItemPath itemPrime = (ItemPath) marshaller.unmarshall(marshaller.marshall(item));
+
+        assertEquals( item.getUUID(),      itemPrime.getUUID());
+        assertEquals( item.getIORString(), itemPrime.getIORString());
+    }
+
+    @Test 
+    public void testCastorAgentPath() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        AgentPath agent      = new AgentPath(UUID.randomUUID(), ior, "toto");
+        AgentPath agentPrime = (AgentPath) marshaller.unmarshall(marshaller.marshall(agent));
+
+        assertEquals( agent.getUUID(),      agentPrime.getUUID());
+        assertEquals( agent.getIORString(), agentPrime.getIORString());
+        assertEquals( agent.getAgentName(), agentPrime.getAgentName());
+
+        //Logger.msg(marshaller.marshall(agentPrime));
+    }
+
 }

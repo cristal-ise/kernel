@@ -30,11 +30,10 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * Extends Path to enforce SystemKey structure and support int form
+ * Extends Path to enforce SystemKey structure and support UUID form
  */
 public class ItemPath extends Path {
 
-    protected UUID   mUUID;
     protected String mIOR;
 
     public ItemPath() {
@@ -56,38 +55,55 @@ public class ItemPath extends Path {
 
     public ItemPath(String[] path) throws InvalidItemPathException {
         super(path);
-        getSysKeyFromPath();
+        checkSysKeyFromPath();
     }
 
     public ItemPath(String path) throws InvalidItemPathException {
         super(path);
+
         if (path == null) throw new InvalidItemPathException("Path cannot be null");
 
-        getSysKeyFromPath();
+        checkSysKeyFromPath();
     }
 
+    @Override
     public void setPath(String[] path) {
         super.setPath(path);
-        mUUID = null;
+
+        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
+
+        //it is used to check if path is UUID compatible, and it will throw a runtime exception
+        getUUID();
     }
 
+    @Override
     public void setPath(String path) {
         super.setPath(path);
-        mUUID = null;
+
+        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
+
+        //it is used to check if path is UUID compatible, and it will throw a runtime exception
+        getUUID();
     }
 
+    @Override
     public void setPath(Path path) {
         super.setPath(path);
-        mUUID = null;
-    }
 
-    private void getSysKeyFromPath() throws InvalidItemPathException {
+        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
+
+        //it is used to check if path is UUID compatible, and it will throw a runtime exception
+        getUUID();
+   }
+
+    private void checkSysKeyFromPath() throws InvalidItemPathException {
         if (mPath.length == 1) {
             try {
-                setSysKey(UUID.fromString(mPath[0]));
+                getUUID();
             }
-            catch (IllegalArgumentException ex) {
-                throw new InvalidItemPathException(mPath[0] + " is not a valid UUID");
+            catch (Throwable ex) {
+                Logger.error(ex);
+                throw new InvalidItemPathException(mPath[0] + " is not a valid UUID : " + ex.getMessage());
             }
         }
         else
@@ -107,6 +123,7 @@ public class ItemPath extends Path {
         return this;
     }
 
+    @Override
     public org.omg.CORBA.Object getIOR() {
         if (mIOR == null) {
             try {
@@ -120,6 +137,7 @@ public class ItemPath extends Path {
         return Gateway.getORB().string_to_object(mIOR);
     }
 
+    @Override
     public void setIOR(org.omg.CORBA.Object IOR) {
         mIOR = Gateway.getORB().object_to_string(IOR);
     }
@@ -133,35 +151,36 @@ public class ItemPath extends Path {
     }
 
     public byte[] getOID() {
+        UUID uuid = getUUID();
+
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
-        bb.putLong(mUUID.getMostSignificantBits());
-        bb.putLong(mUUID.getLeastSignificantBits());
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
 
         return bb.array();
     }
 
     protected void setSysKey(UUID uuid) {
-        mUUID = uuid;
-        setPathFromUUID(mUUID.toString());
+        setPathFromUUID(uuid);
     }
 
     protected void setSysKey(SystemKey sysKey) {
-        mUUID = new UUID(sysKey.msb, sysKey.lsb);
-        setPathFromUUID(mUUID.toString());
+        setPathFromUUID(new UUID(sysKey.msb, sysKey.lsb));
     }
 
-    private void setPathFromUUID(String uuid) {
+    private void setPathFromUUID(UUID uuid) {
         mPath = new String[1];
-        mPath[0] = uuid;
+        mPath[0] = uuid.toString();
     }
 
     @Override
     public SystemKey getSystemKey() {
-        return new SystemKey(mUUID.getMostSignificantBits(), mUUID.getLeastSignificantBits());
+        UUID uuid = getUUID();
+        return new SystemKey(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits());
     }
 
     @Override
     public UUID getUUID() {
-        return mUUID;
+        return UUID.fromString(mPath[0]);
     }
 }
