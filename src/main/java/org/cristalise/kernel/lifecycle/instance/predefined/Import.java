@@ -63,17 +63,15 @@ public class Import extends PredefinedStep {
         Schema schema;
         String viewpoint = null;
 
-        {
-            String schemaName = params[0].substring(0, split1);
-            int schemaVersion;
-            if (split2 > -1) {
-                schemaVersion = Integer.parseInt(params[0].substring(split1 + 1, split2));
-                viewpoint = params[0].substring(split2 + 1);
-            }
-            else schemaVersion = Integer.parseInt(params[0].substring(split1 + 1));
-
-            schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
+        String schemaName = params[0].substring(0, split1);
+        int schemaVersion;
+        if (split2 > -1) {
+            schemaVersion = Integer.parseInt(params[0].substring(split1 + 1, split2));
+            viewpoint = params[0].substring(split2 + 1);
         }
+        else schemaVersion = Integer.parseInt(params[0].substring(split1 + 1));
+
+        schema = LocalObjectLoader.getSchema(schemaName, schemaVersion);
 
         String timestamp;
         if (params.length == 3) timestamp = params[2];
