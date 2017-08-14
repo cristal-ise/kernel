@@ -85,17 +85,26 @@ public abstract class ClusterStorage {
      * zero-length string.
      */
     public static final String ROOT = "";
+
+    
+    /**
+     * 
+     */
+    @Deprecated()
+    public static final String PATH = "Path";
     /**
      * The root of the Property object cluster. All Property paths start with
      * this. Defined as "Property". Properties are stored underneath according
      * to their name e.g. "Property/Name"
      */
+    @Deprecated
     public static final String PROPERTY = "Property";
     /**
      * The root of the Collection object cluster. All Collection paths start
      * with this. Defined as "Collection". Collections are stored underneath by
      * name e.g. "Collection/Composition"
      */
+    @Deprecated
     public static final String COLLECTION = "Collection";
     /**
      * The cluster which holds the Item workflow. Defined as "LifeCycle". Holds
@@ -104,23 +113,27 @@ public abstract class ClusterStorage {
      * 
      * @see org.cristalise.kernel.lifecycle.instance.Workflow
      */
+    @Deprecated()
     public static final String LIFECYCLE = "LifeCycle";
     /**
      * This cluster holds all outcomes of this Item. The path to each outcome is
      * "Outcome/<i>Schema Name</i>/<i>Schema Version</i>/<i>Event ID</i>"
      */
+    @Deprecated()
     public static final String OUTCOME = "Outcome";
     /**
      * This is the cluster that contains all event for this Item. This cluster
      * may be instantiated in a client as a History, which is a RemoteMap.
      * Events are stored with their ID: "/AuditTrail/<i>Event ID</i>"
      */
+    @Deprecated()
     public static final String HISTORY = "AuditTrail";
     /**
      * This cluster contains all viewpoints. Its name is defined as "ViewPoint".
      * The paths of viewpoint objects stored here follow this pattern:
      * "ViewPoint/<i>Schema Name</i>/<i>Viewpoint Name</i>"
      */
+    @Deprecated()
     public static final String VIEWPOINT = "ViewPoint";
     /**
      * Agents store their persistent jobs in this cluster that have been pushed
@@ -128,11 +141,11 @@ public abstract class ClusterStorage {
      * and each new job received is assigned an integer ID one more than the
      * highest already present.
      */
+    @Deprecated()
     public static final String JOB = "Job";
 
     /**
-     * An array of all currently supported cluster types, for iterative
-     * purposes.
+     * An array of all currently supported cluster types, for iterative purposes.
      */
     public static final String[] allClusterTypes = { PROPERTY, COLLECTION, LIFECYCLE, OUTCOME, HISTORY, VIEWPOINT, JOB };
 
