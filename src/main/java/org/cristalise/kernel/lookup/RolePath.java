@@ -95,6 +95,7 @@ public class RolePath extends Path {
         return "role";
     }
 
+    @Override
     public String getName() {
         if (mPath.length > 0) return mPath[mPath.length - 1];
         else                  return getRoot();

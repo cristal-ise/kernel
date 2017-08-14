@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.entity.C2KLocalObject;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 
 public abstract class Path implements C2KLocalObject {
@@ -145,25 +146,24 @@ public abstract class Path implements C2KLocalObject {
 
     @Override
     public void setName(String name) {
-        // TODO Auto-generated method stub
-
+        throw new IllegalStateException("This method should not be called");
     }
 
     @Override
     public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+        return getStringPath();
     }
 
     @Override
     public String getClusterType() {
-        // TODO Auto-generated method stub
-        return null;
+        return ClusterType.PATH.getName();
     }
 
     @Override
     public String getClusterPath() {
-        // TODO Auto-generated method stub
-        return null;
+        String path = getStringPath();
+
+        if (path.startsWith(delim)) return getClusterType() + path;
+        else                        return getClusterType() + delim + path;
     }
 }

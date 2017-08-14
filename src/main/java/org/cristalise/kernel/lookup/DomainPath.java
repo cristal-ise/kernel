@@ -123,6 +123,7 @@ public class DomainPath extends Path {
      * 
      * @return the last path component;
      */
+    @Override
     public String getName() {
         if (mPath.length > 0) return mPath[mPath.length - 1];
         else                  return getRoot();

@@ -69,31 +69,16 @@ public class ItemPath extends Path {
     @Override
     public void setPath(String[] path) {
         super.setPath(path);
-
-        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
-
-        //it is used to check if path is UUID compatible, and it will throw a runtime exception
-        getUUID();
     }
 
     @Override
     public void setPath(String path) {
         super.setPath(path);
-
-        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
-
-        //it is used to check if path is UUID compatible, and it will throw a runtime exception
-        getUUID();
     }
 
     @Override
     public void setPath(Path path) {
         super.setPath(path);
-
-        //checkSysKeyFromPath(); cannot be used, because it will force to add InvalidItemPathException to the signature
-
-        //it is used to check if path is UUID compatible, and it will throw a runtime exception
-        getUUID();
    }
 
     private void checkSysKeyFromPath() throws InvalidItemPathException {
@@ -102,7 +87,6 @@ public class ItemPath extends Path {
                 getUUID();
             }
             catch (Throwable ex) {
-                Logger.error(ex);
                 throw new InvalidItemPathException(mPath[0] + " is not a valid UUID : " + ex.getMessage());
             }
         }
