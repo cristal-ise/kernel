@@ -34,6 +34,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
@@ -104,7 +105,7 @@ public class XMLClusterStorage extends ClusterStorage {
 
     // introspection
     @Override
-    public short queryClusterSupport(String clusterType) {
+    public short queryClusterSupport(ClusterType clusterType) {
         return ClusterStorage.READWRITE;
     }
 
@@ -132,16 +133,16 @@ public class XMLClusterStorage extends ClusterStorage {
     @Override
     public C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException {
         try {
-            String type      = ClusterStorage.getClusterType(path);
-            String filePath  = getFilePath(itemPath, path) + fileExtension;
-            String objString = FileStringUtility.file2String(filePath);
+            ClusterType type      = ClusterStorage.getClusterType(path);
+            String      filePath  = getFilePath(itemPath, path) + fileExtension;
+            String      objString = FileStringUtility.file2String(filePath);
 
             if (objString.length() == 0) return null;
 
             Logger.debug(9, "XMLClusterStorage.get() - objString:" + objString);
 
-            if (type.equals("Outcome")) return new Outcome(path, objString);
-            else                        return (C2KLocalObject) Gateway.getMarshaller().unmarshall(objString);
+            if (type == ClusterType.OUTCOME) return new Outcome(path, objString);
+            else                             return (C2KLocalObject) Gateway.getMarshaller().unmarshall(objString);
         }
         catch (Exception e) {
             Logger.msg(3, "XMLClusterStorage.get() - The path " + path + " from " + itemPath + " does not exist.: " + e.getMessage());

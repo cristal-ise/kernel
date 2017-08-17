@@ -20,6 +20,10 @@
  */
 package org.cristalise.kernel.persistency;
 
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
+import static org.cristalise.kernel.persistency.ClusterType.JOB;
+
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -51,8 +55,8 @@ import org.cristalise.kernel.utils.WeakCache;
 public class ClusterStorageManager {
     HashMap<String, ClusterStorage> allStores = new HashMap<String, ClusterStorage>();
     String[] clusterPriority = new String[0];
-    HashMap<String, ArrayList<ClusterStorage>> clusterWriters = new HashMap<String, ArrayList<ClusterStorage>>();
-    HashMap<String, ArrayList<ClusterStorage>> clusterReaders = new HashMap<String, ArrayList<ClusterStorage>>();
+    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterWriters = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
+    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterReaders = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
     ArrayList<TransactionalClusterStorage> transactionalStores = new ArrayList<TransactionalClusterStorage>();
 
     // we don't need a soft cache for the top level cache - the proxies and entities clear that when reaped
@@ -105,7 +109,7 @@ public class ClusterStorageManager {
 
             if (newStorage instanceof TransactionalClusterStorage) transactionalStores.add((TransactionalClusterStorage)newStorage);
         }
-        clusterReaders.put(ClusterStorage.ROOT, rootStores); // all storages are queried for clusters at the root level
+        clusterReaders.put(ClusterType.ROOT, rootStores); // all storages are queried for clusters at the root level
     }
 
     public ArrayList<ClusterStorage> instantiateStores(String allClusters) throws PersistencyException {
@@ -161,9 +165,9 @@ public class ClusterStorageManager {
      * @param forWrite whether the request is for write or read
      * @return the list of usable storages
      */
-    private ArrayList<ClusterStorage> findStorages(String clusterType, boolean forWrite) {
+    private ArrayList<ClusterStorage> findStorages(ClusterType clusterType, boolean forWrite) {
         // choose the right cache for readers or writers
-        HashMap<String, ArrayList<ClusterStorage>> cache;
+        HashMap<ClusterType, ArrayList<ClusterStorage>> cache;
 
         if (forWrite) cache = clusterWriters;
         else          cache = clusterReaders;
@@ -265,7 +269,7 @@ public class ClusterStorageManager {
         }
 
         // special case for Viewpoint- When path ends with /data it returns referenced Outcome instead of Viewpoint
-        if (path.startsWith(ClusterStorage.VIEWPOINT) && path.endsWith("/data")) {
+        if (path.startsWith(VIEWPOINT.getName()) && path.endsWith("/data")) {
             StringTokenizer tok = new StringTokenizer(path,"/");
             if (tok.countTokens() == 4) { // to not catch viewpoints called 'data'
                 Viewpoint view = (Viewpoint)get(itemPath, path.substring(0, path.lastIndexOf("/")));
@@ -277,8 +281,8 @@ public class ClusterStorageManager {
 
         // deal out top level remote maps
         if (path.indexOf('/') == -1) {
-            if (path.equals(ClusterStorage.HISTORY)) result = new History(itemPath, null);
-            if (path.equals(ClusterStorage.JOB)) {
+            if (path.equals(HISTORY.getName())) result = new History(itemPath, null);
+            if (path.equals(JOB.getName())) {
                 if (itemPath instanceof AgentPath) result = new JobList((AgentPath)itemPath, null);
                 else                               throw new ObjectNotFoundException("Items do not have job lists");
             }

@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.persistency;
 
+import java.util.ArrayList;
+
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.entity.C2KLocalObject;
@@ -84,28 +86,27 @@ public abstract class ClusterStorage {
      * The defined path of the root of the CRISTAL Kernel object cluster tree. A
      * zero-length string.
      */
-    public static final String ROOT = "";
-
-    
+    @Deprecated()
+    public static final String ROOT = ClusterType.ROOT.getName();
     /**
      * 
      */
     @Deprecated()
-    public static final String PATH = "Path";
+    public static final String PATH = ClusterType.PATH.getName();
     /**
      * The root of the Property object cluster. All Property paths start with
      * this. Defined as "Property". Properties are stored underneath according
      * to their name e.g. "Property/Name"
      */
     @Deprecated
-    public static final String PROPERTY = "Property";
+    public static final String PROPERTY = ClusterType.PROPERTY.getName();
     /**
      * The root of the Collection object cluster. All Collection paths start
      * with this. Defined as "Collection". Collections are stored underneath by
      * name e.g. "Collection/Composition"
      */
     @Deprecated
-    public static final String COLLECTION = "Collection";
+    public static final String COLLECTION = ClusterType.COLLECTION.getName();
     /**
      * The cluster which holds the Item workflow. Defined as "LifeCycle". Holds
      * the workflow inside, which is named "workflow", hence
@@ -114,27 +115,27 @@ public abstract class ClusterStorage {
      * @see org.cristalise.kernel.lifecycle.instance.Workflow
      */
     @Deprecated()
-    public static final String LIFECYCLE = "LifeCycle";
+    public static final String LIFECYCLE = ClusterType.LIFECYCLE.getName();
     /**
      * This cluster holds all outcomes of this Item. The path to each outcome is
      * "Outcome/<i>Schema Name</i>/<i>Schema Version</i>/<i>Event ID</i>"
      */
     @Deprecated()
-    public static final String OUTCOME = "Outcome";
+    public static final String OUTCOME = ClusterType.OUTCOME.getName();
     /**
      * This is the cluster that contains all event for this Item. This cluster
      * may be instantiated in a client as a History, which is a RemoteMap.
      * Events are stored with their ID: "/AuditTrail/<i>Event ID</i>"
      */
     @Deprecated()
-    public static final String HISTORY = "AuditTrail";
+    public static final String HISTORY = ClusterType.HISTORY.getName();
     /**
      * This cluster contains all viewpoints. Its name is defined as "ViewPoint".
      * The paths of viewpoint objects stored here follow this pattern:
      * "ViewPoint/<i>Schema Name</i>/<i>Viewpoint Name</i>"
      */
     @Deprecated()
-    public static final String VIEWPOINT = "ViewPoint";
+    public static final String VIEWPOINT = ClusterType.VIEWPOINT.getName();
     /**
      * Agents store their persistent jobs in this cluster that have been pushed
      * to them by activities configured to do so. The name is defined as "Job"
@@ -142,11 +143,12 @@ public abstract class ClusterStorage {
      * highest already present.
      */
     @Deprecated()
-    public static final String JOB = "Job";
+    public static final String JOB = ClusterType.JOB.getName();
 
     /**
      * An array of all currently supported cluster types, for iterative purposes.
      */
+    @Deprecated()
     public static final String[] allClusterTypes = { PROPERTY, COLLECTION, LIFECYCLE, OUTCOME, HISTORY, VIEWPOINT, JOB };
 
     /**
@@ -180,7 +182,7 @@ public abstract class ClusterStorage {
      *            constants from this class.
      * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
      */
-    public abstract short queryClusterSupport(String clusterType);
+    public abstract short queryClusterSupport(ClusterType clusterType);
 
     /**
      * Checks whether the storage support the given type of query or not
@@ -206,20 +208,20 @@ public abstract class ClusterStorage {
      * @param path object path
      * @return The cluster to which it belongs
      */
-    protected static String getClusterType(String path) {
+    protected static ClusterType getClusterType(String path) {
         try {
-            if (path == null || path.length() == 0) return ClusterStorage.ROOT;
+            if (path == null || path.length() == 0) return ClusterType.ROOT;
 
             int start = path.charAt(0) == '/' ? 1 : 0;
             int end = path.indexOf('/', start + 1);
-            
+
             if (end == -1) end = path.length();
 
-            return path.substring(start, end);
+            return ClusterType.getValue(path.substring(start, end));
         }
         catch (Exception ex) {
             Logger.error(ex);
-            return ClusterStorage.ROOT;
+            return ClusterType.ROOT;
         }
     }
 
@@ -230,9 +232,7 @@ public abstract class ClusterStorage {
      * @return Its path
      */
     public static String getPath(C2KLocalObject obj) {
-        String root = obj.getClusterType();
-
-        if (root == null) return null; // no storage allowed
+        if (obj.getClusterType() == null) return null; // no storage allowed
 
         return obj.getClusterPath();
     }
@@ -285,8 +285,7 @@ public abstract class ClusterStorage {
     public abstract void delete(ItemPath itemPath, String path) throws PersistencyException;
 
     /**
-     * Queries the local path below the given root and returns the possible next
-     * elements.
+     * Queries the local path below of the item and returns the possible next elements.
      * 
      * @param itemPath
      *            The Item to query
@@ -298,4 +297,34 @@ public abstract class ClusterStorage {
      *             When an error occurred during the query
      */
     public abstract String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException;
+
+    /**
+     * Queries the local path below the given type and returns the possible next elements.
+     * 
+     * @param itemPath
+     * @param type
+     * @return
+     * @throws PersistencyException
+     */
+    public String[] getClusterContents(ItemPath itemPath, ClusterType type) throws PersistencyException {
+        return getClusterContents(itemPath, type.getName());
+    }
+
+    /**
+     * 
+     * @param itemPath
+     * @return
+     * @throws PersistencyException
+     */
+    public ClusterType[] getClusters(ItemPath itemPath) throws PersistencyException {
+        String[] contents = getClusterContents(itemPath, "");
+        ArrayList<ClusterType> types = new ArrayList<ClusterType>();
+
+        for (String content : contents) {
+            ClusterType type = ClusterType.getValue(content);
+            if (type != null) types.add(type);
+        }
+
+        return types.toArray(new ClusterType[0]);
+    }
 }

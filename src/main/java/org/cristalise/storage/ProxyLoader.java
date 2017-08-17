@@ -31,6 +31,7 @@ import org.cristalise.kernel.entity.ItemHelper;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Lookup;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
@@ -62,7 +63,7 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
-    public short queryClusterSupport(String clusterType) {
+    public short queryClusterSupport(ClusterType clusterType) {
         return READ;
     }
 
@@ -88,7 +89,7 @@ public class ProxyLoader extends ClusterStorage {
     public C2KLocalObject get(ItemPath thisItem, String path) throws PersistencyException {
         try {
             Item thisEntity = getIOR(thisItem);
-            String type = getClusterType(path);
+            ClusterType type = getClusterType(path);
 
             // fetch the xml from the item
             String queryData = thisEntity.queryData(path);
@@ -96,8 +97,8 @@ public class ProxyLoader extends ClusterStorage {
             if (Logger.doLog(8)) Logger.msg("ProxyLoader.get() - "+thisItem+" : "+path+" = "+queryData);
 
             if (queryData != null) {
-                if (type.equals(OUTCOME)) return new Outcome(path, queryData);
-                else                      return (C2KLocalObject)Gateway.getMarshaller().unmarshall(queryData);
+                if (type == ClusterType.OUTCOME) return new Outcome(path, queryData);
+                else                             return (C2KLocalObject)Gateway.getMarshaller().unmarshall(queryData);
             }
         }
         catch (ObjectNotFoundException e) {

@@ -29,6 +29,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.Logger;
@@ -64,7 +65,7 @@ public class MemoryOnlyClusterStorage extends ClusterStorage {
     }
 
     @Override
-    public short queryClusterSupport(String clusterType) {
+    public short queryClusterSupport(ClusterType clusterType) {
         return ClusterStorage.READWRITE;
     }
 
@@ -150,6 +151,11 @@ public class MemoryOnlyClusterStorage extends ClusterStorage {
             }
         }
         return result.toArray(new String[result.size()]);
+    }
+
+    @Override
+    public String[] getClusterContents(ItemPath itemPath, ClusterType type) throws PersistencyException {
+        return getClusterContents(itemPath, type.getName());
     }
 
     public void dumpContents(ItemPath thisItem) {

@@ -47,6 +47,7 @@ import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.BuiltInItemProperties;
@@ -247,7 +248,7 @@ public class ItemProxy
      */
     public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
         String verStr = version==null?"last":String.valueOf(version);
-        return (Collection<?>)getObject(ClusterStorage.COLLECTION+"/"+collName+"/"+verStr);
+        return (Collection<?>)getObject(ClusterType.COLLECTION+"/"+collName+"/"+verStr);
     }
 
     /** Gets the Workflow object of this Item
@@ -256,11 +257,11 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Workflow getWorkflow() throws ObjectNotFoundException {
-        return (Workflow)getObject(ClusterStorage.LIFECYCLE+"/workflow");
+        return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow");
     }
 
     public boolean checkViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
-        return checkContent(ClusterStorage.VIEWPOINT+"/"+schemaName, viewName);
+        return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName);
     }
 
     /** 
@@ -272,7 +273,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Viewpoint getViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
-        return (Viewpoint)getObject(ClusterStorage.VIEWPOINT+"/"+schemaName+"/"+viewName);
+        return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName);
     }
 
     /** 
@@ -368,6 +369,10 @@ public class ItemProxy
         return false;
     }
 
+    public String[] getContents( ClusterType type ) throws ObjectNotFoundException {
+        return getContents(type.getName());
+    }
+
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
             return Gateway.getStorage().getClusterContents(mItemPath, path);
@@ -420,7 +425,7 @@ public class ItemProxy
      */
     public String getProperty( String name ) throws ObjectNotFoundException {
         Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
-        Property prop = (Property)getObject("Property/"+name);
+        Property prop = (Property)getObject(ClusterType.PROPERTY+"/"+name);
 
         if(prop != null) return prop.getValue();
         else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not find property "+name+" from item "+mItemPath);

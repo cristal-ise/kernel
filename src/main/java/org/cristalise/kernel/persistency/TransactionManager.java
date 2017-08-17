@@ -68,6 +68,9 @@ public class TransactionManager {
         return storage.executeQuery(query);
     }
 
+    public String[] getClusterContents(ItemPath itemPath, ClusterType type) throws PersistencyException {
+        return getClusterContents(itemPath, type.getName());
+    }
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
         if (path.startsWith("/") && path.length() > 1) path = path.substring(1);
         return storage.getClusterContents(itemPath, path);
@@ -84,13 +87,13 @@ public class TransactionManager {
 
         // deal out top level remote maps, if transactions aren't needed
         if (path.indexOf('/') == -1) {
-            if (path.equals(ClusterStorage.HISTORY) && locker != null)
+            if (path.equals(ClusterType.HISTORY) && locker != null) {
                 return new History(itemPath, locker);
-            if (path.equals(ClusterStorage.JOB) && locker != null)
-                if (itemPath instanceof AgentPath)
-                    return new JobList((AgentPath)itemPath, locker);
-                else
-                    throw new ObjectNotFoundException("TransactionManager.get() - Items do not have job lists");
+            }
+            else if (path.equals(ClusterType.JOB) && locker != null) {
+                if (itemPath instanceof AgentPath) return new JobList((AgentPath)itemPath, locker);
+                else                               throw new ObjectNotFoundException("TransactionManager.get() - Items do not have job lists");
+            }
         }
 
         // check to see if the locker has been modifying this cluster
