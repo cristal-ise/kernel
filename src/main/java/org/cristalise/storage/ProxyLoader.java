@@ -63,7 +63,7 @@ public class ProxyLoader extends ClusterStorage {
     }
 
     @Override
-    public short queryClusterSupport(ClusterType clusterType) {
+    public short queryClusterSupport(String clusterType) {
         return READ;
     }
 

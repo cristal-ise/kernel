@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.test.persistency
 
+import org.cristalise.kernel.persistency.ClusterType
 import org.cristalise.kernel.persistency.outcome.Outcome
 import org.cristalise.kernel.process.Gateway
 import org.cristalise.kernel.test.process.MainTest
@@ -46,7 +47,7 @@ class OutcomeSpecs extends Specification {
         Outcome o = new Outcome("/Script/0/7", (Document)null)
 
         then:
-        o.getClusterType() == "Outcome"
+        o.getClusterType() == ClusterType.OUTCOME
         o.getName() == "7";
         o.getID() == 7;
         o.getSchemaType() == "Script";
@@ -58,7 +59,7 @@ class OutcomeSpecs extends Specification {
         Outcome o = new Outcome("/Outcome/Script/0/7", (Document)null)
 
         then:
-        o.getClusterType() == "Outcome"
+        o.getClusterType() == ClusterType.OUTCOME
         o.getName() == "7";
         o.getID() == 7;
         o.getSchemaType() == "Script";

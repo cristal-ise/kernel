@@ -105,7 +105,7 @@ public class XMLClusterStorage extends ClusterStorage {
 
     // introspection
     @Override
-    public short queryClusterSupport(ClusterType clusterType) {
+    public short queryClusterSupport(String clusterType) {
         return ClusterStorage.READWRITE;
     }
 

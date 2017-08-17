@@ -177,12 +177,24 @@ public abstract class ClusterStorage {
      * Declares whether or not this ClusterStorage can read or write a
      * particular CRISTAL local object type.
      * 
+     * @param clusterType The Cluster type requested
+     * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
+     */
+    public short queryClusterSupport(ClusterType clusterType) {
+        return queryClusterSupport(clusterType.getName());
+    }
+
+    /**
+     * Declares whether or not this ClusterStorage can read or write a
+     * particular CRISTAL local object type.
+     * 
      * @param clusterType
      *            The Cluster type requested. Must be one of the Cluster type
      *            constants from this class.
      * @return A ClusterStorage constant: NONE, READ, WRITE, or READWRITE
      */
-    public abstract short queryClusterSupport(ClusterType clusterType);
+    @Deprecated
+    public abstract short queryClusterSupport(String clusterType);
 
     /**
      * Checks whether the storage support the given type of query or not
