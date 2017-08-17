@@ -170,8 +170,8 @@ public class OutcomeTest {
                 }
             }
 
-            assertNotNull(fieldName, "fieldName shall not be null");
-            assertNotNull(fieldValue, "fieldValue shall not be null");
+            assertNotNull( "fieldName shall not be null", fieldName);
+            assertNotNull("fieldValue shall not be null", fieldValue);
 
             Logger.msg("testComplexXpath() - slotID:"+slotID+" fieldName:"+fieldName+" fieldValue:"+fieldValue);
         }

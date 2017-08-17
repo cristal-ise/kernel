@@ -32,8 +32,8 @@ public class ClientShell extends StandardClient {
 
     Script console;
 
-    public ClientShell(AgentProxy agent) throws Exception {
-        agent = agent;
+    public ClientShell(AgentProxy a) throws Exception {
+        agent = a;
         console = new Script("javascript", agent, System.out);
     }
 
