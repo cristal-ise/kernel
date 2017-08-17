@@ -29,7 +29,7 @@ import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.scripting.Script;
@@ -103,7 +103,7 @@ public class DependencyMember implements CollectionMember {
                 String aClassProp = sub.nextToken();
                 try {
                     String memberValue = (String) getProperties().get(aClassProp);
-                    Property ItemProperty = (Property) Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + aClassProp, null);
+                    Property ItemProperty = (Property) Gateway.getStorage().get(itemPath, ClusterType.PROPERTY + "/" + aClassProp, null);
                     if (ItemProperty == null)
                         throw new InvalidCollectionModification("Property " + aClassProp + " does not exist for item " + itemPath);
                     if (!ItemProperty.getValue().equalsIgnoreCase(memberValue))

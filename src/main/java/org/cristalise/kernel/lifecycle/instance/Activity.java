@@ -61,7 +61,7 @@ import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -604,7 +604,7 @@ public class Activity extends WfVertex {
         if (mTypeName == null) {
             try {
                 ItemPath actType = new ItemPath(mType);
-                Property nameProp = (Property) Gateway.getStorage().get(actType, ClusterStorage.PROPERTY + "/" + NAME, null);
+                Property nameProp = (Property) Gateway.getStorage().get(actType, ClusterType.PROPERTY + "/" + NAME, null);
                 mTypeName = nameProp.getValue();
             }
             catch (Exception e) {

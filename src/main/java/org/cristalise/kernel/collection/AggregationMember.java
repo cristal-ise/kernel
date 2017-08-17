@@ -29,6 +29,7 @@ import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.Logger;
@@ -100,7 +101,7 @@ public class AggregationMember extends GraphableVertex implements CollectionMemb
                 String aClassProp = sub.nextToken();
                 try {
                     String memberValue = (String)getProperties().get(aClassProp);
-                    Property ItemProperty = (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+aClassProp, null);
+                    Property ItemProperty = (Property)Gateway.getStorage().get(itemPath, ClusterType.PROPERTY+"/"+aClassProp, null);
                     if (ItemProperty == null)
                         throw new InvalidCollectionModification("Property "+aClassProp+ " does not exist for item " + itemPath );
                     if (ItemProperty.getValue() == null || !ItemProperty.getValue().equalsIgnoreCase(memberValue))

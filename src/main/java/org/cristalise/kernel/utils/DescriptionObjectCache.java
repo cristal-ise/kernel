@@ -39,7 +39,7 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
@@ -178,7 +178,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
 
     public D loadObject(String name, int version, ItemProxy proxy) throws ObjectNotFoundException, InvalidDataException {
 
-        Viewpoint smView = (Viewpoint) proxy.getObject(ClusterStorage.VIEWPOINT + "/" + getSchemaName() + "/" + version);
+        Viewpoint smView = (Viewpoint) proxy.getObject(ClusterType.VIEWPOINT + "/" + getSchemaName() + "/" + version);
         String rawRes;
         try {
             rawRes = smView.getOutcome().getData();
@@ -210,7 +210,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
             this.def = def;
             this.parent = parent;
             this.proxy = proxy;
-            proxy.subscribe(new MemberSubscription<Viewpoint>(this, ClusterStorage.VIEWPOINT, false));
+            proxy.subscribe(new MemberSubscription<Viewpoint>(this, ClusterType.VIEWPOINT.getName(), false));
         }
 
         @Override

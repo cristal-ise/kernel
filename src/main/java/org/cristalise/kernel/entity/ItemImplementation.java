@@ -46,7 +46,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.TransactionManager;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
@@ -196,7 +196,7 @@ public class ItemImplementation implements ItemOperations {
             Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
 
             // TODO: check if delegate is allowed valid for agent
-            lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
+            lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterType.LIFECYCLE + "/workflow", null);
 
             String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData);
 
@@ -245,7 +245,7 @@ public class ItemImplementation implements ItemOperations {
             catch (InvalidItemPathException e) {
                 throw new AccessRightsException("Agent " + agentId + " doesn't exist");
             }
-            Workflow wf = (Workflow) mStorage.get(mItemPath, ClusterStorage.LIFECYCLE + "/workflow", null);
+            Workflow wf = (Workflow) mStorage.get(mItemPath, ClusterType.LIFECYCLE + "/workflow", null);
 
             JobArrayList jobBag = new JobArrayList();
             CompositeActivity domainWf = (CompositeActivity) wf.search("workflow/domain");

@@ -37,13 +37,16 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
+
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
+import static org.cristalise.kernel.persistency.ClusterType.PROPERTY;
 
 public class TransferItem {
     private ArrayList<String> domainPaths;
@@ -110,7 +113,7 @@ public class TransferItem {
     public void importItem(File dir) throws Exception {
         // check if already exists
         try {
-            Property name = (Property) Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY + "/" + NAME, null);
+            Property name = (Property) Gateway.getStorage().get(itemPath, PROPERTY + "/" + NAME, null);
             throw new Exception("Item " + itemPath + " already in use as " + name.getValue());
         }
         catch (Exception ex) {}
@@ -125,7 +128,7 @@ public class TransferItem {
 
             Logger.msg(choppedPath);
 
-            if (choppedPath.startsWith(ClusterStorage.OUTCOME)) newObj = new Outcome(choppedPath, xmlFile);
+            if (choppedPath.startsWith(OUTCOME.getName())) newObj = new Outcome(choppedPath, xmlFile);
             else                                                newObj = (C2KLocalObject) Gateway.getMarshaller().unmarshall(xmlFile);
 
             objects.add(newObj);
@@ -154,9 +157,9 @@ public class TransferItem {
                            Gateway.getMarshaller().marshall(colls));
 
         // store objects
-        importByType(ClusterStorage.HISTORY, objects);
-        importByType(ClusterStorage.OUTCOME, objects);
-        importByType(ClusterStorage.VIEWPOINT, objects);
+        importByType(ClusterType.HISTORY, objects);
+        importByType(ClusterType.OUTCOME, objects);
+        importByType(ClusterType.VIEWPOINT, objects);
         Gateway.getStorage().commit(this);
 
         // add domPaths
@@ -166,7 +169,7 @@ public class TransferItem {
         }
     }
 
-    private void importByType(String type, ArrayList<C2KLocalObject> objects) throws Exception {
+    private void importByType(ClusterType type, ArrayList<C2KLocalObject> objects) throws Exception {
         for (C2KLocalObject element : objects) {
             if (element.getClusterType().equals(type)) Gateway.getStorage().put(itemPath, element, this);
         }

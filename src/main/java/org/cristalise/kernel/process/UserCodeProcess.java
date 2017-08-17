@@ -38,6 +38,7 @@ import org.cristalise.kernel.entity.proxy.MemberSubscription;
 import org.cristalise.kernel.entity.proxy.ProxyObserver;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.utils.Logger;
@@ -81,7 +82,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     public void run() {
         Thread.currentThread().setName("Usercode Process");
         // subscribe to job list
-        agent.subscribe(new MemberSubscription<Job>(this, ClusterStorage.JOB, true));
+        agent.subscribe(new MemberSubscription<Job>(this, ClusterType.JOB.getName(), true));
         while (active) {
             Job thisJob = getActualJob();
 

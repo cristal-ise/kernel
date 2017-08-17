@@ -26,7 +26,7 @@ import java.util.Iterator;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
@@ -42,7 +42,7 @@ public class PropertyUtility {
 
     public static boolean propertyExists(ItemPath itemPath, String propName, Object locker) {
         try {
-            String[] contents = Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.PROPERTY);
+            String[] contents = Gateway.getStorage().getClusterContents(itemPath, ClusterType.PROPERTY);
 
             for (String name: contents) if(name.equals(propName)) return true;
         }
@@ -54,7 +54,7 @@ public class PropertyUtility {
 
     public static Property getProperty(ItemPath itemPath, String propName, Object locker) throws ObjectNotFoundException {
         try {
-            return (Property)Gateway.getStorage().get(itemPath, ClusterStorage.PROPERTY+"/"+propName, locker);
+            return (Property)Gateway.getStorage().get(itemPath, ClusterType.PROPERTY+"/"+propName, locker);
         }
         catch (PersistencyException e) {
             Logger.error(e);
@@ -85,7 +85,7 @@ public class PropertyUtility {
 
     static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException {
         try {
-            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath,ClusterStorage.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
+            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath,ClusterType.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
             return (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(outc.getData());
         }
         catch (Exception ex) {

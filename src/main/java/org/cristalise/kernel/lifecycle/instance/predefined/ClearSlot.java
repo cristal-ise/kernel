@@ -31,7 +31,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -81,7 +81,7 @@ public class ClearSlot extends PredefinedStep
 
         // load collection
         try {
-            agg = (Aggregation)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+            agg = (Aggregation)Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("ClearSlot: Error loading collection '"+collName+"': "+ex.getMessage());

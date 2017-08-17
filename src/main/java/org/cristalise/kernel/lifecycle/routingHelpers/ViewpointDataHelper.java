@@ -26,7 +26,7 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
@@ -60,7 +60,7 @@ public class ViewpointDataHelper implements DataHelper {
         }
 
         // load Viewpoint and Outcome
-        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+viewpoint, locker);
+        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterType.VIEWPOINT+"/"+viewpoint, locker);
         Outcome outcome = (Outcome)   view.getOutcome(locker);
 
         // apply the XPath to its outcome

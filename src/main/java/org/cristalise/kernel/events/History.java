@@ -25,9 +25,10 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.RemoteMap;
 import org.cristalise.kernel.persistency.outcome.Schema;
+
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
 
 /**
  * The History is an instance of {@link org.cristalise.kernel.persistency.RemoteMap} 
@@ -38,7 +39,7 @@ public class History extends RemoteMap<Event> {
     private static final long serialVersionUID = 3273324106002587993L;
 
     public History(ItemPath itemPath, Object locker) {
-        super(itemPath, ClusterStorage.HISTORY, locker);
+        super(itemPath, HISTORY.getName(), locker);
     }
 
     public Event getEvent(int id) {

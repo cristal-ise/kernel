@@ -48,6 +48,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
@@ -203,7 +204,7 @@ public class CreateItemFromDescription extends PredefinedStep {
     {
         @SuppressWarnings("unchecked")
         Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
-                Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
+                Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
 
         CollectionMember wfMember  = thisCol.getMembers().list.get(0);
         String           wfDefName = wfMember.resolveItem().getName();
@@ -247,12 +248,12 @@ public class CreateItemFromDescription extends PredefinedStep {
     {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
-        String[] collNames = Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.COLLECTION);
+        String[] collNames = Gateway.getStorage().getClusterContents(itemPath, ClusterType.COLLECTION);
 
         for (String collName : collNames) {
             @SuppressWarnings("unchecked")
             Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
-                    Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION + "/" + collName + "/" + descVer, locker);
+                    Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
                 Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);

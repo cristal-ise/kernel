@@ -33,7 +33,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
@@ -93,7 +93,7 @@ public class AddMemberToCollection extends PredefinedStep {
         }
 
         // load collection
-        C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+        C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
 
         if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection: AddMemberToCollection operates on Dependency collections only.");
 

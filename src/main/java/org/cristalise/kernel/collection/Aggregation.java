@@ -28,7 +28,7 @@ import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.TypeNameAndConstructionInfo;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
@@ -159,7 +159,7 @@ abstract public class Aggregation extends Collection<AggregationMember> {
     static public boolean getIsComposite(ItemPath itemPath, String name) {
         if (itemPath == null) return false;
         try {
-            for (String collName : Gateway.getProxyManager().getProxy(itemPath).getContents(ClusterStorage.COLLECTION))
+            for (String collName : Gateway.getProxyManager().getProxy(itemPath).getContents(ClusterType.COLLECTION))
                 if (name == null || name.equals(collName)) return true;
         }
         catch (ObjectNotFoundException e) {

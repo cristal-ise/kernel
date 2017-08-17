@@ -29,7 +29,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -66,7 +66,7 @@ public class CreateNewCollectionVersion extends PredefinedStep {
         }
 
         String collName = params[0];
-        Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+        Collection<?> coll = (Collection<?>)Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
         int newVersion;
 
         if (params.length > 1) {
@@ -74,7 +74,7 @@ public class CreateNewCollectionVersion extends PredefinedStep {
         }
         else {
             // find last numbered version
-            String[] versions = Gateway.getStorage().getClusterContents(item, ClusterStorage.COLLECTION+"/"+collName);
+            String[] versions = Gateway.getStorage().getClusterContents(item, ClusterType.COLLECTION+"/"+collName);
             int lastVer = -1;
 
             for (String thisVerStr : versions) {
@@ -88,7 +88,7 @@ public class CreateNewCollectionVersion extends PredefinedStep {
         }
 
         // Remove it from the cache before we change it
-        Gateway.getStorage().clearCache(item, ClusterStorage.COLLECTION+"/"+collName+"/last");
+        Gateway.getStorage().clearCache(item, ClusterType.COLLECTION+"/"+collName+"/last");
 
         // Set the version & store it
         try {

@@ -28,7 +28,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.Logger;
@@ -63,7 +63,7 @@ public class WriteProperty extends PredefinedStep {
     public static void write(ItemPath item, String name, String value, Object locker)
             throws PersistencyException, ObjectCannotBeUpdated, ObjectNotFoundException
     {
-        Property prop = (Property) Gateway.getStorage().get(item, ClusterStorage.PROPERTY + "/" + name, locker);
+        Property prop = (Property) Gateway.getStorage().get(item, ClusterType.PROPERTY + "/" + name, locker);
 
         if (!prop.isMutable() && !value.equals(prop.getValue()))
             throw new ObjectCannotBeUpdated("WriteProperty: Property '" + name + "' is not mutable.");

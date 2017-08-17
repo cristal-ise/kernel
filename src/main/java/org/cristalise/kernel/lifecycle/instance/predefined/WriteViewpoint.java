@@ -29,7 +29,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
@@ -76,7 +76,7 @@ public class WriteViewpoint extends PredefinedStep {
     public static void write(ItemPath item, String schemaName, String viewName, int eventId, Object locker)
             throws PersistencyException, ObjectNotFoundException, InvalidDataException
     {
-        Event event = (Event)Gateway.getStorage().get(item, ClusterStorage.HISTORY+"/"+eventId, locker);
+        Event event = (Event)Gateway.getStorage().get(item, ClusterType.HISTORY+"/"+eventId, locker);
 
         if (StringUtils.isBlank(event.getSchemaName())) {
             throw new InvalidDataException("Event "+eventId+" does not reference an Outcome, so cannot be assigned to a Viewpoint.");

@@ -35,7 +35,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -95,7 +95,7 @@ public class AssignItemToSlot extends PredefinedStep
         // load collection
         C2KLocalObject collObj;
         try {
-        	collObj = Gateway.getStorage().get(item, ClusterStorage.COLLECTION+"/"+collName+"/last", locker);
+        	collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
 		} catch (PersistencyException ex) {
 			Logger.error(ex);
 			throw new PersistencyException("AssignItemToSlot: Error loading collection '\"+collName+\"': "+ex.getMessage());

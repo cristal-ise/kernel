@@ -33,7 +33,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.GraphableVertex;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -70,7 +70,7 @@ public class ActivityDataHelper implements DataHelper {
         }
 
         // Find the referenced activity, so get the workflow and search
-        Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterStorage.LIFECYCLE+"/workflow", locker);
+        Workflow workflow = (Workflow) Gateway.getStorage().get(itemPath, ClusterType.LIFECYCLE+"/workflow", locker);
         GraphableVertex act = workflow.search(actPath);
 
         if (act == null) {
@@ -87,7 +87,7 @@ public class ActivityDataHelper implements DataHelper {
         Schema schema = LocalObjectLoader.getSchema(schemaName, schemaVersion); //checks if schema/version was correct
 
         // get the viewpoint and outcome
-        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterStorage.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
+        Viewpoint view  = (Viewpoint) Gateway.getStorage().get(itemPath, ClusterType.VIEWPOINT+"/"+schema.getName()+"/"+viewName, locker);
         Outcome outcome = (Outcome)   view.getOutcome(locker);
 
         // apply the XPath to its outcome

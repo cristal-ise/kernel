@@ -20,8 +20,8 @@
  */
 package org.cristalise.kernel.entity.imports;
 
-import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.CREATOR;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.util.ArrayList;
 
@@ -46,7 +46,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -220,7 +220,7 @@ public class ImportItem extends ModuleImport {
                 XMLUnit.setIgnoreWhitespace(true);
                 XMLUnit.setIgnoreComments(true);
 
-                impView = (Viewpoint) Gateway.getStorage().get(getItemPath(), ClusterStorage.VIEWPOINT + "/" + thisOutcome.schema + "/" + thisOutcome.viewname, null);
+                impView = (Viewpoint) Gateway.getStorage().get(getItemPath(), ClusterType.VIEWPOINT + "/" + thisOutcome.schema + "/" + thisOutcome.viewname, null);
 
                 Diff xmlDiff = new Diff(newOutcome.getDOM(), impView.getOutcome().getDOM());
                 

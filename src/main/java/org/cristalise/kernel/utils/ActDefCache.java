@@ -35,7 +35,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 
@@ -86,7 +86,7 @@ public class ActDefCache extends DescriptionObjectCache<ActivityDef> {
         }
 
         try {
-            Viewpoint actView = (Viewpoint) proxy.getObject(ClusterStorage.VIEWPOINT + "/" + viewName + "/" + version);
+            Viewpoint actView = (Viewpoint) proxy.getObject(ClusterType.VIEWPOINT + "/" + viewName + "/" + version);
             String marshalledAct = actView.getOutcome().getData();
             return buildObject(name, version, proxy.getPath(), marshalledAct);
         }

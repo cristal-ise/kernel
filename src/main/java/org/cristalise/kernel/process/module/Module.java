@@ -22,9 +22,9 @@ package org.cristalise.kernel.process.module;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.CONTENTS;
 import static org.cristalise.kernel.property.BuiltInItemProperties.COMPLEXITY;
+import static org.cristalise.kernel.property.BuiltInItemProperties.MODULE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAMESPACE;
-import static org.cristalise.kernel.property.BuiltInItemProperties.MODULE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.VERSION;
 
@@ -46,7 +46,7 @@ import org.cristalise.kernel.entity.imports.ImportRole;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.resource.BuiltInResources;
@@ -338,7 +338,7 @@ public class Module extends ImportItem {
 
                     imports.list.add(newImport);
 
-                    for (String collName : child.getContents(ClusterStorage.COLLECTION)) {
+                    for (String collName : child.getContents(ClusterType.COLLECTION)) {
                         Collection<?> childColl = child.getCollection(collName, version);
                         addImports(childColl);
                     }

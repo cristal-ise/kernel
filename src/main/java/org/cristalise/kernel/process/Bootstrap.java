@@ -52,7 +52,7 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.LookupManager;
 import org.cristalise.kernel.lookup.RolePath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -272,7 +272,7 @@ public class Bootstrap
     
                 for (Collection<?> col : cols.list) {
                     Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
-                    Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterStorage.COLLECTION+"/"+col.getName());
+                    Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterType.COLLECTION+"/"+col.getName());
                     col.setVersion(null);
                     Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
                 }
@@ -379,7 +379,7 @@ public class Bootstrap
     {
         Schema schema = newOutcome.getSchema();
         try {
-            Viewpoint currentData = (Viewpoint) item.getObject(ClusterStorage.VIEWPOINT+"/"+newOutcome.getSchema().getName()+"/"+version);
+            Viewpoint currentData = (Viewpoint) item.getObject(ClusterType.VIEWPOINT+"/"+newOutcome.getSchema().getName()+"/"+version);
             Outcome oldData = currentData.getOutcome();
 
             XMLUnit.setIgnoreWhitespace(true);

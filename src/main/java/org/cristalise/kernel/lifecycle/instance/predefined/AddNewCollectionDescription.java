@@ -31,7 +31,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -69,7 +69,7 @@ public class AddNewCollectionDescription extends PredefinedStep {
 
         // check if collection already exists
         try {
-            Gateway.getStorage().get(item, ClusterStorage.COLLECTION + "/" + collName + "/last", locker);
+            Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
             throw new ObjectAlreadyExistsException("Collection '" + collName + "' already exists");
         }
         catch (ObjectNotFoundException ex) {

@@ -34,7 +34,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.utils.Logger;
@@ -64,8 +64,8 @@ public class ProxyManager {
             try {
                 ItemPath thisServerPath = thisServerResult.getItemPath();
 
-                String remoteServer = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/"+NAME, null)).getValue();
-                String portStr      = ((Property)Gateway.getStorage().get(thisServerPath, ClusterStorage.PROPERTY+"/ProxyPort", null)).getValue();
+                String remoteServer = ((Property)Gateway.getStorage().get(thisServerPath, ClusterType.PROPERTY+"/"+NAME, null)).getValue();
+                String portStr      = ((Property)Gateway.getStorage().get(thisServerPath, ClusterType.PROPERTY+"/ProxyPort", null)).getValue();
 
                 connectToProxyServer(remoteServer, Integer.parseInt(portStr));
             }
