@@ -221,7 +221,6 @@ public class XMLClusterStorage extends ClusterStorage {
 
                       result.add(content);
                   });
-            pathes.close();
         }
         return result.toArray(new String[0]);
     }
