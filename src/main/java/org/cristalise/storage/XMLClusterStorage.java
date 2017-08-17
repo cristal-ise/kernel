@@ -23,8 +23,11 @@ package org.cristalise.storage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.PersistencyException;
@@ -206,19 +209,20 @@ public class XMLClusterStorage extends ClusterStorage {
 
         String resource = getResourceName(path);
 
-        Files.list(new File(rootDir + "/" + itemPath.getUUID()).toPath())
-            .filter(p -> p.getFileName().toString().startsWith(resource))
-            .forEach(p -> {
-                String content = p.getFileName().toString().substring(resource.length()+1);
+        try (Stream<Path> pathes = Files.list(Paths.get(rootDir + "/" + itemPath.getUUID()))) {
+            pathes.filter(p -> p.getFileName().toString().startsWith(resource))
+                  .forEach(p -> {
+                      String content = p.getFileName().toString().substring(resource.length()+1);
 
-                if (content.endsWith(fileExtension)) content = content.substring(0, content.length() - fileExtension.length());
+                      if (content.endsWith(fileExtension)) content = content.substring(0, content.length() - fileExtension.length());
 
-                int i = content.indexOf('.');
-                if (i != -1) content = content.substring(0, i);
+                      int i = content.indexOf('.');
+                      if (i != -1) content = content.substring(0, i);
 
-                result.add(content);
-            });
-
+                      result.add(content);
+                  });
+            pathes.close();
+        }
         return result.toArray(new String[0]);
     }
 
