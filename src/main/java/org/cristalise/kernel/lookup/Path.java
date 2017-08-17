@@ -155,8 +155,8 @@ public abstract class Path implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterType.PATH.getName();
+    public ClusterType getClusterType() {
+        return ClusterType.PATH;
     }
 
     @Override

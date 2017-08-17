@@ -185,7 +185,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
      * Returns null so it cannot be stored
      */
     @Override
-    public String getClusterType() {
+    public ClusterType getClusterType() {
         return null;
     }
 

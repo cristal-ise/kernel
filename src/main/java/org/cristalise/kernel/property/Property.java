@@ -25,6 +25,7 @@ import lombok.experimental.Accessors;
 
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 
 @Accessors(prefix = "m") @Data
 public class Property implements C2KLocalObject {
@@ -54,8 +55,8 @@ public class Property implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.PROPERTY;
+    public ClusterType getClusterType() {
+        return ClusterType.PROPERTY;
     }
 
     @Override

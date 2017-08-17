@@ -28,8 +28,11 @@ import java.util.Vector;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.RemoteMap;
 import org.cristalise.kernel.utils.Logger;
+
+import static org.cristalise.kernel.persistency.ClusterType.JOB;
 
 public class JobList extends RemoteMap<Job> {
 
@@ -39,7 +42,7 @@ public class JobList extends RemoteMap<Job> {
     private static final long serialVersionUID = -1110616958817712975L;
 
     public JobList(AgentPath agentPath, Object locker) {
-        super(agentPath, ClusterStorage.JOB, locker);
+        super(agentPath, JOB.getName(), locker);
     }
 
     public void addJob(Job job) {
@@ -51,7 +54,7 @@ public class JobList extends RemoteMap<Job> {
     }
 
     @Override
-    public String getClusterType() {
+    public ClusterType getClusterType() {
         return null;
     }
 

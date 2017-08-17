@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.entity.agent;
 
-import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.AGENT_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.DELEGATE_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.OUTCOME_INIT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.OutcomeInitiator;
 import org.cristalise.kernel.persistency.outcome.Schema;
@@ -505,8 +505,8 @@ public class Job implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.JOB;
+    public ClusterType getClusterType() {
+        return ClusterType.JOB;
     }
 
     @Override

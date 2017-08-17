@@ -29,7 +29,7 @@ import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.utils.DateUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -62,7 +62,7 @@ public class Event implements C2KLocalObject {
                  String stepName, String stepPath, String stepType, StateMachine stateMachine, int transitionId)
     {
         Transition transition = stateMachine.getTransition(transitionId);
-        Logger.msg(7, "Event() - creating new event for "+transition.getName()+" on "+stepName+" in "+mItemPath);
+        Logger.msg(7, "Event() - creating new event for "+transition.getName()+" on "+stepName+" in "+itemPath);
 
         setItemPath(itemPath);
         setAgentPath(agentPath);
@@ -173,8 +173,8 @@ public class Event implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.HISTORY;
+    public ClusterType getClusterType() {
+        return ClusterType.HISTORY;
     }
 
     @Override

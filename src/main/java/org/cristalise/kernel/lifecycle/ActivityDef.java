@@ -20,11 +20,11 @@
  */
 package org.cristalise.kernel.lifecycle;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.collection.BuiltInCollections.QUERY;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA;
 import static org.cristalise.kernel.collection.BuiltInCollections.SCRIPT;
 import static org.cristalise.kernel.collection.BuiltInCollections.STATE_MACHINE;
-import static org.cristalise.kernel.collection.BuiltInCollections.ACTIVITY;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 import static org.cristalise.kernel.process.resource.BuiltInResources.ELEM_ACT_DESC_RESOURCE;
 
@@ -46,7 +46,7 @@ import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.querying.Query;
@@ -110,7 +110,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     @Override
-    public String getClusterType() {
+    public ClusterType getClusterType() {
         return null;
     }
 
@@ -152,17 +152,17 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         super.configureInstance(act);
 
         try {
-            for (String collName : Gateway.getStorage().getClusterContents(itemPath, ClusterStorage.COLLECTION)) {
+            for (String collName : Gateway.getStorage().getClusterContents(itemPath, ClusterType.COLLECTION)) {
                 Logger.msg(5, "ActivityDef.configureInstance("+getName()+") - Processing collection:"+collName);
 
                 String verStr = (mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion);
                 Dependency dep = null;
 
                 try {
-                    dep = (Dependency) Gateway.getStorage().get(itemPath, ClusterStorage.COLLECTION+"/"+collName+"/"+verStr, null);
+                    dep = (Dependency) Gateway.getStorage().get(itemPath, ClusterType.COLLECTION+"/"+collName+"/"+verStr, null);
                 }
                 catch (ObjectNotFoundException e) {
-                    if(Logger.doLog(8)) Logger.warning("Unavailable Collection path:"+itemPath+"/"+ClusterStorage.COLLECTION+"/"+collName+"/"+verStr);
+                    if(Logger.doLog(8)) Logger.warning("Unavailable Collection path:"+itemPath+"/"+ClusterType.COLLECTION+"/"+collName+"/"+verStr);
                 }
                 catch (PersistencyException e) {
                     Logger.error(e);
@@ -253,7 +253,7 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         Dependency resColl;
 
         try {
-            String clusterPath = ClusterStorage.COLLECTION + "/" + collection + "/" + 
+            String clusterPath = ClusterType.COLLECTION + "/" + collection + "/" + 
                     ((mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion));
             
             String[] contents = Gateway.getStorage().getClusterContents(itemPath, clusterPath);

@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.entity;
 
+import org.cristalise.kernel.persistency.ClusterType;
+
 /**
  * Objects that are to be stored by CRISTAL-iSE Items must implement this interface and be
  * (un)marshallable by Castor i.e. have a map file properly registered in the kernel.
@@ -48,7 +50,7 @@ public interface C2KLocalObject {
      * 
      * @return string id of the type
      */
-    public String getClusterType();
+    public ClusterType getClusterType();
 
     /**
      * Each C2KLocalObject is stored with a path identifier starting with the ClusterType:

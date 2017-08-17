@@ -42,7 +42,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.Logger;
 
 /**
@@ -237,8 +237,8 @@ public class Workflow extends CompositeActivity implements C2KLocalObject {
      * @see org.cristalise.kernel.entity.C2KLocalObject#getClusterType()
      */
     @Override
-    public String getClusterType() {
-        return ClusterStorage.LIFECYCLE;
+    public ClusterType getClusterType() {
+        return ClusterType.LIFECYCLE;
     }
     @Override
     public String getClusterPath() {

@@ -28,7 +28,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.CastorHashMap;
 
 /**
@@ -130,8 +130,8 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.COLLECTION;
+    public ClusterType getClusterType() {
+        return ClusterType.COLLECTION;
     }
 
     @Override

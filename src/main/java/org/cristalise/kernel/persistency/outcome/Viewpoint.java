@@ -28,8 +28,12 @@ import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
+
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -79,7 +83,7 @@ public class Viewpoint implements C2KLocalObject {
 
         return (Outcome) Gateway.getStorage().get(
                 itemPath, 
-                ClusterStorage.OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, 
+                OUTCOME + "/" + schemaName + "/" + schemaVersion + "/" + eventId, 
                 locker);
     }
 
@@ -91,8 +95,8 @@ public class Viewpoint implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.VIEWPOINT;
+    public ClusterType getClusterType() {
+        return VIEWPOINT;
     }
 
     @Override
@@ -111,7 +115,7 @@ public class Viewpoint implements C2KLocalObject {
     public Event getEvent() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
         if (eventId == NONE) throw new InvalidDataException("No last eventId defined for path:"+getClusterPath());
 
-        return (Event) Gateway.getStorage().get(itemPath, ClusterStorage.HISTORY + "/" + eventId, null);
+        return (Event) Gateway.getStorage().get(itemPath, HISTORY + "/" + eventId, null);
     }
 
     @Override

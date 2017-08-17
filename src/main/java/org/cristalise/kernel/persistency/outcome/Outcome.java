@@ -47,7 +47,7 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
-import org.cristalise.kernel.persistency.ClusterStorage;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
@@ -57,6 +57,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -194,7 +196,7 @@ public class Outcome implements C2KLocalObject {
     protected void setMetaDataFromPath(String path) throws PersistencyException, InvalidDataException {
         StringTokenizer tok = new StringTokenizer(path,"/");
 
-        if (tok.countTokens() != 3 && !(tok.nextToken().equals(ClusterStorage.OUTCOME)))
+        if (tok.countTokens() != 3 && !(tok.nextToken().equals(OUTCOME.getName())))
             throw new PersistencyException("Outcome() - Outcome path must have three components:" + path);
 
         String schemaName = tok.nextToken();
@@ -224,7 +226,7 @@ public class Outcome implements C2KLocalObject {
     public String validate() throws InvalidDataException {
         if (mSchema == null) {
             mDOM.normalize();
-            //throw new InvalidDataException("Schema was NOT provided");
+            throw new InvalidDataException("Schema was NOT provided");
         }
 
         OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
@@ -416,8 +418,8 @@ public class Outcome implements C2KLocalObject {
     }
 
     @Override
-    public String getClusterType() {
-        return ClusterStorage.OUTCOME;
+    public ClusterType getClusterType() {
+        return OUTCOME;
     }
 
     @Override
