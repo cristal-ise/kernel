@@ -393,6 +393,10 @@ public class ItemProxy
         return Gateway.getStorage().executeQuery(query);
     }
 
+    public C2KLocalObject getObject( ClusterType type ) throws ObjectNotFoundException {
+        return getObject(type.getName());
+    }
+
     public C2KLocalObject getObject( String xpath ) throws ObjectNotFoundException {
         // load from storage, falling back to proxy loader if not found in others
         try {
