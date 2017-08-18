@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.RemoteMap;
 import org.cristalise.kernel.utils.Logger;
