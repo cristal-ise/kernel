@@ -69,7 +69,7 @@ public class TransactionManager {
     }
 
     public String[] getClusterContents(ItemPath itemPath, ClusterType type) throws PersistencyException {
-        return getClusterContents(itemPath, type);
+        return getClusterContents(itemPath, type.getName());
     }
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
         if (path.startsWith("/") && path.length() > 1) path = path.substring(1);
