@@ -30,11 +30,12 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.RolePath;
-import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.storage.MemoryOnlyClusterStorage;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.cristalise.kernel.persistency.ClusterType.PATH;
 
 public class LookupPathClusterStorageTest {
 
@@ -49,8 +50,6 @@ public class LookupPathClusterStorageTest {
     public void setup() throws Exception {
         Logger.addLogStream(System.out, 9);
         inMemoryCluster.open(null);
-//        Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
-//        Gateway.init(props);
     }
 
     @Test
@@ -59,7 +58,7 @@ public class LookupPathClusterStorageTest {
 
         inMemoryCluster.put(storingItem, item);
 
-        ItemPath itemPrime = (ItemPath) inMemoryCluster.get(storingItem, ClusterType.PATH + "/entity/" + item.getUUID());
+        ItemPath itemPrime = (ItemPath) inMemoryCluster.get(storingItem, PATH + "/Item");
 
         assertNotNull(itemPrime);
         assertEquals(item.getUUID(),      itemPrime.getUUID());
@@ -72,7 +71,7 @@ public class LookupPathClusterStorageTest {
 
         inMemoryCluster.put(storingItem, agent);
 
-        AgentPath agentPrime = (AgentPath) inMemoryCluster.get(storingItem, ClusterType.PATH + "/entity/" + agent.getUUID());
+        AgentPath agentPrime = (AgentPath) inMemoryCluster.get(storingItem, PATH + "/Agent");
 
         assertNotNull(agentPrime);
         assertEquals(agent.getUUID(),      agentPrime.getUUID());
@@ -86,7 +85,7 @@ public class LookupPathClusterStorageTest {
 
         inMemoryCluster.put(storingItem, domain);
 
-        DomainPath domainPrime = (DomainPath) inMemoryCluster.get(storingItem, ClusterType.PATH + "/domain/" + StringUtils.join(domain.getPath(), "/"));
+        DomainPath domainPrime = (DomainPath) inMemoryCluster.get(storingItem, PATH + "/Domain/" + StringUtils.join(domain.getPath(), ""));
 
         assertNotNull(domainPrime);
         assertEquals(domain.getStringPath(), domainPrime.getStringPath());
@@ -99,7 +98,7 @@ public class LookupPathClusterStorageTest {
 
         inMemoryCluster.put(storingItem, role);
 
-        RolePath rolePrime = (RolePath) inMemoryCluster.get(storingItem, ClusterType.PATH + "/role/" + StringUtils.join(role.getPath(), "/"));
+        RolePath rolePrime = (RolePath) inMemoryCluster.get(storingItem, PATH + "/Role/" + StringUtils.join(role.getPath(), ""));
 
         assertNotNull(rolePrime);
         assertEquals(role.getStringPath(), rolePrime.getStringPath());

@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
@@ -166,5 +167,15 @@ public class ItemPath extends Path {
     @Override
     public UUID getUUID() {
         return UUID.fromString(mPath[0]);
+    }
+
+    @Override
+    public String getName() {
+        return getUUID().toString();
+    }
+
+    @Override
+    public String getClusterPath() {
+        return ClusterType.PATH + "/Item";
     }
 }

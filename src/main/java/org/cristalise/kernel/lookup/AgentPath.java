@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 
 /**
@@ -111,6 +112,11 @@ public class AgentPath extends ItemPath {
         catch (ObjectNotFoundException ex) {
             return false;
         }
+    }
+
+    @Override
+    public String getClusterPath() {
+        return ClusterType.PATH + "/Agent";
     }
 
     @Override

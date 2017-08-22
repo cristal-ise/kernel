@@ -200,7 +200,7 @@ public class XMLClusterStorage extends ClusterStorage {
         }
         catch (Exception e) {
             Logger.error(e);
-            throw new PersistencyException("XMLClusterStorage.getClusterContents() - Could not get contents of " + path + " from "
+            throw new PersistencyException("XMLClusterStorage.getClusterContents("+itemPath+") - Could not get contents of " + path + " from "
                     + itemPath + ": " + e.getMessage());
         }
     }
@@ -213,7 +213,10 @@ public class XMLClusterStorage extends ClusterStorage {
         try (Stream<Path> pathes = Files.list(Paths.get(rootDir + "/" + itemPath.getUUID()))) {
             pathes.filter(p -> p.getFileName().toString().startsWith(resource))
                   .forEach(p -> {
-                      String content = p.getFileName().toString().substring(resource.length()+1);
+                      String fileName = p.getFileName().toString();
+                      String content = resource.length() != 0 ? fileName.substring(resource.length()+1) : fileName.substring(resource.length());
+
+                      Logger.msg(8, "XMLClusterStorage.getContentsFromFileNames() - resource:'"+resource+"' fileName:'"+fileName+"' content:'"+content+"'");
 
                       if (content.endsWith(fileExtension)) content = content.substring(0, content.length() - fileExtension.length());
 

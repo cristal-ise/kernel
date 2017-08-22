@@ -334,7 +334,9 @@ public abstract class ClusterStorage {
 
         for (String content : contents) {
             ClusterType type = ClusterType.getValue(content);
-            if (type != null) types.add(type);
+
+            if (type != null)         types.add(type);
+            else if (Logger.doLog(8)) Logger.warning("ClusterStorage.getClusters() - Cannot convert content '"+content+"' to ClusterType");
         }
 
         return types.toArray(new ClusterType[0]);

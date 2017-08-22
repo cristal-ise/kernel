@@ -20,13 +20,11 @@
  */
 package org.cristalise.kernel.lookup;
 
-import java.util.UUID;
-
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
-import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
-import org.omg.CORBA.Object;
 
 /**
  * Very simple extension to Path. Only copies constructors and defines root
@@ -130,14 +128,7 @@ public class DomainPath extends Path {
     }
 
     @Override
-    public Object getIOR() { return null; }
-
-    @Override
-    public SystemKey getSystemKey() { return null; }
-
-    @Override
-    public UUID getUUID() { return null; }
-
-    @Override
-    public void setIOR(Object IOR) {}
+    public String getClusterPath() {
+        return ClusterType.PATH + "/Domain/" + StringUtils.join(mPath, "");
+    }
 }

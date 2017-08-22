@@ -84,11 +84,11 @@ public abstract class Path implements C2KLocalObject {
     abstract public String getRoot();
 
     //these methods declared here to provide backward compatibility
-    abstract public org.omg.CORBA.Object getIOR();
-    abstract public void setIOR(org.omg.CORBA.Object IOR);
-    abstract public SystemKey getSystemKey();
-    abstract public UUID getUUID();
-    abstract public ItemPath getItemPath() throws ObjectNotFoundException;
+    public org.omg.CORBA.Object getIOR() { return null; }
+    public void setIOR(org.omg.CORBA.Object IOR) {}
+    public SystemKey getSystemKey() { return null; }
+    public UUID getUUID() { return null; }
+    public ItemPath getItemPath() throws ObjectNotFoundException { return null; }
 
     /**
      * clones the path object
@@ -150,20 +150,7 @@ public abstract class Path implements C2KLocalObject {
     }
 
     @Override
-    public String getName() {
-        return getStringPath();
-    }
-
-    @Override
     public ClusterType getClusterType() {
         return ClusterType.PATH;
-    }
-
-    @Override
-    public String getClusterPath() {
-        String path = getStringPath();
-
-        if (path.startsWith(delim)) return getClusterType() + path;
-        else                        return getClusterType() + delim + path;
     }
 }
