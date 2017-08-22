@@ -81,11 +81,13 @@ public class LookupPathClusterStorageTest {
 
     @Test
     public void storeDomainPath() throws Exception {
-        DomainPath domain = new DomainPath("/my/path", new ItemPath());
+        DomainPath domain = new DomainPath("/my/path.2", new ItemPath());
 
         inMemoryCluster.put(storingItem, domain);
+        
+        String name = StringUtils.remove( StringUtils.join(domain.getPath(), ""), "." );
 
-        DomainPath domainPrime = (DomainPath) inMemoryCluster.get(storingItem, PATH + "/Domain/" + StringUtils.join(domain.getPath(), ""));
+        DomainPath domainPrime = (DomainPath) inMemoryCluster.get(storingItem, PATH + "/Domain/" + name);
 
         assertNotNull(domainPrime);
         assertEquals(domain.getStringPath(), domainPrime.getStringPath());
