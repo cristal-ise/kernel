@@ -129,6 +129,6 @@ public class DomainPath extends Path {
 
     @Override
     public String getClusterPath() {
-        return ClusterType.PATH + "/Domain/" + StringUtils.join(mPath, "");
+        return StringUtils.remove(ClusterType.PATH + "/Domain/" + StringUtils.join(mPath, ""), ".");
     }
 }
