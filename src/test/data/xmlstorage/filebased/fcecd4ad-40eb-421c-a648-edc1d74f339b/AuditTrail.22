@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><Event SchemaVersion="0" ItemUUID="fcecd4ad-40eb-421c-a648-edc1d74f339b" StepType="SelectNextStep" StepName="SelectNextStep" StepPath="workflow/domain/SelectNextStep" ViewName="" EntitySystemKey="1817" AgentRole="" CurrentState="4" Transition="3" AgentId="gmorat" ID="22" SchemaName="NextStepData">
+  <TimeStamp Mo="10" S="37" D="10" H="14" Y="2016" Mi="34" O="3600000"/>
+</Event>

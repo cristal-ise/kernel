@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><Event SchemaVersion="0" ItemUUID="fcecd4ad-40eb-421c-a648-edc1d74f339b" StepType="Synthesis" StepName="Synthesis" StepPath="workflow/domain/Synthesis" ViewName="" EntitySystemKey="1817" AgentRole="" CurrentState="4" Transition="3" AgentId="gmorat" ID="16" SchemaName="SynthesisData">
+  <TimeStamp Mo="10" S="21" D="10" H="14" Y="2016" Mi="27" O="3600000"/>
+</Event>

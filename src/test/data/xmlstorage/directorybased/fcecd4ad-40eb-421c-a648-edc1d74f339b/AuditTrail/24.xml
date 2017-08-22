@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><Event ItemUUID="fcecd4ad-40eb-421c-a648-edc1d74f339b" AgentRole="" StepType="FinalizeBatch" CurrentState="4" Transition="3" StepName="FinalizeBatch" AgentId="gmorat" ID="24" StepPath="workflow/domain/FinalizeBatch" EntitySystemKey="1817">
+  <TimeStamp Mo="10" S="37" D="10" H="14" Y="2016" Mi="34" O="3600000"/>
+</Event>

@@ -1,0 +1,273 @@
+<collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/aaatech-beta/1817" owner="admin" group="dba" mode="755" created="2016-10-10T14:23:46+02:00" version="1">
+    <acl entries="0" version="1"/>
+    <resource type="XMLResource" name="Outcome.Dispensing2Data.0.17" owner="admin" group="dba" mode="644" created="2016-10-10T14:28:50+02:00" modified="2016-10-10T14:28:50+02:00" filename="Outcome.Dispensing2Data.0.17" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.Dispensing2Data.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:28:50+02:00" modified="2016-10-10T14:28:50+02:00" filename="ViewPoint.Dispensing2Data.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.18" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:07+02:00" modified="2016-10-10T14:30:07+02:00" filename="AuditTrail.18" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.DispensingData.0.18" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:07+02:00" modified="2016-10-10T14:30:07+02:00" filename="Outcome.DispensingData.0.18" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.DispensingData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:07+02:00" modified="2016-10-10T14:30:07+02:00" filename="ViewPoint.DispensingData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.19" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:26+02:00" modified="2016-10-10T14:30:26+02:00" filename="AuditTrail.19" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.CommercialDataData.0.19" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:27+02:00" modified="2016-10-10T14:30:27+02:00" filename="Outcome.CommercialDataData.0.19" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.CommercialDataData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:27+02:00" modified="2016-10-10T14:30:27+02:00" filename="ViewPoint.CommercialDataData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.20" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:56+02:00" modified="2016-10-10T14:30:56+02:00" filename="AuditTrail.20" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.ReleaseDataData.0.20" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:56+02:00" modified="2016-10-10T14:30:56+02:00" filename="Outcome.ReleaseDataData.0.20" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.ReleaseDataData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:30:56+02:00" modified="2016-10-10T14:30:56+02:00" filename="ViewPoint.ReleaseDataData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.21" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:31+02:00" modified="2016-10-10T14:34:31+02:00" filename="AuditTrail.21" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.QualityControlData.0.21" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:31+02:00" modified="2016-10-10T14:34:31+02:00" filename="Outcome.QualityControlData.0.21" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.QualityControlData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:31+02:00" modified="2016-10-10T14:34:31+02:00" filename="ViewPoint.QualityControlData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.22" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:34:37+02:00" filename="AuditTrail.22" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.NextStepData.0.22" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:34:37+02:00" filename="Outcome.NextStepData.0.22" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.NextStepData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:40:02+02:00" filename="ViewPoint.NextStepData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.23" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:34:37+02:00" filename="AuditTrail.23" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.23" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:34:37+02:00" filename="Outcome.PredefinedStepOutcome.0.23" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.24" owner="admin" group="dba" mode="644" created="2016-10-10T14:34:37+02:00" modified="2016-10-10T14:34:37+02:00" filename="AuditTrail.24" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.25" owner="admin" group="dba" mode="644" created="2016-10-10T14:36:00+02:00" modified="2016-10-10T14:36:00+02:00" filename="AuditTrail.25" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.FinalReleaseDataData.0.25" owner="admin" group="dba" mode="644" created="2016-10-10T14:36:00+02:00" modified="2016-10-10T14:36:00+02:00" filename="Outcome.FinalReleaseDataData.0.25" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.FinalReleaseDataData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:36:00+02:00" modified="2016-10-10T14:36:00+02:00" filename="ViewPoint.FinalReleaseDataData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.26" owner="admin" group="dba" mode="644" created="2016-10-10T14:39:58+02:00" modified="2016-10-10T14:39:58+02:00" filename="AuditTrail.26" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.FinalQualityControlData.0.26" owner="admin" group="dba" mode="644" created="2016-10-10T14:39:58+02:00" modified="2016-10-10T14:39:58+02:00" filename="Outcome.FinalQualityControlData.0.26" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.FinalQualityControlData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:39:58+02:00" modified="2016-10-10T14:39:58+02:00" filename="ViewPoint.FinalQualityControlData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.27" owner="admin" group="dba" mode="644" created="2016-10-10T14:40:02+02:00" modified="2016-10-10T14:40:02+02:00" filename="AuditTrail.27" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.NextStepData.0.27" owner="admin" group="dba" mode="644" created="2016-10-10T14:40:02+02:00" modified="2016-10-10T14:40:02+02:00" filename="Outcome.NextStepData.0.27" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.28" owner="admin" group="dba" mode="644" created="2016-10-10T14:40:02+02:00" modified="2016-10-10T14:40:02+02:00" filename="AuditTrail.28" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.28" owner="admin" group="dba" mode="644" created="2016-10-10T14:40:02+02:00" modified="2016-10-10T14:40:02+02:00" filename="Outcome.PredefinedStepOutcome.0.28" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.29" owner="admin" group="dba" mode="644" created="2016-10-10T14:40:02+02:00" modified="2016-10-10T14:40:02+02:00" filename="AuditTrail.29" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Name" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.Name" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Type" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.Type" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Molecule" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.Molecule" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Product" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.Product" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.ProductionSite" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.ProductionSite" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.ProductionDate" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.ProductionDate" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.BatchType1" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:54+02:00" filename="Property.BatchType1" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.BatchType2" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:55+02:00" filename="Property.BatchType2" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.BatchResult" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:58+02:00" filename="Property.BatchResult" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.NbProducedDoses" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.NbProducedDoses" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.CustomerSatisfaction" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.CustomerSatisfaction" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.OOS" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.OOS" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Deviation" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:46+02:00" filename="Property.Deviation" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.CalibrationTime" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.CalibrationTime" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.ExpirationTime" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.ExpirationTime" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Status" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:40:02+02:00" filename="Property.Status" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.ProductionLine" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:46+02:00" modified="2016-10-10T14:23:50+02:00" filename="Property.ProductionLine" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Property.Creator" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:47+02:00" modified="2016-10-10T14:23:47+02:00" filename="Property.Creator" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="LifeCycle.workflow" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:47+02:00" modified="2016-10-10T14:40:03+02:00" filename="LifeCycle.workflow" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.0" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.0" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.0" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.0" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.PredefinedStepOutcome.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:40:02+02:00" filename="ViewPoint.PredefinedStepOutcome.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.1" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.1" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.1" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.1" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.2" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.2" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.2" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.2" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.3" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.3" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.3" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.3" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.4" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.4" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.4" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.4" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.5" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.5" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.5" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.5" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.6" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="AuditTrail.6" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.6" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:50+02:00" modified="2016-10-10T14:23:50+02:00" filename="Outcome.PredefinedStepOutcome.0.6" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.7" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:54+02:00" modified="2016-10-10T14:23:54+02:00" filename="AuditTrail.7" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.7" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:54+02:00" modified="2016-10-10T14:23:54+02:00" filename="Outcome.PredefinedStepOutcome.0.7" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.8" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:55+02:00" modified="2016-10-10T14:23:55+02:00" filename="AuditTrail.8" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.8" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:55+02:00" modified="2016-10-10T14:23:55+02:00" filename="Outcome.PredefinedStepOutcome.0.8" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.9" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:58+02:00" modified="2016-10-10T14:23:58+02:00" filename="AuditTrail.9" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.9" owner="admin" group="dba" mode="644" created="2016-10-10T14:23:58+02:00" modified="2016-10-10T14:23:58+02:00" filename="Outcome.PredefinedStepOutcome.0.9" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.10" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:06+02:00" modified="2016-10-10T14:25:06+02:00" filename="AuditTrail.10" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.PredefinedStepOutcome.0.10" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:06+02:00" modified="2016-10-10T14:25:06+02:00" filename="Outcome.PredefinedStepOutcome.0.10" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.11" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:06+02:00" modified="2016-10-10T14:25:06+02:00" filename="AuditTrail.11" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.12" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:19+02:00" modified="2016-10-10T14:25:19+02:00" filename="AuditTrail.12" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.RawMaterialData.0.12" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:19+02:00" modified="2016-10-10T14:25:19+02:00" filename="Outcome.RawMaterialData.0.12" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.RawMaterialData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:19+02:00" modified="2016-10-10T14:25:19+02:00" filename="ViewPoint.RawMaterialData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.13" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:34+02:00" modified="2016-10-10T14:25:34+02:00" filename="AuditTrail.13" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.LogFileSelections.0.13" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:34+02:00" modified="2016-10-10T14:25:34+02:00" filename="Outcome.LogFileSelections.0.13" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.LogFileSelections.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:25:34+02:00" modified="2016-10-10T14:25:34+02:00" filename="ViewPoint.LogFileSelections.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.14" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:08+02:00" modified="2016-10-10T14:26:08+02:00" filename="AuditTrail.14" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.LogFilesAnalysis.0.14" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:08+02:00" modified="2016-10-10T14:26:08+02:00" filename="Outcome.LogFilesAnalysis.0.14" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.LogFilesAnalysis.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:08+02:00" modified="2016-10-10T14:26:08+02:00" filename="ViewPoint.LogFilesAnalysis.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.15" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:16+02:00" modified="2016-10-10T14:26:16+02:00" filename="AuditTrail.15" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.IrradiationData.0.15" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:16+02:00" modified="2016-10-10T14:26:16+02:00" filename="Outcome.IrradiationData.0.15" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.IrradiationData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:26:16+02:00" modified="2016-10-10T14:26:16+02:00" filename="ViewPoint.IrradiationData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.16" owner="admin" group="dba" mode="644" created="2016-10-10T14:27:22+02:00" modified="2016-10-10T14:27:22+02:00" filename="AuditTrail.16" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="Outcome.SynthesisData.0.16" owner="admin" group="dba" mode="644" created="2016-10-10T14:27:22+02:00" modified="2016-10-10T14:27:22+02:00" filename="Outcome.SynthesisData.0.16" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="ViewPoint.SynthesisData.last" owner="admin" group="dba" mode="644" created="2016-10-10T14:27:22+02:00" modified="2016-10-10T14:27:22+02:00" filename="ViewPoint.SynthesisData.last" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+    <resource type="XMLResource" name="AuditTrail.17" owner="admin" group="dba" mode="644" created="2016-10-10T14:28:50+02:00" modified="2016-10-10T14:28:50+02:00" filename="AuditTrail.17" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+</collection>
