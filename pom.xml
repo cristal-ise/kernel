@@ -150,13 +150,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
-            <version>1.0-groovy-2.4</version>
+            <version>1.1-groovy-2.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>2.4.8</version>
+            <version>2.4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -386,6 +386,7 @@
                     <excludes>
                         <exclude>pom.xml</exclude>
                         <exclude>src/main/resources/textFiles/**</exclude>
+                        <exclude>src/test/data/**</exclude>
                         <exclude>bin/**</exclude>
                         <exclude>src/main/resources/boot/allbootitems.txt</exclude>
                     </excludes>
