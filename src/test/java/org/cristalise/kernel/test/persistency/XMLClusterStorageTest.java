@@ -20,18 +20,29 @@
  */
 package org.cristalise.kernel.test.persistency;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
+import java.util.Properties;
 
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.test.process.MainTest;
+import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.storage.XMLClusterStorage;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.cristalise.kernel.persistency.ClusterType.PATH;
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
+import static org.cristalise.kernel.persistency.ClusterType.LIFECYCLE;
+import static org.cristalise.kernel.persistency.ClusterType.PROPERTY;
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
 public class XMLClusterStorageTest {
     static ItemPath itemPath;
@@ -40,7 +51,15 @@ public class XMLClusterStorageTest {
     public static void beforeClass() throws Exception {
         Logger.addLogStream(System.out, 8);
 
+        Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
+        Gateway.init(props);
+
         itemPath = new ItemPath("fcecd4ad-40eb-421c-a648-edc1d74f339b");
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        Gateway.close();
     }
 
     public void checkXMLClusterStorage(XMLClusterStorage importCluster) throws Exception {
@@ -50,20 +69,41 @@ public class XMLClusterStorageTest {
 
         for (ClusterType type : types) {
             String[] contents = importCluster.getClusterContents(itemPath, type);
-            
-            Logger.msg(Arrays.toString(contents));
 
             switch (type) {
                 case PATH:
                     assertEquals(2,  contents.length);
                     assertArrayEquals(new String[]{"Domain", "Item"}, contents);
+                    assertNotNull( importCluster.get(itemPath, PATH+"/Item") );
+                    assertNotNull( importCluster.get(itemPath, PATH+"/Domain/Batches2016FG160707C-08") );
                     break;
 
-                case PROPERTY:  assertEquals(19, contents.length); break;
-                case LIFECYCLE: assertEquals(1,  contents.length); break;
-                case OUTCOME:   assertEquals(14, contents.length); break;
-                case VIEWPOINT: assertEquals(14, contents.length); break;
-                case HISTORY:   assertEquals(30, contents.length); break;
+                case PROPERTY:
+                    assertEquals(19, contents.length);
+                    assertNotNull( importCluster.get(itemPath, PROPERTY+"/Name") );
+                    break;
+
+                case LIFECYCLE:
+                    assertEquals(1,  contents.length);
+                    assertNotNull( importCluster.get(itemPath, LIFECYCLE+"/workflow") );
+                    break;
+
+                case OUTCOME:
+                    assertEquals(14, contents.length);
+                    //TODO: to unmarshall Outcome the description cache has to contain the corresponding Schema
+                    //assertNotNull( importCluster.get(itemPath, OUTCOME+"/NextStepData/0/27") );
+                    break;
+
+                case VIEWPOINT:
+                    assertEquals(14, contents.length);
+                    assertNotNull( importCluster.get(itemPath, VIEWPOINT+"/NextStepData/last") );
+                    break;
+
+                case HISTORY:
+                    assertEquals(30, contents.length);
+                    assertNotNull( importCluster.get(itemPath, HISTORY+"/0") );
+                    assertNotNull( importCluster.get(itemPath, HISTORY+"/29") );
+                    break;
 
                 default:
                     fail("Unhandled ClusterType:"+type);
