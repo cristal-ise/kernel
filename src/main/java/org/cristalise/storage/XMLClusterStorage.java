@@ -145,7 +145,7 @@ public class XMLClusterStorage extends ClusterStorage {
             else                             return (C2KLocalObject) Gateway.getMarshaller().unmarshall(objString);
         }
         catch (Exception e) {
-            Logger.msg(3, "XMLClusterStorage.get() - The path " + path + " from " + itemPath + " does not exist.: " + e.getMessage());
+            Logger.msg(3, "XMLClusterStorage.get() - The path " + path + " from " + itemPath + " does not exist: " + e.getMessage());
             Logger.error(e);
             throw new PersistencyException(e.getMessage());
         }
