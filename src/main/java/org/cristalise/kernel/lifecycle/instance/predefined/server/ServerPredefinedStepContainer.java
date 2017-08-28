@@ -35,6 +35,7 @@ public class ServerPredefinedStepContainer extends PredefinedStepContainer {
         serverPredInit("RemoveRole",          "Removes a Role from this Server.", new RemoveRole());
         serverPredInit("RemoveDomainContext", "Deletes an existing context in the domain tree, but only if empty", new RemoveDomainContext());
         serverPredInit("AddDomainContext",    "Creates an empty domain context in the tree", new AddDomainContext());
+        serverPredInit("BulkImport",          "Imports all data provided in a specific directory", new BulkImport());
     }
 
     public void serverPredInit(String alias, String Description, PredefinedStep act) {

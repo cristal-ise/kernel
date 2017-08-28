@@ -41,6 +41,7 @@ import org.junit.Test;
 import static org.cristalise.kernel.persistency.ClusterType.PATH;
 import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
 import static org.cristalise.kernel.persistency.ClusterType.LIFECYCLE;
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
 import static org.cristalise.kernel.persistency.ClusterType.PROPERTY;
 import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
@@ -90,8 +91,7 @@ public class XMLClusterStorageTest {
 
                 case OUTCOME:
                     assertEquals(14, contents.length);
-                    //TODO: to unmarshall Outcome the description cache has to contain the corresponding Schema
-                    //assertNotNull( importCluster.get(itemPath, OUTCOME+"/NextStepData/0/27") );
+                    assertNotNull( importCluster.get(itemPath, OUTCOME+"/PredefinedStepOutcome/0/7") );
                     break;
 
                 case VIEWPOINT:
