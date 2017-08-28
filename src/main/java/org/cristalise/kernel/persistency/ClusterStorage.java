@@ -323,10 +323,12 @@ public abstract class ClusterStorage {
     }
 
     /**
+     * Queries the Item for the Clusters (root path elements) that are available.
      * 
-     * @param itemPath
-     * @return
+     * @param itemPath the Item to query
+     * @return A ClusterType array of the possible next path elements
      * @throws PersistencyException
+     *             When an error occurred during the query
      */
     public ClusterType[] getClusters(ItemPath itemPath) throws PersistencyException {
         String[] contents = getClusterContents(itemPath, "");
