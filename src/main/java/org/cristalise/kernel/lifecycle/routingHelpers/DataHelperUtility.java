@@ -36,7 +36,7 @@ public class DataHelperUtility {
      * First checks the configuration properties to instantiate the requested Datahelper.
      * If there is such no property, it uses the given id to instantiate one of these classes:
      * {@link ViewpointDataHelper}, {@link PropertyDataHelper}, {@link ActivityDataHelper}
-     * 
+     *
      * @param id the string used to identify the DataHelper in the cristal-ise configuration
      * @return the DataHelper instance
      * @throws InvalidDataException could not configure DataHelper
@@ -45,40 +45,36 @@ public class DataHelperUtility {
         Object configHelper = Gateway.getProperties().getObject("DataHelper."+id);
 
         if (configHelper != null) {
-            if (configHelper instanceof DataHelper) 
+            if (configHelper instanceof DataHelper)
                 return (DataHelper)configHelper;
-            else 
+            else
                 throw new InvalidDataException("Config value is not an instance of DataHelper - 'DataHelper."+id+"'=" +configHelper.toString());
         }
         else {
             switch (BuiltInDataHelpers.getValue(id)) {
-                case VIEWPOINT_DH:
-                    return new ViewpointDataHelper();
-                case PROPERTY_DH:
-                    return new PropertyDataHelper();
-                case ACTIVITY_DH:
-                    return new ActivityDataHelper();
-                default:
-                    Logger.warning("DataHelperUtility.getDataHelper() - UNKOWN DataHelper id:"+id);
+                case VIEWPOINT_DH: return new ViewpointDataHelper();
+                case PROPERTY_DH:  return new PropertyDataHelper();
+                case ACTIVITY_DH:  return new ActivityDataHelper();
+
+                default: throw new InvalidDataException("UNKOWN DataHelper id:"+id);
             }
         }
-        return null;
     }
 
     /**
-     * If the 
-     * 
+     * If the
+     *
      * @param itemPath the actual Item context
      * @param value the value to be evaluated
      * @param actContext activity path
      * @param locker database transaction locker
      * @return String value which was evaluated using {@link DataHelper} implementation
-     * 
+     *
      * @throws InvalidDataException data inconsistency
      * @throws PersistencyException persistency issue
      * @throws ObjectNotFoundException  object was not found
      */
-    public static Object evaluateValue(ItemPath itemPath, Object value, String actContext, Object locker) 
+    public static Object evaluateValue(ItemPath itemPath, Object value, String actContext, Object locker)
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         if (value == null || !(value instanceof String) || !((String)value).contains("//"))
@@ -86,13 +82,14 @@ public class DataHelperUtility {
 
         if(itemPath == null) throw new InvalidDataException("DataHelper must have ItemPath initialised");
 
-        String[] valueSplit = ((String)value).split("//");
+        //Finding the first occurrence of '//' because DataHelper uses XPath which can start with '//'
+        int i = ((String)value).indexOf("//");
 
-        if (valueSplit.length != 2) throw new InvalidDataException("DataHelperUtility.evaluateValue() - Too many '//' in value:"+value);
+        if (i == -1) throw new InvalidDataException("DataHelperUtility.evaluateValue() - Cannot locate '//' in value:"+value);
 
-        String pathType = valueSplit[0];
-        String dataPath = valueSplit[1];
-        
+        String pathType = ((String)value).substring(0, i);
+        String dataPath = ((String)value).substring(i+2);
+
         Logger.msg(5, "DataHelperUtility.evaluateValue() - pathType:"+pathType+" dataPath:"+dataPath);
 
         DataHelper dataHelper = getDataHelper(pathType);
