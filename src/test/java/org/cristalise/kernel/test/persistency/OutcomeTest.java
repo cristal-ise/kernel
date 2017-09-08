@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -58,16 +59,15 @@ public class OutcomeTest {
         Gateway.close();
     }
 
-    @Before
-    public void setup() throws Exception {
-        String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
-        testOc = new Outcome("/Outcome/Script/0/0", ocData);
-    }
-
     private Outcome getOutcome(String fileName) throws Exception {
         return new Outcome(
                 "/Outcome/Script/0/0",
                 FileStringUtility.url2String(OutcomeTest.class.getResource("/"+fileName)));
+    }
+
+    @Before
+    public void setup() throws Exception {
+        testOc = getOutcome("outcomeTest.xml");
     }
 
     @Test
@@ -182,6 +182,13 @@ public class OutcomeTest {
         }
     }
 
+    private void compareRecord(List<String> record) {
+        assertEquals("123456789ABC", record.get(0));
+        assertEquals("12/12/1999",   record.get(1));
+        assertEquals("male",         record.get(2));
+        assertEquals("85",           record.get(3));
+    }
+
     private void compareRecord(Map<String,String> record) {
         assertEquals("123456789ABC", record.get("InsuranceNumber"));
         assertEquals("12/12/1999",   record.get("DateOfBirth"));
@@ -195,6 +202,30 @@ public class OutcomeTest {
 
         compareRecord(patient1.getRecord());
         compareRecord(patient1.getRecord("/PatientDetails"));
+
+        String[] names = {"InsuranceNumber","DateOfBirth","Gender","Weight"};
+
+        compareRecord(patient1.getRecord(Arrays.asList(names)));
+        compareRecord(patient1.getRecord("/PatientDetails", Arrays.asList(names)));
+    }
+
+    private void compareListOfRecord2(List<List<String>> records) {
+        assertEquals(3, records.size());
+
+        assertEquals("aaaaaaaaaaa", records.get(0).get(0));
+        assertEquals("12/12/1999",  records.get(0).get(1));
+        assertEquals("male",        records.get(0).get(2));
+        assertEquals("85",          records.get(0).get(3));
+
+        assertEquals("bbbbbbbbbbbb", records.get(1).get(0));
+        assertEquals("12/12/1989",   records.get(1).get(1));
+        assertEquals("female",       records.get(1).get(2));
+        assertEquals("55",           records.get(1).get(3));
+
+        assertEquals("cccccccccccc", records.get(2).get(0));
+        assertEquals("12/12/1979",   records.get(2).get(1));
+        assertEquals("female",       records.get(2).get(2));
+        assertEquals("95",           records.get(2).get(3));
     }
 
     private void compareListOfRecord(List<Map<String, String>> records) {
@@ -221,5 +252,8 @@ public class OutcomeTest {
         Outcome patients = getOutcome("allPatients.xml");
 
         compareListOfRecord(patients.getAllRecords("/AllPatients/PatientDetails"));
+
+        String[] names = {"InsuranceNumber","DateOfBirth","Gender","Weight"};
+        compareListOfRecord2(patients.getAllRecords("/AllPatients/PatientDetails", Arrays.asList(names)));
     }
 }

@@ -452,16 +452,27 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Retrieves an Attribute value by name of the given Element.
+     *
+     * @param element the Element to query
+     * @param name The name of the attribute to retrieve.
+     * @return The value as a string, or null if that attribute does not have a specified or default value.
+     */
+    public String getAttribute(Element element, String name) {
+        String value = element.getAttribute(name);
+
+        if (StringUtils.isNotBlank(value)) return value;
+        else                               return null;
+    }
+
+    /**
      * Retrieves an Attribute value by name of the root Element.
      *
      * @param name The name of the attribute to retrieve.
      * @return The value as a string, or null if that attribute does not have a specified or default value.
      */
     public String getAttribute(String name) {
-        String value = mDOM.getDocumentElement().getAttribute(name);
-
-        if (StringUtils.isNotBlank(value)) return value;
-        else                               return null;
+        return getAttribute(mDOM.getDocumentElement(), name);
     }
 
     /**
@@ -631,8 +642,13 @@ public class Outcome implements C2KLocalObject {
     public List<String> getRecordOfElement(Element element, List<String> names) {
         List<String> record = new ArrayList<>();
 
-        for (String name : names) record.add(getField(element, name));
+        for (String name : names) {
+            String value = getField(element, name);
 
+            if (value == null)  value = getAttribute(element, name);
+
+            record.add(value);
+        }
         return record;
     }
 
@@ -644,7 +660,13 @@ public class Outcome implements C2KLocalObject {
     public List<String> getRecord(List<String> names) {
         List<String> record = new ArrayList<>();
 
-        for (String name : names) record.add(getField(name));
+        for (String name : names) {
+            String value = getField(name);
+
+            if (value == null) value = getAttribute(name);
+
+            record.add(value);
+        }
 
         return record;
     }
