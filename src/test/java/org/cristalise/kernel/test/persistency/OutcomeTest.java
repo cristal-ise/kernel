@@ -25,6 +25,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cristalise.kernel.common.InvalidDataException;
@@ -50,7 +52,7 @@ public class OutcomeTest {
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
     }
-    
+
     @AfterClass
     public static void afterClass() throws Exception {
         Gateway.close();
@@ -60,6 +62,12 @@ public class OutcomeTest {
     public void setup() throws Exception {
         String ocData = FileStringUtility.url2String(OutcomeTest.class.getResource("/outcomeTest.xml"));
         testOc = new Outcome("/Outcome/Script/0/0", ocData);
+    }
+
+    private Outcome getOutcome(String fileName) throws Exception {
+        return new Outcome(
+                "/Outcome/Script/0/0",
+                FileStringUtility.url2String(OutcomeTest.class.getResource("/"+fileName)));
     }
 
     @Test
@@ -135,18 +143,15 @@ public class OutcomeTest {
 
     @Test
     public void testValidation() throws Exception {
-    	String errors = testOc.validate();
-    	assert errors.contains("Cannot find the declaration of element 'TestOutcome'.") : "Validation failed";
+        String errors = testOc.validate();
+        assert errors.contains("Cannot find the declaration of element 'TestOutcome'.") : "Validation failed";
     }
 
     @Test
     public void testComplexXpath() throws Exception {
-        Outcome complexTestOc = new Outcome(
-                "/Outcome/Script/0/0",
-                FileStringUtility.url2String(OutcomeTest.class.getResource("/complexOutcomeTest.xml")));
+        Outcome complexTestOc = getOutcome("complexOutcomeTest.xml");
 
         String slotID = complexTestOc.getNodeByXPath("/Fields/@slotID").getNodeValue();
-
         assertEquals("1",  slotID);
 
         NodeList fields = complexTestOc.getNodesByXPath("//Field");
@@ -175,5 +180,46 @@ public class OutcomeTest {
 
             Logger.msg("testComplexXpath() - slotID:"+slotID+" fieldName:"+fieldName+" fieldValue:"+fieldValue);
         }
+    }
+
+    private void compareRecord(Map<String,String> record) {
+        assertEquals("123456789ABC", record.get("InsuranceNumber"));
+        assertEquals("12/12/1999",   record.get("DateOfBirth"));
+        assertEquals("male",         record.get("Gender"));
+        assertEquals("85",           record.get("Weight"));
+    }
+
+    @Test
+    public void testGetRecord() throws Exception {
+        Outcome patient1 = getOutcome("patient1.xml");
+
+        compareRecord(patient1.getRecord());
+        compareRecord(patient1.getRecord("/PatientDetails"));
+    }
+
+    private void compareListOfRecord(List<Map<String, String>> records) {
+        assertEquals(3, records.size());
+
+        assertEquals("aaaaaaaaaaa", records.get(0).get("InsuranceNumber"));
+        assertEquals("12/12/1999",  records.get(0).get("DateOfBirth"));
+        assertEquals("male",        records.get(0).get("Gender"));
+        assertEquals("85",          records.get(0).get("Weight"));
+
+        assertEquals("bbbbbbbbbbbb", records.get(1).get("InsuranceNumber"));
+        assertEquals("12/12/1989",   records.get(1).get("DateOfBirth"));
+        assertEquals("female",       records.get(1).get("Gender"));
+        assertEquals("55",           records.get(1).get("Weight"));
+
+        assertEquals("cccccccccccc", records.get(2).get("InsuranceNumber"));
+        assertEquals("12/12/1979",   records.get(2).get("DateOfBirth"));
+        assertEquals("female",       records.get(2).get("Gender"));
+        assertEquals("95",           records.get(2).get("Weight"));
+    }
+
+    @Test
+    public void testGetAllRecords() throws Exception {
+        Outcome patients = getOutcome("allPatients.xml");
+
+        compareListOfRecord(patients.getAllRecords("/AllPatients/PatientDetails"));
     }
 }

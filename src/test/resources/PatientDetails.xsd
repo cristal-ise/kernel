@@ -1,0 +1,37 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="PatientDetails">
+    <xs:annotation>
+      <xs:documentation>This is the Schema for Basic Tutorial</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:all minOccurs="0">
+        <xs:element maxOccurs="1" minOccurs="1" name="DateOfBirth" type="xs:date"/>
+        <xs:element maxOccurs="1" minOccurs="1" name="Gender">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="male"/>
+              <xs:enumeration value="female"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element maxOccurs="1" minOccurs="1" name="Weight">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:decimal">
+                <xs:attribute default="kg" name="unit" use="optional">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                      <xs:enumeration value="g"/>
+                      <xs:enumeration value="kg"/>
+                    </xs:restriction>
+                  </xs:simpleType>
+                </xs:attribute>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:all>
+      <xs:attribute default="123456789ABC" name="InsuranceNumber" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

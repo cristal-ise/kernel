@@ -20,10 +20,17 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -52,13 +59,12 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -105,9 +111,9 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
-     * Use this constructor for XML manipulation only. This Outcome cannot be validate 
+     * Use this constructor for XML manipulation only. This Outcome cannot be validate
      * not it can be stored in ClusterStore.
-     * 
+     *
      * @param xml the XML string to be manipulated
      * @throws InvalidDataException there was an error parsing the XML
      */
@@ -117,7 +123,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Use this constructor for XML manipulation and validation. This Outcome cannot be stored in ClusterStore.
-     * 
+     *
      * @param xml the XML string to be manipulated
      * @param schema the Schema of the XML
      * @throws InvalidDataException there was an error parsing the XML
@@ -128,7 +134,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Use this constructor to manipulate, validate and store this outcome
-     * 
+     *
      * @param id eventID
      * @param xml the XML string to be manipulated
      * @param schema the Schema of the XML
@@ -149,7 +155,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Very basic constructor to set all members
-     * 
+     *
      * @param id eventID
      * @param dom parsed XML Document
      * @param schema the Schema instance
@@ -162,7 +168,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * The constructor derives all the meta data (ID and Schema) from the path
-     * 
+     *
      * @param path the actuals path used by the ClusterStorage
      * @param xml the XML string to parse
      * @throws PersistencyException there was DB error
@@ -182,7 +188,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * The constructor derives all the meta data (ID and Schema) from the path
-     * 
+     *
      * @param path the actuals path used by the ClusterStorage
      * @param data the parsed xml Document
      * @throws PersistencyException there was DB error
@@ -219,8 +225,8 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Validates the actual XML Document against the provided Schema
-     * 
-     * @return the errors found 
+     *
+     * @return the errors found
      * @throws InvalidDataException Schema was null
      */
     public String validate() throws InvalidDataException {
@@ -235,7 +241,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Validates the actual XML Document against the provided Schema
-     * 
+     *
      * @throws InvalidDataException XML document is not valid instance of the Schema
      */
     public void validateAndCheck() throws InvalidDataException {
@@ -270,7 +276,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Retrieves the text, CDATA or attribute value of the Node selected by the XPath
-     * 
+     *
      * @param xpath The path to access the selected Node
      * @return the value of the selected Node
      * @throws XPathExpressionException xpath was not valid (e.g. there is no such node)
@@ -282,9 +288,9 @@ public class Outcome implements C2KLocalObject {
         if (field == null) {
             throw new InvalidDataException("Outcome '"+getSchemaType()+"' cannot resolve xpath:"+xpath);
         }
-        else if (field.getNodeType() == Node.TEXT_NODE || 
-                 field.getNodeType() == Node.CDATA_SECTION_NODE ||
-                 field.getNodeType() == Node.ATTRIBUTE_NODE)
+        else if (field.getNodeType() == Node.TEXT_NODE ||
+                field.getNodeType() == Node.CDATA_SECTION_NODE ||
+                field.getNodeType() == Node.ATTRIBUTE_NODE)
         {
             return field.getNodeValue();
         }
@@ -302,7 +308,7 @@ public class Outcome implements C2KLocalObject {
                 else
                     throw new InvalidDataException("Element '"+field.getNodeName()+"' can't get data from child node of type '"+child.getNodeName()+"'");
             }
-            else 
+            else
                 throw new InvalidDataException("Element "+xpath+" has too many children");
         }
         else
@@ -311,7 +317,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Sets the text, CDATA or attribute value of the Node selected by the XPath. It only updates existing Nodes.
-     * 
+     *
      * @param xpath the selected Node to be updated
      * @param data string containing the data
      * @throws XPathExpressionException xpath is invalid
@@ -324,7 +330,7 @@ public class Outcome implements C2KLocalObject {
     /**
      * Sets the text, CDATA or attribute value of the Node selected by the XPath. It only updates existing Nodes.
      * If data is null and the node exists, the node is removed
-     * 
+     *
      * @param xpath the selected Node to be updated
      * @param data string containing the data, it can be null
      * @param remove flag to remove existing node when data is null
@@ -357,15 +363,15 @@ public class Outcome implements C2KLocalObject {
             else if (fieldChildren.getLength() == 1) {
                 Node child = fieldChildren.item(0);
                 switch (child.getNodeType()) {
-                case Node.TEXT_NODE:
-                case Node.CDATA_SECTION_NODE:
-                    child.setNodeValue(data);
-                    break;
-                default:
-                    throw new InvalidDataException("Can't set child node of type "+child.getNodeName());
+                    case Node.TEXT_NODE:
+                    case Node.CDATA_SECTION_NODE:
+                        child.setNodeValue(data);
+                        break;
+                    default:
+                        throw new InvalidDataException("Can't set child node of type "+child.getNodeName());
                 }
             }
-            else 
+            else
                 throw new InvalidDataException("Element "+xpath+" must have zero or one children node");
         }
         else if (field.getNodeType() == Node.ATTRIBUTE_NODE)
@@ -376,7 +382,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Append the new Node created from xmlFragment as a child of the Node selected by the XPath
-     * 
+     *
      * @param xpath the selected parent node
      * @param xmlFragment string containing the xml fragment
      * @return the Node just added
@@ -431,10 +437,10 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Parses the outcome into a DOM tree
-     * 
+     *
      * @param xml string to be parsed
      * @return the parsed Document
-     * 
+     *
      * @throws SAXException error parsing document
      * @throws IOException any IO errors occur
      */
@@ -447,7 +453,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Retrieves an Attribute value by name of the root Element.
-     * 
+     *
      * @param name The name of the attribute to retrieve.
      * @return The value as a string, or null if that attribute does not have a specified or default value.
      */
@@ -460,7 +466,7 @@ public class Outcome implements C2KLocalObject {
 
     /**
      * Retrieves an Attribute value by name from the named Element.
-     * 
+     *
      * @param field The name of the field.
      * @param attribute The name of the attribute to retrieve.
      * @return The value as a string, or null if that attribute does not have a specified or default value.
@@ -479,18 +485,29 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
-     * Retrieves the textNode value of the named Element of the root Element.
-     * 
+     * Retrieves the textNode value of the named Element of the given Element.
+     *
+     * @param element the Element to query
      * @param name The name of the Element
      * @return The value as a string, or null if that field does not exists
      */
-    public String getField(String name) {
-        NodeList elements = mDOM.getDocumentElement().getElementsByTagName(name);
+    public String getField(Element element, String name) {
+        NodeList elements = element.getElementsByTagName(name);
 
         if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
             return ((Text)elements.item(0).getFirstChild()).getData();
         else
             return null;
+    }
+
+    /**
+     * Retrieves the textNode value of the named Element of the root Element.
+     *
+     * @param name The name of the Element
+     * @return The value as a string, or null if that field does not exists
+     */
+    public String getField(String name) {
+        return getField( mDOM.getDocumentElement(), name);
     }
 
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
@@ -539,5 +556,135 @@ public class Outcome implements C2KLocalObject {
             throw new InvalidDataException(e.getMessage());
         }
         return out.toString();
+    }
+
+    /**
+     *
+     * @param elements
+     * @return
+     */
+    public  Map<String, String> getRecordOfNode(Node node) {
+        HashMap<String, String> record = new HashMap<>();
+        NodeList elements = node.getChildNodes();
+
+        for (int i = 0; i < elements.getLength(); i++) {
+            if (elements.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                String name = elements.item(i).getNodeName();
+                String value = elements.item(i).getTextContent();
+
+                record.put(name, value);
+            }
+        }
+
+        NamedNodeMap attrs = node.getAttributes();
+
+        for (int i = 0; i < attrs.getLength(); i++) {
+            String name = attrs.item(i).getNodeName();
+            String value = attrs.item(i).getTextContent();
+
+            record.put(name, value);
+        }
+
+        return record;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Map<String, String> getRecord() {
+        return getRecordOfNode( mDOM.getDocumentElement() );
+    }
+
+    /**
+     *
+     * @param xpath
+     * @return
+     * @throws XPathExpressionException
+     */
+    public Map<String, String> getRecord(String xpath) throws XPathExpressionException {
+        return getRecordOfNode( getNodeByXPath(xpath) );
+    }
+
+    /**
+     *
+     * @param xpath
+     * @return
+     * @throws XPathExpressionException
+     */
+    public List<Map<String, String>> getAllRecords(String xpath) throws XPathExpressionException {
+        List< Map<String, String> > records = new ArrayList<>();
+
+        NodeList nodes = getNodesByXPath(xpath);
+
+        for (int i = 0; i < nodes.getLength(); i++) records.add( getRecordOfNode(nodes.item(i)) );
+
+        return records;
+    }
+
+    /**
+     *
+     * @param elements
+     * @param names
+     * @return
+     */
+    public List<String> getRecordOfElement(Element element, List<String> names) {
+        List<String> record = new ArrayList<>();
+
+        for (String name : names) record.add(getField(element, name));
+
+        return record;
+    }
+
+    /**
+     *
+     * @param names
+     * @return
+     */
+    public List<String> getRecord(List<String> names) {
+        List<String> record = new ArrayList<>();
+
+        for (String name : names) record.add(getField(name));
+
+        return record;
+    }
+
+    /**
+     *
+     * @param xpath
+     * @param names
+     * @return
+     * @throws XPathExpressionException
+     */
+    public List<String> getRecord(String xpath, List<String> names) throws XPathExpressionException {
+        return getRecordOfElement((Element)getNodeByXPath(xpath), names);
+    }
+
+    /**
+     *
+     * @param xpath
+     * @param names
+     * @return
+     * @throws XPathExpressionException
+     */
+    public List<List<String>> getAllRecords(String xpath, List<String> names) throws XPathExpressionException {
+        List< List<String> > records = new ArrayList<>();
+        NodeList nodes = getNodesByXPath(xpath);
+
+        for (int i = 0; i < nodes.getLength(); i++) records.add( getRecordOfElement((Element)nodes.item(i), names) );
+
+        return records;
+    }
+
+    /**
+     *
+     * @param values
+     * @throws InvalidDataException
+     * @throws XPathExpressionException
+     */
+    public void setFields(Map<String, String> values) throws XPathExpressionException, InvalidDataException {
+        for (Entry<String,String> entry : values.entrySet()) {
+            setFieldByXPath("//"+entry.getKey(), entry.getValue());
+        }
     }
 }

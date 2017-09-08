@@ -1,0 +1,5 @@
+<PatientDetails InsuranceNumber="123456789ABC">
+    <DateOfBirth>12/12/1999</DateOfBirth>
+    <Gender>male</Gender>
+    <Weight unit="kd">85</Weight>
+</PatientDetails>
