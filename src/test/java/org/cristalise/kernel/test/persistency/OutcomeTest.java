@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -80,8 +81,10 @@ public class OutcomeTest {
     }
 
     @Test
-    public void testFieldAccess() {
-        assert "Field1contents".equals(testOc.getField("Field1")) : "getField() failed";
+    public void testFieldAccess() throws Exception {
+        assertEquals("Field1contents", testOc.getField("Field1"));
+        testOc.setField("Field1", "Field1contents_updated");
+        assertEquals("Field1contents_updated", testOc.getField("Field1"));
     }
 
     @Test
@@ -256,4 +259,20 @@ public class OutcomeTest {
         String[] names = {"InsuranceNumber","DateOfBirth","Gender","Weight"};
         compareListOfRecord2(patients.getAllRecords("/AllPatients/PatientDetails", Arrays.asList(names)));
     }
+
+    @Test
+    public void tesSetRecord() throws Exception {
+        Outcome patient2 = getOutcome("patient2.xml");
+
+        Map<String, String> record =  new HashMap<>();
+        record.put("InsuranceNumber", "123456789ABC");
+        record.put("DateOfBirth",     "12/12/1999");
+        record.put("Gender",          "male");
+        record.put("Weight",          "85");
+
+        patient2.setRecord(record);
+
+        compareRecord(patient2.getRecord());
+    }
+
 }

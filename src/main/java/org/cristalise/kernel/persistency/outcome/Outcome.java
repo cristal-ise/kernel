@@ -199,6 +199,13 @@ public class Outcome implements C2KLocalObject {
         mDOM = data;
     }
 
+    /**
+     * Retrieves the SchemaName, Version, EevetnId triplet from the path. Check getClusterPath() implementation
+     *
+     * @param path the ClusterPath to work with
+     * @throws PersistencyException path was incorrect
+     * @throws InvalidDataException Schema was not found or the Path has incorrect data
+     */
     protected void setMetaDataFromPath(String path) throws PersistencyException, InvalidDataException {
         StringTokenizer tok = new StringTokenizer(path,"/");
 
@@ -316,6 +323,62 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets an Attribute value by name of the given Element.
+     *
+     * @param element the Element to search
+     * @param name the name of the Attribute
+     * @param data the value to set
+     * @throws InvalidDataException the name was not found
+     */
+    public void setAttribute(Element element, String name, String data) throws InvalidDataException {
+        if (element.hasAttribute(name)) {
+            element.getAttributeNode(name).setValue(data);
+        }
+        else {
+            throw new InvalidDataException("Invalid name:'"+name+"'");
+        }
+    }
+
+    /**
+     * Sets an Attribute value by name of the root Element.
+     *
+     * @param name the name of the Attribute
+     * @param data the value to set
+     * @throws InvalidDataException the name was not found
+     */
+    public void setAttribute(String name, String data) throws InvalidDataException {
+        setAttribute(mDOM.getDocumentElement(), name, data);
+    }
+
+    /**
+     * Sets the textNode value of the named Element of the given Element.
+     *
+     * @param element Element to use
+     * @param name the name of the Element
+     * @param data the data to be set
+     * @throws InvalidDataException the name was not found or there were more Elements with the given name
+     */
+    public void setField(Element element, String name, String data) throws InvalidDataException {
+        NodeList elements = element.getElementsByTagName(name);
+
+        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
+            ((Text)elements.item(0).getFirstChild()).setData(data);
+        else
+            throw new InvalidDataException("Invalid name:'"+name+"'");
+    }
+
+    /**
+     * Sets the textNode value of the named Element of the root Element.
+     *
+     * @param name the name of the Element
+     * @param data the data to be set
+     * @throws InvalidDataException the name was not found or there were more Elements with the given name
+     */
+    public void setField(String name, String data) throws InvalidDataException {
+        setField(mDOM.getDocumentElement(), name, data);
+    }
+
+    /**
      * Sets the text, CDATA or attribute value of the Node selected by the XPath. It only updates existing Nodes.
      *
      * @param xpath the selected Node to be updated
@@ -399,6 +462,11 @@ public class Outcome implements C2KLocalObject {
         }
     }
 
+    /**
+     * Returns the serialised DOM as a string
+     *
+     * @return the xml string
+     */
     public String getData() {
         try {
             return serialize(mDOM, false);
@@ -423,6 +491,9 @@ public class Outcome implements C2KLocalObject {
         return mSchema.getVersion();
     }
 
+    /**
+     * Returns {@link ClusterType#OUTCOME}
+     */
     @Override
     public ClusterType getClusterType() {
         return OUTCOME;
@@ -521,16 +592,38 @@ public class Outcome implements C2KLocalObject {
         return getField( mDOM.getDocumentElement(), name);
     }
 
+    /**
+     * Gets a NodeList selected by the xpath
+     *
+     * @param xpathExpr the xpath to select the list of Nodes
+     * @return NodeList
+     * @throws XPathExpressionException invalid xpath
+     */
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
         XPathExpression expr = xpath.compile(xpathExpr);
         return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
     }
 
+    /**
+     * Gets a List selected by the xpath
+     *
+     * @param xpathExpr the xpath to select the list of Nodes
+     * @return Node
+     * @throws XPathExpressionException invalid xpath
+     */
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
         XPathExpression expr = xpath.compile(xpathExpr);
         return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
     }
 
+    /**
+     * Removes the node selected by the xpath
+     *
+     * @param xpathExpr xpath to select the Node
+     * @return the Node removed
+     * @throws XPathExpressionException invalid xpath
+     * @throws InvalidDataException invalid xpath
+     */
     public Node removeNodeByXPath(String xpathExpr) throws XPathExpressionException, InvalidDataException {
         if (StringUtils.isBlank(xpathExpr)) throw new InvalidDataException("Xpath is null or empty string");
 
@@ -544,6 +637,14 @@ public class Outcome implements C2KLocalObject {
         return nodeToTemove.getParentNode().removeChild(nodeToTemove);
     }
 
+    /**
+     * Serialize the Given Document
+     *
+     * @param doc document to be serialized
+     * @param prettyPrint if the xml is pretty printed or not
+     * @return the xml string
+     * @throws InvalidDataException Transformer Exception
+     */
     static public String serialize(Document doc, boolean prettyPrint) throws InvalidDataException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer;
@@ -570,9 +671,10 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Reads the all Attributes and child Elements of the given Node
      *
-     * @param elements
-     * @return
+     * @param node the node to work with
+     * @return a Map as a key/value pairs of Attribute/Element names with their value
      */
     public  Map<String, String> getRecordOfNode(Node node) {
         HashMap<String, String> record = new HashMap<>();
@@ -600,28 +702,31 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Reads the all Attributes and child Elements of the root Element
      *
-     * @return
+     * @return a Map as a key/value pairs of Attribute/Element names with their value
      */
     public Map<String, String> getRecord() {
         return getRecordOfNode( mDOM.getDocumentElement() );
     }
 
     /**
+     * Reads the all Attributes and child Elements of the Node selected by the xpath
      *
-     * @param xpath
-     * @return
-     * @throws XPathExpressionException
+     * @param xpath the xpath pointing to the Node
+     * @return a Map as a key/value pairs of Attribute/Element names with their value
+     * @throws XPathExpressionException xpath is invalid
      */
     public Map<String, String> getRecord(String xpath) throws XPathExpressionException {
         return getRecordOfNode( getNodeByXPath(xpath) );
     }
 
     /**
+     * Reads all Attributes and child Elements of the list of Node selected by the xpath
      *
-     * @param xpath
-     * @return
-     * @throws XPathExpressionException
+     * @param xpath selecting the list of Nodes
+     * @return List of Maps as a key/value pairs of Attribute/Element names with their value
+     * @throws XPathExpressionException xpath is invalid
      */
     public List<Map<String, String>> getAllRecords(String xpath) throws XPathExpressionException {
         List< Map<String, String> > records = new ArrayList<>();
@@ -634,10 +739,13 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Reads list of values of the Attributes and child Elements of the given Element.
+     * The values are returned in the order specified in the names parameter. It only return values for the list of names.
+     * Null is added to the result if there is no value for the given name.
      *
-     * @param elements
-     * @param names
-     * @return
+     * @param element the Element to use
+     * @param names the the Attributes and Element names to retrieve
+     * @return List of values
      */
     public List<String> getRecordOfElement(Element element, List<String> names) {
         List<String> record = new ArrayList<>();
@@ -653,9 +761,12 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Reads list of values of the Attributes and child Elements of the root Element.
+     * The values are returned in the order specified in the names parameter. It only return values for the list of names.
+     * Null is added to the result if there is no value for the given name.
      *
-     * @param names
-     * @return
+     * @param names the the Attributes and Element names to retrieve
+     * @return List of values
      */
     public List<String> getRecord(List<String> names) {
         List<String> record = new ArrayList<>();
@@ -672,22 +783,28 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Reads list of values of the Attributes and child Elements of the Element selected by the xpath.
+     * The values are returned in the order specified in the names parameter. It only return values for the list of names.
+     * Null is added to the result if there is no value for the given name.
      *
-     * @param xpath
-     * @param names
-     * @return
-     * @throws XPathExpressionException
+     * @param xpath to select the Element
+     * @param names the the Attributes and Element names to retrieve
+     * @return List of values
+     * @throws XPathExpressionException invalid xpath
      */
     public List<String> getRecord(String xpath, List<String> names) throws XPathExpressionException {
         return getRecordOfElement((Element)getNodeByXPath(xpath), names);
     }
 
     /**
+     * Reads list of list of values of the Attributes and child Elements of the list of Elements selected by the xpath.
+     * The values are returned in the order specified in the names parameter. It only return values for the list of names.
+     * Null is added to the result if there is no value for the given name.
      *
-     * @param xpath
-     * @param names
-     * @return
-     * @throws XPathExpressionException
+     * @param xpath to select the list of Element
+     * @param names the the Attributes and Element names to retrieve
+     * @return List of list of values
+     * @throws XPathExpressionException invalid xpath
      */
     public List<List<String>> getAllRecords(String xpath, List<String> names) throws XPathExpressionException {
         List< List<String> > records = new ArrayList<>();
@@ -699,14 +816,22 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets the values of Attributes and child Element of the root Element. It only updates existing elements.
      *
-     * @param values
-     * @throws InvalidDataException
-     * @throws XPathExpressionException
+     * @param record Map with a key/value pairs to fing the fields or attributes to update
+     * @throws InvalidDataException the name in the map was invalid
      */
-    public void setFields(Map<String, String> values) throws XPathExpressionException, InvalidDataException {
-        for (Entry<String,String> entry : values.entrySet()) {
-            setFieldByXPath("//"+entry.getKey(), entry.getValue());
+    public void setRecord(Map<String, String> record) throws InvalidDataException {
+        for (Entry<String,String> entry : record.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+
+            try {
+                setField(name, value);
+            }
+            catch (InvalidDataException e) {
+                setAttribute(name, value);
+            }
         }
     }
 }
