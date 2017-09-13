@@ -73,6 +73,8 @@ import lombok.experimental.Accessors;
 /**
  * A C2KLocalObject encapsulating management of XML data. It has methods to manipulate and validate the XML,
  * and with a valid ID it can be stored in ClusterStore.
+ *
+ * It contains lot of utility code to read and set data in the Outcome (xml).
  */
 @Accessors(prefix = "m") @Getter @Setter
 public class Outcome implements C2KLocalObject {
@@ -340,6 +342,16 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Determines if the NodeList is actually a single field, an element with text data only
+     *
+     * @param elements NodeList
+     * @return if the NodeList has a single field or not
+     */
+    public boolean isField(NodeList elements) {
+        return (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text);
+    }
+
+    /**
      * Sets an Attribute value by name of the root Element.
      *
      * @param name the name of the Attribute
@@ -348,6 +360,15 @@ public class Outcome implements C2KLocalObject {
      */
     public void setAttribute(String name, String data) throws InvalidDataException {
         setAttribute(mDOM.getDocumentElement(), name, data);
+    }
+
+    public void setAttributeOfField(String field, String name, String data) throws InvalidDataException {
+        NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
+
+        if (isField(elements))
+            setAttribute((Element)elements.item(0), name, data);
+        else
+            throw new InvalidDataException("Invalid name:'"+field+"'");
     }
 
     /**
@@ -361,7 +382,7 @@ public class Outcome implements C2KLocalObject {
     public void setField(Element element, String name, String data) throws InvalidDataException {
         NodeList elements = element.getElementsByTagName(name);
 
-        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
+        if (isField(elements))
             ((Text)elements.item(0).getFirstChild()).setData(data);
         else
             throw new InvalidDataException("Invalid name:'"+name+"'");
@@ -556,7 +577,7 @@ public class Outcome implements C2KLocalObject {
     public String getAttributeOfField(String field, String attribute) {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
 
-        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text) {
+        if (isField(elements)) {
             String value = ((Element)elements.item(0)).getAttribute(attribute);
 
             if (StringUtils.isNotBlank(value)) return value;
@@ -576,7 +597,7 @@ public class Outcome implements C2KLocalObject {
     public String getField(Element element, String name) {
         NodeList elements = element.getElementsByTagName(name);
 
-        if (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text)
+        if (isField(elements))
             return ((Text)elements.item(0).getFirstChild()).getData();
         else
             return null;

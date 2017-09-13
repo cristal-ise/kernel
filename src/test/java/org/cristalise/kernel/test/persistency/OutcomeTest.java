@@ -121,6 +121,16 @@ public class OutcomeTest {
         assertNotNull(testOc.getData());
     }
 
+
+    @Test
+    public void testSetAttribute() throws Exception {
+        testOc.setAttribute("attr0", "attribute00");
+        assertEquals("attribute00", testOc.getAttribute("attr0"));
+
+        testOc.setAttributeOfField("Field1", "attr1", "attribute11");
+        assertEquals("attribute11", testOc.getAttributeOfField("Field1", "attr1"));
+    }
+
     @Test
     public void testSetFieldByXPath() throws Exception {
         testOc.setFieldByXPath("//Field1/@attr1", "attribute11");
@@ -274,5 +284,4 @@ public class OutcomeTest {
 
         compareRecord(patient2.getRecord());
     }
-
 }
