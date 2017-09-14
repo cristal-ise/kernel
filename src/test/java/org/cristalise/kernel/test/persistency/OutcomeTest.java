@@ -85,6 +85,9 @@ public class OutcomeTest {
         assertEquals("Field1contents", testOc.getField("Field1"));
         testOc.setField("Field1", "Field1contents_updated");
         assertEquals("Field1contents_updated", testOc.getField("Field1"));
+
+        testOc.setField("Field1", null, true);
+        assertNull(testOc.getField("Field1"));
     }
 
     @Test
@@ -121,7 +124,6 @@ public class OutcomeTest {
         assertNotNull(testOc.getData());
     }
 
-
     @Test
     public void testSetAttribute() throws Exception {
         testOc.setAttribute("attr0", "attribute00");
@@ -129,6 +131,12 @@ public class OutcomeTest {
 
         testOc.setAttributeOfField("Field1", "attr1", "attribute11");
         assertEquals("attribute11", testOc.getAttributeOfField("Field1", "attr1"));
+
+        testOc.setAttribute("attr0", null, true);
+        assertNull(testOc.getAttribute("attr0"));
+
+        testOc.setAttributeOfField("Field1", "attr1", null, true);
+        assertNull(testOc.getAttributeOfField("Field1", "attr1"));
     }
 
     @Test

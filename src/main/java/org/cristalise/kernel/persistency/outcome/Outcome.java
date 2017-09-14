@@ -325,23 +325,6 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
-     * Sets an Attribute value by name of the given Element.
-     *
-     * @param element the Element to search
-     * @param name the name of the Attribute
-     * @param data the value to set
-     * @throws InvalidDataException the name was not found
-     */
-    public void setAttribute(Element element, String name, String data) throws InvalidDataException {
-        if (element.hasAttribute(name)) {
-            element.getAttributeNode(name).setValue(data);
-        }
-        else {
-            throw new InvalidDataException("Invalid name:'"+name+"'");
-        }
-    }
-
-    /**
      * Determines if the NodeList is actually a single field, an element with text data only
      *
      * @param elements NodeList
@@ -352,6 +335,52 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets an Attribute value by name of the given Element. It only updates existing Attributes.
+     * If data is null, Element exists and the remove flag is true the node is removed.
+     *
+     * @param element the Element to search
+     * @param name the name of the Attribute
+     * @param data the value to set
+     * @param remove flag to remove existing node when data is null
+     * @throws InvalidDataException the attribute was not found
+     */
+    public void setAttribute(Element element, String name, String data, boolean remove) throws InvalidDataException {
+        if (data == null && remove) {
+            Logger.msg(7, "Outcome.setAttribute() - removing name:"+name);
+
+            if (element.hasAttribute(name)) element.removeAttribute(name);
+            return;
+        }
+
+        if (element.hasAttribute(name)) element.getAttributeNode(name).setValue(data);
+        else                            throw new InvalidDataException("Invalid name:'"+name+"'");
+    }
+
+    /**
+     * Sets an Attribute value by name of the given Element. It only updates existing Attributes.
+     *
+     * @param element the Element to search
+     * @param name the name of the Attribute
+     * @param data the value to set
+     * @throws InvalidDataException the Attribute was not found
+     */
+    public void setAttribute(Element element, String name, String data) throws InvalidDataException {
+        setAttribute(element, name, data, false);
+    }
+
+    /**
+     *
+     * @param name
+     * @param data
+     * @param remove
+     * @throws InvalidDataException
+     */
+    public void setAttribute(String name, String data, boolean remove) throws InvalidDataException {
+        setAttribute(mDOM.getDocumentElement(), name, data, remove);
+
+    }
+
+    /**
      * Sets an Attribute value by name of the root Element.
      *
      * @param name the name of the Attribute
@@ -359,20 +388,64 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException the name was not found
      */
     public void setAttribute(String name, String data) throws InvalidDataException {
-        setAttribute(mDOM.getDocumentElement(), name, data);
+        setAttribute(name, data, false);
     }
 
-    public void setAttributeOfField(String field, String name, String data) throws InvalidDataException {
+    /**
+     *
+     * @param field
+     * @param name
+     * @param data
+     * @param remove
+     * @throws InvalidDataException
+     */
+    public void setAttributeOfField(String field, String name, String data, boolean remove) throws InvalidDataException {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
 
         if (isField(elements))
-            setAttribute((Element)elements.item(0), name, data);
+            setAttribute((Element)elements.item(0), name, data, remove);
         else
             throw new InvalidDataException("Invalid name:'"+field+"'");
     }
 
     /**
-     * Sets the textNode value of the named Element of the given Element.
+     *
+     * @param field
+     * @param name
+     * @param data
+     * @throws InvalidDataException
+     */
+    public void setAttributeOfField(String field, String name, String data) throws InvalidDataException {
+        setAttributeOfField(field, name, data, false);
+    }
+
+    /**
+     *
+     * @param element
+     * @param name
+     * @param data
+     * @param remove
+     * @throws InvalidDataException
+     */
+    public void setField(Element element, String name, String data, boolean remove) throws InvalidDataException {
+        NodeList elements = element.getElementsByTagName(name);
+
+        if (isField(elements)) {
+            if (data == null && remove) {
+                Logger.msg(7, "Outcome.setField() - removing name:"+name);
+
+                element.removeChild(elements.item(0));
+            }
+            else {
+                ((Text)elements.item(0).getFirstChild()).setData(data);
+            }
+        }
+        else
+            throw new InvalidDataException("Invalid name:'"+name+"'");
+    }
+
+    /**
+     * Sets the textNode value of the named Element of the given Element. It only updates existing Element.
      *
      * @param element Element to use
      * @param name the name of the Element
@@ -380,12 +453,18 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException the name was not found or there were more Elements with the given name
      */
     public void setField(Element element, String name, String data) throws InvalidDataException {
-        NodeList elements = element.getElementsByTagName(name);
+        setField(element, name, data, false);
+    }
 
-        if (isField(elements))
-            ((Text)elements.item(0).getFirstChild()).setData(data);
-        else
-            throw new InvalidDataException("Invalid name:'"+name+"'");
+    /**
+     *
+     * @param name
+     * @param data
+     * @param remove
+     * @throws InvalidDataException
+     */
+    public void setField(String name, String data, boolean remove) throws InvalidDataException {
+        setField(mDOM.getDocumentElement(), name, data, remove);
     }
 
     /**
@@ -396,7 +475,7 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException the name was not found or there were more Elements with the given name
      */
     public void setField(String name, String data) throws InvalidDataException {
-        setField(mDOM.getDocumentElement(), name, data);
+        setField(name, data, false);
     }
 
     /**
