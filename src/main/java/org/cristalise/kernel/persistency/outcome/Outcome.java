@@ -39,7 +39,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -57,6 +56,8 @@ import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -433,12 +434,14 @@ public class Outcome implements C2KLocalObject {
         if (isField(elements)) {
             if (data == null && remove) {
                 Logger.msg(7, "Outcome.setField() - removing name:"+name);
-
                 element.removeChild(elements.item(0));
+                return;
             }
-            else {
-                ((Text)elements.item(0).getFirstChild()).setData(data);
-            }
+
+            //Setting nodeValue to null could corrupt document
+            if (data == null) data = "";
+
+            ((Text)elements.item(0).getFirstChild()).setNodeValue(data);
         }
         else
             throw new InvalidDataException("Invalid name:'"+name+"'");
@@ -510,6 +513,7 @@ public class Outcome implements C2KLocalObject {
             return;
         }
 
+        //Setting nodeValue to null could corrupt document
         if (data == null) data = "";
 
         Node field = getNodeByXPath(xpath);
@@ -763,7 +767,7 @@ public class Outcome implements C2KLocalObject {
         try {
             transformer.transform(new DOMSource(doc), new StreamResult(out));
         }
-        catch (TransformerException e) {
+        catch (Exception e) {
             Logger.error(e);
             throw new InvalidDataException(e.getMessage());
         }
@@ -933,5 +937,23 @@ public class Outcome implements C2KLocalObject {
                 setAttribute(name, value);
             }
         }
+    }
+
+    public boolean isIdentical(Outcome other) {
+        return isIdentical(getDOM(), other.getDOM());
+    }
+
+    public static boolean isIdentical(Document origDocument, Document otherDOM) {
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreComments(true);
+
+        Diff xmlDiff = new Diff(origDocument, otherDOM);
+
+        if (!xmlDiff.identical()) {
+            Logger.msg(xmlDiff.toString());
+            return false;
+        }
+        else
+            return true;
     }
 }

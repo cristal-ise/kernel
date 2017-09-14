@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name='StorageDetails'>
+        <xs:annotation>
+            <xs:documentation>This is the Schema for Storage</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all minOccurs="0" >
+                <xs:element name='Parent'    minOccurs='0' maxOccurs='1' type='xs:string'/>
+
+                <xs:element name="Type"      minOccurs="1" maxOccurs="1">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="BIN" />
+                            <xs:enumeration value="WAREHOUSE" />
+                            <xs:enumeration value="SECTION" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
+                <xs:element name='Capacity'  minOccurs='1' maxOccurs='1'>
+                    <xs:complexType>
+                        <xs:simpleContent>
+                            <xs:extension base='xs:decimal'>
+                                <xs:attribute name='unit' default='TONNE' use='optional' type="massUnit"/>
+                            </xs:extension>
+                        </xs:simpleContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name='Season'    minOccurs='0' maxOccurs='1' type='xs:string'/>
+                <xs:element name='Commodity' minOccurs='0' maxOccurs='1' type='xs:string'/>
+                <xs:element name='Grade'     minOccurs='0' maxOccurs='1' type='xs:string'/>
+
+                <xs:element name='ROWS'   minOccurs='0' maxOccurs='1' type="xs:integer"/>
+                <xs:element name='COLS'   minOccurs='0' maxOccurs='1' type="xs:integer"/>
+                <xs:element name='TOP'    minOccurs='0' maxOccurs='1' type="xs:integer"/>
+                <xs:element name='LEFT'   minOccurs='0' maxOccurs='1' type="xs:integer"/>
+                <xs:element name='BOTTOM' minOccurs='0' maxOccurs='1' type="xs:integer"/>
+                <xs:element name='RIGHT'  minOccurs='0' maxOccurs='1' type="xs:integer"/>
+
+                <xs:element name='Note'      minOccurs='0' maxOccurs='1' type='xs:string' />
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="massUnit">
+        <xs:restriction base='xs:string'>
+            <xs:enumeration value='KG'>
+                <xs:annotation>
+                    <xs:documentation>kg</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value='TONNE'>
+                <xs:annotation>
+                    <xs:documentation>t</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value='BAG_40KG'>
+                <xs:annotation>
+                    <xs:documentation>40kg Bag</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value='BAG_50KG'>
+                <xs:annotation>
+                    <xs:documentation>50kg Bag</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    
+</xs:schema>

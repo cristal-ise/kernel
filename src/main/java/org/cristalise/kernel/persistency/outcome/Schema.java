@@ -27,10 +27,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
@@ -40,6 +36,10 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter @Setter
 public class Schema implements DescriptionObject, ErrorHandler {
@@ -72,10 +72,10 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
     /**
      * Sets schema name to 'Schema' and version to 0
-     * 
+     *
      * @param schema the XSD string
      */
-    protected Schema(String schema) {
+    public Schema(String schema) {
         this.schemaData = schema;
         name = "Schema";
         version = 0;
@@ -83,7 +83,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
     /**
      * Returns the XSD string. Convenience method
-     * 
+     *
      * @return the XSD string
      */
     public String getXSD() {
@@ -92,7 +92,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
     /**
      * Validates the schemaData (XML)
-     * 
+     *
      * @return errors in String format
      */
     public synchronized String validate() throws IOException {
@@ -114,7 +114,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
     /**
      * ErrorHandler for validation
-     * 
+     *
      * @param level
      * @param ex
      */
@@ -157,11 +157,11 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
         if (imports != null) {
             imports.write( "<Resource "
-                          + "name='"+getName()+"' "
-                          + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
-                          + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
-                          + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
-                          + "</Resource>\n");
+                    + "name='"+getName()+"' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                    + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
+                    + "</Resource>\n");
         }
     }
 

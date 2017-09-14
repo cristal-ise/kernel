@@ -23,6 +23,7 @@ package org.cristalise.kernel.test.persistency;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -33,10 +34,12 @@ import java.util.Properties;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -60,6 +63,13 @@ public class OutcomeTest {
         Gateway.close();
     }
 
+    private Outcome getOutcome(String xml, String xsd) throws Exception {
+        return new Outcome(
+                FileStringUtility.url2String(OutcomeTest.class.getResource("/"+xml+".xml")),
+                new Schema(FileStringUtility.url2String(OutcomeTest.class.getResource("/"+xsd+".xsd")))
+                );
+    }
+
     private Outcome getOutcome(String fileName) throws Exception {
         return new Outcome(
                 "/Outcome/Script/0/0",
@@ -69,6 +79,13 @@ public class OutcomeTest {
     @Before
     public void setup() throws Exception {
         testOc = getOutcome("outcomeTest.xml");
+    }
+
+    @After
+    public void validate() throws Exception  {
+        testOc.getDOM().normalize();
+        assertNotNull(testOc.getData());
+        Logger.msg(testOc.getData());
     }
 
     @Test
@@ -132,6 +149,7 @@ public class OutcomeTest {
         testOc.setAttributeOfField("Field1", "attr1", "attribute11");
         assertEquals("attribute11", testOc.getAttributeOfField("Field1", "attr1"));
 
+        //testOc.setAttribute("attr0", null);
         testOc.setAttribute("attr0", null, true);
         assertNull(testOc.getAttribute("attr0"));
 
@@ -280,7 +298,7 @@ public class OutcomeTest {
 
     @Test
     public void tesSetRecord() throws Exception {
-        Outcome patient2 = getOutcome("patient2.xml");
+        Outcome patient2 = getOutcome("patient2", "PatientDetails");
 
         Map<String, String> record =  new HashMap<>();
         record.put("InsuranceNumber", "123456789ABC");
@@ -291,5 +309,22 @@ public class OutcomeTest {
         patient2.setRecord(record);
 
         compareRecord(patient2.getRecord());
+    }
+
+    @Test
+    public void testOrderDetails() throws Exception {
+        Outcome order = getOutcome("orderDetails1", "OrderDetails");
+
+        order.setField("Type", "SECTION");
+        order.setField("Capacity",  "55000");
+        order.setField("Commodity", null);
+        order.setField("Grade",     null, true);
+        order.setField("Note",      "");
+
+        order.validateAndCheck();
+        assertNotNull(order.getData());
+        Logger.msg(order.getData());
+
+        assertTrue( order.isIdentical(getOutcome("orderDetails1_updated.xml")) );
     }
 }
