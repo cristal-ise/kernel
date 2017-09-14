@@ -66,12 +66,10 @@ import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 
 
 /**
- * Bootstrap loads all Items defined in the kernel resource XMLs and the module XML 
+ * Bootstrap loads all Items defined in the kernel resource XMLs and the module XML
  */
 public class Bootstrap
 {
@@ -159,7 +157,7 @@ public class Bootstrap
     }
 
     /**
-     * 
+     *
      * @param bootList
      * @param ns
      * @param reset
@@ -198,7 +196,7 @@ public class Bootstrap
     }
 
     /**
-     * Verify a resource item against a module version, using a ResourceImportHandler configured 
+     * Verify a resource item against a module version, using a ResourceImportHandler configured
      * to find outcomes at the given dataLocation
      */
     public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, String dataLocation, boolean reset)
@@ -208,7 +206,7 @@ public class Bootstrap
     }
 
     /**
-     * Verify a resource item against a module version, but supplies the resource outcomes directly 
+     * Verify a resource item against a module version, but supplies the resource outcomes directly
      * instead of through a location lookup
      */
     public static DomainPath verifyResource(String ns, String itemName, int version, String itemType, ItemPath itemPath, Set<Outcome> outcomes, boolean reset)
@@ -218,7 +216,7 @@ public class Bootstrap
     }
 
     /**
-     * 
+     *
      * @param ns
      * @param itemName
      * @param version
@@ -245,7 +243,7 @@ public class Bootstrap
             Logger.msg(3, "Bootstrap.verifyResource() - Found "+typeImpHandler.getName()+" "+itemName + ".");
 
             thisProxy = verifyPathAndModuleProperty(ns, itemType, itemName, itemPath, modDomPath, modDomPath);
-        } 
+        }
         else {
             if (itemPath == null) itemPath = new ItemPath();
 
@@ -269,7 +267,7 @@ public class Bootstrap
                 storeOutcomeEventAndViews(thisProxy, newOutcome, version);
 
                 CollectionArrayList cols = typeImpHandler.getCollections(itemName, version, newOutcome);
-    
+
                 for (Collection<?> col : cols.list) {
                     Gateway.getStorage().put(thisProxy.getPath(), col, thisProxy);
                     Gateway.getStorage().clearCache(thisProxy.getPath(), ClusterType.COLLECTION+"/"+col.getName());
@@ -284,7 +282,7 @@ public class Bootstrap
 
     /**
      * Verify module property and location
-     * 
+     *
      * @param ns
      * @param itemType
      * @param itemName
@@ -294,7 +292,7 @@ public class Bootstrap
      * @return the ItemProxy either create or initialised for existing
      * @throws Exception
      */
-    private static ItemProxy verifyPathAndModuleProperty(String ns, String itemType, String itemName, ItemPath itemPath, DomainPath modDomPath, DomainPath path) 
+    private static ItemProxy verifyPathAndModuleProperty(String ns, String itemType, String itemName, ItemPath itemPath, DomainPath modDomPath, DomainPath path)
             throws Exception
     {
         LookupManager lookupManager = Gateway.getLookupManager();
@@ -332,7 +330,7 @@ public class Bootstrap
     }
 
     /**
-     * 
+     *
      * @param item
      * @param newOutcome
      * @param version
@@ -348,10 +346,10 @@ public class Bootstrap
         History hist = new History( item.getPath(), item);
         String viewName = String.valueOf(version);
 
-        int eventID = hist.addEvent( systemAgents.get("system").getPath(), null, 
-                                     "Admin", "Bootstrap", "Bootstrap", "Bootstrap", 
-                                     newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName
-                                   ).getID();
+        int eventID = hist.addEvent( systemAgents.get("system").getPath(), null,
+                "Admin", "Bootstrap", "Bootstrap", "Bootstrap",
+                newOutcome.getSchema(), getPredefSM(), PredefinedStep.DONE, viewName
+                ).getID();
 
         newOutcome.setID(eventID);
 
@@ -364,7 +362,7 @@ public class Bootstrap
     }
 
     /**
-     * 
+     *
      * @param item
      * @param newOutcome
      * @param version
@@ -372,7 +370,7 @@ public class Bootstrap
      * @return true i the data was changed, since the last Bootstrap run
      * @throws PersistencyException
      * @throws InvalidDataException
-     * @throws ObjectNotFoundException 
+     * @throws ObjectNotFoundException
      */
     private static boolean checkToStoreOutcomeVersion(ItemProxy item, Outcome newOutcome, int version, boolean reset)
             throws PersistencyException, InvalidDataException, ObjectNotFoundException
@@ -380,22 +378,13 @@ public class Bootstrap
         Schema schema = newOutcome.getSchema();
         try {
             Viewpoint currentData = (Viewpoint) item.getObject(ClusterType.VIEWPOINT+"/"+newOutcome.getSchema().getName()+"/"+version);
-            Outcome oldData = currentData.getOutcome();
 
-            XMLUnit.setIgnoreWhitespace(true);
-            XMLUnit.setIgnoreComments(true);
-            Diff xmlDiff = new Diff(newOutcome.getDOM(), oldData.getDOM());
-            if (xmlDiff.identical()) {
+            if (newOutcome.isIdentical(currentData.getOutcome())) {
                 Logger.msg(5, "Bootstrap.checkToStoreOutcomeVersion() - Data identical, no update required");
                 return false;
-            } 
+            }
             else {
-                StringBuffer diffDetails = new StringBuffer();
-                diffDetails.append("Bootstrap.checkToStoreOutcomeVersion() - Difference found in item: ").append(item.getName()).append(" syskey:").append(item.getPath());
-                xmlDiff.appendMessage(diffDetails);
-                Logger.msg(diffDetails.toString());
-                
-                if (!reset	&& !currentData.getEvent().getStepPath().equals("Bootstrap")) {
+                if (!reset  && !currentData.getEvent().getStepPath().equals("Bootstrap")) {
                     Logger.msg("Bootstrap.checkToStoreOutcomeVersion() - Version " + version + " was not set by Bootstrap, and reset not requested. Not overwriting.");
                     return false;
                 }
@@ -408,7 +397,7 @@ public class Bootstrap
     }
 
     /**
-     * 
+     *
      * @param impHandler
      * @param itemName
      * @param ns
@@ -416,7 +405,7 @@ public class Bootstrap
      * @return the ItemProxy representing the newly create Item
      * @throws Exception
      */
-    private static ItemProxy createResourceItem(ResourceImportHandler impHandler, String itemName, String ns, ItemPath itemPath) 
+    private static ItemProxy createResourceItem(ResourceImportHandler impHandler, String itemName, String ns, ItemPath itemPath)
             throws Exception
     {
         // create props
@@ -457,7 +446,7 @@ public class Bootstrap
 
     /**
      * Checks for the existence of a agents so it can be used
-     * 
+     *
      * @param name
      * @param pass
      * @param rolePath
@@ -518,10 +507,10 @@ public class Bootstrap
         // check for local usercode user & role
         RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
         if (!usercodeRole.exists()) Gateway.getLookupManager().createRole(usercodeRole);
-        checkAgent(InetAddress.getLocalHost().getHostName(), 
-                   Gateway.getProperties().getString("UserCode.password", "uc"), 
-                   usercodeRole, 
-                   UUID.randomUUID().toString());
+        checkAgent(InetAddress.getLocalHost().getHostName(),
+                Gateway.getProperties().getString("UserCode.password", "uc"),
+                usercodeRole,
+                UUID.randomUUID().toString());
     }
 
     public static void createServerItem() throws Exception {
@@ -540,7 +529,7 @@ public class Bootstrap
             thisServerPath.setItemPath(serverItem);
             lookupManager.add(thisServerPath);
         }
-        
+
         int proxyPort = Gateway.getProperties().getInt("ItemServer.Proxy.port", 1553);
 
         Gateway.getStorage().put(serverItem, new Property(NAME,            serverName,                              false), null);

@@ -57,8 +57,6 @@ import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -114,7 +112,7 @@ public class ImportItem extends ModuleImport {
      */
     @Override
     public ItemPath getItemPath() {
-        if (itemPath == null) { 
+        if (itemPath == null) {
             DomainPath existingItem = new DomainPath(initialPath + "/" + name);
             if (existingItem.exists()) {
                 try {
@@ -140,7 +138,7 @@ public class ImportItem extends ModuleImport {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ObjectNotFoundException
      * @throws CannotManageException
@@ -167,12 +165,12 @@ public class ImportItem extends ModuleImport {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public Path create(AgentPath agentPath, boolean reset)
             throws InvalidDataException, ObjectCannotBeUpdated, ObjectNotFoundException,
-                   CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification, PersistencyException
+            CannotManageException, ObjectAlreadyExistsException, InvalidCollectionModification, PersistencyException
     {
         domainPath = new DomainPath(new DomainPath(initialPath), name);
 
@@ -189,9 +187,9 @@ public class ImportItem extends ModuleImport {
         // (re)initialise the new item with properties, workflow and collections
         try {
             newItem.initialise( agentPath.getSystemKey(),
-                                Gateway.getMarshaller().marshall(createItemProperties()),
-                                Gateway.getMarshaller().marshall(createCompositeActivity()), 
-                                Gateway.getMarshaller().marshall(createCollections()));
+                    Gateway.getMarshaller().marshall(createItemProperties()),
+                    Gateway.getMarshaller().marshall(createCompositeActivity()),
+                    Gateway.getMarshaller().marshall(createCollections()));
         }
         catch (Exception ex) {
             Logger.error("Error initialising new item " + ns + "/" + name);
@@ -217,19 +215,14 @@ public class ImportItem extends ModuleImport {
 
             Viewpoint impView;
             try {
-                XMLUnit.setIgnoreWhitespace(true);
-                XMLUnit.setIgnoreComments(true);
-
                 impView = (Viewpoint) Gateway.getStorage().get(getItemPath(), ClusterType.VIEWPOINT + "/" + thisOutcome.schema + "/" + thisOutcome.viewname, null);
 
-                Diff xmlDiff = new Diff(newOutcome.getDOM(), impView.getOutcome().getDOM());
-                
-                if (xmlDiff.identical()) {
+                if (newOutcome.isIdentical(impView.getOutcome())) {
                     Logger.msg(5, "ImportItem.create() - View "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name+" identical, no update required");
                     continue;
                 }
                 else {
-                    Logger.msg("ImportItem.create() - Difference found in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name+": "+xmlDiff.toString());
+                    Logger.msg("ImportItem.create() - Difference found in view "+thisOutcome.schema+"/"+thisOutcome.viewname+" in "+ns+"/"+name);
 
                     if (!reset && !impView.getEvent().getStepPath().equals("Import")) {
                         Logger.msg("ImportItem.create() - Last edit was not done by import, and reset not requested. Not overwriting.");
@@ -261,7 +254,7 @@ public class ImportItem extends ModuleImport {
     }
 
     /**
-     * 
+     *
      * @return
      */
     protected PropertyArrayList createItemProperties() {
@@ -273,7 +266,7 @@ public class ImportItem extends ModuleImport {
 
     /**
      * This method enables to use ImportItem in different bootstrap uses cases (e.g. testing)
-     * 
+     *
      * @return the the domain workflow of the Item
      * @throws ObjectNotFoundException
      * @throws InvalidDataException
@@ -298,17 +291,17 @@ public class ImportItem extends ModuleImport {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws InvalidCollectionModification
      * @throws ObjectNotFoundException
      * @throws ObjectAlreadyExistsException
      */
-    protected CollectionArrayList createCollections() 
+    protected CollectionArrayList createCollections()
             throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException
     {
         CollectionArrayList colls = new CollectionArrayList();
-        
+
         for (ImportDependency element : dependencyList) {
             Dependency newDep = element.create();
             colls.put(newDep);
