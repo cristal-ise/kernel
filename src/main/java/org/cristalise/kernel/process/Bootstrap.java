@@ -102,7 +102,7 @@ public class Bootstrap
                     Logger.msg("Bootstrap.run() - Bootstrapper started");
 
                     ClassLoader wClassLoader = Bootstrap.class.getClassLoader();
-                    Logger.msg(String.format("Bootstrap.run() setContextClassLoader=[%s]",wClassLoader));
+                    Logger.msg("Bootstrap.run() setContextClassLoader=[%s]", wClassLoader);
                     Thread.currentThread().setContextClassLoader(wClassLoader);
 
                     // make sure all of the boot items are up-to-date

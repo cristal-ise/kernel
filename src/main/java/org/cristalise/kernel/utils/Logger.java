@@ -33,9 +33,10 @@ import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.server.SimpleTCPIPServer;
 
 /**
+ * Old fashioned Logger utility class designed before the well know logging frameworks of java were available
+ *
  * <pre>
- * - message string should always contain the class name and the method name: Logger.msg(1,"ItemFact::createDir()
- * - LifeCycle DB created");
+ * - message string should always contain the class name and the method name: Logger.msg(1,"ItemFact::createDir() - LifeCycle DB created");
  * - use meaningfull abbreviation and also use the dash to separate the 'header' from the message!
  * - each method should start with this 'method signature' debug: Logger.msg(1,"ItemFact::createDir() - path:" + path);
  * </pre>
@@ -49,7 +50,15 @@ public class Logger {
     private static HashMap<PrintStream, Integer> logStreams       = new HashMap<PrintStream, Integer>();
     static protected SimpleTCPIPServer           mConsole         = null;
 
-    static private void printMessage(String message, int msgLogLevel) {
+    /**
+     * Prints the log message to the configured list of log streams. Uses String.format() if args is not zero length.
+     *
+     * @param message - the string to write to the log. It can also use String.format() syntax
+     * @param msgLogLevel  - log level of this message. If the current log level was set less that this number,
+     *                       the log message will not be displayed
+     * @param args - Arguments referenced by the format specifiers in the message string
+     */
+    static private void printMessage(String message, int msgLogLevel, Object...args) {
         synchronized (logStreams) {
             if (logStreams.isEmpty()) System.out.println(message);
 
@@ -67,7 +76,9 @@ public class Logger {
                 if (logLevel > 9 || msgLogLevel > 9)  message = reportTime() + " - " + message;
 
                 try {
-                    element.println(message);
+                    if(args.length == 0) element.println(message);
+                    else                 element.println(String.format(message, args));
+
                     element.flush();
                 }
                 catch (Exception ex) {
@@ -92,6 +103,12 @@ public class Logger {
         printMessage(msgString.toString(), 0);
     }
 
+    /**
+     * Check whether the given logLevel would produce a log entry or not
+     *
+     * @param logLevel the level to be checked
+     * @return true of the logLevel is smaller then or equal to the configured level
+     */
     static public boolean doLog(int logLevel) {
         if (logLevel > 9) logLevel -= 10;
         return mHighestLogLevel >= logLevel;
@@ -102,8 +119,7 @@ public class Logger {
      * message/warning/error with an appropriate log level. Is is marked deprecated to highlight stray calls. This makes it easier to manage
      * debug calls in the source.
      *
-     * @param msg
-     *            - the string to write to the console, or log file if specified in cmd line
+     * @param msg - the string to write to the console, or log file if specified in cmd line
      * @deprecated use debug method with level parameter
      */
     @Deprecated
@@ -111,48 +127,85 @@ public class Logger {
         msg("DEBUG  : " + msg);
     }
 
-    static public void debug(int logLevel, String msg) {
-        msg(logLevel, "DEBUG  : " + msg);
+    /**
+     * Report information that will be useful for debugging. Uses String.format() if args is not zero length.
+     *
+     * @param level - log level of this message. If the current log level was set less that this number,
+     *                the log message will not be displayed
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
+     */
+    static public void debug(int level, String msg, Object...args) {
+        msg(level, "DEBUG  : " + msg, args);
     }
 
     /**
-     * Use Logger.message to report information that will be useful for debugging a release
+     * Report information that will be useful for debugging. Uses String.format() if args is not zero length.
      *
-     * @param level
-     *            - log level of this message. If the current log level has been on the cmd line to be less that this number, the log
-     *            message will not be displayed
-     * @param msg
-     *            - the string to write to the console, or log file if specified in cmd line
+     * @param level - log level of this message. If the current log level was set less that this number,
+     *                the log message will not be displayed
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
      */
-    static public void msg(int level, String msg) {
-        printMessage(msg, level);
+    static public void msg(int level, String msg, Object...args) {
+        printMessage(msg, level, args);
     }
 
-    static public void msg(String msg) {
-        printMessage(msg, 0);
+    /**
+     * Report information that is important to log all the time (uses log level 0). Uses String.format() if args is not zero length.
+     *
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
+     */
+    static public void msg(String msg, Object...args) {
+        printMessage(msg, 0, args);
     }
 
-    static public void error(String msg) {
-        printMessage("ERROR  : " + msg, 0);
+    /**
+     * Report error (uses log level 0). Uses String.format() if args is not zero length.
+     *
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
+     */
+    static public void error(String msg, Object...args) {
+        printMessage("ERROR  : " + msg, 0, args);
     }
 
+    /**
+     * Report exception
+     *
+     * @param ex the Throwable to be logged
+     */
     static public void error(Throwable ex) {
         printMessage(ex);
     }
 
-    static public void warning(String msg) {
-        printMessage("WARNING: " + msg, 0);
+    /**
+     * Report warning (uses log level 0). Uses String.format() if args is not zero length.
+     *
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
+     */
+    static public void warning(String msg, Object...args) {
+        printMessage("WARNING: " + msg, 0, args);
     }
 
-    static public void die(String msg) {
-        printMessage("FATAL  : " + msg, 0);
+    /**
+     * Report FATAL error and call the shutdown hook of the process. Uses String.format() if args is not zero length.
+     *
+     * @param msg - the string to write to the log. It can also use String.format() syntax
+     * @param args - Arguments referenced by the format specifiers in the msg string
+     */
+    static public void die(String msg, Object...args) {
+        printMessage("FATAL  : " + msg, 0, args);
         AbstractMain.shutdown(1);
     }
 
     /**
-     * Add a new log stream 
-     * 
+     * Add a new log stream
+     *
      * @param console the PrintStream to be used as console
+     * @param logLevel the log level to be used for this stream
      */
     public static void addLogStream(PrintStream console, int logLevel) {
         try {
@@ -170,12 +223,11 @@ public class Logger {
             int thisLogLevel = logLevel > 9 ? logLevel - 10 : logLevel;
             if (thisLogLevel > mHighestLogLevel) mHighestLogLevel = thisLogLevel;
         }
-
     }
 
     /**
-     * Remove exeisting log stream 
-     * 
+     * Remove exeisting log stream
+     *
      * @param console the PrintStream to be used as console
      */
     public static void removeLogStream(PrintStream console) {
@@ -199,8 +251,8 @@ public class Logger {
 
     static public int initConsole(String id) {
         int port = Gateway.getProperties().getInt(id + ".Console.port", 0);
-        if (port == 0)
-            Logger.msg("No port defined for " + id + " console. Using any port.");
+
+        if (port == 0) Logger.msg("No port defined for " + id + " console. Using any port.");
 
         mConsole = new SimpleTCPIPServer(port, ScriptConsole.class, 5);
         mConsole.startListening();

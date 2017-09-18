@@ -49,12 +49,12 @@ import org.exolab.castor.xml.XMLContext;
 public class CastorXMLUtility {
 
     public static final String CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
-    
+
     private XMLContext mappingContext;
 
     /**
      * Looks for a file called 'index' at the given URL, and loads every file listed in there by relative path
-     * 
+     *
      * @param aResourceLoader
      *            the resource loader able to return the right class loader
      * @param aAppProperties
@@ -66,7 +66,7 @@ public class CastorXMLUtility {
             throws InvalidDataException
     {
         // load index
-        Logger.msg(3, String.format("CastorXMLUtility.<init> Loading maps from [%s]", mapURL));
+        Logger.msg(3, "CastorXMLUtility.<init> Loading maps from [%s]", mapURL);
         String index;
         try {
             index = FileStringUtility.url2String(new URL(mapURL, "index"));
@@ -78,7 +78,7 @@ public class CastorXMLUtility {
         // retrieve the class loader of the class "CastorXMLUtility"
         ClassLoader defaultClassLoader = aResourceLoader.getClassLoader(CastorXMLUtility.class.getName());
 
-        Logger.msg(3, String.format("CastorXMLUtility.<init>: defaultClassLoader=[%s]", defaultClassLoader));
+        Logger.msg(3, "CastorXMLUtility.<init>: defaultClassLoader=[%s]", defaultClassLoader);
 
         StringTokenizer sTokenizer = new StringTokenizer(index);
         int wNbMap = sTokenizer.countTokens();
@@ -93,7 +93,7 @@ public class CastorXMLUtility {
                 String thisMapURL = new URL(mapURL, thisMap).toString();
                 wMapIdx++;
                 if (!loadedMapURLs.contains(thisMapURL)) {
-                    Logger.msg(3, String.format("CastorXMLUtility.<init>: Adding mapping file (%d/%d):[%s]", wMapIdx, wNbMap, thisMapURL));
+                    Logger.msg(3, "CastorXMLUtility.<init>: Adding mapping file (%d/%d):[%s]", wMapIdx, wNbMap, thisMapURL);
                     thisMapping.loadMapping(new URL(thisMapURL));
                     loadedMapURLs.add(thisMapURL);
                 }
@@ -110,8 +110,8 @@ public class CastorXMLUtility {
 
                 mappingContext.setProperty(CASTOR_XML_SERIALIZER_FACTORY, aAppProperties.getProperty(CASTOR_XML_SERIALIZER_FACTORY));
 
-                Logger.msg(3, String.format("CastorXMLUtility.<init>: castor prop: %s=[%s]", CASTOR_XML_SERIALIZER_FACTORY,
-                        mappingContext.getProperty(CASTOR_XML_SERIALIZER_FACTORY)));
+                Logger.msg(3, "CastorXMLUtility.<init>: castor prop: %s=[%s]", CASTOR_XML_SERIALIZER_FACTORY,
+                        mappingContext.getProperty(CASTOR_XML_SERIALIZER_FACTORY));
             }
 
             mappingContext.addMapping(thisMapping);
@@ -129,12 +129,12 @@ public class CastorXMLUtility {
             throw new InvalidDataException("Could not read XML mapping files: " + ex.getMessage());
         }
 
-        Logger.msg(1, String.format("Loaded [%d] maps from [%s]", loadedMapURLs.size(), mapURL));
+        Logger.msg(1, "Loaded [%d] maps from [%s]", loadedMapURLs.size(), mapURL);
     }
 
     /**
      * Marshalls a mapped object to xml string. The mapping must be loaded before. See updateMapping().
-     * 
+     *
      * @param obj the object to be marshalled
      * @return the xml string of the marshalled object
      */
@@ -157,7 +157,7 @@ public class CastorXMLUtility {
 
     /**
      * Unmarshalls a mapped object from XML string. The mapping must be loaded before. See updateMapping().
-     * 
+     *
      * @param data the string to be unmarshalled
      * @return the unmarshalled object
      */

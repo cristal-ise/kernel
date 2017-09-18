@@ -47,7 +47,7 @@ abstract public class AbstractMain {
 
     /**
      * Reading and setting input paramaters
-     * 
+     *
      * Known arguments :
      * <ul>
      * <li>logLevel: the log level 0-9 (+10 to have time, +20 to have only one level)</li>
@@ -58,7 +58,7 @@ abstract public class AbstractMain {
      * <li>LocalCentre</li> sets the local centre id
      * <li>resetIOR</li> simple argument with no value to trigger the reset ior feature
      * </ul>
-     * 
+     *
      * @param args arguments normally passed by the main()
      * @return the initialised Properties
      */
@@ -91,10 +91,10 @@ abstract public class AbstractMain {
                 logStream = new PrintStream(new FileOutputStream(argProps.getProperty(MAIN_ARG_LOGFILE)), true);
                 System.setErr(logStream);
             }
-            catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new BadArgumentsException("Logfile "+argProps.getProperty(MAIN_ARG_LOGFILE)+" cannot be created");
-            }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new BadArgumentsException("Logfile "+argProps.getProperty(MAIN_ARG_LOGFILE)+" cannot be created");
+        }
 
         // if the optional arg "noNewLogStream" isn't present => add a
         // new LogStream
@@ -106,7 +106,7 @@ abstract public class AbstractMain {
             Logger.addLogStream(logStream, logLevel);
         }
 
-        if (wMustAddNewLogStream) Logger.msg(String.format("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName()));
+        if (wMustAddNewLogStream) Logger.msg("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName());
 
 
         // Dump params if log high enough
