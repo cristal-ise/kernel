@@ -62,13 +62,18 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     final HashMap<String, C2KLocalObject> jobs         = new HashMap<String, C2KLocalObject>();
 
     public UserCodeProcess() throws InvalidDataException, ObjectNotFoundException {
-        StateMachine sm = getRequiredStateMachine("UserCode", null, "boot/SM/Default.xml");
+    	this("UserCode");
+    }
+    
+    public UserCodeProcess(String propPrefix) throws InvalidDataException, ObjectNotFoundException {
+    	if (propPrefix == null) { propPrefix = "UserCode"; }
+        StateMachine sm = getRequiredStateMachine(propPrefix, null, "boot/SM/Default.xml");
 
         //default values are valid for Transitions compatible with kernel provided Default StateMachine
-        START    = getValidTransitionID(sm, "UserCode.StateMachine.startTransition",    "Start");
-        COMPLETE = getValidTransitionID(sm, "UserCode.StateMachine.completeTransition", "Complete");
-        SUSPEND  = getValidTransitionID(sm, "UserCode.StateMachine.suspendTransition",  "Suspend");
-        RESUME   = getValidTransitionID(sm, "UserCode.StateMachine.resumeTransition",   "Resume");
+        START    = getValidTransitionID(sm, propPrefix+".StateMachine.startTransition",    "Start");
+        COMPLETE = getValidTransitionID(sm, propPrefix+".StateMachine.completeTransition", "Complete");
+        SUSPEND  = getValidTransitionID(sm, propPrefix+".StateMachine.suspendTransition",  "Suspend");
+        RESUME   = getValidTransitionID(sm, propPrefix+".StateMachine.resumeTransition",   "Resume");
     }
 
     private int getValidTransitionID(StateMachine sm, String propertyName, String defaultValue) throws InvalidDataException {
