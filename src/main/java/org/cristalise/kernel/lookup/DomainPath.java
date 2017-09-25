@@ -87,7 +87,7 @@ public class DomainPath extends Path {
             }
             catch (InvalidItemPathException e) {
                 throw new ObjectNotFoundException(e.getMessage());
-            } 
+            }
         }
         return target;
     }
@@ -99,7 +99,7 @@ public class DomainPath extends Path {
 
     public void setTargetUUID(String uuid) {
         try {
-            target = new ItemPath(uuid);
+            if (StringUtils.isNotBlank(uuid)) target = new ItemPath(uuid);
         }
         catch (InvalidItemPathException e) {
             Logger.error(e);
@@ -109,7 +109,7 @@ public class DomainPath extends Path {
     /**
      * Checks if the DomainPath represents a context node (i.e. its target ItemPath is null).
      * Use this method when target was set already.
-     * 
+     *
      * @return true if the DomainPath represents a context node
      */
     public boolean isContext() {
@@ -118,7 +118,7 @@ public class DomainPath extends Path {
 
     /**
      * Retrieves the domain name of the path
-     * 
+     *
      * @return the last path component;
      */
     @Override

@@ -33,20 +33,19 @@ import java.util.StringTokenizer;
 import javax.xml.transform.Result;
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.querying.Query;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.Marshaller;
-import org.exolab.castor.xml.ValidationException;
 import org.exolab.castor.xml.XMLContext;
 
 /**
  * Loads all castor mapfiles, and wraps marshalling/unmarshalling
  */
-public class CastorXMLUtility {
+public class CastorXMLUtility implements CristalMarshaller {
 
     public static final String CASTOR_XML_SERIALIZER_FACTORY = "org.exolab.castor.xml.serializer.factory";
 
@@ -132,40 +131,53 @@ public class CastorXMLUtility {
         Logger.msg(1, "Loaded [%d] maps from [%s]", loadedMapURLs.size(), mapURL);
     }
 
-    /**
-     * Marshalls a mapped object to xml string. The mapping must be loaded before. See updateMapping().
-     *
-     * @param obj the object to be marshalled
-     * @return the xml string of the marshalled object
-     */
-    public String marshall(Object obj) throws IOException, MappingException, MarshalException, ValidationException {
-        if (obj == null) return "<NULL/>";
+    @Override
+    public String marshall(Object obj) throws PersistencyException {
 
+        if (obj == null)            return "<NULL/>";
         if (obj instanceof Outcome) return ((Outcome) obj).getData();
 
-        StringWriter sWriter = new StringWriter();
-        Marshaller marshaller = mappingContext.createMarshaller();
-        marshaller.setWriter(sWriter);
-        marshaller.setMarshalAsDocument(false);
+        try {
+            StringWriter sWriter = new StringWriter();
+            Marshaller marshaller = mappingContext.createMarshaller();
 
-        if (obj instanceof Query) marshaller.addProcessingInstruction(Result.PI_DISABLE_OUTPUT_ESCAPING, "");
+            marshaller.setWriter(sWriter);
+            marshaller.setMarshalAsDocument(false);
 
-        marshaller.marshal(obj);
+            if (obj instanceof Query) marshaller.addProcessingInstruction(Result.PI_DISABLE_OUTPUT_ESCAPING, "");
 
-        return sWriter.toString();
+            marshaller.marshal(obj);
+
+            return sWriter.toString();
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new PersistencyException(ex.getMessage());
+        }
     }
 
-    /**
-     * Unmarshalls a mapped object from XML string. The mapping must be loaded before. See updateMapping().
-     *
-     * @param data the string to be unmarshalled
-     * @return the unmarshalled object
-     */
-    public Object unmarshall(String data) throws IOException, MappingException, MarshalException, ValidationException {
+    @Override
+    public Object unmarshall(String data) throws PersistencyException {
         if (data.equals("<NULL/>")) return null;
 
         StringReader sReader = new StringReader(data);
 
-        return mappingContext.createUnmarshaller().unmarshal(sReader);
+        try {
+            return mappingContext.createUnmarshaller().unmarshal(sReader);
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new PersistencyException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public String marshallToJson(Object obj) throws PersistencyException {
+        throw new UnsupportedOperationException("Not supported yet");
+    }
+
+    @Override
+    public Object unmarshallFromJson(String data) throws PersistencyException {
+        throw new UnsupportedOperationException("Not supported yet");
     }
 }

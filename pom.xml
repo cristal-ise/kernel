@@ -138,8 +138,13 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>xmlunit</groupId>
-            <artifactId>xmlunit</artifactId>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.moxy</artifactId>
+            <version>2.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -171,12 +176,6 @@
             <version>2.4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.xmlunit</groupId>
-            <artifactId>xmlunit-core</artifactId>
-            <version>[2.2,)</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -193,9 +192,9 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>xmlunit</groupId>
-                <artifactId>xmlunit</artifactId>
-                <version>1.5</version>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-core</artifactId>
+                <version>2.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.castor</groupId>

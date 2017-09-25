@@ -31,18 +31,14 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.test.process.MainTest;
-import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.CristalMarshaller;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
+import org.cristalise.kernel.utils.MoxyXMLUtility;
 import org.junit.Before;
 import org.junit.Test;
-import org.xmlunit.builder.DiffBuilder;
-import org.xmlunit.diff.DefaultNodeMatcher;
-import org.xmlunit.diff.Diff;
-import org.xmlunit.diff.ElementSelectors;
 
-public class CastorXMLTest {
+public class MoxyXMLTest {
 
     String ior = "IOR:005858580000001549444C3A69646C746573742F746573743A312E3000585858"+
             "0000000100000000000000350001005800000006636F726261009B44000000214F52"+
@@ -52,39 +48,14 @@ public class CastorXMLTest {
 
     @Before
     public void setup() throws Exception {
-        Logger.addLogStream(System.out, 6);
+        Logger.addLogStream(System.out, 0);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
 
-        Resource resource = new Resource();
-
-        marshaller = new CastorXMLUtility(resource, props, resource.getKernelResourceURL("mapFiles/"));
-    }
-
-    /**
-     * Compares 2 XML string
-     *
-     * @param expected the reference XML
-     * @param actual the xml under test
-     * @return whether the two XMLs are identical or not
-     */
-    public static boolean compareXML(String expected, String actual)  {
-        Diff diffIdentical = DiffBuilder.compare(expected).withTest(actual)
-                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
-                .ignoreComments()
-                .ignoreWhitespace()
-                .checkForSimilar()
-                .build();
-
-        if(diffIdentical.hasDifferences()){
-            Logger.msg(0, actual);
-            Logger.warning(diffIdentical.toString());
-        }
-
-        return !diffIdentical.hasDifferences();
+        marshaller = new MoxyXMLUtility(new Resource(), props);
     }
 
     @Test
-    public void testCastorItemPath() throws Exception {
+    public void testItemPath() throws Exception {
         ItemPath item      = new ItemPath(UUID.randomUUID(), ior);
         ItemPath itemPrime = (ItemPath) marshaller.unmarshall(marshaller.marshall(item));
 
@@ -92,10 +63,11 @@ public class CastorXMLTest {
         assertEquals( item.getIORString(), itemPrime.getIORString());
 
         Logger.msg(marshaller.marshall(itemPrime));
+        Logger.msg(marshaller.marshallToJson(itemPrime));
     }
 
     @Test
-    public void testCastorAgentPath() throws Exception {
+    public void testAgentPath() throws Exception {
         AgentPath agent      = new AgentPath(UUID.randomUUID(), ior, "toto");
         AgentPath agentPrime = (AgentPath) marshaller.unmarshall(marshaller.marshall(agent));
 
@@ -104,37 +76,41 @@ public class CastorXMLTest {
         assertEquals( agent.getAgentName(), agentPrime.getAgentName());
 
         Logger.msg(marshaller.marshall(agentPrime));
+        Logger.msg(marshaller.marshallToJson(agentPrime));
     }
 
     @Test
-    public void testCastorDomainPath_Context() throws Exception {
+    public void testDomainPath_Context() throws Exception {
         DomainPath domain      = new DomainPath("/domain/path");
         DomainPath domainPrime = (DomainPath) marshaller.unmarshall(marshaller.marshall(domain));
 
-        assertEquals( domain.getStringPath(), domainPrime.getStringPath());
+        assertEquals(domain.getStringPath(), domainPrime.getStringPath());
 
         Logger.msg(marshaller.marshall(domainPrime));
+        Logger.msg(marshaller.marshallToJson(domainPrime));
     }
 
     @Test
-    public void testCastorDomainPath_WithTarget() throws Exception {
+    public void testDomainPath_WithTarget() throws Exception {
         DomainPath domain      = new DomainPath("/domain/path", new ItemPath());
         DomainPath domainPrime = (DomainPath) marshaller.unmarshall(marshaller.marshall(domain));
 
-        assertEquals( domain.getStringPath(), domainPrime.getStringPath());
-        assertEquals( domain.getTargetUUID(), domainPrime.getTargetUUID());
+        assertEquals(domain.getStringPath(), domainPrime.getStringPath());
+        assertEquals(domain.getTargetUUID(), domainPrime.getTargetUUID());
 
         Logger.msg(marshaller.marshall(domainPrime));
+        Logger.msg(marshaller.marshallToJson(domainPrime));
     }
 
     @Test
-    public void testCastorRolePath() throws Exception {
+    public void testRolePath() throws Exception {
         RolePath role      = new RolePath("Minion", false);
         RolePath rolePrime = (RolePath) marshaller.unmarshall(marshaller.marshall(role));
 
-        assertEquals( role.getStringPath(), rolePrime.getStringPath());
-        assertEquals( role.hasJobList(), rolePrime.hasJobList());
+        assertEquals(role.getStringPath(), rolePrime.getStringPath());
+        assertEquals(role.hasJobList(), rolePrime.hasJobList());
 
         Logger.msg(marshaller.marshall(rolePrime));
+        Logger.msg(marshaller.marshallToJson(rolePrime));
     }
 }

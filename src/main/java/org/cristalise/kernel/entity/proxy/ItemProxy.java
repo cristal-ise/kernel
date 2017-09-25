@@ -46,7 +46,6 @@ import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
@@ -54,7 +53,7 @@ import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.querying.Query;
-import org.cristalise.kernel.utils.CastorXMLUtility;
+import org.cristalise.kernel.utils.CristalMarshaller;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
@@ -65,7 +64,7 @@ import org.exolab.castor.xml.ValidationException;
  * It is a wrapper for the connection and communication with Item.
  * It caches data loaded from the Item to reduce communication
  */
-public class ItemProxy 
+public class ItemProxy
 {
     protected Item                  mItem = null;
     protected ItemPath              mItemPath;
@@ -100,16 +99,17 @@ public class ItemProxy
         throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down.");
     }
 
-    public void initialise( AgentPath           agentId,
-                            PropertyArrayList   itemProps,
-                            CompositeActivity   workflow,
-                            CollectionArrayList colls
-                          )
+    public void initialise(
+            AgentPath           agentId,
+            PropertyArrayList   itemProps,
+            CompositeActivity   workflow,
+            CollectionArrayList colls
+            )
                     throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
     {
         Logger.msg(7, "ItemProxy.initialise() - started");
 
-        CastorXMLUtility xml = Gateway.getMarshaller();
+        CristalMarshaller xml = Gateway.getMarshaller();
         if (itemProps == null) throw new InvalidDataException("ItemProxy.initialise() - No initial properties supplied");
         String propString = xml.marshall(itemProps);
 
@@ -148,12 +148,12 @@ public class ItemProxy
 
     public String requestAction( Job thisJob )
             throws AccessRightsException,
-                   InvalidTransitionException,
-                   ObjectNotFoundException,
-                   InvalidDataException,
-                   PersistencyException,
-                   ObjectAlreadyExistsException, 
-                   InvalidCollectionModification
+            InvalidTransitionException,
+            ObjectNotFoundException,
+            InvalidDataException,
+            PersistencyException,
+            ObjectAlreadyExistsException,
+            InvalidCollectionModification
     {
         String outcome = thisJob.getOutcomeString();
         // check fields that should have been filled in
@@ -169,10 +169,10 @@ public class ItemProxy
 
         if (thisJob.getDelegatePath() == null)
             return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
-                                            thisJob.getTransition().getId(), outcome);
+                    thisJob.getTransition().getId(), outcome);
         else
-            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
-                                             thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
+            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(),
+                    thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
     private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
@@ -204,9 +204,9 @@ public class ItemProxy
         return null;
     }
 
-    /** 
+    /**
      * Gets the current version of the named Collection
-     * 
+     *
      * @param collection The built-in collection
      * @return the Collection object
      * @throws ObjectNotFoundException objects were not found
@@ -215,9 +215,9 @@ public class ItemProxy
         return getCollection(collection, null);
     }
 
-    /** 
+    /**
      * Gets a numbered version (snapshot) of a collection
-     * 
+     *
      * @param collection The built-in Collection
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
@@ -227,9 +227,9 @@ public class ItemProxy
         return getCollection(collection.getName(), version);
     }
 
-    /** 
+    /**
      * Gets the last version of the named collection
-     * 
+     *
      * @param collName The collection name
      * @return the Collection object
      * @throws ObjectNotFoundException objects were not found
@@ -238,9 +238,9 @@ public class ItemProxy
         return getCollection(collName, null);
     }
 
-    /** 
+    /**
      * Gets a numbered version (snapshot) of a collection
-     * 
+     *
      * @param collName The collection name
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
@@ -252,7 +252,7 @@ public class ItemProxy
     }
 
     /** Gets the Workflow object of this Item
-     * 
+     *
      * @return the Item's Workflow object
      * @throws ObjectNotFoundException objects were not found
      */
@@ -264,9 +264,9 @@ public class ItemProxy
         return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName);
     }
 
-    /** 
+    /**
      * Gets the named viewpoint
-     * 
+     *
      * @param schemaName Outcome schema name
      * @param viewName Viewpoint name
      * @return a Viewpoint object
@@ -276,9 +276,9 @@ public class ItemProxy
         return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName);
     }
 
-    /** 
+    /**
      * Finds the first finishing job with the given name for the given Agent in the workflow.
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param agent The agent to fetch jobs for
      * @return the JOB object or null if nothing was found
@@ -292,7 +292,7 @@ public class ItemProxy
 
     /**
      * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param transName the name of the Transition to look for
      * @param agent The AgentProxy to fetch jobs for
@@ -307,7 +307,7 @@ public class ItemProxy
 
     /**
      * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param transName the name of the Transition to look for
      * @param agentPath The agent to fetch jobs for
@@ -383,8 +383,8 @@ public class ItemProxy
     }
 
     /**
-     * Executes the Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc. 
-     * 
+     * Executes the Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc.
+     *
      * @param query the query to be executed
      * @return the xml result of the query
      * @throws PersistencyException there was a fundamental DB issue
@@ -411,7 +411,7 @@ public class ItemProxy
 
     /**
      * Retrieves the values of a BuiltInItemProperty
-     * 
+     *
      * @param prop one of the Built-In Item Property
      * @return the value of the property
      * @throws ObjectNotFoundException property was not found
@@ -422,7 +422,7 @@ public class ItemProxy
 
     /**
      * Retrieves the values of a named property
-     * 
+     *
      * @param name of the Item Property
      * @return the value of the property
      * @throws ObjectNotFoundException property was not found

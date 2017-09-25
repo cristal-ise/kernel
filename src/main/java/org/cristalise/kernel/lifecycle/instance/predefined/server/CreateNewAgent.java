@@ -22,22 +22,18 @@ package org.cristalise.kernel.lifecycle.instance.predefined.server;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
 
-import java.io.IOException;
-
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.imports.ImportAgent;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
-import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.ValidationException;
 
 public class CreateNewAgent extends PredefinedStep {
     public CreateNewAgent() {
@@ -57,7 +53,7 @@ public class CreateNewAgent extends PredefinedStep {
 
             return Gateway.getMarshaller().marshall(newAgent);
         }
-        catch (MarshalException | ValidationException | IOException | MappingException e) {
+        catch (PersistencyException e) {
             Logger.error(e);
             throw new InvalidDataException("CreateNewAgent: Couldn't unmarshall new Agent: " + requestData);
         }

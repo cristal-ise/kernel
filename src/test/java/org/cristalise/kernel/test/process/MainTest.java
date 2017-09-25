@@ -35,7 +35,6 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,8 +45,6 @@ public class MainTest {
         Logger.addLogStream(System.out, 1);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreComments(true);
     }
 
     @Test

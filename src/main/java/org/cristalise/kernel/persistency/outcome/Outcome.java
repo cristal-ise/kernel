@@ -56,8 +56,6 @@ import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -66,6 +64,10 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.ElementSelectors;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -943,17 +945,20 @@ public class Outcome implements C2KLocalObject {
         return isIdentical(getDOM(), other.getDOM());
     }
 
-    public static boolean isIdentical(Document origDocument, Document otherDOM) {
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreComments(true);
+    public static boolean isIdentical(Object orig, Object other) {
+        Diff diffIdentical = DiffBuilder.compare(orig).withTest(other)
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAllAttributes))
+                .ignoreComments()
+                .ignoreWhitespace()
+                .checkForIdentical() //.checkForSimilar()
+                .build();
 
-        Diff xmlDiff = new Diff(origDocument, otherDOM);
-
-        if (!xmlDiff.identical()) {
-            Logger.msg(xmlDiff.toString());
+        if(diffIdentical.hasDifferences()){
+            Logger.warning(diffIdentical.toString());
             return false;
         }
-        else
+        else {
             return true;
+        }
     }
 }

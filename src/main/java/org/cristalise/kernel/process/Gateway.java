@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.process;
 
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
@@ -46,6 +45,7 @@ import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.scripting.ScriptConsole;
 import org.cristalise.kernel.utils.CastorXMLUtility;
+import org.cristalise.kernel.utils.CristalMarshaller;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
 
@@ -77,7 +77,7 @@ public class Gateway
     static private ProxyManager         mProxyManager;
     static private ProxyServer          mProxyServer;
     static private CorbaServer          mCorbaServer;
-    static private CastorXMLUtility     mMarshaller;
+    static private CristalMarshaller    mMarshaller;
     static private ResourceLoader       mResource;
 
     //FIXME: Move this cache to Resource class - requires to extend ResourceLoader with getResourceImportHandler()
@@ -118,13 +118,14 @@ public class Gateway
         // report version info
         Logger.msg("Gateway.init() - Kernel version: "+getKernelVersion());
 
-        // load kernel mapfiles giving the resourse loader and the properties of
-        // the application to be able to configure castor
+        //load mapfiles giving the resourse loader and the properties to configure marshaller
         try {
             mMarshaller = new CastorXMLUtility(mResource, props, mResource.getKernelResourceURL("mapFiles/"));
+            //mMarshaller = new MoxyXMLUtility(mResource, props);
         }
-        catch (MalformedURLException e1) {
-            throw new InvalidDataException("Invalid Resource Location");
+        catch (Exception ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Invalid Resource Location:"+ex.getMessage());
         }
 
         Properties allModuleProperties;
@@ -136,7 +137,7 @@ public class Gateway
         }
         catch (Exception e) {
             Logger.error(e);
-            throw new InvalidDataException("Could not load module definitions.");
+            throw new InvalidDataException("Could not load module definitions:"+e.getMessage());
         }
 
         // merge in module props
@@ -156,7 +157,7 @@ public class Gateway
     /**
      * Makes this process capable of creating and managing server entities. Runs the
      * Creates the LookupManager, ProxyServer, initialises the ORB and CORBAServer
-     * 
+     *
      * @param auth - this is NOT USED
      */
     @Deprecated
@@ -182,7 +183,7 @@ public class Gateway
             // start entity proxy server
             mProxyServer = new ProxyServer(mC2KProps.getProperty("ItemServer.name"));
 
-            // Init ORB - set various config 
+            // Init ORB - set various config
             String serverName = mC2KProps.getProperty("ItemServer.name");
 
             //TODO: externalize this (or replace corba completely)
@@ -213,7 +214,7 @@ public class Gateway
 
     /**
      * Static getter for ModuleManager
-     * 
+     *
      * @return ModuleManager
      */
     public static ModuleManager getModuleManager() {
@@ -255,11 +256,11 @@ public class Gateway
     /**
      * Log in with the given username and password, and initialises the {@link Lookup}, {@link TransactionManager} and {@link ProxyManager}.
      * It shall be uses in client processes only.
-     * 
+     *
      * @param agentName - username
      * @param agentPassword - password
      * @return an AgentProxy on the requested user
-     * 
+     *
      * @throws InvalidDataException - bad params
      * @throws PersistencyException - error starting storages
      * @throws ObjectNotFoundException - object not found
@@ -302,16 +303,16 @@ public class Gateway
 
     /**
      * Authenticates the agent using the configured {@link Authenticator}
-     * 
+     *
      * @param agentName the name of the agent
      * @param agentPassword the password of the agent
      * @param resource check {@link Authenticator#authenticate(String, String, String)}
      * @return AgentProxy representing the logged in user/agent
-     * 
+     *
      * @throws InvalidDataException - bad params
      * @throws ObjectNotFoundException - object not found
      */
-    static public AgentProxy login(String agentName, String agentPassword, String resource) 
+    static public AgentProxy login(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException
     {
         Authenticator auth = getAuthenticator();
@@ -333,10 +334,10 @@ public class Gateway
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
             Logger.error(ex);
             throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
-        } 
+        }
     }
 
-    static public AgentProxy connect(String agentName, String agentPassword) 
+    static public AgentProxy connect(String agentName, String agentPassword)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
     {
         return connect(agentName, agentPassword, null);
@@ -389,8 +390,8 @@ public class Gateway
     }
 
     /**
-     * Returns the initialised CORBA ORB Object 
-     * 
+     * Returns the initialised CORBA ORB Object
+     *
      * @return the CORBA ORB Object
      */
     static public org.omg.CORBA.ORB getORB() {
@@ -423,7 +424,7 @@ public class Gateway
         return mStorage;
     }
 
-    static public CastorXMLUtility getMarshaller() {
+    static public CristalMarshaller getMarshaller() {
         return mMarshaller;
     }
 
@@ -467,9 +468,9 @@ public class Gateway
     }
 
     /**
-     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
+     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured
      * or falls back to the default one provided in the kernel
-     * 
+     *
      * @param resType the type o the Resource. ie. one of these values: OD/SC/SM/EA/CA/QL
      * @return the initialised ResourceImportHandler
      */
@@ -479,9 +480,9 @@ public class Gateway
     }
 
     /**
-     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured 
+     * Retrieves the ResourceImportHandler available for the resource type. It creates a new if configured
      * or falls back to the default one provided in the kernel
-     * 
+     *
      * @param resType the type o the Resource
      * @return the initialised ResourceImportHandler
      */
