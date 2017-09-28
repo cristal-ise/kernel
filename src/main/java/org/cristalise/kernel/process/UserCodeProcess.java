@@ -47,35 +47,102 @@ import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 
 /**
- * 
+ * UserCodeProcess provides a very basic automatic execution of Scripts associated with the Jobs (Activities).
+ * It is based on the Default StateMachine, as it implements the following sequence:
+ * <pre>
+ * 1. assessStartConditions()
+ * 2. start()
+ * 3. complete()
+ * 4. in case of error/exception suspend()
  */
 public class UserCodeProcess extends StandardClient implements ProxyObserver<Job>, Runnable {
 
+    private final int DONE;
     private final int START;
     private final int COMPLETE;
     private final int SUSPEND;
     private final int RESUME;
 
-    static boolean                        active       = true;
-    ArrayList<String>                     ignoredPaths = new ArrayList<String>();
-    HashMap<String, ErrorInfo>            errors       = new HashMap<String, ErrorInfo>();
-    final HashMap<String, C2KLocalObject> jobs         = new HashMap<String, C2KLocalObject>();
+    /**
+     * Defines the default role (value:{@value}). It also used as a prefix for every configuration property
+     * eg: UserCode.StateMachine.startTransition
+     */
+    public static final String DEFAULT_ROLE = "UserCode";
+    /**
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Start transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.startTransition
+     */
+    public static final String STATE_MACHINE_START_TRANSITION = "StateMachine.startTransition";
+    /**
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Complete transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.completeTransition
+     */
+    public static final String STATE_MACHINE_COMPLETE_TRANSITION = "StateMachine.completeTransition";
+    /**
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Suspend transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.suspendTransition
+     */
+    public static final String STATE_MACHINE_SUSPEND_TRANSITION = "StateMachine.suspendTransition";
+    /**
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Resume transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.resumeTransition
+     */
+    public static final String STATE_MACHINE_RESUME_TRANSITION = "StateMachine.resumeTransition";
+    /**
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Done transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.doneTransition
+     */
+    public static final String STATE_MACHINE_DONE_TRANSITION = "StateMachine.doneTransition";
+    /**
+     * Defines the value (value:{@value}) to to be used in CRISTAL Property to ignore the Jobs of that Transition
+     * eg: UserCode.StateMachine.resumeTransition = USERCODE_IGNORE
+     */
+    public static final String USERCODE_IGNORE = "USERCODE_IGNORE";
 
+    protected static boolean                        active       = true;
+    protected ArrayList<String>                     ignoredPaths = new ArrayList<String>();
+    protected HashMap<String, ErrorInfo>            errors       = new HashMap<String, ErrorInfo>();
+    protected final HashMap<String, C2KLocalObject> jobs         = new HashMap<String, C2KLocalObject>();
+
+    /**
+     * Default constructor set up the user code with default setting
+     *
+     * @throws InvalidDataException incorrect configration
+     * @throws ObjectNotFoundException StateMachine to configure the UserCode was not found
+     */
     public UserCodeProcess() throws InvalidDataException, ObjectNotFoundException {
-    	this("UserCode");
+        this(DEFAULT_ROLE);
     }
-    
+
+    /**
+     * Constructor set up the user code
+     *
+     * @param propPrefix string to be used as prefix for each property
+     *
+     * @throws InvalidDataException StateMachine does not have the named Transition
+     * @throws ObjectNotFoundException StateMachine was not found
+     */
     public UserCodeProcess(String propPrefix) throws InvalidDataException, ObjectNotFoundException {
-    	if (propPrefix == null) { propPrefix = "UserCode"; }
+        if (propPrefix == null) propPrefix = DEFAULT_ROLE;
+
         StateMachine sm = getRequiredStateMachine(propPrefix, null, "boot/SM/Default.xml");
 
         //default values are valid for Transitions compatible with kernel provided Default StateMachine
-        START    = getValidTransitionID(sm, propPrefix+".StateMachine.startTransition",    "Start");
-        COMPLETE = getValidTransitionID(sm, propPrefix+".StateMachine.completeTransition", "Complete");
-        SUSPEND  = getValidTransitionID(sm, propPrefix+".StateMachine.suspendTransition",  "Suspend");
-        RESUME   = getValidTransitionID(sm, propPrefix+".StateMachine.resumeTransition",   "Resume");
+        DONE     = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_DONE_TRANSITION,     "Done");
+        START    = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_START_TRANSITION,    "Start");
+        COMPLETE = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_COMPLETE_TRANSITION, "Complete");
+        SUSPEND  = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_SUSPEND_TRANSITION,  "Suspend");
+        RESUME   = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_RESUME_TRANSITION,   "Resume");
     }
 
+    /**
+     *
+     * @param sm
+     * @param propertyName
+     * @param defaultValue
+     * @return
+     * @throws InvalidDataException
+     */
     private int getValidTransitionID(StateMachine sm, String propertyName, String defaultValue) throws InvalidDataException {
         String propertyValue = Gateway.getProperties().getString(propertyName, defaultValue);
 
@@ -96,10 +163,11 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                 int transitionId = thisJob.getTransition().getId();
 
                 try {
-                    if      (transitionId==START)    start(thisJob, jobKey);
-                    else if (transitionId==COMPLETE) complete(thisJob, jobKey);
-                    else if (transitionId==SUSPEND)  suspend(thisJob, jobKey);
-                    else if (transitionId==RESUME)   resume(thisJob, jobKey);
+                    if      (transitionId == DONE)     done(thisJob, jobKey);
+                    else if (transitionId == START)    start(thisJob, jobKey);
+                    else if (transitionId == COMPLETE) complete(thisJob, jobKey);
+                    else if (transitionId == SUSPEND)  suspend(thisJob, jobKey);
+                    else if (transitionId == RESUME)   resume(thisJob, jobKey);
                 }
                 catch (ScriptErrorException ex) {
                     errors.put(jobKey, ex.getErrors());
@@ -108,13 +176,15 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                 catch (InvalidTransitionException ex) {
                     // must have already been done by someone else - ignore
                 }
-                catch (Throwable ex) {
+                catch (Exception ex) {
                     Logger.error("Error executing "+thisJob.getTransition().getName()+" job:");
                     Logger.error(ex);
+
                     ErrorInfo ei = new ErrorInfo();
                     ei.setFatal();
                     ei.addError(ex.getClass().getSimpleName());
                     ei.addError(ex.getMessage());
+
                     errors.put(jobKey, ei);
                     ignoredPaths.add(jobKey);
                 }
@@ -139,14 +209,29 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * Method called to handle the Start transition
-     * 
+     * Method called to handle the Done transition. Override this method to implement application specific action
+     * for Jobs of Done Transition. By default it does nothing.
+     *
+     * @param thisJob the actual Job to be executed.
+     * @param jobKey the key of the job (i.e. itemPath:stepPat)
+     */
+    public void done(Job thisJob, String jobKey)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
+            ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+    {
+        Logger.msg(5, "UserCodeProcess.done() - Do NOTHING with job:"+thisJob);
+    }
+
+    /**
+     * Method called to handle the Start transition. Override this method to implement application specific action
+     * for Jobs of Start Transition.
+     *
      * @param thisJob the actual Job to be executed.
      * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
     public void start(Job thisJob, String jobKey)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
-                   ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+            ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
     {
         Logger.msg(5, "UserCodeProcess.start() - job:"+thisJob);
 
@@ -160,8 +245,9 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * Method called to handle the Complete transition
-     * 
+     * Method called to handle the Complete transition. Override this method to implement application specific action
+     * for Jobs of Complete Transition.
+     *
      * @param thisJob the actual Job to be executed.
      * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
@@ -173,14 +259,15 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * Method called to handle the Resume transition
-     * 
+     * Method called to handle the Resume transition. Override this method to implement application specific action
+     * for Jobs of Resume Transition.
+     *
      * @param thisJob the actual Job to be executed.
      * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
     public void resume(Job thisJob, String jobKey)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
-                   ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+            ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
     {
         Logger.msg(5, "UserCodeProcess.resume() - job:"+thisJob);
 
@@ -188,15 +275,16 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * Method called to handle the Suspend transition
-     * 
+     * Method called to handle the Suspend transition. Override this method to implement application specific action
+     * for Jobs of Suspend Transition.
+     *
      * @param thisJob the actual Job to be executed.
      * @param jobKey the key of the job (i.e. itemPath:stepPat)
      */
-    public void suspend(Job thisJob, String jobKey) 
-            throws MarshalException, ValidationException, InvalidDataException, ObjectNotFoundException, IOException, MappingException, 
-                   AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException, 
-                   InvalidCollectionModification, ScriptErrorException 
+    public void suspend(Job thisJob, String jobKey)
+            throws MarshalException, ValidationException, InvalidDataException, ObjectNotFoundException, IOException, MappingException,
+            AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException,
+            InvalidCollectionModification, ScriptErrorException
     {
         Logger.msg(5, "UserCodeProcess.suspend() - job:"+thisJob);
 
@@ -212,7 +300,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     /**
      * Override this method to implement application specific evaluation of start condition.
      * Default implementation - returns always true, i.e. there were no start conditions.
-     * 
+     *
      * @param job the actual Job to be executed.
      * @return true, if the start condition were met
      */
@@ -223,12 +311,12 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     /**
      * Override this mehod to implement application specific (business) logic
      * Default implementation - the agent execute any scripts, query or both defined
-     * 
+     *
      * @param job the actual Job to be executed.
      */
     public void runUserCodeLogic(Job job)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
-                   ObjectAlreadyExistsException, InvalidCollectionModification, ScriptErrorException 
+            ObjectAlreadyExistsException, InvalidCollectionModification, ScriptErrorException
     {
         agent.execute(job);
     }
@@ -236,7 +324,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
 
     /**
      * Gets the next possible Job based on the Transitions of the Default StateMachine
-     * 
+     *
      * @return the actual Job
      */
     protected Job getActualJob() {
@@ -263,7 +351,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * 
+     *
      * @param jobs
      * @param transition
      * @return
@@ -293,7 +381,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     }
 
     /**
-     * 
+     *
      */
     @Override
     public void control(String control, String msg) {
@@ -325,11 +413,14 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         try {
             Gateway.init(readC2KArgs(args));
 
-            UserCodeProcess proc =  new UserCodeProcess();
+            String prefix = Gateway.getProperties().getString("UserCode.roleOverride", UserCodeProcess.DEFAULT_ROLE);
 
-            proc.login( Gateway.getProperties().getString("UserCode.agent", InetAddress.getLocalHost().getHostName()),
-                        Gateway.getProperties().getString("UserCode.password", "uc"),
-                        Gateway.getProperties().getString("AuthResource", "Cristal"));
+            UserCodeProcess proc =  new UserCodeProcess(prefix);
+
+            proc.login(
+                    Gateway.getProperties().getString(prefix + ".agent",    InetAddress.getLocalHost().getHostName()),
+                    Gateway.getProperties().getString(prefix + ".password", "uc"),
+                    Gateway.getProperties().getString("AuthResource", "Cristal"));
 
             new Thread(proc).start();
 

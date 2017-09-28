@@ -504,11 +504,14 @@ public class Bootstrap
         AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 1).toString());
         ScriptConsole.setUser(system);
 
+        String ucRole = Gateway.getProperties().getString("UserCode.roleOverride", UserCodeProcess.DEFAULT_ROLE);
+
         // check for local usercode user & role
-        RolePath usercodeRole = new RolePath(rootRole, "UserCode", true);
+        RolePath usercodeRole = new RolePath(rootRole, ucRole, true);
         if (!usercodeRole.exists()) Gateway.getLookupManager().createRole(usercodeRole);
-        checkAgent(InetAddress.getLocalHost().getHostName(),
-                Gateway.getProperties().getString("UserCode.password", "uc"),
+        checkAgent(
+                Gateway.getProperties().getString(ucRole + ".agent",     InetAddress.getLocalHost().getHostName()),
+                Gateway.getProperties().getString(ucRole + ".password", "uc"),
                 usercodeRole,
                 UUID.randomUUID().toString());
     }
