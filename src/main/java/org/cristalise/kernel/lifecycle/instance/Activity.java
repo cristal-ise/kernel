@@ -157,7 +157,7 @@ public class Activity extends WfVertex {
 
     public String request(AgentPath agent, AgentPath delegate, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
-                   ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+            ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         // Find requested transition
         Transition transition = getStateMachine().getTransition(transitionID);
@@ -196,8 +196,8 @@ public class Activity extends WfVertex {
 
                 String viewpoint = resolveViewpointName(newOutcome);
 
-                int eventID = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), 
-                                            schema, getStateMachine(), transitionID, viewpoint).getID();
+                int eventID = hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(),
+                        schema, getStateMachine(), transitionID, viewpoint).getID();
                 newOutcome.setID(eventID);
 
                 Gateway.getStorage().put(itemPath, newOutcome, locker);
@@ -284,7 +284,7 @@ public class Activity extends WfVertex {
 
     /**
      * Overridden in predefined steps
-     * 
+     *
      * @param agent
      * @param itemPath
      * @param transitionID
@@ -301,7 +301,7 @@ public class Activity extends WfVertex {
      */
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException, InvalidCollectionModification, ObjectAlreadyExistsException, ObjectCannotBeUpdated,
-                   ObjectNotFoundException, PersistencyException, CannotManageException
+            ObjectNotFoundException, PersistencyException, CannotManageException
     {
         return requestData;
     }
@@ -393,7 +393,7 @@ public class Activity extends WfVertex {
     }
 
     /**
-     * 
+     *
      * @return the only Next of the Activity
      */
     public Next getNext() {
@@ -516,46 +516,40 @@ public class Activity extends WfVertex {
     /**
      * Collects all Role names which are associated with this Activity and the Transitions of the current State,
      * and ....
-     * 
+     *
      * @param itemPath
      */
     protected void pushJobsToAgents(ItemPath itemPath) {
         Set<String> roleNames = new TreeSet<String>(); //Shall contain a set of unique role names
 
         String role = getCurrentAgentRole();
-        if (role != null && role.length()>0) roleNames.add(role);
+
+        if (StringUtils.isNotBlank(role)) {
+            for (String r: role.split(",")) roleNames.add(r);
+        }
 
         try {
             for (Transition trans : getStateMachine().getState(getState()).getPossibleTransitions().values()) {
                 role = trans.getRoleOverride(getProperties());
-                if (role != null && role.length()>0) roleNames.add(role);
+                if (StringUtils.isNotBlank(role)) roleNames.add(role);
             }
 
             Logger.msg(7,"Activity.pushJobsToAgents() - Pushing jobs to "+roleNames.size()+" roles");
 
-            for (String roleName: roleNames) pushJobsToAgents(itemPath, roleName);
+            for (String roleName: roleNames) {
+                pushJobsToAgents(itemPath, Gateway.getLookup().getRolePath(roleName));
+            }
         }
-        catch (InvalidDataException ex) { Logger.warning("Activity.pushJobsToAgents() - "+ex.getMessage()); }
-    }
-
-    /**
-     * 
-     * @param itemPath
-     * @param role
-     */
-    protected void pushJobsToAgents(ItemPath itemPath, String role) {
-        Logger.msg(7,"Activity.pushJobsToAgents() - role:"+role);
-
-        try {
-            pushJobsToAgents(itemPath, Gateway.getLookup().getRolePath(role));
+        catch (InvalidDataException ex) {
+            Logger.warning("Activity.pushJobsToAgents() - "+ex.getMessage());
         }
-        catch (ObjectNotFoundException ex) {
+        catch (ObjectNotFoundException e) {
             Logger.warning("Activity.pushJobsToAgents() - Activity role '" + role + "' not found.");
         }
     }
 
     /**
-     * 
+     *
      * @param itemPath
      * @param role RolePath
      */
@@ -565,7 +559,9 @@ public class Activity extends WfVertex {
         //Inform child roles as well
         Iterator<Path> childRoles = role.getChildren();
 
-        while (childRoles.hasNext()) pushJobsToAgents(itemPath, (RolePath) childRoles.next());
+        while (childRoles.hasNext()) {
+            pushJobsToAgents(itemPath, (RolePath) childRoles.next());
+        }
     }
 
     /**
