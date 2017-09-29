@@ -22,8 +22,8 @@ package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
 import static org.cristalise.kernel.collection.BuiltInCollections.WORKFLOW;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
-import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.CREATOR;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.io.IOException;
 
@@ -47,7 +47,6 @@ import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
@@ -72,11 +71,11 @@ public class CreateItemFromDescription extends PredefinedStep {
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException,
-                   ObjectNotFoundException,
-                   ObjectAlreadyExistsException,
-                   CannotManageException, 
-                   ObjectCannotBeUpdated,
-                   PersistencyException
+            ObjectNotFoundException,
+            ObjectAlreadyExistsException,
+            CannotManageException,
+            ObjectCannotBeUpdated,
+            PersistencyException
     {
         String[] input = getDataList(requestData);
         String newName = input[0];
@@ -113,10 +112,11 @@ public class CreateItemFromDescription extends PredefinedStep {
             CollectionArrayList newColls    = instantiateCollections(itemPath, descVer, newProps, locker);
             CompositeActivity   newWorkflow = instantiateWorkflow   (itemPath, descVer, locker);
 
-            newItem.initialise( agent.getSystemKey(),
-                                Gateway.getMarshaller().marshall(newProps),
-                                Gateway.getMarshaller().marshall(newWorkflow),
-                                Gateway.getMarshaller().marshall(newColls));
+            newItem.initialise(
+                    agent.getSystemKey(),
+                    Gateway.getMarshaller().marshall(newProps),
+                    Gateway.getMarshaller().marshall(newWorkflow),
+                    Gateway.getMarshaller().marshall(newColls));
         }
         catch (MarshalException | ValidationException | AccessRightsException | IOException | MappingException e) {
             Logger.error(e);
@@ -138,7 +138,7 @@ public class CreateItemFromDescription extends PredefinedStep {
 
     /**
      * Unmarshalls initial Properties
-     * 
+     *
      * @param initPropString
      * @return unmarshalled initial PropertyArrayList
      * @throws InvalidDataException
@@ -154,7 +154,7 @@ public class CreateItemFromDescription extends PredefinedStep {
     }
 
     /**
-     * 
+     *
      * @param itemPath
      * @param descVer
      * @param initProps
@@ -190,7 +190,7 @@ public class CreateItemFromDescription extends PredefinedStep {
 
     /**
      * Retrieve the Workflow dependency for the given description version, instantiate the loaded CompositeActivityDef
-     * 
+     *
      * @param itemPath
      * @param descVer
      * @param locker
@@ -203,8 +203,8 @@ public class CreateItemFromDescription extends PredefinedStep {
             throws ObjectNotFoundException, InvalidDataException, PersistencyException
     {
         @SuppressWarnings("unchecked")
-        Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
-                Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
+        Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
+        Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
 
         CollectionMember wfMember  = thisCol.getMembers().list.get(0);
         String           wfDefName = wfMember.resolveItem().getName();
@@ -234,16 +234,16 @@ public class CreateItemFromDescription extends PredefinedStep {
 
     /**
      * Copies the CollectionDescriptions of the Item requesting this predefined step.
-     * 
+     *
      * @param itemPath
      * @param descVer
      * @param locker
      * @return the new collection
      * @throws ObjectNotFoundException
      * @throws PersistencyException
-     * @throws InvalidDataException 
+     * @throws InvalidDataException
      */
-    protected CollectionArrayList instantiateCollections(ItemPath itemPath, String descVer, PropertyArrayList newProps , Object locker) 
+    protected CollectionArrayList instantiateCollections(ItemPath itemPath, String descVer, PropertyArrayList newProps , Object locker)
             throws ObjectNotFoundException, PersistencyException, InvalidDataException
     {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
@@ -252,8 +252,8 @@ public class CreateItemFromDescription extends PredefinedStep {
 
         for (String collName : collNames) {
             @SuppressWarnings("unchecked")
-            Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>) 
-                    Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
+            Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
+            Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
                 Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);

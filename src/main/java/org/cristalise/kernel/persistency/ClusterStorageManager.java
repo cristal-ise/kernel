@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.persistency;
 
-import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
 import static org.cristalise.kernel.persistency.ClusterType.JOB;
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -49,15 +49,15 @@ import org.cristalise.kernel.utils.WeakCache;
 
 
 /**
- * Instantiates ClusterStorages listed in properties file All read/write requests to storage pass through this object, 
+ * Instantiates ClusterStorages listed in properties file All read/write requests to storage pass through this object,
  * which can query the capabilities of each declared storage, and channel requests accordingly. Transaction based.
  */
 public class ClusterStorageManager {
-    HashMap<String, ClusterStorage> allStores = new HashMap<String, ClusterStorage>();
-    String[] clusterPriority = new String[0];
-    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterWriters = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
-    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterReaders = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
-    ArrayList<TransactionalClusterStorage> transactionalStores = new ArrayList<TransactionalClusterStorage>();
+    HashMap<String, ClusterStorage>                 allStores           = new HashMap<String, ClusterStorage>();
+    String[]                                        clusterPriority     = new String[0];
+    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterWriters      = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
+    HashMap<ClusterType, ArrayList<ClusterStorage>> clusterReaders      = new HashMap<ClusterType, ArrayList<ClusterStorage>>();
+    ArrayList<TransactionalClusterStorage>          transactionalStores = new ArrayList<TransactionalClusterStorage>();
 
     // we don't need a soft cache for the top level cache - the proxies and entities clear that when reaped
     HashMap<ItemPath, Map<String, C2KLocalObject>> memoryCache = new HashMap<ItemPath, Map<String, C2KLocalObject>>();
@@ -65,12 +65,13 @@ public class ClusterStorageManager {
     /**
      * Initialises all ClusterStorage handlers listed by class name in the property "ClusterStorages"
      * This property is usually process specific, and so should be in the server/client.conf and not the connect file.
-     * 
+     *
      * @param auth the Authenticator to be used to initialise all the handlers
      */
     public ClusterStorageManager(Authenticator auth) throws PersistencyException {
         Object clusterStorageProp = Gateway.getProperties().getObject("ClusterStorage");
-        if (clusterStorageProp == null || clusterStorageProp.equals("")) {
+
+        if (clusterStorageProp == null || "".equals(clusterStorageProp)) {
             throw new PersistencyException("ClusterStorageManager.init() - no ClusterStorages defined. No persistency!");
         }
 
@@ -136,7 +137,7 @@ public class ClusterStorageManager {
         for (ClusterStorage thisStorage : allStores.values()) {
             try {
                 thisStorage.close();
-            } 
+            }
             catch (PersistencyException ex) {
                 Logger.error(ex);
             }
@@ -145,7 +146,7 @@ public class ClusterStorageManager {
 
     /**
      * Check which storage can execute the given query
-     * 
+     *
      * @param language the language of the query
      * @return the found store or null
      */
@@ -160,7 +161,7 @@ public class ClusterStorageManager {
     /**
      * Returns the loaded storage that declare that they can handle writing or reading the specified cluster name (e.g.
      * Collection, Property) Must specify if the request is a read or a write.
-     * 
+     *
      * @param clusterType
      * @param forWrite whether the request is for write or read
      * @return the list of usable storages
@@ -194,7 +195,7 @@ public class ClusterStorageManager {
 
     /**
      * Executes the Query
-     * 
+     *
      * @param query the Query to be executed
      * @return the xml result of the query
      */
@@ -208,7 +209,7 @@ public class ClusterStorageManager {
     /**
      * Retrieves the ids of the next level of a cluster
      * Does not look in any currently open transactions.
-     * 
+     *
      * @param itemPath the current Item
      * @param path the cluster path
      * @return list of keys found in the cluster
@@ -243,11 +244,11 @@ public class ClusterStorageManager {
         return retArr;
     }
 
-    /** 
+    /**
      * Internal get method. Retrieves clusters from ClusterStorages & maintains the memory cache.
      * <br>
      * There is a special case for Viewpoint. When path ends with /data it returns referenced Outcome instead of Viewpoint.
-     * 
+     *
      * @param itemPath current Iten
      * @param path the cluster path
      * @return the C2KObject located by path
@@ -257,7 +258,7 @@ public class ClusterStorageManager {
         // check cache first
         Map<String, C2KLocalObject> sysKeyMemCache = null;
         sysKeyMemCache = memoryCache.get(itemPath);
-        
+
         if (sysKeyMemCache != null) {
             synchronized(sysKeyMemCache) {
                 C2KLocalObject obj = sysKeyMemCache.get(path);
@@ -281,8 +282,10 @@ public class ClusterStorageManager {
 
         // deal out top level remote maps
         if (path.indexOf('/') == -1) {
-            if (path.equals(HISTORY.getName())) result = new History(itemPath, null);
-            if (path.equals(JOB.getName())) {
+            if (path.equals(HISTORY.getName())) {
+                result = new History(itemPath, null);
+            }
+            else if (path.equals(JOB.getName())) {
                 if (itemPath instanceof AgentPath) result = new JobList((AgentPath)itemPath, null);
                 else                               throw new ObjectNotFoundException("Items do not have job lists");
             }
@@ -482,18 +485,18 @@ public class ClusterStorageManager {
     public void begin(Object locker) {
         for (TransactionalClusterStorage thisStore : transactionalStores) {
             thisStore.begin(locker);
-        }	
+        }
     }
 
     public void commit(Object locker) throws PersistencyException {
         for (TransactionalClusterStorage thisStore : transactionalStores) {
             thisStore.commit(locker);
-        }	
+        }
     }
 
     public void abort(Object locker) {
         for (TransactionalClusterStorage thisStore : transactionalStores) {
             thisStore.abort(locker);
-        }	
+        }
     }
 }

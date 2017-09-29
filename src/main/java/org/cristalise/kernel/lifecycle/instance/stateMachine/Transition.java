@@ -22,13 +22,9 @@ package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import lombok.Getter;
-import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.AccessRightsException;
@@ -45,6 +41,9 @@ import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter @Setter
 public class Transition {
@@ -114,7 +113,7 @@ public class Transition {
 
     protected boolean resolveStates(HashMap<Integer, State> states) {
         boolean allFound = true;
-        
+
         if (states.keySet().contains(originStateId)) {
             setOriginState(states.get(originStateId));
             originState.addPossibleTransition(this);
@@ -133,7 +132,7 @@ public class Transition {
             throw new AccessRightsException("Trans:" + toString() + " is disabled by the '" + enabledProp + "' property.");
 
         // check active
-        if (isRequiresActive() && !act.getActive()) 
+        if (isRequiresActive() && !act.getActive())
             throw new AccessRightsException("Activity must be active to perform trans:"+ toString());
 
         String overridingRole = getRoleOverride(act.getProperties());
@@ -142,7 +141,7 @@ public class Transition {
 
         // Check agent name
         String agentName = act.getCurrentAgentName();
-        if (StringUtils.isNotEmpty(agentName)) {
+        if (StringUtils.isNotBlank(agentName)) {
             if (agent.getAgentName().equals(agentName)) isOwner = true;
         }
         else isOwned = false;
@@ -154,7 +153,7 @@ public class Transition {
         }
         else {
             String actRole = act.getCurrentAgentRole();
-            if (StringUtils.isNotEmpty(actRole)) {
+            if (StringUtils.isNotBlank(actRole)) {
                 for (String role: actRole.split(",")) {
                     roles.add(Gateway.getLookup().getRolePath(role.trim()));
                 }
@@ -170,7 +169,7 @@ public class Transition {
 
             if (matchingRole != null)         return matchingRole.getName();
             else if (agent.hasRole("Admin"))  return "Admin";
-            else 
+            else
                 throw new AccessRightsException("Agent '" + agent.getAgentName() + "' does not hold a suitable role '" + act.getCurrentAgentRole() + "' for the activity " + act.getName());
         }
         else return null;
@@ -207,7 +206,7 @@ public class Transition {
     /**
      * Computes if the Transition is enabled or not. The default value is true: if the enabledProp is empty
      * or the Activity property specified in enabledProp is undefined or its value is null.
-     * 
+     *
      * @param act the activity of the actual StateMachine/Transition
      * @return weather the Transition is enabled or not
      * @throws ObjectNotFoundException Objects were not found while evaluating properties
@@ -260,8 +259,8 @@ public class Transition {
         if (hasOutcome(actProps)) {
             try {
                 return LocalObjectLoader.getSchema(
-                    resolveValue(outcome.schemaName, actProps),
-                    Integer.parseInt(resolveValue(outcome.schemaVersion, actProps)));
+                        resolveValue(outcome.schemaName, actProps),
+                        Integer.parseInt(resolveValue(outcome.schemaVersion, actProps)));
             }
             catch (NumberFormatException ex) {
                 throw new InvalidDataException("Bad schema version number: " + outcome.schemaVersion + " (" + resolveValue(outcome.schemaVersion, actProps) + ")");
@@ -274,8 +273,8 @@ public class Transition {
         if (hasScript(actProps)) {
             try {
                 return LocalObjectLoader.getScript(
-                    resolveValue(script.scriptName, actProps),
-                    Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
+                        resolveValue(script.scriptName, actProps),
+                        Integer.parseInt(resolveValue(script.scriptVersion, actProps)));
             }
             catch (NumberFormatException ex) {
                 throw new InvalidDataException("Bad script version number: " + script.scriptVersion + " (" + resolveValue(script.scriptVersion, actProps) + ")");
@@ -288,8 +287,8 @@ public class Transition {
         if (hasQuery(actProps)) {
             try {
                 return LocalObjectLoader.getQuery(
-                    resolveValue(query.name, actProps),
-                    Integer.parseInt(resolveValue(query.version, actProps)));
+                        resolveValue(query.name, actProps),
+                        Integer.parseInt(resolveValue(query.version, actProps)));
             }
             catch (NumberFormatException ex) {
                 throw new InvalidDataException("Bad query version number: " + query.version + " (" + resolveValue(query.version, actProps) + ")");
