@@ -25,6 +25,7 @@ import java.util.List;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.entity.AgentOperations;
 import org.cristalise.kernel.entity.ItemImplementation;
@@ -33,13 +34,14 @@ import org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefined
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.RolePath;
+import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 
 /**
  * Implementation of Agent, though called from the CORBA implementation ActiveEntity.
- * 
+ *
  * <p>The Agent is an extension of the Item that can execute Jobs, and in doing so
  * change the state of Item workflows, submit data to them in the form of Outcomes
  * and run any scripts associated with those activities. In this server object,
@@ -50,17 +52,23 @@ import org.cristalise.kernel.utils.Logger;
 public class AgentImplementation extends ItemImplementation implements AgentOperations {
 
     private JobList currentJobs;
-    private final AgentPath mAgentPath;
 
     public AgentImplementation(AgentPath path) {
         super(path);
-        mAgentPath = path;
+
+        try {
+            currentJobs = (JobList) mStorage.get(path, ClusterType.JOB.getName(), path);
+            currentJobs.activate();
+        }
+        catch (PersistencyException | ObjectNotFoundException ex) {
+            Logger.error(ex);
+        }
     }
 
     /**
      * Updates an Agent's list of Jobs relating to a particular activity. Only
      * Activities that are assigned to a Role that is flagged to push Jobs do this.
-     * 
+     *
      */
     @Override
     public synchronized void refreshJobList(SystemKey sysKey, String stepPath, String newJobs) {
@@ -68,14 +76,10 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
             ItemPath itemPath = new ItemPath(sysKey);
             JobArrayList newJobList = (JobArrayList)Gateway.getMarshaller().unmarshall(newJobs);
 
-            // get our joblist
-            if (currentJobs == null) currentJobs = new JobList(mAgentPath, mAgentPath);
-
             List<String> keysToRemove = currentJobs.getKeysForStep(itemPath, stepPath);
 
             // merge new jobs in first, so the RemoteMap.getLastId() used during addJob() returns the next unique id
-            for (Object name : newJobList.list) {
-                Job newJob = (Job)name;
+            for (Job newJob : newJobList.list) {
                 Logger.msg(6, "AgentImplementation.refreshJobList() - Adding job:"+newJob.getItemPath()+"/"+newJob.getStepPath()+":"+newJob.getTransition().getName());
                 currentJobs.addJob(newJob);
             }
@@ -83,27 +87,27 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
             // remove old jobs for this item0
             for(String key: keysToRemove) currentJobs.remove(key);
 
-            Gateway.getStorage().commit(mAgentPath);
+            Gateway.getStorage().commit(mItemPath);
         }
         catch (Throwable ex) {
             Logger.error("Could not refresh job list.");
             Logger.error(ex);
-            Gateway.getStorage().abort(mAgentPath);
+            Gateway.getStorage().abort(mItemPath);
         }
     }
 
     /** Adds the given Role to this Agent. Called from the SetAgentRoles predefined step.
-     * 
+     *
      * @param roleName - the new Role to add
      * @throws CannotManageException When the process has no lookup manager
      * @throws ObjectNotFoundException Role does not exists
-     * 
+     *
      */
     @Override
     public void addRole(String roleName) throws CannotManageException, ObjectNotFoundException {
         RolePath newRole = Gateway.getLookup().getRolePath(roleName);
         try {
-            Gateway.getLookupManager().addRole(mAgentPath, newRole);
+            Gateway.getLookupManager().addRole((AgentPath)mItemPath, newRole);
         }
         catch (ObjectCannotBeUpdated ex) {
             throw new CannotManageException("Could not update role");
@@ -111,16 +115,16 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
     }
 
     /**
-     * Removes the given Role from this Agent. Called by the SetAgentRoles 
+     * Removes the given Role from this Agent. Called by the SetAgentRoles
      * predefined step.
-     * 
+     *
      * @param roleName the Name of the Role
      */
     @Override
     public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {
         RolePath rolePath = Gateway.getLookup().getRolePath(roleName);
         try {
-            Gateway.getLookupManager().removeRole(mAgentPath, rolePath);
+            Gateway.getLookupManager().removeRole((AgentPath)mItemPath, rolePath);
         }
         catch (ObjectCannotBeUpdated ex) {
             throw new CannotManageException("Could not update role");
@@ -129,13 +133,21 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
 
     /**
      * Agents have their own predefined step containers. They contain the standard
-     * predefined steps, plus special Agent ones related to Agent management and 
+     * predefined steps, plus special Agent ones related to Agent management and
      * instantiation.
-     * 
+     *
      * @see org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefinedStepContainer
      */
     @Override
     protected PredefinedStepContainer getNewPredefStepContainer() {
         return new AgentPredefinedStepContainer();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        Logger.msg(7, "AgentImplementation.finalize() - Reaping " + mItemPath);
+        if (currentJobs != null) currentJobs.deactivate();
+        Gateway.getStorage().clearCache(mItemPath, null);
+        super.finalize();
     }
 }
