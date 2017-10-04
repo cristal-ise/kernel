@@ -54,11 +54,11 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
     Object keyLock = null;
     TransactionManager storage;
     Comparator<String> comp;
-    
+
     /**
      * for remote client processes to receive updates, disables puts. @check activate()
      */
-    ItemProxy source; 
+    ItemProxy source;
 
     ProxyObserver<V> listener;
 
@@ -72,8 +72,8 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
             @Override
             public int compare(String o1, String o2) {
                 Integer i1 = null, i2 = null;
-                try { 
-                    i1 = Integer.valueOf(o1); 
+                try {
+                    i1 = Integer.valueOf(o1);
                     i2 = Integer.valueOf(o2);
                     return i1.compareTo(i2);
                 }
@@ -126,6 +126,8 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
         try {
             source = Gateway.getProxyManager().getProxy(mItemPath);
             source.subscribe(new MemberSubscription<V>(listener, mPath+mName, false));
+
+            Logger.debug(5, "RemoteMap activated name:"+mName+" "+mItemPath);
         }
         catch (Exception ex) {
             Logger.error("Error subscribing to remote map. Changes will NOT be received");
@@ -147,7 +149,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
         if (keyLock != null) return;
         clear();
         keyLock = new Object();
-        
+
         synchronized(this) {
             String[] keys;
             try {
@@ -226,10 +228,11 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
 
 
     @Override
+    @SuppressWarnings("unchecked")
     public synchronized V get(Object objKey) {
         loadKeys();
         String key;
-        
+
         if (objKey instanceof Integer)     key = ((Integer)objKey).toString();
         else if (objKey instanceof String) key = (String)objKey;
         else                               return null;

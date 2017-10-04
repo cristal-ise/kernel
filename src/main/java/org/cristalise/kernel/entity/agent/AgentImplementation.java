@@ -58,7 +58,6 @@ public class AgentImplementation extends ItemImplementation implements AgentOper
 
         try {
             currentJobs = (JobList) mStorage.get(path, ClusterType.JOB.getName(), path);
-            currentJobs.activate();
         }
         catch (PersistencyException | ObjectNotFoundException ex) {
             Logger.error(ex);

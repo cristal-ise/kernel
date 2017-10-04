@@ -286,9 +286,9 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException,
             InvalidCollectionModification, ScriptErrorException
     {
-        Logger.msg(5, "UserCodeProcess.suspend() - job:"+thisJob);
-
         if (ignoredPaths.contains(jobKey)) {
+            Logger.msg(5, "UserCodeProcess.suspend() - Suspending job:"+thisJob);
+
             if (errors.containsKey(jobKey)) {
                 thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
                 errors.remove(jobKey);
@@ -334,6 +334,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             if (jobs.size() > 0) {
 
                 thisJob = getJob(jobs, COMPLETE);
+
                 if (thisJob == null) thisJob = getJob(jobs, START);
                 if (thisJob == null) thisJob = getJob(jobs, SUSPEND);
                 if (thisJob == null) thisJob = getJob(jobs, RESUME);
@@ -372,11 +373,11 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
      * Receives job from the AgentProxy. Reactivates thread if sleeping.
      */
     @Override
-    public void add(Job contents) {
+    public void add(Job job) {
         synchronized(jobs) {
-            Logger.msg(7, "UserCodeProcess.add() - path:"+ClusterStorage.getPath(contents));
-            jobs.put(ClusterStorage.getPath(contents), contents);
+            jobs.put(job.getClusterPath(), job);
             jobs.notify();
+            Logger.msg(7, "UserCodeProcess.add() - Added job:"+job);
         }
     }
 
@@ -394,13 +395,14 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     @Override
     public void remove(String id) {
         synchronized(jobs) {
-            Logger.msg(7, "UserCodeProcess.remove() - id:"+id);
-            jobs.remove(id);
+            Job job = (Job) jobs.remove(id);
+            Logger.msg(7, "UserCodeProcess.remove() - Removed job:"+job);
         }
     }
 
     public String getDesc() {
-        return("Usercode Process");
+        String role = Gateway.getProperties().getString("UserCode.roleOverride", UserCodeProcess.DEFAULT_ROLE);
+        return("Usercode Process for role "+role);
     }
 
     public static void shutdown() {
