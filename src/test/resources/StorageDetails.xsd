@@ -28,8 +28,6 @@
         </xs:annotation>
         <xs:complexType>
             <xs:all minOccurs="0" >
-                <xs:element name='Parent'    minOccurs='0' maxOccurs='1' type='xs:string'/>
-
                 <xs:element name="Type"      minOccurs="1" maxOccurs="1">
                     <xs:simpleType>
                         <xs:restriction base="xs:string">
@@ -88,5 +86,4 @@
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
-    
 </xs:schema>

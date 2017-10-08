@@ -25,4 +25,5 @@
 	<Field2></Field2>
 	<Field3>repeating</Field3>
 	<Field3>element</Field3>
+    <Field4/>
 </TestOutcome>

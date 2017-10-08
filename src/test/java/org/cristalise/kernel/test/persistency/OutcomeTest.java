@@ -43,6 +43,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -53,7 +54,7 @@ public class OutcomeTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        Logger.addLogStream(System.out, 1);
+        Logger.addLogStream(System.out, 8);
         Properties props = FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath());
         Gateway.init(props);
     }
@@ -66,13 +67,13 @@ public class OutcomeTest {
     private Outcome getOutcome(String xml, String xsd) throws Exception {
         return new Outcome(
                 FileStringUtility.url2String(OutcomeTest.class.getResource("/"+xml+".xml")),
-                new Schema(FileStringUtility.url2String(OutcomeTest.class.getResource("/"+xsd+".xsd")))
+                new Schema(xsd, 0, null, FileStringUtility.url2String(OutcomeTest.class.getResource("/"+xsd+".xsd")))
                 );
     }
 
     private Outcome getOutcome(String fileName) throws Exception {
         return new Outcome(
-                "/Outcome/Script/0/0",
+                //"/Outcome/Script/0/0",
                 FileStringUtility.url2String(OutcomeTest.class.getResource("/"+fileName)));
     }
 
@@ -85,7 +86,7 @@ public class OutcomeTest {
     public void validate() throws Exception  {
         testOc.getDOM().normalize();
         assertNotNull(testOc.getData());
-        Logger.msg(testOc.getData());
+        //Logger.msg(testOc.getData());
     }
 
     @Test
@@ -118,11 +119,14 @@ public class OutcomeTest {
         Node field1attr = testOc.getNodeByXPath("//Field1/@attr1");
         assert field1attr.getNodeValue().equals("attribute1") : "Invalid value for attribute 'attr1'";
 
-        try {
-            testOc.getFieldByXPath("//Field2");
-            fail("testOc.getFieldByXPath('//Field2') shall throw InvalidDataException");
-        }
-        catch (InvalidDataException e) {}
+        assertNull(testOc.getFieldByXPath("//Field2"));
+        assertNull(testOc.getFieldByXPath("//Field4"));
+
+        //try {
+        //    testOc.getFieldByXPath("//Field2");
+        //    fail("testOc.getFieldByXPath('//Field2') shall throw InvalidDataException");
+        //}
+        //catch (InvalidDataException e) {}
 
         NodeList field3nodes = testOc.getNodesByXPath("//Field3");
         assert field3nodes.getLength() == 2 : "getNodesByXPath returned wrong number of nodes";
@@ -180,7 +184,7 @@ public class OutcomeTest {
         catch (InvalidDataException e) {}
     }
 
-    @Test
+    @Test @Ignore
     public void testValidation() throws Exception {
         String errors = testOc.validate();
         assert errors.contains("Cannot find the declaration of element 'TestOutcome'.") : "Validation failed";
@@ -223,21 +227,21 @@ public class OutcomeTest {
 
     private void compareRecord(List<String> record) {
         assertEquals("123456789ABC", record.get(0));
-        assertEquals("12/12/1999",   record.get(1));
+        assertEquals("1999-12-12",   record.get(1));
         assertEquals("male",         record.get(2));
         assertEquals("85",           record.get(3));
     }
 
     private void compareRecord(Map<String,String> record) {
         assertEquals("123456789ABC", record.get("InsuranceNumber"));
-        assertEquals("12/12/1999",   record.get("DateOfBirth"));
+        assertEquals("1999-12-12",   record.get("DateOfBirth"));
         assertEquals("male",         record.get("Gender"));
         assertEquals("85",           record.get("Weight"));
     }
 
     @Test
     public void testGetRecord() throws Exception {
-        Outcome patient1 = getOutcome("patient1.xml");
+        Outcome patient1 = getOutcome("patient1", "PatientDetails");
 
         compareRecord(patient1.getRecord());
         compareRecord(patient1.getRecord("/PatientDetails"));
@@ -252,17 +256,17 @@ public class OutcomeTest {
         assertEquals(3, records.size());
 
         assertEquals("aaaaaaaaaaa", records.get(0).get(0));
-        assertEquals("12/12/1999",  records.get(0).get(1));
+        assertEquals("1999-12-12",  records.get(0).get(1));
         assertEquals("male",        records.get(0).get(2));
         assertEquals("85",          records.get(0).get(3));
 
         assertEquals("bbbbbbbbbbbb", records.get(1).get(0));
-        assertEquals("12/12/1989",   records.get(1).get(1));
+        assertEquals("1989-12-12",   records.get(1).get(1));
         assertEquals("female",       records.get(1).get(2));
         assertEquals("55",           records.get(1).get(3));
 
         assertEquals("cccccccccccc", records.get(2).get(0));
-        assertEquals("12/12/1979",   records.get(2).get(1));
+        assertEquals("1979-12-12",   records.get(2).get(1));
         assertEquals("female",       records.get(2).get(2));
         assertEquals("95",           records.get(2).get(3));
     }
@@ -271,17 +275,17 @@ public class OutcomeTest {
         assertEquals(3, records.size());
 
         assertEquals("aaaaaaaaaaa", records.get(0).get("InsuranceNumber"));
-        assertEquals("12/12/1999",  records.get(0).get("DateOfBirth"));
+        assertEquals("1999-12-12",  records.get(0).get("DateOfBirth"));
         assertEquals("male",        records.get(0).get("Gender"));
         assertEquals("85",          records.get(0).get("Weight"));
 
         assertEquals("bbbbbbbbbbbb", records.get(1).get("InsuranceNumber"));
-        assertEquals("12/12/1989",   records.get(1).get("DateOfBirth"));
+        assertEquals("1989-12-12",   records.get(1).get("DateOfBirth"));
         assertEquals("female",       records.get(1).get("Gender"));
         assertEquals("55",           records.get(1).get("Weight"));
 
         assertEquals("cccccccccccc", records.get(2).get("InsuranceNumber"));
-        assertEquals("12/12/1979",   records.get(2).get("DateOfBirth"));
+        assertEquals("1979-12-12",   records.get(2).get("DateOfBirth"));
         assertEquals("female",       records.get(2).get("Gender"));
         assertEquals("95",           records.get(2).get("Weight"));
     }
@@ -297,34 +301,40 @@ public class OutcomeTest {
     }
 
     @Test
-    public void tesSetRecord() throws Exception {
+    public void testSetRecord() throws Exception {
         Outcome patient2 = getOutcome("patient2", "PatientDetails");
 
         Map<String, String> record =  new HashMap<>();
         record.put("InsuranceNumber", "123456789ABC");
-        record.put("DateOfBirth",     "12/12/1999");
+        record.put("DateOfBirth",     "1999-12-12");
         record.put("Gender",          "male");
         record.put("Weight",          "85");
+        record.put("Note",            "no comment");
 
         patient2.setRecord(record);
+
+        Logger.msg(patient2.getData());
+
+        patient2.getDOM().normalize();
+        patient2.validateAndCheck();
 
         compareRecord(patient2.getRecord());
     }
 
     @Test
-    public void testOrderDetails() throws Exception {
-        Outcome order = getOutcome("orderDetails1", "OrderDetails");
+    public void testStorageDetails() throws Exception {
+        Outcome storage = getOutcome("storageDetails1", "StorageDetails");
 
-        order.setField("Type", "SECTION");
-        order.setField("Capacity",  "55000");
-        order.setField("Commodity", null);
-        order.setField("Grade",     null, true);
-        order.setField("Note",      "");
+        storage.setField("Type",     "SECTION");
+        storage.setField("Capacity", "55000");
+        storage.setField("Commodity", null);
+        storage.setField("Grade",     null, true);
+        storage.setField("Note",      "");
 
-        order.validateAndCheck();
-        assertNotNull(order.getData());
-        Logger.msg(order.getData());
+        storage.validateAndCheck();
+        assertNotNull(storage.getData());
+        Logger.msg(storage.getData());
 
-        assertTrue( order.isIdentical(getOutcome("orderDetails1_updated.xml")) );
+        assertTrue( storage.isIdentical(getOutcome("storageDetails1_updated.xml")) );
     }
 }

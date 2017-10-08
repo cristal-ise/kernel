@@ -21,7 +21,8 @@
 
 -->
 <PatientDetails InsuranceNumber="00000000000">
-    <DateOfBirth>01/01/1970</DateOfBirth>
+    <DateOfBirth>1970-01-01</DateOfBirth>
     <Gender>male</Gender>
-    <Weight unit="kd">0</Weight>
+    <Weight unit="kg">0</Weight>
+    <Note></Note>
 </PatientDetails>

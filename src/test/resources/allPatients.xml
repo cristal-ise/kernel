@@ -22,17 +22,17 @@
 -->
 <AllPatients>
     <PatientDetails InsuranceNumber="aaaaaaaaaaa">
-        <DateOfBirth>12/12/1999</DateOfBirth>
+        <DateOfBirth>1999-12-12</DateOfBirth>
         <Gender>male</Gender>
         <Weight unit="kd">85</Weight>
     </PatientDetails>
     <PatientDetails InsuranceNumber="bbbbbbbbbbbb">
-        <DateOfBirth>12/12/1989</DateOfBirth>
+        <DateOfBirth>1989-12-12</DateOfBirth>
         <Gender>female</Gender>
         <Weight unit="kd">55</Weight>
     </PatientDetails>
     <PatientDetails InsuranceNumber="cccccccccccc">
-        <DateOfBirth>12/12/1979</DateOfBirth>
+        <DateOfBirth>1979-12-12</DateOfBirth>
         <Gender>female</Gender>
         <Weight unit="kd">95</Weight>
     </PatientDetails>

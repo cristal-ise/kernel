@@ -26,7 +26,7 @@
       <xs:documentation>This is the Schema for Basic Tutorial</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:all minOccurs="0">
+      <xs:all>
         <xs:element maxOccurs="1" minOccurs="1" name="DateOfBirth" type="xs:date"/>
         <xs:element maxOccurs="1" minOccurs="1" name="Gender">
           <xs:simpleType>
@@ -52,6 +52,7 @@
             </xs:simpleContent>
           </xs:complexType>
         </xs:element>
+        <xs:element maxOccurs="1" minOccurs="0" name="Note" type="xs:string"/>
       </xs:all>
       <xs:attribute default="123456789ABC" name="InsuranceNumber" type="xs:string"/>
     </xs:complexType>

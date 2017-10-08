@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,7 +45,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
@@ -63,7 +63,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -80,6 +79,10 @@ import lombok.experimental.Accessors;
 @Accessors(prefix = "m") @Getter @Setter
 public class Outcome implements C2KLocalObject {
 
+    //These values are set in system properties to select more efficient xpath evaluation behaviour
+    private static final String DTM_MANAGER_NAME  = "com.sun.org.apache.xml.internal.dtm.DTMManager";
+    private static final String DTM_MANAGER_VALUE = "com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault";
+
     private static final int NONE = -1;
 
     /** ID is the eventID created when the Outcome is stored in History */
@@ -91,10 +94,20 @@ public class Outcome implements C2KLocalObject {
     /** The parsed XML document */
     Document mDOM;
 
+    /** Parser of  XML Documents */
     static DocumentBuilder parser;
-    static XPath xpath;
+
+    /** Use this static ThreadLocal variable for thread-safe XPath evaluation */
+    private static final ThreadLocal<XPathFactory> XPATH_FACTORY = new ThreadLocal<XPathFactory>() {
+        @Override
+        protected XPathFactory initialValue() {
+            return XPathFactory.newInstance();
+        }
+    };
 
     static {
+        System.setProperty(DTM_MANAGER_NAME, DTM_MANAGER_VALUE);
+
         // Set up parser
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
@@ -108,9 +121,6 @@ public class Outcome implements C2KLocalObject {
             Logger.error(e);
             Logger.die("Cannot function without XML parser");
         }
-
-        XPathFactory xPathFactory = XPathFactory.newInstance();
-        xpath = xPathFactory.newXPath();
     }
 
     /**
@@ -234,6 +244,18 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Evaluates the given XPath expression thread-safely and efficiently
+     *
+     * @param xpathExpr the XPath exporession
+     * @return the result of the evaluated expression
+     * @throws XPathExpressionException  If expression cannot be compiled.
+     */
+    public Object evaluateXpath(String xpathExpr, QName returnType) throws XPathExpressionException {
+        XPath xpath = XPATH_FACTORY.get().newXPath();
+        return xpath.compile(xpathExpr).evaluate(mDOM, returnType);
+    }
+
+    /**
      * Validates the actual XML Document against the provided Schema
      *
      * @return the errors found
@@ -285,6 +307,83 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Gets the value of the given TEXT, CDATA, ATTRIBUTE or ELEMENT Node
+     *
+     * @param node the Node to work on
+     * @return the value of the node
+     * @throws InvalidDataException the Node is not a proper type
+     */
+    public String getNodeValue(Node node) throws InvalidDataException {
+        int type = node.getNodeType();
+
+        if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE || type == Node.ATTRIBUTE_NODE) {
+            return node.getNodeValue();
+        }
+        else if (type == Node.ELEMENT_NODE) {
+            NodeList nodeChildren = node.getChildNodes();
+
+            if (nodeChildren.getLength() == 0) {
+                Logger.msg(5, "Outcome.getNodeValue() - No child/text node for node:"+node.getNodeName()+" => returning null");
+                //throw new InvalidDataException("No child/text node for element '"+node.getNodeName()+"'");
+                return null;
+            }
+            else if (nodeChildren.getLength() == 1) {
+                Node child = nodeChildren.item(0);
+
+                if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE)
+                    return child.getNodeValue();
+                else
+                    throw new InvalidDataException("Node '"+node.getNodeName()+"' can't get data from child node name:"+child.getNodeName()+" type:"+type);
+            }
+            else
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' shall have 0 or 1 children only #children:"+nodeChildren.getLength());
+        }
+        else
+            throw new InvalidDataException("Cannot handle node name:"+node.getNodeName()+" type:"+type);
+    }
+
+    /**
+     * Sets the value of the given TEXT, CDATA, ATTRIBUTE or ELEMENT Node
+     *
+     * @param node the Node to work on
+     * @param value the value to set
+     * @throws InvalidDataException the Node is not a proper type
+     */
+    public void setNodeValue(Node node, String value) throws InvalidDataException {
+        int type = node.getNodeType();
+
+        if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE || type == Node.ATTRIBUTE_NODE) {
+            node.setNodeValue(value);
+        }
+        else if (type == Node.ELEMENT_NODE) {
+            NodeList nodeChildren = node.getChildNodes();
+
+            if (nodeChildren.getLength() == 0) {
+                node.appendChild(mDOM.createTextNode(value));
+            }
+            else if (nodeChildren.getLength() == 1) {
+                Node child = nodeChildren.item(0);
+                switch (child.getNodeType()) {
+                    case Node.TEXT_NODE:
+                    case Node.CDATA_SECTION_NODE:
+                        child.setNodeValue(value);
+                        break;
+                    default:
+                        throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set child node of type "+child.getNodeName());
+                }
+            }
+            else
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' shall have 0 or 1 children only #children:"+nodeChildren.getLength());
+        }
+        else if (type == Node.ATTRIBUTE_NODE) {
+            node.setNodeValue(value);
+        }
+        else {
+            throw new InvalidDataException("Cannot handle node name:"+node.getNodeName() + " typeCode:"+type);
+        }
+    }
+
+    /**
      * Retrieves the text, CDATA or attribute value of the Node selected by the XPath
      *
      * @param xpath The path to access the selected Node
@@ -295,34 +394,8 @@ public class Outcome implements C2KLocalObject {
     public String getFieldByXPath(String xpath) throws XPathExpressionException, InvalidDataException {
         Node field = getNodeByXPath(xpath);
 
-        if (field == null) {
-            throw new InvalidDataException("Outcome '"+getSchemaType()+"' cannot resolve xpath:"+xpath);
-        }
-        else if (field.getNodeType() == Node.TEXT_NODE ||
-                field.getNodeType() == Node.CDATA_SECTION_NODE ||
-                field.getNodeType() == Node.ATTRIBUTE_NODE)
-        {
-            return field.getNodeValue();
-        }
-        else if (field.getNodeType() == Node.ELEMENT_NODE) {
-            NodeList fieldChildren = field.getChildNodes();
-
-            if (fieldChildren.getLength() == 0) {
-                throw new InvalidDataException("No child/text node for element '"+field.getNodeName()+"'");
-            }
-            else if (fieldChildren.getLength() == 1) {
-                Node child = fieldChildren.item(0);
-
-                if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE)
-                    return child.getNodeValue();
-                else
-                    throw new InvalidDataException("Element '"+field.getNodeName()+"' can't get data from child node of type '"+child.getNodeName()+"'");
-            }
-            else
-                throw new InvalidDataException("Element "+xpath+" has too many children");
-        }
-        else
-            throw new InvalidDataException("Don't know what to do with node '"+field.getNodeName()+"'");
+        if (field == null) throw new InvalidDataException("Cannot resolve xpath:"+xpath);
+        else               return getNodeValue(field);
     }
 
     /**
@@ -331,8 +404,8 @@ public class Outcome implements C2KLocalObject {
      * @param elements NodeList
      * @return if the NodeList has a single field or not
      */
-    public boolean isField(NodeList elements) {
-        return (elements.getLength() == 1 && elements.item(0).hasChildNodes() && elements.item(0).getFirstChild() instanceof Text);
+    public boolean hasSingleField(NodeList elements) {
+        return (elements != null && elements.getLength() == 1 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
     }
 
     /**
@@ -370,15 +443,15 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets the value of an attribute in the root Element. It can only update existing attributes.
      *
-     * @param name
-     * @param data
-     * @param remove
-     * @throws InvalidDataException
+     * @param name the name of the Attribute
+     * @param data the value to be set
+     * @param remove flag to remove the element if the data is null
+     * @throws InvalidDataException attribute was not found
      */
     public void setAttribute(String name, String data, boolean remove) throws InvalidDataException {
         setAttribute(mDOM.getDocumentElement(), name, data, remove);
-
     }
 
     /**
@@ -393,45 +466,48 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets the value of an attribute in a given Field, i.e. named Element. It can only update existing attributes.
      *
-     * @param field
-     * @param name
-     * @param data
-     * @param remove
-     * @throws InvalidDataException
+     * @param field the named Element in the root Element
+     * @param name the name of the Attribute
+     * @param data the value to be set
+     * @param remove flag to remove the element if the data is null
+     * @throws InvalidDataException Element or attribute was not found
      */
     public void setAttributeOfField(String field, String name, String data, boolean remove) throws InvalidDataException {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
 
-        if (isField(elements))
+        if (hasSingleField(elements))
             setAttribute((Element)elements.item(0), name, data, remove);
         else
             throw new InvalidDataException("Invalid name:'"+field+"'");
     }
 
     /**
+     * Sets the value of an attribute in a given Field, i.e. named Element. It can only update existing attributes.
      *
-     * @param field
-     * @param name
-     * @param data
-     * @throws InvalidDataException
+     * @param field the named Element in the root Element
+     * @param name the name of the Attribute
+     * @param data the value to be set
+     * @throws InvalidDataException Element or attribute was not found
      */
     public void setAttributeOfField(String field, String name, String data) throws InvalidDataException {
         setAttributeOfField(field, name, data, false);
     }
 
     /**
+     * Sets the textNode value of the named Element of the given Element. It only updates existing Element.
      *
-     * @param element
-     * @param name
-     * @param data
-     * @param remove
-     * @throws InvalidDataException
+     * @param element Element to use
+     * @param name the name of the Element
+     * @param data the data to be set
+     * @param remove flag to remove the element if the data is null
+     * @throws InvalidDataException the name was not found or there were more Elements with the given name
      */
     public void setField(Element element, String name, String data, boolean remove) throws InvalidDataException {
         NodeList elements = element.getElementsByTagName(name);
 
-        if (isField(elements)) {
+        if (hasSingleField(elements)) {
             if (data == null && remove) {
                 Logger.msg(7, "Outcome.setField() - removing name:"+name);
                 element.removeChild(elements.item(0));
@@ -441,7 +517,7 @@ public class Outcome implements C2KLocalObject {
             //Setting nodeValue to null could corrupt document
             if (data == null) data = "";
 
-            ((Text)elements.item(0).getFirstChild()).setNodeValue(data);
+            setNodeValue(elements.item(0), data);
         }
         else
             throw new InvalidDataException("Invalid name:'"+name+"'");
@@ -460,18 +536,19 @@ public class Outcome implements C2KLocalObject {
     }
 
     /**
+     * Sets the textNode value of the named Element of the root Element. It only updates existing Element.
      *
-     * @param name
-     * @param data
-     * @param remove
-     * @throws InvalidDataException
+     * @param name the name of the Element
+     * @param data the data to be set
+     * @param remove flag to remove the element if the data is null
+     * @throws InvalidDataException the name was not found or there were more Elements with the given name
      */
     public void setField(String name, String data, boolean remove) throws InvalidDataException {
         setField(mDOM.getDocumentElement(), name, data, remove);
     }
 
     /**
-     * Sets the textNode value of the named Element of the root Element.
+     * Sets the textNode value of the named Element of the root Element. It only updates existing Element.
      *
      * @param name the name of the Element
      * @param data the data to be set
@@ -522,29 +599,8 @@ public class Outcome implements C2KLocalObject {
             Logger.error(getData());
             throw new InvalidDataException("Xpath '"+xpath+"' is invalid");
         }
-        else if (field.getNodeType() == Node.ELEMENT_NODE) {
-            NodeList fieldChildren = field.getChildNodes();
-            if (fieldChildren.getLength() == 0) {
-                field.appendChild(mDOM.createTextNode(data));
-            }
-            else if (fieldChildren.getLength() == 1) {
-                Node child = fieldChildren.item(0);
-                switch (child.getNodeType()) {
-                    case Node.TEXT_NODE:
-                    case Node.CDATA_SECTION_NODE:
-                        child.setNodeValue(data);
-                        break;
-                    default:
-                        throw new InvalidDataException("Can't set child node of type "+child.getNodeName());
-                }
-            }
-            else
-                throw new InvalidDataException("Element "+xpath+" must have zero or one children node");
-        }
-        else if (field.getNodeType() == Node.ATTRIBUTE_NODE)
-            field.setNodeValue(data);
         else
-            throw new InvalidDataException("Don't know what to do with node "+field.getNodeName());
+            setNodeValue(field, data);
     }
 
     /**
@@ -660,7 +716,7 @@ public class Outcome implements C2KLocalObject {
     public String getAttributeOfField(String field, String attribute) {
         NodeList elements = mDOM.getDocumentElement().getElementsByTagName(field);
 
-        if (isField(elements)) {
+        if (hasSingleField(elements)) {
             String value = ((Element)elements.item(0)).getAttribute(attribute);
 
             if (StringUtils.isNotBlank(value)) return value;
@@ -678,12 +734,14 @@ public class Outcome implements C2KLocalObject {
      * @return The value as a string, or null if that field does not exists
      */
     public String getField(Element element, String name) {
-        NodeList elements = element.getElementsByTagName(name);
+        try {
+            NodeList elements = element.getElementsByTagName(name);
+            if (hasSingleField(elements))  return getNodeValue(elements.item(0));
+        }
+        catch (InvalidDataException e) {
+        }
 
-        if (isField(elements))
-            return ((Text)elements.item(0).getFirstChild()).getData();
-        else
-            return null;
+        return null;
     }
 
     /**
@@ -704,8 +762,7 @@ public class Outcome implements C2KLocalObject {
      * @throws XPathExpressionException invalid xpath
      */
     public NodeList getNodesByXPath(String xpathExpr) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile(xpathExpr);
-        return (NodeList)expr.evaluate(mDOM, XPathConstants.NODESET);
+        return (NodeList) evaluateXpath(xpathExpr, XPathConstants.NODESET);
     }
 
     /**
@@ -716,8 +773,7 @@ public class Outcome implements C2KLocalObject {
      * @throws XPathExpressionException invalid xpath
      */
     public Node getNodeByXPath(String xpathExpr) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile(xpathExpr);
-        return (Node)expr.evaluate(mDOM, XPathConstants.NODE);
+        return (Node) evaluateXpath(xpathExpr, XPathConstants.NODE);
     }
 
     /**
@@ -939,10 +995,23 @@ public class Outcome implements C2KLocalObject {
         }
     }
 
+    /**
+     * Checks if the Outcome is identical with the given input
+     *
+     * @param other the other Outcome to be compare with
+     * @return true if the two Outcomes are identical, otherwise returns false
+     */
     public boolean isIdentical(Outcome other) {
         return isIdentical(getDOM(), other.getDOM());
     }
 
+    /**
+     * Utility method to comare 2 XML Documents
+     *
+     * @param origDocument XML document
+     * @param otherDOM the other XML
+     * @return true if the two XML Documents are identical, otherwise returns false
+     */
     public static boolean isIdentical(Document origDocument, Document otherDOM) {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreComments(true);

@@ -20,17 +20,15 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
- <StorageDetails>
-  <!--Optional:-->
-  <Parent>string</Parent>
-  <Type>BIN</Type>
-  <Capacity unit="TONNE">1000.00</Capacity>
+<StorageDetails>
+  <Type>SECTION</Type>
+  <Capacity unit="TONNE">55000</Capacity>
   <!--Optional:-->
   <Season>string</Season>
   <!--Optional:-->
-  <Commodity>string</Commodity>
+  <Commodity/>
   <!--Optional:-->
-  <Grade>string</Grade>
+  
   <!--Optional:-->
   <ROWS>100</ROWS>
   <!--Optional:-->
@@ -44,5 +42,5 @@
   <!--Optional:-->
   <RIGHT>100</RIGHT>
   <!--Optional:-->
-  <Note>string</Note>
+  <Note/>
 </StorageDetails>
