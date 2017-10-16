@@ -20,7 +20,7 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<CompositeActivityDef ID="-1" Name="NewServeritemWorkflow"
+<CompositeActivityDef ID="-1" Name="ServerItemWorkflow"
 	Height="0" Width="0" IsLayoutable="false" IsComposite="true">
 	<childrenGraphModel>
 		<GraphModelCastorData StartVertexId="4" NextId="29">
