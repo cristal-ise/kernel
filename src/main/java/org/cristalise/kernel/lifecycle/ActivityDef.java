@@ -57,7 +57,7 @@ import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * 
+ *
  */
 public class ActivityDef extends WfVertexDef implements C2KLocalObject, DescriptionObject {
 
@@ -146,8 +146,9 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     /**
-     * 
+     *
      */
+    @Override
     public void configureInstance(WfVertex act) throws InvalidDataException, ObjectNotFoundException {
         super.configureInstance(act);
 
@@ -244,18 +245,19 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
         ArrayList<DescriptionObject> retArr = new ArrayList<DescriptionObject>();
 
         if (itemPath == null) {
-            Logger.warning("ActivityDef.getCollectionResource(actName:"+getName()+") - itemPath is null! CANNOT resolve anythink in Storage");
-            return retArr.toArray(new DescriptionObject[retArr.size()]);
+            Logger.warning("ActivityDef.getBuiltInCollectionResource(actName:"+getName()+", collection:"+collection+") - itemPath is null! CANNOT resolve data in ClusterStorage");
+            return retArr.toArray(new DescriptionObject[0]);
+            //throw new InvalidDataException("actName:"+getName()+", collection:"+collection+" - itemPath is null! CANNOT resolve data in ClusterStorage");
         }
 
-        Logger.msg(5, "ActivityDef.getCollectionResource(actName:"+getName()+") - Loading from collection:"+collection);
+        Logger.msg(5, "ActivityDef.getBuiltInCollectionResource(actName:"+getName()+") - Loading from collection:"+collection);
 
         Dependency resColl;
 
         try {
-            String clusterPath = ClusterType.COLLECTION + "/" + collection + "/" + 
+            String clusterPath = ClusterType.COLLECTION + "/" + collection + "/" +
                     ((mVersion == null || mVersion == -1) ? "last" : String.valueOf(mVersion));
-            
+
             String[] contents = Gateway.getStorage().getClusterContents(itemPath, clusterPath);
             if (contents != null && contents.length > 0)
                 resColl = (Dependency) Gateway.getStorage().get(itemPath, clusterPath, null);
@@ -381,15 +383,15 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     protected String getExportAttributes(String type) throws InvalidDataException, ObjectNotFoundException, IOException {
-        return "name=\"" + getActName() + "\" " 
+        return "name=\"" + getActName() + "\" "
                 + (getItemPath() == null ? "" : "id=\""      + getItemID()  + "\" ")
                 + (getVersion() == null  ? "" : "version=\"" + getVersion() + "\" ")
                 + "resource=\"boot/" + type + "/" + getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml\"";
     }
 
     protected String getExportCollections() throws InvalidDataException, ObjectNotFoundException, IOException {
-        return 
-            (getStateMachine() == null ? "" : "<StateMachine name=\"" + getStateMachine().getName() + "\" id=\"" + getStateMachine().getItemID() + "\" version=\"" + getStateMachine().getVersion() + "\"/>")
+        return
+                (getStateMachine() == null ? "" : "<StateMachine name=\"" + getStateMachine().getName() + "\" id=\"" + getStateMachine().getItemID() + "\" version=\"" + getStateMachine().getVersion() + "\"/>")
                 + (getSchema() == null ? "" : "<Schema       name=\"" + getSchema().getName() + "\"       id=\"" + getSchema().getItemID()       + "\" version=\"" + getSchema().getVersion()       + "\"/>")
                 + (getScript() == null ? "" : "<Script       name=\"" + getScript().getName() + "\"       id=\"" + getScript().getItemID()       + "\" version=\"" + getScript().getVersion()       + "\"/>")
                 + (getQuery()  == null ? "" : "<Query        name=\"" + getQuery().getName()  + "\"       id=\"" + getQuery().getItemID()        + "\" version=\"" + getQuery().getVersion()        + "\"/>");
