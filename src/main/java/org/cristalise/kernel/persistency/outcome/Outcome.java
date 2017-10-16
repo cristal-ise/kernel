@@ -54,6 +54,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.persistency.ClusterType;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.custommonkey.xmlunit.Diff;
@@ -268,7 +269,11 @@ public class Outcome implements C2KLocalObject {
         }
 
         OutcomeValidator validator = OutcomeValidator.getValidator(mSchema);
-        return validator.validate(mDOM);
+
+        if (Gateway.getProperties().getBoolean("Outcome.Validation.useDOM", true))
+            return validator.validate(mDOM);
+        else
+            return validator.validate(getData());
     }
 
     /**
