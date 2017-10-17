@@ -22,39 +22,61 @@ package org.cristalise.kernel.scripting;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.cristalise.kernel.entity.agent.Job;
+
 public class ErrorInfo {
-    ArrayList<String> msg;
-    boolean           fatal = false;
+    boolean fatal = false;
+    Job     failedJob;
+
+    ArrayList<String> errors;
 
     public ErrorInfo() {
         super();
-        msg = new ArrayList<String>();
+        errors = new ArrayList<String>();
     }
 
     public ErrorInfo(String error) {
         this();
-        msg.add(error);
+        errors.add(error);
+    }
+
+    public ErrorInfo(Exception ex) {
+        this();
+        setFatal();
+        for (String frame : ExceptionUtils.getStackFrames(ex)) {
+            addError(frame.trim());
+        }
+    }
+
+    public ErrorInfo(Job job, Exception ex) {
+        this(ex);
+        failedJob = job;
     }
 
     public void addError(String error) {
-        msg.add(error);
+        errors.add(error);
     }
 
     @Override
     public String toString() {
         StringBuffer err = new StringBuffer();
-        for (String element : msg) {
+        for (String element : errors) {
             err.append(element + "\n");
         }
         return err.toString();
     }
 
     public void setErrors(ArrayList<String> msg) {
-        this.msg = msg;
+        this.errors = msg;
     }
 
     public ArrayList<String> getErrors() {
-        return msg;
+        return errors;
+    }
+
+    public void setFatal(boolean flag) {
+        fatal = flag;
     }
 
     public void setFatal() {
@@ -63,5 +85,13 @@ public class ErrorInfo {
 
     public boolean getFatal() {
         return fatal;
+    }
+
+    public Job getFailedJob() {
+        return failedJob;
+    }
+
+    public void setFailedJob(Job failedJob) {
+        this.failedJob = failedJob;
     }
 }

@@ -71,6 +71,7 @@
                                 </xs:restriction>
                             </xs:simpleType>
                         </xs:attribute>
+                        <xs:attribute name="errorHandler" type="xs:boolean" />
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>

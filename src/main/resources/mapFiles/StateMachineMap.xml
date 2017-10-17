@@ -87,6 +87,9 @@
         <field name="query" type="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionQuery" direct="false">
             <bind-xml name="Query" node="element" />
         </field>
+        <field name="errorHandler" type="boolean" direct="false" get-method="isErrorHandler" set-method="setErrorHandler">
+            <bind-xml name="errorHandler" node="attribute" />
+        </field>
     </class>
     <class name="org.cristalise.kernel.lifecycle.instance.stateMachine.TransitionOutcome">
         <map-to xml="Outcome" />

@@ -37,7 +37,7 @@
         <Script  name="${ScriptName}" version="${ScriptVersion}" />
         <Query   name="${QueryName}"  version="${QueryVersion}" />
     </Transition>
-    <Transition id="3" name="Suspend" origin="1" target="3">
+    <Transition id="3" name="Suspend" origin="1" target="3" errorHandler="true">
         <Outcome name="Errors" version="0" />
     </Transition>
     <Transition id="4" name="Resume" origin="3" target="1" roleOverride="Admin" reservation="preserve" />

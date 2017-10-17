@@ -83,7 +83,7 @@ public class StateMachine implements DescriptionObject {
     /**
      * Computes the next State id. When loaded from XML, the next id calculated
      * from the existing States
-     * 
+     *
      * @return the next state id
      */
     private int getNextStateId() {
@@ -99,7 +99,7 @@ public class StateMachine implements DescriptionObject {
     /**
      * Computes the next Transition id. When loaded from XML, the next id
      * calculated from the existing Transitions
-     * 
+     *
      * @return the next state id
      */
     private int getNextTransId() {
@@ -115,7 +115,7 @@ public class StateMachine implements DescriptionObject {
     /**
      * Factory method to create a new State for the given name.
      * It does NOT check whether the name exists or not
-     * 
+     *
      * @param name the name of the State
      * @return the new State
      */
@@ -129,7 +129,7 @@ public class StateMachine implements DescriptionObject {
     /**
      * Factory method to create a new Transition for the given name.
      * It does NOT check whether the name exists or not
-     * 
+     *
      * @param name  the name of the Transition
      * @return the new Transition
      */
@@ -248,7 +248,7 @@ public class StateMachine implements DescriptionObject {
 
     /**
      * Helper method to get transition ID by name
-     * 
+     *
      * @param name the name of the Transition
      * @return the integer ID associated with the Transition name. Returns -1 in
      *         case the name does not exist
@@ -260,7 +260,7 @@ public class StateMachine implements DescriptionObject {
 
     /**
      * Helper method to get transition ID by name
-     * 
+     *
      * @param transName the name of the Transaction
      * @return the ID matching the name
      * @throws InvalidDataException the name was not found
@@ -268,7 +268,7 @@ public class StateMachine implements DescriptionObject {
     public int getValidTransitionID(String transName) throws InvalidDataException {
         int id =  getTransitionID(transName);
 
-        if(id == -1) 
+        if(id == -1)
             throw new InvalidDataException("Transition name '"+transName+"' was not found in StateMachine '"+getName()+"'");
         else
             return id;
@@ -315,7 +315,7 @@ public class StateMachine implements DescriptionObject {
             throws InvalidTransitionException, AccessRightsException, ObjectNotFoundException, InvalidDataException
     {
         State currentState = getState(act.getState());
-        
+
         if (transition.originState.equals(currentState)) {
             transition.getPerformingRole(act, agent);
             return transition.targetState;
@@ -325,6 +325,10 @@ public class StateMachine implements DescriptionObject {
 
     public boolean isCoherent() {
         return isCoherent;
+    }
+
+    public int getErrorTransitionIdForState(int id) {
+        return getState(id).getErrorTansitionId();
     }
 
     @Override
@@ -347,7 +351,7 @@ public class StateMachine implements DescriptionObject {
             imports.write("<StateMachineResource "
                     + "name=\"" + getName() + "\" "
                     + (getItemPath() == null ? "" : "id=\""      + getItemID() + "\" ")
-                    + (getVersion()  == null ? "" : "version=\"" + getVersion() + "\">") 
+                    + (getVersion()  == null ? "" : "version=\"" + getVersion() + "\">")
                     + "boot/" + typeCode + "/" + fileName
                     + "</StateMachineResource>\n");
         }

@@ -44,24 +44,6 @@
     </licenses>
     <developers>
         <developer>
-            <name>Andrew Branson</name>
-            <email>andrew.branson@cern.ch</email>
-            <organization>UWE CCCS</organization>
-            <organizationUrl>http://www.cccs.uwe.ac.uk/et/research/cccs</organizationUrl>
-            <roles>
-                <role>ex-CEO</role>
-            </roles>
-        </developer>
-        <developer>
-            <name>Jetendr Shamdasani</name>
-            <email>jetendr.shamdasani@cern.ch</email>
-            <organization>UWE CCCS</organization>
-            <organizationUrl>http://www.cccs.uwe.ac.uk/et/research/cccs</organizationUrl>
-            <roles>
-                <role>ex-CEO</role>
-            </roles>
-        </developer>
-        <developer>
             <name>Zsolt Kovács</name>
             <email>zs.myth@gmail.com</email>
             <organization>UWE CCCS</organization>
@@ -80,7 +62,7 @@
         <url>http://cristal-ise.github.io/</url>
     </organization>
     <ciManagement>
-        <system>Jenkins</system>
+        <system>Travis</system>
         <url>https://travis-ci.org/cristal-ise/kernel</url>
     </ciManagement>
     <scm>
@@ -91,10 +73,8 @@
     <mailingLists>
         <mailingList>
             <name>User List</name>
-            <post>cristal-users@cern.ch</post>
-            <subscribe>cristal-users-subscribe@cern.ch</subscribe>
-            <unsubscribe>cristal-users-unsubscribe@cern.ch</unsubscribe>
-            <archive>https://groups.cern.ch/group/cristal-users/default.aspx</archive>
+            <post>cristal-ise@googlegroups.com</post>
+            <archive>https://groups.google.com/d/forum/cristal-ise</archive>
         </mailingList>
     </mailingLists>
     <distributionManagement>
@@ -177,6 +157,13 @@
             <version>[2.2,)</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.8.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>

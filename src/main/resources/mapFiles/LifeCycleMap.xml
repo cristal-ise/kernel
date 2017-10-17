@@ -129,14 +129,17 @@
 	<class name="org.cristalise.kernel.lifecycle.instance.predefined.agent.AgentPredefinedStepContainer" 
 		extends="org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStepContainer">
 		<map-to xml="AgentPredefinedStepContainer"/>
-	</class>	
+	</class>
 	<class name="org.cristalise.kernel.scripting.ErrorInfo">
 		<map-to xml="Errors"/>
 		<field name="fatal" type="boolean" direct="false">
 			<bind-xml name="fatal" node="attribute"/>
 		</field>
-		<field name="msg" type="string" direct="false" collection="arraylist" get-method="getErrors" set-method="setErrors">
-			<bind-xml name="Message" node="element"/>
+        <field name="failedJob" type="org.cristalise.kernel.entity.agent.Job" direct="false" get-method="getFailedJob" set-method="setFailedJob">
+            <bind-xml name="FailedJob" node="element"/>
+        </field>
+		<field name="errors" type="string" direct="false" collection="arraylist" get-method="getErrors" set-method="setErrors">
+			<bind-xml name="Error" node="element"/>
 		</field>	
 	</class>
 </mapping>

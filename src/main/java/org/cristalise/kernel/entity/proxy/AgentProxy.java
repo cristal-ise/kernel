@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -55,6 +56,9 @@ import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.Logger;
+import org.exolab.castor.mapping.MappingException;
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.ValidationException;
 
 /******************************************************************************
  * It is a wrapper for the connection and communication with Agent It caches
@@ -101,12 +105,53 @@ public class AgentProxy extends ItemProxy {
     }
 
     /**
-     * Standard execution of jobs. Note that this method should always be the one used from clients. 
+     *
+     *
+     * @param job
+     * @param errorJob
+     * @return
+     * @throws ObjectNotFoundException
+     * @throws InvalidCollectionModification
+     * @throws ObjectAlreadyExistsException
+     * @throws PersistencyException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws AccessRightsException
+     * @throws ScriptErrorException
+     */
+    public String execute(Job job, Job errorJob)
+            throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException,
+            PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification, ScriptErrorException
+    {
+        if (errorJob == null) throw new InvalidDataException("errorJob cannot be null");
+
+        try {
+            return execute(job);
+        }
+        catch (Exception ex) {
+            Logger.error(ex);
+
+            try {
+                errorJob.setAgentPath(mAgentPath);
+                errorJob.setOutcome(Gateway.getMarshaller().marshall(new ErrorInfo(job, ex)));
+
+                return execute(errorJob);
+            }
+            catch (MarshalException | ValidationException | IOException | MappingException e) {
+                Logger.error(e);
+                throw new InvalidDataException(e.getMessage());
+            }
+
+        }
+    }
+
+    /**
+     * Standard execution of jobs. Note that this method should always be the one used from clients.
      * All execution parameters are taken from the job where they're probably going to be correct.
      *
      * @param job the Actual Job to be executed
      * @return The outcome after processing. May have been altered by the step.
-     * 
+     *
      * @throws AccessRightsException The agent was not allowed to execute this step
      * @throws InvalidDataException The parameters supplied were incorrect
      * @throws InvalidTransitionException The step wasn't available
@@ -118,7 +163,7 @@ public class AgentProxy extends ItemProxy {
      */
     public String execute(Job job)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
-                   PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
+            PersistencyException, ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
     {
         ItemProxy item = Gateway.getProxyManager().getProxy(job.getItemPath());
         Date startTime = new Date();
@@ -192,8 +237,8 @@ public class AgentProxy extends ItemProxy {
     }
 
     public String execute(ItemProxy item, String predefStep, C2KLocalObject obj) throws AccessRightsException, InvalidDataException,
-            InvalidTransitionException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException,
-            InvalidCollectionModification {
+    InvalidTransitionException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException,
+    InvalidCollectionModification {
         String param;
         try {
             param = marshall(obj);
@@ -207,13 +252,13 @@ public class AgentProxy extends ItemProxy {
 
     /**
      * Multi-parameter execution. Wraps parameters up in a PredefinedStepOutcome if the schema of the requested step is such.
-     * 
+     *
      * @param item The item on which to execute the step
      * @param predefStep The step name to run
      * @param params An array of parameters to pass to the step. See each step's documentation for its required parameters
-     * 
+     *
      * @return The outcome after processing. May have been altered by the step.
-     * 
+     *
      * @throws AccessRightsException The agent was not allowed to execute this step
      * @throws InvalidDataException The parameters supplied were incorrect
      * @throws InvalidTransitionException The step wasn't available
@@ -223,8 +268,8 @@ public class AgentProxy extends ItemProxy {
      * @throws InvalidCollectionModification Thrown by steps that create/modify collections
      */
     public String execute(ItemProxy item, String predefStep, String[] params)
-            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
-                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
+            PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
         String schemaName = PredefinedStep.getPredefStepSchemaName(predefStep);
         String param;
@@ -237,12 +282,12 @@ public class AgentProxy extends ItemProxy {
 
     /**
      * Single parameter execution. Wraps parameters up in a PredefinedStepOutcome if the schema of the requested step is such.
-     * 
+     *
      * @see #execute(ItemProxy, String, String[])
      */
-    public String execute(ItemProxy item, String predefStep, String param) 
-            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
-                   PersistencyException, ObjectAlreadyExistsException,InvalidCollectionModification
+    public String execute(ItemProxy item, String predefStep, String param)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
+            PersistencyException, ObjectAlreadyExistsException,InvalidCollectionModification
     {
         return execute(item, predefStep, new String[] { param });
     }
@@ -308,7 +353,7 @@ public class AgentProxy extends ItemProxy {
         }
         return ok;
     }
-    
+
     public List<ItemProxy> searchItems(Path start, PropertyDescriptionList props) {
         Iterator<Path> results = Gateway.getLookup().search(start, props);
         return createItemProxyList(results);

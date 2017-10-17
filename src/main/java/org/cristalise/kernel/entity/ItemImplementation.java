@@ -20,8 +20,10 @@
  */
 package org.cristalise.kernel.entity;
 
+import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.AccessRightsException;
@@ -37,6 +39,7 @@ import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.entity.agent.JobArrayList;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
+import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
@@ -55,8 +58,12 @@ import org.cristalise.kernel.process.Bootstrap;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
+import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+import org.exolab.castor.mapping.MappingException;
+import org.exolab.castor.xml.MarshalException;
+import org.exolab.castor.xml.ValidationException;
 
 public class ItemImplementation implements ItemOperations {
 
@@ -176,8 +183,8 @@ public class ItemImplementation implements ItemOperations {
 
     @Override
     public String requestAction(SystemKey agentId, String stepPath, int transitionID, String requestData)
-            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException, 
-                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
+            PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
         return delegatedAction(agentId, null, stepPath, transitionID, requestData);
     }
@@ -185,14 +192,14 @@ public class ItemImplementation implements ItemOperations {
     @Override
     public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID, String requestData)
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
-                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+            PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
         Workflow lifeCycle = null;
 
         try {
             AgentPath agent = new AgentPath(agentId);
-            AgentPath delegate = null;
-            if (delegateId != null) delegate = new AgentPath(delegateId);
+            AgentPath delegate = delegateId == null ? null : new AgentPath(delegateId);
+
             Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
 
             // TODO: check if delegate is allowed valid for agent
@@ -214,27 +221,103 @@ public class ItemImplementation implements ItemOperations {
             return finalOutcome;
         }
         catch (AccessRightsException | InvalidTransitionException   | ObjectNotFoundException | PersistencyException |
-               InvalidDataException  | ObjectAlreadyExistsException | InvalidCollectionModification ex)
+                InvalidDataException  | ObjectAlreadyExistsException | InvalidCollectionModification ex)
         {
-            if(Logger.doLog(8)) Logger.error(ex);
-            mStorage.abort(lifeCycle);
-            throw ex;
+            if (Logger.doLog(8)) Logger.error(ex);
+
+            String errorOutcome = handleError(agentId, delegateId, stepPath, lifeCycle, ex);
+
+            if (StringUtils.isBlank(errorOutcome)) {
+                mStorage.abort(lifeCycle);
+                throw ex;
+            }
+            else {
+                mStorage.commit(lifeCycle);
+                return errorOutcome;
+            }
         }
         catch (InvalidAgentPathException | ObjectCannotBeUpdated | CannotManageException ex) {
-            if(Logger.doLog(8)) Logger.error(ex);
-            mStorage.abort(lifeCycle);
-            throw new InvalidDataException(ex.getClass().getName() + " - " + ex.getMessage());
-       }
-        catch (Throwable ex) { // non-CORBA exception hasn't been caught!
+            if (Logger.doLog(8)) Logger.error(ex);
+
+            String errorOutcome = handleError(agentId, delegateId, stepPath, lifeCycle, ex);
+
+            if (StringUtils.isBlank(errorOutcome)) {
+                mStorage.abort(lifeCycle);
+                throw new InvalidDataException(ex.getClass().getName() + " - " + ex.getMessage());
+            }
+            else {
+                mStorage.commit(lifeCycle);
+                return errorOutcome;
+            }
+        }
+        catch (Exception ex) { // non-CORBA exception hasn't been caught!
             Logger.error("Unknown Error: requestAction on " + mItemPath + " by " + agentId + " executing " + stepPath);
             Logger.error(ex);
-            mStorage.abort(lifeCycle);
-            throw new InvalidDataException("Extraordinary Exception during execution:" + ex.getClass().getName() + " - " + ex.getMessage());
+
+            String errorOutcome = handleError(agentId, delegateId, stepPath, lifeCycle, ex);
+
+            if (StringUtils.isBlank(errorOutcome)) {
+                mStorage.abort(lifeCycle);
+                throw new InvalidDataException("Extraordinary Exception during execution:" + ex.getClass().getName() + " - " + ex.getMessage());
+            }
+            else {
+                mStorage.commit(lifeCycle);
+                return errorOutcome;
+            }
         }
     }
 
+    /**
+     *
+     * @param agentId
+     * @param delegateId
+     * @param stepPath
+     * @param ex
+     * @return
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     * @throws AccessRightsException
+     * @throws InvalidTransitionException
+     * @throws InvalidDataException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
+    private String handleError(SystemKey agentId, SystemKey delegateId, String stepPath, Workflow lifeCycle, Exception ex)
+            throws PersistencyException, ObjectNotFoundException, AccessRightsException, InvalidTransitionException,
+            InvalidDataException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        if (!Gateway.getProperties().getBoolean("StateMachine.enableErrorHandling", false)) return null;
+
+        int errorTransId = ((Activity)lifeCycle.search(stepPath)).getErrorTransitionId();
+
+        if (errorTransId == -1) return null;
+
+        try {
+            AgentPath agent = new AgentPath(agentId);
+            AgentPath delegate = delegateId == null ? null : new AgentPath(delegateId);
+
+            String errorOutcome = Gateway.getMarshaller().marshall(new ErrorInfo(ex));
+
+            lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, errorTransId, errorOutcome);
+
+            if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, lifeCycle);
+
+            return errorOutcome;
+        }
+        catch (InvalidAgentPathException | ObjectCannotBeUpdated | CannotManageException |
+                MarshalException | ValidationException | IOException | MappingException e)
+        {
+            Logger.error(e);
+            return "";
+        }
+    }
+
+    /**
+     *
+     */
     @Override
-    public String queryLifeCycle(SystemKey agentId, boolean filter) throws AccessRightsException, ObjectNotFoundException, PersistencyException
+    public String queryLifeCycle(SystemKey agentId, boolean filter)
+            throws AccessRightsException, ObjectNotFoundException, PersistencyException
     {
         Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - agent: " + agentId);
         try {
@@ -250,9 +333,9 @@ public class ItemImplementation implements ItemOperations {
             JobArrayList jobBag = new JobArrayList();
             CompositeActivity domainWf = (CompositeActivity) wf.search("workflow/domain");
             jobBag.list = filter ? domainWf.calculateJobs(agent, mItemPath, true) : domainWf.calculateAllJobs(agent, mItemPath, true);
-            
+
             Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - Returning " + jobBag.list.size() + " jobs.");
-            
+
             try {
                 return Gateway.getMarshaller().marshall(jobBag);
             }
@@ -272,6 +355,9 @@ public class ItemImplementation implements ItemOperations {
         }
     }
 
+    /**
+     *
+     */
     @Override
     public String queryData(String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         String result = "";
@@ -309,6 +395,9 @@ public class ItemImplementation implements ItemOperations {
         return result;
     }
 
+    /**
+     *
+     */
     @Override
     protected void finalize() throws Throwable {
         Logger.msg(7, "ItemImplementation.finalize() - Reaping " + mItemPath);

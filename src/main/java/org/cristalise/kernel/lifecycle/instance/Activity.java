@@ -142,6 +142,19 @@ public class Activity extends WfVertex {
         return state;
     }
 
+    /**
+     * Returns the id of the error Transition associated with the current state
+     * @return the id of the error Transition associated with the current state or -1 of there is no error Transition
+     */
+    public int getErrorTransitionId() {
+        try {
+            return getStateMachine().getErrorTransitionIdForState(getState());
+        }
+        catch (InvalidDataException e) {
+            return -1;
+        }
+    }
+
     public String getStateName() throws InvalidDataException {
         return getStateMachine().getState(getState()).getName();
     }

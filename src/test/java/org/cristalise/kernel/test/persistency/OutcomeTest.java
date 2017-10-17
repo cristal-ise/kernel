@@ -43,7 +43,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,7 +72,7 @@ public class OutcomeTest {
 
     private Outcome getOutcome(String fileName) throws Exception {
         return new Outcome(
-                //"/Outcome/Script/0/0",
+                "/Outcome/Script/0/0",
                 FileStringUtility.url2String(OutcomeTest.class.getResource("/"+fileName)));
     }
 
@@ -184,7 +183,7 @@ public class OutcomeTest {
         catch (InvalidDataException e) {}
     }
 
-    @Test @Ignore
+    @Test
     public void testValidation() throws Exception {
         String errors = testOc.validate();
         assert errors.contains("Cannot find the declaration of element 'TestOutcome'.") : "Validation failed";
@@ -336,5 +335,18 @@ public class OutcomeTest {
         Logger.msg(storage.getData());
 
         assertTrue( storage.isIdentical(getOutcome("storageDetails1_updated.xml")) );
+    }
+
+    @Test
+    public void testSite() throws Exception {
+        Outcome site1 = getOutcome("site1", "NewSite");
+
+        Logger.msg(site1.getData());
+
+        Map<String, String> record =  new HashMap<>();
+        record.put("Name", "kovax");
+
+        site1.setRecord(record);
+        site1.validateAndCheck();
     }
 }

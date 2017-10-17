@@ -20,9 +20,7 @@
  */
 package org.cristalise.kernel.process;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.cristalise.kernel.common.AccessRightsException;
@@ -39,29 +37,23 @@ import org.cristalise.kernel.entity.proxy.ProxyObserver;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.ClusterType;
-import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.utils.Logger;
-import org.exolab.castor.mapping.MappingException;
-import org.exolab.castor.xml.MarshalException;
-import org.exolab.castor.xml.ValidationException;
 
 /**
  * UserCodeProcess provides a very basic automatic execution of Scripts associated with the Jobs (Activities).
- * It is based on the Default StateMachine, as it implements the following sequence:
+ * It is based on the Default StateMachine, and it implements the following sequence:
  * <pre>
  * 1. assessStartConditions()
  * 2. start()
  * 3. complete()
- * 4. in case of error/exception suspend()
+ * 4. in case of error/exception execute error transition which is suspend for default statemachine
  */
 public class UserCodeProcess extends StandardClient implements ProxyObserver<Job>, Runnable {
 
-    private final int DONE;
     private final int START;
     private final int COMPLETE;
-    private final int SUSPEND;
-    private final int RESUME;
+    private final int ERROR;
 
     /**
      * Defines the default role (value:{@value}). It also used as a prefix for every configuration property
@@ -79,30 +71,19 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
      */
     public static final String STATE_MACHINE_COMPLETE_TRANSITION = "StateMachine.completeTransition";
     /**
-     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Suspend transition.
-     * It is always prefixed like this: eg: UserCode.StateMachine.suspendTransition
+     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Error transition.
+     * It is always prefixed like this: eg: UserCode.StateMachine.errorTransition
      */
-    public static final String STATE_MACHINE_SUSPEND_TRANSITION = "StateMachine.suspendTransition";
-    /**
-     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Resume transition.
-     * It is always prefixed like this: eg: UserCode.StateMachine.resumeTransition
-     */
-    public static final String STATE_MACHINE_RESUME_TRANSITION = "StateMachine.resumeTransition";
-    /**
-     * Defines the name of the CRISTAL Property (value:{@value}) to override the default mapping for Done transition.
-     * It is always prefixed like this: eg: UserCode.StateMachine.doneTransition
-     */
-    public static final String STATE_MACHINE_DONE_TRANSITION = "StateMachine.doneTransition";
+    public static final String STATE_MACHINE_ERROR_TRANSITION = "StateMachine.errorTransition";
+
     /**
      * Defines the value (value:{@value}) to to be used in CRISTAL Property to ignore the Jobs of that Transition
      * eg: UserCode.StateMachine.resumeTransition = USERCODE_IGNORE
      */
     public static final String USERCODE_IGNORE = "USERCODE_IGNORE";
 
-    protected static boolean                        active       = true;
-    protected ArrayList<String>                     ignoredPaths = new ArrayList<String>();
-    protected HashMap<String, ErrorInfo>            errors       = new HashMap<String, ErrorInfo>();
-    protected final HashMap<String, C2KLocalObject> jobs         = new HashMap<String, C2KLocalObject>();
+    protected static boolean                        active = true;
+    protected final HashMap<String, C2KLocalObject> jobs   = new HashMap<String, C2KLocalObject>();
 
     /**
      * Default constructor set up the user code with default setting
@@ -128,11 +109,9 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         StateMachine sm = getRequiredStateMachine(propPrefix, null, "boot/SM/Default.xml");
 
         //default values are valid for Transitions compatible with kernel provided Default StateMachine
-        DONE     = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_DONE_TRANSITION,     "Done");
         START    = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_START_TRANSITION,    "Start");
+        ERROR    = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_ERROR_TRANSITION,    "Suspend");
         COMPLETE = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_COMPLETE_TRANSITION, "Complete");
-        SUSPEND  = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_SUSPEND_TRANSITION,  "Suspend");
-        RESUME   = getValidTransitionID(sm, propPrefix+"."+STATE_MACHINE_RESUME_TRANSITION,   "Resume");
     }
 
     /**
@@ -153,8 +132,10 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
     @Override
     public void run() {
         Thread.currentThread().setName("Usercode Process");
-        // subscribe to job list
+
+        // subscribe to job list - this will initialise the jobs using the ProxyObserver interface as callback
         agent.subscribe(new MemberSubscription<Job>(this, ClusterType.JOB.getName(), true));
+
         while (active) {
             Job thisJob = getActualJob();
 
@@ -163,30 +144,15 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
                 int transitionId = thisJob.getTransition().getId();
 
                 try {
-                    if      (transitionId == DONE)     done(thisJob, jobKey);
-                    else if (transitionId == START)    start(thisJob, jobKey);
+                    if      (transitionId == START)    start(thisJob, jobKey);
                     else if (transitionId == COMPLETE) complete(thisJob, jobKey);
-                    else if (transitionId == SUSPEND)  suspend(thisJob, jobKey);
-                    else if (transitionId == RESUME)   resume(thisJob, jobKey);
-                }
-                catch (ScriptErrorException ex) {
-                    errors.put(jobKey, ex.getErrors());
-                    ignoredPaths.add(jobKey);
                 }
                 catch (InvalidTransitionException ex) {
                     // must have already been done by someone else - ignore
                 }
                 catch (Exception ex) {
-                    Logger.error("Error executing "+thisJob.getTransition().getName()+" job:");
+                    Logger.error("Error executing job:"+thisJob);
                     Logger.error(ex);
-
-                    ErrorInfo ei = new ErrorInfo();
-                    ei.setFatal();
-                    ei.addError(ex.getClass().getSimpleName());
-                    ei.addError(ex.getMessage());
-
-                    errors.put(jobKey, ei);
-                    ignoredPaths.add(jobKey);
                 }
             }
             try {
@@ -206,20 +172,6 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         catch( Exception ex ) {
             Logger.error(ex);
         }
-    }
-
-    /**
-     * Method called to handle the Done transition. Override this method to implement application specific action
-     * for Jobs of Done Transition. By default it does nothing.
-     *
-     * @param thisJob the actual Job to be executed.
-     * @param jobKey the key of the job (i.e. itemPath:stepPat)
-     */
-    public void done(Job thisJob, String jobKey)
-            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
-            ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
-    {
-        Logger.msg(5, "UserCodeProcess.done() - Do NOTHING with job:"+thisJob);
     }
 
     /**
@@ -253,48 +205,8 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
      */
     public void complete(Job thisJob, String jobKey) throws Exception {
         Logger.msg(5, "UserCodeProcess.complete() - job:"+thisJob);
-        runUserCodeLogic(thisJob);
 
-        if (ignoredPaths.contains(jobKey)) ignoredPaths.remove(jobKey);
-    }
-
-    /**
-     * Method called to handle the Resume transition. Override this method to implement application specific action
-     * for Jobs of Resume Transition.
-     *
-     * @param thisJob the actual Job to be executed.
-     * @param jobKey the key of the job (i.e. itemPath:stepPat)
-     */
-    public void resume(Job thisJob, String jobKey)
-            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
-            ObjectAlreadyExistsException, ScriptErrorException, InvalidCollectionModification
-    {
-        Logger.msg(5, "UserCodeProcess.resume() - job:"+thisJob);
-
-        if (!ignoredPaths.contains(jobKey)) agent.execute(thisJob);
-    }
-
-    /**
-     * Method called to handle the Suspend transition. Override this method to implement application specific action
-     * for Jobs of Suspend Transition.
-     *
-     * @param thisJob the actual Job to be executed.
-     * @param jobKey the key of the job (i.e. itemPath:stepPat)
-     */
-    public void suspend(Job thisJob, String jobKey)
-            throws MarshalException, ValidationException, InvalidDataException, ObjectNotFoundException, IOException, MappingException,
-            AccessRightsException, InvalidTransitionException, PersistencyException, ObjectAlreadyExistsException,
-            InvalidCollectionModification, ScriptErrorException
-    {
-        if (ignoredPaths.contains(jobKey)) {
-            Logger.msg(5, "UserCodeProcess.suspend() - Suspending job:"+thisJob);
-
-            if (errors.containsKey(jobKey)) {
-                thisJob.setOutcome(Gateway.getMarshaller().marshall(errors.get(jobKey)));
-                errors.remove(jobKey);
-            }
-            agent.execute(thisJob);
-        }
+        runUserCodeLogic(thisJob, getErrorJob(thisJob, ERROR));
     }
 
     /**
@@ -313,14 +225,15 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
      * Default implementation - the agent execute any scripts, query or both defined
      *
      * @param job the actual Job to be executed.
+     * @param errorJob Job to be executed in case of an error
      */
-    public void runUserCodeLogic(Job job)
+    public void runUserCodeLogic(Job job, Job errorJob)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, PersistencyException,
             ObjectAlreadyExistsException, InvalidCollectionModification, ScriptErrorException
     {
-        agent.execute(job);
+        if (errorJob == null) agent.execute(job);
+        else                  agent.execute(job, errorJob);
     }
-
 
     /**
      * Gets the next possible Job based on the Transitions of the Default StateMachine
@@ -334,10 +247,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             if (jobs.size() > 0) {
 
                 thisJob = getJob(jobs, COMPLETE);
-
                 if (thisJob == null) thisJob = getJob(jobs, START);
-                if (thisJob == null) thisJob = getJob(jobs, SUSPEND);
-                if (thisJob == null) thisJob = getJob(jobs, RESUME);
 
                 if (thisJob == null) {
                     Logger.error("No supported jobs, but joblist is not empty! Discarding remaining jobs");
@@ -349,6 +259,28 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
             }
         }
         return thisJob;
+    }
+
+    /**
+     *
+     * @param completeJob
+     * @param errorTrans
+     * @return
+     */
+    private Job getErrorJob(Job completeJob, int errorTrans) {
+        Job errorJob = null;
+
+        synchronized (jobs) {
+            for (C2KLocalObject c2kLocalObject : jobs.values()) {
+                Job thisJob = (Job)c2kLocalObject;
+                if (thisJob.getItemUUID().equals(completeJob.getItemUUID()) && thisJob.getTransition().getId() == errorTrans) {
+                    Logger.msg(5, "UserCodeProcess.getErrorJob() - job:"+thisJob);
+                    errorJob = thisJob;
+                }
+            }
+        }
+
+        return errorJob;
     }
 
     /**
@@ -368,6 +300,7 @@ public class UserCodeProcess extends StandardClient implements ProxyObserver<Job
         }
         return null;
     }
+
 
     /**
      * Receives job from the AgentProxy. Reactivates thread if sleeping.

@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lifecycle.instance.stateMachine;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import lombok.AccessLevel;
@@ -35,7 +36,7 @@ public class State {
     /**
      * If true, this state deactivates the current activity and the lifecycle/workflow proceeds
      */
-    boolean finished = false; 
+    boolean finished = false;
 
     @Setter(AccessLevel.NONE)
     HashMap<Integer, Transition> possibleTransitions;
@@ -56,6 +57,13 @@ public class State {
 
     public Set<Integer> getPossibleTransitionIds() {
         return possibleTransitions.keySet();
+    }
+
+    public int getErrorTansitionId() {
+        for (Entry<Integer, Transition> entry : possibleTransitions.entrySet()) {
+            if (entry.getValue().isErrorHandler()) return entry.getKey();
+        }
+        return -1;
     }
 
     @Override

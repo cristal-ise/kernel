@@ -57,6 +57,8 @@ public class Transition {
     State  targetState;
     String reservation;
 
+    boolean errorHandler = false;
+
     /**
      * The name of the Boolean property that enables/disables this transition e.g.'Skippable'.
      * If no property name is specified the Transition is enabled
