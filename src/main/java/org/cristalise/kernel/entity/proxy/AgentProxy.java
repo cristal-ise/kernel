@@ -60,19 +60,23 @@ import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 
-/******************************************************************************
+/**
  * It is a wrapper for the connection and communication with Agent It caches
  * data loaded from the Agent to reduce communication
- ******************************************************************************/
+ */
 public class AgentProxy extends ItemProxy {
 
     AgentPath     mAgentPath;
     String        mAgentName;
     Authenticator auth;
 
-    /**************************************************************************
+    /**
      * Creates an AgentProxy without cache and change notification
-     **************************************************************************/
+     *
+     * @param ior
+     * @param agentPath
+     * @throws ObjectNotFoundException
+     */
     protected AgentProxy(org.omg.CORBA.Object ior, AgentPath agentPath) throws ObjectNotFoundException {
         super(ior, agentPath);
         mAgentPath = agentPath;
@@ -105,19 +109,22 @@ public class AgentProxy extends ItemProxy {
     }
 
     /**
+     * Extended execution of jobs when the client knows there there is a Transition to be used in case of an error.
+     * All execution parameters are taken from the job where they're probably going to be correct.
      *
+     * @param job the Actual Job to be executed
+     * @param errorJob the erroro Job the be exeucted in case there was an exception to execute the origonal Job
+     * @return The outcome after processing. May have been altered by the step. Aternatively it contains
+     *         the xml of marshalles ErrorInfo if the errorJob was exeuted
      *
-     * @param job
-     * @param errorJob
-     * @return
-     * @throws ObjectNotFoundException
-     * @throws InvalidCollectionModification
-     * @throws ObjectAlreadyExistsException
-     * @throws PersistencyException
-     * @throws InvalidDataException
-     * @throws InvalidTransitionException
-     * @throws AccessRightsException
-     * @throws ScriptErrorException
+     * @throws AccessRightsException The agent was not allowed to execute this step
+     * @throws InvalidDataException The parameters supplied were incorrect
+     * @throws InvalidTransitionException The step wasn't available
+     * @throws ObjectNotFoundException Thrown by some steps that try to locate additional objects
+     * @throws PersistencyException Problem writing or reading the database
+     * @throws ObjectAlreadyExistsException Thrown by steps that create additional object
+     * @throws ScriptErrorException Thrown by scripting classes
+     * @throws InvalidCollectionModification Thrown by steps that create/modify collections
      */
     public String execute(Job job, Job errorJob)
             throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException,

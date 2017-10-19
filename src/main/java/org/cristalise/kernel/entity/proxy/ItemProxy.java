@@ -46,8 +46,9 @@ import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterStorage;
 import org.cristalise.kernel.persistency.ClusterType;
+import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.BuiltInItemProperties;
@@ -55,6 +56,7 @@ import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.utils.CastorXMLUtility;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
@@ -65,7 +67,7 @@ import org.exolab.castor.xml.ValidationException;
  * It is a wrapper for the connection and communication with Item.
  * It caches data loaded from the Item to reduce communication
  */
-public class ItemProxy 
+public class ItemProxy
 {
     protected Item                  mItem = null;
     protected ItemPath              mItemPath;
@@ -73,6 +75,11 @@ public class ItemProxy
 
     private final HashMap<MemberSubscription<?>, ProxyObserver<?>> mSubscriptions;
 
+    /**
+     *
+     * @param ior
+     * @param itemPath
+     */
     protected ItemProxy( org.omg.CORBA.Object  ior, ItemPath itemPath) {
         Logger.msg(8, "ItemProxy::initialise() - path:" +itemPath);
 
@@ -81,31 +88,68 @@ public class ItemProxy
         mSubscriptions  = new HashMap<MemberSubscription<?>, ProxyObserver<?>>();
     }
 
+    /**
+     * Return the ItemPath object of the Item this proxy is linked with
+     * @return the ItemPath of the Item this proxy is linked with
+     */
     public ItemPath getPath() {
         return mItemPath;
     }
 
+    /**
+     * Returns the CORBA Item this proxy is linked with
+     *
+     * @return the CORBA Item this proxy is linked with
+     * @throws ObjectNotFoundException there was a problem connecting with the Item
+     */
     protected Item getItem() throws ObjectNotFoundException {
-        if (mItem == null)
-            mItem = narrow();
+        if (mItem == null) mItem = narrow();
         return mItem;
     }
 
+    /**
+     * Narrows the CORBA Item this proxy is linked with
+     *
+     * @return the CORBA Item this proxy is linked with
+     * @throws ObjectNotFoundException there was a problem connecting with the Item
+     */
     public Item narrow() throws ObjectNotFoundException {
         try {
             return ItemHelper.narrow(mIOR);
         }
-        catch (org.omg.CORBA.BAD_PARAM ex) {}
-
-        throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down.");
+        catch (org.omg.CORBA.BAD_PARAM ex) {
+            throw new ObjectNotFoundException("CORBA Object was not an Item, or the server is down:" + ex.getMessage());
+        }
     }
 
-    public void initialise( AgentPath           agentId,
-                            PropertyArrayList   itemProps,
-                            CompositeActivity   workflow,
-                            CollectionArrayList colls
-                          )
-                    throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException, MarshalException, ValidationException, IOException, MappingException, InvalidCollectionModification
+    /**
+     * Initialise the new Item with instance data which is normally is created from descriptions
+     *
+     * @param agentId the Agent who is creating the Item
+     * @param itemProps initial list of Properties of the Item
+     * @param workflow new Lifecycle of the Item
+     * @param colls the initial state of the Item's collections
+     *
+     * @throws AccessRightsException Agent does not the rights to create an Item
+     * @throws InvalidDataException data was invalid
+     * @throws PersistencyException there was a database probles during Item initialisation
+     * @throws ObjectNotFoundException Object not found
+     * @throws MarshalException there was a problem converting those objects to XML
+     * @throws ValidationException XML was not valid
+     * @throws IOException IO errors
+     * @throws MappingException errors in XML marshall/unmarshall mapping
+     * @throws InvalidCollectionModification invalid Collection
+     */
+    public void initialise(AgentPath agentId, PropertyArrayList itemProps, CompositeActivity workflow, CollectionArrayList colls)
+            throws AccessRightsException,
+            InvalidDataException,
+            PersistencyException,
+            ObjectNotFoundException,
+            MarshalException,
+            ValidationException,
+            IOException,
+            MappingException,
+            InvalidCollectionModification
     {
         Logger.msg(7, "ItemProxy.initialise() - started");
 
@@ -122,38 +166,53 @@ public class ItemProxy
         getItem().initialise( agentId.getSystemKey(), propString, wfString, collString);
     }
 
+    /**
+     * Sets the vlaue of the given Property
+     *
+     * @param agent the Agent who is setting the Property
+     * @param name the name of the Property
+     * @param value the value of the Property
+     * @throws AccessRightsException Agent does not the rights to execute this operation
+     * @throws PersistencyException there was a database problems during this operations
+     * @throws InvalidDataException data was invalid
+     */
     public void setProperty(AgentProxy agent, String name, String value)
             throws AccessRightsException, PersistencyException, InvalidDataException
     {
-        String[] params = new String[2];
-        params[0] = name;
-        params[1] = value;
         try {
+            String[] params = {name, value};
             agent.execute(this, "WriteProperty", params);
         }
-        catch (AccessRightsException e) {
-            throw (e);
-        }
-        catch (PersistencyException e) {
-            throw (e);
-        }
-        catch (InvalidDataException e) {
+        catch (AccessRightsException | PersistencyException | InvalidDataException e) {
             throw (e);
         }
         catch (Exception e) {
             Logger.error(e);
-            throw new PersistencyException("Could not store property");
+            throw new PersistencyException("Could not store property:"+e.getMessage());
         }
     }
 
+    /**
+     * Executes the given Job
+     *
+     * @param thisJob the Job to be executed
+     * @return the result of the execution
+     * @throws AccessRightsException Agent does not the rights to execute this operation
+     * @throws PersistencyException there was a database problems during this operations
+     * @throws InvalidDataException data was invalid
+     * @throws InvalidTransitionException the Transition cannot be executed
+     * @throws ObjectNotFoundException Object not found
+     * @throws ObjectAlreadyExistsException Object already exists
+     * @throws InvalidCollectionModification Invalid collection
+     */
     public String requestAction( Job thisJob )
             throws AccessRightsException,
-                   InvalidTransitionException,
-                   ObjectNotFoundException,
-                   InvalidDataException,
-                   PersistencyException,
-                   ObjectAlreadyExistsException, 
-                   InvalidCollectionModification
+            InvalidTransitionException,
+            ObjectNotFoundException,
+            InvalidDataException,
+            PersistencyException,
+            ObjectAlreadyExistsException,
+            InvalidCollectionModification
     {
         String outcome = thisJob.getOutcomeString();
         // check fields that should have been filled in
@@ -169,12 +228,21 @@ public class ItemProxy
 
         if (thisJob.getDelegatePath() == null)
             return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
-                                            thisJob.getTransition().getId(), outcome);
+                    thisJob.getTransition().getId(), outcome);
         else
-            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(), 
-                                             thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
+            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(),
+                    thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
     }
 
+    /**
+     *
+     * @param agentPath
+     * @param filter
+     * @return
+     * @throws AccessRightsException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     */
     private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
             throws AccessRightsException, ObjectNotFoundException, PersistencyException
     {
@@ -191,10 +259,28 @@ public class ItemProxy
         return thisJobList.list;
     }
 
+    /**
+     * Get the list of Job if the Item that can be executed by the Agent
+     *
+     * @param agent the Agent requesting the job
+     * @return list of Jobs
+     * @throws AccessRightsException Agent does not the rights to execute this operation
+     * @throws PersistencyException there was a database problems during this operations
+     * @throws ObjectNotFoundException data was invalid
+     */
     public ArrayList<Job> getJobList(AgentProxy agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         return getJobList(agent.getPath(), true);
     }
 
+    /**
+     *
+     * @param actName
+     * @param agent
+     * @return
+     * @throws AccessRightsException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     */
     private Job getJobByName(String actName, AgentPath agent) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         ArrayList<Job> jobList = getJobList(agent, true);
         for (Job job : jobList) {
@@ -204,9 +290,9 @@ public class ItemProxy
         return null;
     }
 
-    /** 
+    /**
      * Gets the current version of the named Collection
-     * 
+     *
      * @param collection The built-in collection
      * @return the Collection object
      * @throws ObjectNotFoundException objects were not found
@@ -215,9 +301,9 @@ public class ItemProxy
         return getCollection(collection, null);
     }
 
-    /** 
+    /**
      * Gets a numbered version (snapshot) of a collection
-     * 
+     *
      * @param collection The built-in Collection
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
@@ -227,9 +313,9 @@ public class ItemProxy
         return getCollection(collection.getName(), version);
     }
 
-    /** 
+    /**
      * Gets the last version of the named collection
-     * 
+     *
      * @param collName The collection name
      * @return the Collection object
      * @throws ObjectNotFoundException objects were not found
@@ -238,9 +324,9 @@ public class ItemProxy
         return getCollection(collName, null);
     }
 
-    /** 
+    /**
      * Gets a numbered version (snapshot) of a collection
-     * 
+     *
      * @param collName The collection name
      * @param version The collection number. Use null to get the 'last' version.
      * @return the Collection object
@@ -252,7 +338,7 @@ public class ItemProxy
     }
 
     /** Gets the Workflow object of this Item
-     * 
+     *
      * @return the Item's Workflow object
      * @throws ObjectNotFoundException objects were not found
      */
@@ -260,15 +346,23 @@ public class ItemProxy
         return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow");
     }
 
+    /**
+     * Check if the given Viewvpoint exists
+     *
+     * @param schemaName the name of the Schema associated with the Viewpoint
+     * @param viewName the name of the View
+     * @return true if the ViewPoint exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
     public boolean checkViewpoint(String schemaName, String viewName) throws ObjectNotFoundException {
         return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName);
     }
 
-    /** 
-     * Gets the named viewpoint
-     * 
-     * @param schemaName Outcome schema name
-     * @param viewName Viewpoint name
+    /**
+     * Gets the named Viewpoint
+     *
+     * @param schemaName the name of the Schema associated with the Viewpoint
+     * @param viewName name if the View
      * @return a Viewpoint object
      * @throws ObjectNotFoundException objects were not found
      */
@@ -276,9 +370,71 @@ public class ItemProxy
         return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName);
     }
 
-    /** 
+    /**
+     * Check if the given Outcome exists
+     *
+     * @param schemaName the name of the Schema used to create the Outcome
+     * @param schemaVersion the version of the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @return true if the Outcome exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        try {
+            return checkOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            throw new ObjectNotFoundException(e.getMessage());
+        }
+    }
+
+    /**
+     * Check if the given Outcome exists
+     *
+     * @param schema the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @return true if the Outcome exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
+        return checkContent(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId));
+    }
+
+    /**
+     * Gets the selected Outcome
+     *
+     * @param schemaName the name of the Schema of the Outcome
+     * @param schemaVersion the version of the Schema of the Outcome
+     * @param eventId the event id
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        try {
+            return getOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            throw new ObjectNotFoundException(e.getMessage());
+        }
+    }
+
+    /**
+     * Gets the selected Outcome
+     *
+     * @param schema the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
+        return (Outcome)getObject(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId);
+    }
+
+    /**
      * Finds the first finishing job with the given name for the given Agent in the workflow.
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param agent The agent to fetch jobs for
      * @return the JOB object or null if nothing was found
@@ -292,7 +448,7 @@ public class ItemProxy
 
     /**
      * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param transName the name of the Transition to look for
      * @param agent The AgentProxy to fetch jobs for
@@ -307,7 +463,7 @@ public class ItemProxy
 
     /**
      * Finds the Job with the given Activity and Transition name for the Agent in the Items Workflow
-     * 
+     *
      * @param actName the name of the Activity to look for
      * @param transName the name of the Transition to look for
      * @param agentPath The agent to fetch jobs for
@@ -335,6 +491,13 @@ public class ItemProxy
         super.finalize();
     }
 
+    /**
+     * Query data of the Item located by the ClusterStorage path
+     *
+     * @param path the ClusterStorage path
+     * @return the data in XML form
+     * @throws ObjectNotFoundException path was not correct
+     */
     public String queryData( String path ) throws ObjectNotFoundException {
         try {
             Logger.msg(7, "ItemProxy.queryData() - "+mItemPath+"/"+path);
@@ -347,13 +510,16 @@ public class ItemProxy
 
                 for (int i = 0; i < result.length; i++) {
                     retString.append(result[i]);
+
                     if (i<result.length-1) retString.append(",");
                 }
                 Logger.msg(7, "ItemProxy.queryData() - "+retString.toString());
                 return retString.toString();
             }
-            C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
-            return Gateway.getMarshaller().marshall(target);
+            else {
+                C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
+                return Gateway.getMarshaller().marshall(target);
+            }
         }
         catch (ObjectNotFoundException e) {
             throw e;
@@ -364,15 +530,37 @@ public class ItemProxy
         }
     }
 
+    /**
+     * Check if the data of the Item located by the ClusterStorage path is exist
+     *
+     * @param path the ClusterStorage path
+     * @param name the name of the content to be checked
+     * @return true if there is content false otherwise
+     * @throws ObjectNotFoundException path was not correct
+     */
     public boolean checkContent( String path, String name ) throws ObjectNotFoundException {
         for (String key : getContents(path)) if (key.equals(name)) return true;
         return false;
     }
 
+    /**
+     * List the root content of the given ClusterType
+     *
+     * @param type the type of the cluster
+     * @return list of String of the cluster content
+     * @throws ObjectNotFoundException Object nt found
+     */
     public String[] getContents( ClusterType type ) throws ObjectNotFoundException {
         return getContents(type.getName());
     }
 
+    /**
+     * List the content of the cluster located by the cluster path
+     *
+     * @param path the ClusterStorage path
+     * @return list of String of the cluster content
+     * @throws ObjectNotFoundException Object nt found
+     */
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
             return Gateway.getStorage().getClusterContents(mItemPath, path);
@@ -383,8 +571,8 @@ public class ItemProxy
     }
 
     /**
-     * Executes the Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc. 
-     * 
+     * Executes the Query in the target database. The query can be any of these type: SQL/OQL/XQuery/XPath/etc.
+     *
      * @param query the query to be executed
      * @return the xml result of the query
      * @throws PersistencyException there was a fundamental DB issue
@@ -393,17 +581,31 @@ public class ItemProxy
         return Gateway.getStorage().executeQuery(query);
     }
 
+    /**
+     * Retrieve the C2KLocalObject for the ClusterType
+     *
+     * @param type the ClusterTyoe
+     * @return the C2KLocalObject
+     * @throws ObjectNotFoundException the type did not result in a C2KLocalObject
+     */
     public C2KLocalObject getObject( ClusterType type ) throws ObjectNotFoundException {
         return getObject(type.getName());
     }
 
-    public C2KLocalObject getObject( String xpath ) throws ObjectNotFoundException {
+    /**
+     * Retrieve the C2KLocalObject for the Cluster path
+     *
+     * @param path the path to the cluster content
+     * @return the C2KLocalObject
+     * @throws ObjectNotFoundException the path did not result in a C2KLocalObject
+     */
+    public C2KLocalObject getObject( String path ) throws ObjectNotFoundException {
         // load from storage, falling back to proxy loader if not found in others
         try {
-            return Gateway.getStorage().get( mItemPath, xpath , null);
+            return Gateway.getStorage().get( mItemPath, path , null);
         }
         catch( PersistencyException ex ) {
-            Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+xpath);
+            Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+path);
             Logger.error(ex);
             throw new ObjectNotFoundException( ex.toString() );
         }
@@ -411,7 +613,7 @@ public class ItemProxy
 
     /**
      * Retrieves the values of a BuiltInItemProperty
-     * 
+     *
      * @param prop one of the Built-In Item Property
      * @return the value of the property
      * @throws ObjectNotFoundException property was not found
@@ -422,7 +624,7 @@ public class ItemProxy
 
     /**
      * Retrieves the values of a named property
-     * 
+     *
      * @param name of the Item Property
      * @return the value of the property
      * @throws ObjectNotFoundException property was not found
@@ -435,6 +637,11 @@ public class ItemProxy
         else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not find property "+name+" from item "+mItemPath);
     }
 
+    /**
+     * Get the name of the Item from its Property called Name
+     *
+     * @return the name of the Item
+     */
     public String getName() {
         try {
             return getProperty(NAME);
