@@ -634,6 +634,6 @@ public class Job implements C2KLocalObject {
 
     @Override
     public String toString() {
-        return "[item:"+itemPath+" step:"+stepName+" trans:"+getTransition().getName()+" role:"+agentRole+"]";
+        return "[item:"+itemPath+" step:"+stepName+" trans:"+getTransition()+" role:"+agentRole+"]";
     }
 }

@@ -115,8 +115,10 @@ public class ProxyClientConnection implements SocketHandler {
             }
         }
         catch (IOException ex) {
-            if (!closing)
+            if (!closing) {
+                if (Logger.doLog(8)) Logger.error(ex);
                 Logger.error("ProxyClientConnection.run() - clientID:"+thisClientId+" - Error reading from socket.");
+            }
         }
         closeSocket();
         Logger.msg(1, "ProxyClientConnection.run() - clientID:"+thisClientId+" closed.");
