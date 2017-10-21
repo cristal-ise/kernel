@@ -55,21 +55,16 @@ final class JobPusher extends Thread {
                 try {
                     // get joblist for agent
                     JobArrayList jobList = new JobArrayList(this.activity.calculateJobs(nextAgent, itemPath, false));
-                    if (jobList.list.size() !=  0) {
-                        // push it to the agent
-                        String stringJobs = Gateway.getMarshaller().marshall(jobList);
-                        Agent thisAgent = AgentHelper.narrow( nextAgent.getIOR() );
 
-                        Logger.msg(7, "JobPusher.run() - Calling refreshJobList() with "+jobList.list.size()+" jobs for agent "+nextAgent+" from "+activity.getPath());
-                        thisAgent.refreshJobList(itemPath.getSystemKey(), activity.getPath(), stringJobs);
-                    }
-                    else {
-                        Logger.msg(7, "JobPusher.run() - NO jobs to send to agent "+nextAgent+" from "+activity.getPath());
-                    }
+                    // push it to the agent
+                    String stringJobs = Gateway.getMarshaller().marshall(jobList);
+                    Agent thisAgent = AgentHelper.narrow( nextAgent.getIOR() );
+
+                    Logger.msg(7, "JobPusher.run() - Calling refreshJobList() with "+jobList.list.size()+" jobs for agent "+nextAgent+" from "+activity.getPath());
+                    thisAgent.refreshJobList(itemPath.getSystemKey(), activity.getPath(), stringJobs);
                 }
                 catch (Exception ex) {
-                    Logger.error("JobPusher.run() - Agent " + nextAgent + " of role " + myRole
-                        + " could not be found to be informed of a change in " + itemPath);
+                    Logger.error("JobPusher.run() - Agent "+nextAgent+" of role "+myRole+" could not be found to be informed of a change in "+itemPath);
                     Logger.error(ex);
                 }
             }
