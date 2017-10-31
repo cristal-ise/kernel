@@ -51,6 +51,7 @@ import org.cristalise.kernel.utils.WeakCache;
 /**
  * Instantiates ClusterStorages listed in properties file All read/write requests to storage pass through this object,
  * which can query the capabilities of each declared storage, and channel requests accordingly. Transaction based.
+ * It also has a memoryCache to increase performance, use 'Storage.disableCache=true' to disable it.
  */
 public class ClusterStorageManager {
     HashMap<String, ClusterStorage>                 allStores           = new HashMap<String, ClusterStorage>();
@@ -110,6 +111,7 @@ public class ClusterStorageManager {
 
             if (newStorage instanceof TransactionalClusterStorage) transactionalStores.add((TransactionalClusterStorage)newStorage);
         }
+
         clusterReaders.put(ClusterType.ROOT, rootStores); // all storages are queried for clusters at the root level
     }
 
@@ -254,10 +256,8 @@ public class ClusterStorageManager {
      * @return the C2KObject located by path
      */
     public C2KLocalObject get(ItemPath itemPath, String path) throws PersistencyException, ObjectNotFoundException {
-        C2KLocalObject result = null;
         // check cache first
-        Map<String, C2KLocalObject> sysKeyMemCache = null;
-        sysKeyMemCache = memoryCache.get(itemPath);
+        Map<String, C2KLocalObject> sysKeyMemCache = memoryCache.get(itemPath);
 
         if (sysKeyMemCache != null) {
             synchronized(sysKeyMemCache) {
@@ -279,6 +279,8 @@ public class ClusterStorageManager {
                 else              return null;
             }
         }
+
+        C2KLocalObject result = null;
 
         // deal out top level remote maps
         if (path.indexOf('/') == -1) {
@@ -311,19 +313,8 @@ public class ClusterStorageManager {
             throw new ObjectNotFoundException("ClusterStorageManager.get() - Path "+path+" not found in "+itemPath);
         }
 
-        // got it! store it in the cache
-        if (sysKeyMemCache == null) { // create cache if needed
-            boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
-            Logger.msg(7,"ClusterStorageManager.get() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
-            sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
+        putInMemoryCache(itemPath, path, result);
 
-            synchronized (memoryCache) {
-                memoryCache.put(itemPath, sysKeyMemCache);
-            }
-        }
-        synchronized(sysKeyMemCache) {
-            sysKeyMemCache.put(path, result);
-        }
         return result;
     }
 
@@ -350,14 +341,41 @@ public class ClusterStorageManager {
                 throw e;
             }
         }
-        // put in mem cache if that worked
+
+        putInMemoryCache(itemPath, path, obj);
+
+        // transmit proxy event
+        if(Gateway.getProxyServer() != null)
+            Gateway.getProxyServer().sendProxyEvent(new ProxyMessage(itemPath, path, ProxyMessage.ADDED));
+        else
+            Logger.warning("ClusterStorageManager.put() - ProxyServer is null - Proxies are not notified of this event");
+    }
+
+    /**
+     * Put the given C2KLocalObject of the Item in the memory cache. Use 'Storage.disableCache=true' to disable caching.
+     *
+     * @param itemPath the Item which data is going to be cached
+     * @param path the cluster patch of the object
+     * @param obj the C2KLocalObject to be cached
+     */
+    private void putInMemoryCache(ItemPath itemPath, String path, C2KLocalObject obj) {
+        if (Gateway.getProperties().getBoolean("Storage.disableCache", false)) {
+            Logger.msg(8,"ClusterStorageManager.putInMemoryCache() - Cache is DISABLED");
+            return;
+        }
+
         Map<String, C2KLocalObject> sysKeyMemCache;
-        if (memoryCache.containsKey(itemPath))
+
+        if (memoryCache.containsKey(itemPath)) {
             sysKeyMemCache = memoryCache.get(itemPath);
+        }
         else {
             boolean useWeak = Gateway.getProperties().getBoolean("Storage.useWeakCache", false);
-            Logger.msg(7,"ClusterStorageManager.put() - Creating "+(useWeak?"Weak":"Strong")+" cache for item "+itemPath);
-            sysKeyMemCache = useWeak?new WeakCache<String, C2KLocalObject>():new SoftCache<String, C2KLocalObject>(0);
+
+            Logger.msg(7,"ClusterStorageManager.putInMemoryCache() - Creating "+(useWeak ? "Weak" : "Strong")+" cache for item "+itemPath);
+
+            sysKeyMemCache = useWeak ? new WeakCache<String, C2KLocalObject>() : new SoftCache<String, C2KLocalObject>(0);
+
             synchronized (memoryCache) {
                 memoryCache.put(itemPath, sysKeyMemCache);
             }
@@ -368,12 +386,6 @@ public class ClusterStorageManager {
         }
 
         if (Logger.doLog(9)) dumpCacheContents(9);
-
-        // transmit proxy event
-        if(Gateway.getProxyServer() != null)
-            Gateway.getProxyServer().sendProxyEvent(new ProxyMessage(itemPath, path, ProxyMessage.ADDED));
-        else
-            Logger.warning("ClusterStorageManager.put() - ProxyServer is null - Proxies are not notified of this event");
     }
 
     public void remove(ItemPath itemPath, String path) throws PersistencyException {
@@ -456,6 +468,7 @@ public class ClusterStorageManager {
 
     public void dumpCacheContents(int logLevel) {
         if (!Logger.doLog(logLevel)) return;
+
         synchronized(memoryCache) {
             for (ItemPath itemPath : memoryCache.keySet()) {
                 Logger.msg(logLevel, "Cached Objects of Item " + itemPath);
