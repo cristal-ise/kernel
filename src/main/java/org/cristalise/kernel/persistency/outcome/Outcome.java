@@ -671,18 +671,35 @@ public class Outcome implements C2KLocalObject {
         return getClusterType()+"/"+mSchema.getName()+"/"+mSchema.getVersion()+"/"+mID;
     }
 
+    public static Document newDocument() throws SAXException, IOException {
+        return parse((InputSource)null);
+    }
+
     /**
-     * Parses the outcome into a DOM tree
+     * Parses the xml string into a DOM tree
      *
-     * @param xml string to be parsed
+     * @param xml string to be parsed, can be null. When xml is null it creates empty Document.
      * @return the parsed Document
      *
      * @throws SAXException error parsing document
      * @throws IOException any IO errors occur
      */
     public static Document parse(String xml) throws SAXException, IOException {
+        return parse(new InputSource(new StringReader(xml)));
+    }
+
+    /**
+     * Parses the input source into a DOM tree. When input source is null it creates empty Document.
+     *
+     * @param xml string to be parsed, can be null.
+     * @return the parsed Document
+     *
+     * @throws SAXException error parsing document
+     * @throws IOException any IO errors occur
+     */
+    public static Document parse(InputSource xml) throws SAXException, IOException {
         synchronized (parser) {
-            if (xml!=null) return parser.parse(new InputSource(new StringReader(xml)));
+            if (xml!=null) return parser.parse(xml);
             else           return parser.newDocument();
         }
     }

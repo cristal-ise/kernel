@@ -27,10 +27,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.xml.schema.reader.SchemaReader;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -51,8 +53,8 @@ public class Schema implements DescriptionObject, ErrorHandler {
     @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     protected StringBuffer errors = null;
 
-    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
-    public org.exolab.castor.xml.schema.Schema som;
+    @Setter(AccessLevel.NONE)
+    public org.exolab.castor.xml.schema.Schema som = null;
 
     public Schema(String name, int version, ItemPath itemPath, String schema) {
         super();
@@ -91,14 +93,30 @@ public class Schema implements DescriptionObject, ErrorHandler {
     }
 
     /**
+     * Returns the SOM
+     *
+     * @return castor xml schema object
+     */
+    public org.exolab.castor.xml.schema.Schema getSom() {
+        if (som == null && StringUtils.isNotBlank(schemaData)) {
+            try {
+                som = new SchemaReader(new InputSource(new StringReader(schemaData))).read();
+            }
+            catch (IOException e) {
+                Logger.error(e);
+            }
+        }
+        return som;
+    }
+
+    /**
      * Validates the schemaData (XML)
      *
      * @return errors in String format
      */
     public synchronized String validate() throws IOException {
         errors = new StringBuffer();
-        InputSource schemaSource = new InputSource(new StringReader(schemaData));
-        SchemaReader mySchemaReader = new SchemaReader(schemaSource);
+        SchemaReader mySchemaReader = new SchemaReader(new InputSource(new StringReader(schemaData)));
 
         mySchemaReader.setErrorHandler(this);
         mySchemaReader.setValidation(true);
@@ -169,9 +187,8 @@ public class Schema implements DescriptionObject, ErrorHandler {
     public boolean equals(Object obj) {
         if (obj == null) return false;
 
-        if (name.equals(((Schema) obj).getName()) && version == ((Schema) obj).getVersion()) {
+        if (name.equals(((Schema) obj).getName()) && version == ((Schema) obj).getVersion())
             return true;
-        }
         else
             return false;
     }
