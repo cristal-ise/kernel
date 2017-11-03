@@ -34,6 +34,10 @@ public class RolePath extends Path {
         super();
     }
 
+    public RolePath(String path) {
+        super(path);
+    }
+
     public RolePath(RolePath parent, String roleName) {
         super(parent, roleName);
     }
