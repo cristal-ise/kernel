@@ -21,6 +21,7 @@
 package org.cristalise.kernel.entity.proxy;
 
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -640,11 +641,25 @@ public class ItemProxy
     /**
      * Get the name of the Item from its Property called Name
      *
-     * @return the name of the Item
+     * @return the name of the Item or null of no Name Property
      */
     public String getName() {
         try {
             return getProperty(NAME);
+        }
+        catch (ObjectNotFoundException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Get the type of the Item from its Property called Type
+     *
+     * @return the type of the Item or null of no Type Property
+     */
+    public String getType() {
+        try {
+            return getProperty(TYPE);
         }
         catch (ObjectNotFoundException ex) {
             return null;
