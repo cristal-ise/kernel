@@ -22,7 +22,7 @@
 -->
 <StateMachine initialState="0">
     <State id="0" name="Available"/>
-    <Transition id="0" name="Done" origin="0" target="0">
+    <Transition id="0" name="Done" origin="0" target="0" reservation="clear">
         <Outcome name="PredefinedStepOutcome" version="0"/>
     </Transition>
 </StateMachine>
