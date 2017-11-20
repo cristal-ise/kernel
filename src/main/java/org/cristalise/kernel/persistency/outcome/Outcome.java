@@ -1000,19 +1000,42 @@ public class Outcome implements C2KLocalObject {
     /**
      * Sets the values of Attributes and child Element of the root Element. It only updates existing elements.
      *
-     * @param record Map with a key/value pairs to fing the fields or attributes to update
+     * @param record Map with a key/value pairs to find the fields or attributes to update
      * @throws InvalidDataException the name in the map was invalid
      */
     public void setRecord(Map<String, String> record) throws InvalidDataException {
+        setRecord(mDOM.getDocumentElement(), record);
+    }
+
+    /**
+     * Sets the values of Attributes and child Element of the Element selected by xpath. It only updates existing elements.
+     *
+     * @param xpath apth to the Element to be updated
+     * @param record Map with a key/value pairs to find the fields or attributes to update
+     * @throws InvalidDataException the name in the map was invalid
+     * @throws XPathExpressionException the xpath was invalid
+     */
+    public void setRecord(String xpath, Map<String, String> record) throws InvalidDataException, XPathExpressionException {
+        setRecord((Element)getNodeByXPath(xpath), record);
+    }
+
+    /**
+     * Sets the values of Attributes and child Element of given Element. It only updates existing elements.
+     *
+     * @param element the element to be updated
+     * @param record Map with a key/value pairs to find the fields or attributes to update
+     * @throws InvalidDataException the name in the map was invalid
+     */
+    public void setRecord(Element element, Map<String, String> record) throws InvalidDataException {
         for (Entry<String,String> entry : record.entrySet()) {
             String name = entry.getKey();
             String value = entry.getValue();
 
             try {
-                setField(name, value);
+                setField(element, name, value);
             }
             catch (InvalidDataException e) {
-                setAttribute(name, value);
+                setAttribute(element, name, value);
             }
         }
     }
