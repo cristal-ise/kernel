@@ -82,6 +82,7 @@ public class Script implements DescriptionObject {
 
     String         mScript     = "";
     CompiledScript mCompScript = null;
+    String         mScriptXML  = "";
 
     String         mName;
     Integer        mVersion;
@@ -114,6 +115,7 @@ public class Script implements DescriptionObject {
      */
     public Script(String name, Integer version, ItemPath path, String xml) throws ScriptParsingException, ParameterException {
         mName = name; mVersion = version; mItemPath = path;
+        mScriptXML = xml;
         parseScriptXML(xml);
     }
 
@@ -697,7 +699,7 @@ public class Script implements DescriptionObject {
     }
 
     public String getScriptData() {
-        return mScript;
+        return mScriptXML;
     }
 
     @Override
