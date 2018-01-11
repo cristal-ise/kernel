@@ -181,18 +181,19 @@ public abstract class PredefinedStep extends Activity {
         try {
             Document scriptDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                     .parse(new InputSource(new StringReader(xmlData)));
+
             NodeList nodeList = scriptDoc.getElementsByTagName("param");
             String[] result = new String[nodeList.getLength()];
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node n = nodeList.item(i).getFirstChild();
-                if (n instanceof CDATASection) result[i] = ((CDATASection) n).getData();
-                else if (n instanceof Text)    result[i] = ((Text) n).getData();
+
+                if      (n instanceof CDATASection) result[i] = ((CDATASection) n).getData();
+                else if (n instanceof Text)         result[i] = ((Text) n).getData();
             }
             return result;
         }
         catch (Exception ex) {
-            Logger.error("Exception::PredefinedStep::getDataList()");
             Logger.error(ex);
         }
         return null;
