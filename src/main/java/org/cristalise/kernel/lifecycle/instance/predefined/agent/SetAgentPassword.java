@@ -52,9 +52,11 @@ public class SetAgentPassword extends PredefinedStep {
 
         try {
             AgentPath targetAgent = new AgentPath(item);
+
             if (!targetAgent.equals(agent) && !agent.hasRole("Admin")) {
                 throw new InvalidDataException("Agent passwords may only be set by those Agents or by an Administrator");
             }
+
             Gateway.getLookupManager().setAgentPassword(targetAgent, params[0]);
 
             params[0] = "REDACTED"; // censor password from outcome
@@ -62,6 +64,7 @@ public class SetAgentPassword extends PredefinedStep {
             return bundleData(params);
         }
         catch (InvalidItemPathException ex) {
+            Logger.error(ex);
             throw new InvalidDataException("Can only set password on an Agent. " + item + " is an Item.");
         }
         catch (NoSuchAlgorithmException e) {
