@@ -20,9 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-import java.util.Arrays;
+import java.security.NoSuchAlgorithmException;
 
-import org.cristalise.kernel.collection.CollectionArrayList;
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -31,11 +31,11 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.CorbaServer;
 import org.cristalise.kernel.entity.agent.ActiveEntity;
-import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.utils.Logger;
@@ -48,10 +48,13 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
 
     /**
      * Params:
-     * <ol><li>New Agent name</li>
-     * <li>Description version to use</li>
-     * <li>Comma-delimited Role names to assign to the agent. Must already exist.</li>
-     * <li>Initial properties to set in the new Agent</li>
+     * <ol>
+     * <li>Agent name</li>
+     * <li>Domain context</li>
+     * <li>Comma-delimited Role names to assign to the Agent</li>
+     * <li>Password (optional)</li>
+     * <li>Initial properties to set in the new Agent (optional)</li>
+     * <li>Description version to use(optional)</li>
      * </ol>
      * @throws ObjectNotFoundException
      * @throws InvalidDataException The input parameters were incorrect
@@ -62,74 +65,76 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
      * @see org.cristalise.kernel.lifecycle.instance.predefined.item.CreateItemFromDescription#runActivityLogic(AgentPath, ItemPath, int, String, Object)
      */
     @Override
-    protected String runActivityLogic(final AgentPath agentPath, final ItemPath itemPath, final int transitionID, final String requestData, final Object locker)
-            throws ObjectNotFoundException, InvalidDataException, ObjectAlreadyExistsException, CannotManageException, ObjectCannotBeUpdated, PersistencyException
+    protected String runActivityLogic(AgentPath agentPath, ItemPath descItemPath, int transitionID, String requestData, Object locker)
+            throws ObjectNotFoundException, 
+                   InvalidDataException, 
+                   ObjectAlreadyExistsException, 
+                   CannotManageException, 
+                   ObjectCannotBeUpdated, 
+                   PersistencyException
     {
         String[] input = getDataList(requestData);
-        if (Logger.doLog(3))
-		 {
-			Logger.msg(3, "CreateAgentFromDescription: called by "+agentPath+" on "+itemPath+" with parameters "+Arrays.toString(input));
-			//if (input.length < 3 || input.length > 4)
-			//    throw new InvalidDataException("CreateAgentFromDescription: Invalid parameters "+Arrays.toString(input));
-		}
 
-        String newName = input[0];
-        String domPath = input[1];
-        String descVer = input.length > 2 ? input[2]:"last";
-
-        Logger.msg(1, "CreateAgentFromDescription - Starting.");
-
-        // check if the path is already taken
-        try {
-            Gateway.getLookup().getAgentPath(newName);
-            throw new ObjectAlreadyExistsException("The agent name " +newName+ " exists already.");
-        }
-        catch (ObjectNotFoundException ex) { }
-
-        DomainPath context = new DomainPath(new DomainPath(domPath), newName);
-        if (context.exists()) {
-			throw new ObjectAlreadyExistsException("The path " +context+ " exists already.");
-		}
+        String            newName   = input[0];
+        String            contextS  = input[1];
+        String[]          roles     = input[2].split(",");
+        String            pwd       = input.length > 3 ? input[3]: "";
+        String            descVer   = input.length > 4 ? input[4] : "last";
+        PropertyArrayList initProps = input.length > 5 ? unmarshallInitProperties(input[5]) : new PropertyArrayList();
 
         // generate new agent path with new UUID
-        Logger.msg(6, "CreateAgentFromDescription - Requesting new agent path");
+        Logger.msg(1, "CreateAgentFromDescription - Requesting new agent path name:" + newName);
         AgentPath newAgentPath = new AgentPath(new ItemPath(), newName);
 
+        // check if the agent's name is already taken
+        if (Gateway.getLookup().exists(newAgentPath) )
+            throw new ObjectAlreadyExistsException("The agent name " + newName + " exists already.");
+
+        DomainPath context = new DomainPath(new DomainPath(contextS), newName);
+
+        if (context.exists()) throw new ObjectAlreadyExistsException("The path " +context+ " exists already.");
+
+        ActiveEntity newAgent = createAgentAddRoles(newAgentPath, roles, pwd);
+
+        initialiseItem(newAgent, agentPath, descItemPath, initProps, newName, descVer, context, newAgentPath, locker);
+
+        if (input.length > 3) input[3] = "REDACTED"; // censor password from outcome
+
+        return bundleData(input);
+    }
+
+    /**
+     * 
+     * @param newAgentPath
+     * @param roles
+     * @return
+     * @throws CannotManageException
+     * @throws ObjectCannotBeUpdated
+     * @throws ObjectAlreadyExistsException
+     */
+    protected ActiveEntity createAgentAddRoles(AgentPath newAgentPath, String[] roles, String pwd) throws CannotManageException, ObjectCannotBeUpdated, ObjectAlreadyExistsException {
         // create the Agent object
-        Logger.msg(3, "CreateAgentFromDescription - Creating Agent");
+        Logger.msg(3, "CreateAgentFromDescription.createAgentAddRoles() - Creating Agent");
         CorbaServer factory = Gateway.getCorbaServer();
-        if (factory == null) {
-			throw new CannotManageException("This process cannot create new Items");
-		}
+
+        if (factory == null) throw new CannotManageException("This process cannot create new Items");
+
         ActiveEntity newAgent = factory.createAgent(newAgentPath);
         Gateway.getLookupManager().add(newAgentPath);
 
-        
-        Logger.msg(3, "CreateAgentFromDescription - Initializing Agent");
-
-        // initialise it with its properties and workflow
         try {
-            PropertyArrayList initProps =  input.length > 3 ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
+            if (StringUtils.isNotBlank(pwd)) Gateway.getLookupManager().setAgentPassword(newAgentPath, pwd);
 
-            PropertyArrayList   newProps = instantiateProperties(itemPath, descVer, initProps, newName, agentPath, locker);
-            CollectionArrayList newColls = instantiateCollections(itemPath, descVer, newProps, locker);
-            CompositeActivity   newWorkflow = instantiateWorkflow(itemPath, descVer, locker);
-
-            newAgent.initialise( agentPath.getSystemKey(),
-                                 Gateway.getMarshaller().marshall(newProps),
-                                 Gateway.getMarshaller().marshall(newWorkflow),
-                                 Gateway.getMarshaller().marshall(newColls) );
+            for (String roleName: roles) {
+                RolePath role = Gateway.getLookupManager().getRolePath(roleName);
+                Gateway.getLookupManager().addRole(newAgentPath, role);
+            }
         }
-        catch (PersistencyException e) {
+        catch (ObjectNotFoundException | NoSuchAlgorithmException e) {
             Logger.error(e);
-            throw e;
+            Gateway.getLookupManager().delete(newAgentPath);
         }
-        catch (Exception e) {
-            throw new InvalidDataException("CreateAgentFromDescription: Problem initializing new Agent. See log: "+e.getMessage());
-        }
-        // Create domain path
-        context.setItemPath(newAgentPath);
-        Gateway.getLookupManager().add(context);
-        return requestData;
+
+        return newAgent;
     }
 }

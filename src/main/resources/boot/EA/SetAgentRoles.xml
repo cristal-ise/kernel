@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     This file is part of the CRISTAL-iSE kernel.
@@ -21,15 +20,11 @@
     http://www.fsf.org/licensing/licenses/lgpl.html
 
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
-	<xs:element name="PredefinedStepOutcome">
-		<xs:annotation>
-			<xs:documentation>General holder for predefined step outcomes we can't be bothered to define a proper schema for</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="param" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-</xs:schema>
+<ActivityDef ID="1" Name="SetAgentDetails" Height="0" Width="0" IsLayoutable="false" IsComposite="false">
+    <Properties>
+        <KeyValuePair Key="Description" String="Sets the roles of an Agent to the list provided"/>
+        <KeyValuePair Key="SchemaType" String="PredefinedStepOutcome"/>
+        <KeyValuePair Key="SchemaVersion" String="0"/>
+        <KeyValuePair Key="Agent Role" String="Admin"/>
+    </Properties>
+</ActivityDef>

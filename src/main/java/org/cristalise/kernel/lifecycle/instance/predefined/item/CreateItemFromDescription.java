@@ -34,12 +34,14 @@ import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.CorbaServer;
+import org.cristalise.kernel.entity.ItemOperations;
 import org.cristalise.kernel.entity.TraceableEntity;
 import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
@@ -66,23 +68,37 @@ public class CreateItemFromDescription extends PredefinedStep {
     }
 
     /**
-     *  requestdata is xmlstring
+     * Params:
+     * <ol>
+     * <li>Item name</li>
+     * <li>Domain context</li>
+     * <li>Description version to use(optional)</li>
+     * <li>Initial properties to set in the new Agent (optional)</li>
+     * </ol>
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException The input parameters were incorrect
+     * @throws ObjectAlreadyExistsException The Agent already exists
+     * @throws CannotManageException The Agent could not be created
+     * @throws ObjectCannotBeUpdated The addition of the new entries into the LookupManager failed
+     * @throws PersistencyException
      */
     @Override
-    protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
+    protected String runActivityLogic(AgentPath agent, ItemPath descItemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException,
-            ObjectNotFoundException,
-            ObjectAlreadyExistsException,
-            CannotManageException,
-            ObjectCannotBeUpdated,
-            PersistencyException
+                   ObjectNotFoundException,
+                   ObjectAlreadyExistsException,
+                   CannotManageException,
+                   ObjectCannotBeUpdated,
+                   PersistencyException
     {
         String[] input = getDataList(requestData);
-        String newName = input[0];
-        String domPath = input[1];
-        String descVer = input.length > 2 ? input[2] : "last";
 
-        Logger.msg(1, "CreateItemFromDescription - Starting.");
+        String            newName   = input[0];
+        String            domPath   = input[1];
+        String            descVer   = input.length > 2 ? input[2] : "last";
+        PropertyArrayList initProps = input.length > 3 ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
+
+        Logger.msg(1, "CreateItemFromDescription - name:" + newName);
 
         // check if the path is already taken
         DomainPath context = new DomainPath(new DomainPath(domPath), newName);
@@ -102,15 +118,45 @@ public class CreateItemFromDescription extends PredefinedStep {
         TraceableEntity newItem = factory.createItem(newItemPath);
         Gateway.getLookupManager().add(newItemPath);
 
+        initialiseItem(newItem, agent, descItemPath, initProps, newName, descVer, context, newItemPath, locker);
+
+        return requestData;
+    }
+
+    /**
+     * 
+     * @param agent
+     * @param descItemPath
+     * @param locker
+     * @param input
+     * @param newName
+     * @param descVer
+     * @param context
+     * @param newItemPath
+     * @param newItem
+     * @throws ObjectCannotBeUpdated
+     * @throws CannotManageException
+     * @throws InvalidDataException
+     * @throws ObjectAlreadyExistsException
+     * @throws PersistencyException
+     * @throws ObjectNotFoundException
+     */
+    protected void initialiseItem(ItemOperations newItem, AgentPath agent, ItemPath descItemPath, PropertyArrayList initProps, String newName, String descVer,
+            DomainPath context, ItemPath newItemPath, Object locker)
+            throws ObjectCannotBeUpdated, 
+                   CannotManageException,
+                   InvalidDataException, 
+                   ObjectAlreadyExistsException, 
+                   PersistencyException, 
+                   ObjectNotFoundException
+    {
         // initialise it with its properties and workflow
-        Logger.msg(3, "CreateItemFromDescription - Initializing Item");
+        Logger.msg(3, "CreateItemFromDescription.initialiseItem() - Initializing Item:" + newName);
 
         try {
-            PropertyArrayList initProps = input.length > 3 ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
-
-            PropertyArrayList   newProps    = instantiateProperties (itemPath, descVer, initProps, newName, agent, locker);
-            CollectionArrayList newColls    = instantiateCollections(itemPath, descVer, newProps, locker);
-            CompositeActivity   newWorkflow = instantiateWorkflow   (itemPath, descVer, locker);
+            PropertyArrayList   newProps    = instantiateProperties (descItemPath, descVer, initProps, newName, agent, locker);
+            CollectionArrayList newColls    = instantiateCollections(descItemPath, descVer, newProps, locker);
+            CompositeActivity   newWorkflow = instantiateWorkflow   (descItemPath, descVer, locker);
 
             newItem.initialise(
                     agent.getSystemKey(),
@@ -118,12 +164,12 @@ public class CreateItemFromDescription extends PredefinedStep {
                     Gateway.getMarshaller().marshall(newWorkflow),
                     Gateway.getMarshaller().marshall(newColls));
         }
-        catch (MarshalException | ValidationException | AccessRightsException | IOException | MappingException e) {
+        catch (MarshalException | ValidationException | AccessRightsException | IOException | MappingException | InvalidCollectionModification e) {
             Logger.error(e);
             Gateway.getLookupManager().delete(newItemPath);
             throw new InvalidDataException("CreateItemFromDescription: Problem initializing new Item. See log: " + e.getMessage());
         }
-        catch(Exception e) {
+        catch (InvalidDataException | ObjectNotFoundException | PersistencyException e) {
             Logger.error(e);
             Gateway.getLookupManager().delete(newItemPath);
             throw e;
@@ -133,7 +179,6 @@ public class CreateItemFromDescription extends PredefinedStep {
         Logger.msg(3, "CreateItemFromDescription - Creating " + context);
         context.setItemPath(newItemPath);
         Gateway.getLookupManager().add(context);
-        return requestData;
     }
 
     /**
@@ -155,7 +200,7 @@ public class CreateItemFromDescription extends PredefinedStep {
 
     /**
      *
-     * @param itemPath
+     * @param descItemPath
      * @param descVer
      * @param initProps
      * @param newName
@@ -165,11 +210,11 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @throws ObjectNotFoundException
      * @throws InvalidDataException
      */
-    protected PropertyArrayList instantiateProperties(ItemPath itemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent, Object locker)
+    protected PropertyArrayList instantiateProperties(ItemPath descItemPath, String descVer, PropertyArrayList initProps, String newName, AgentPath agent, Object locker)
             throws ObjectNotFoundException, InvalidDataException
     {
         // copy properties -- intend to create from propdesc
-        PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, locker);
+        PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(descItemPath, descVer, locker);
         PropertyArrayList       props  = pdList.instantiate(initProps);
 
         // set Name prop or create if not present
@@ -191,7 +236,7 @@ public class CreateItemFromDescription extends PredefinedStep {
     /**
      * Retrieve the Workflow dependency for the given description version, instantiate the loaded CompositeActivityDef
      *
-     * @param itemPath
+     * @param descItemPath
      * @param descVer
      * @param locker
      * @return the Workflow instance
@@ -199,12 +244,12 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @throws InvalidDataException
      * @throws PersistencyException
      */
-    protected CompositeActivity instantiateWorkflow(ItemPath itemPath, String descVer, Object locker)
+    protected CompositeActivity instantiateWorkflow(ItemPath descItemPath, String descVer, Object locker)
             throws ObjectNotFoundException, InvalidDataException, PersistencyException
     {
         @SuppressWarnings("unchecked")
         Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-        Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/"+WORKFLOW+"/" + descVer, locker);
+                    Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + WORKFLOW + "/" + descVer, locker);
 
         CollectionMember wfMember  = thisCol.getMembers().list.get(0);
         String           wfDefName = wfMember.resolveItem().getName();
@@ -235,7 +280,7 @@ public class CreateItemFromDescription extends PredefinedStep {
     /**
      * Copies the CollectionDescriptions of the Item requesting this predefined step.
      *
-     * @param itemPath
+     * @param descItemPath
      * @param descVer
      * @param locker
      * @return the new collection
@@ -243,17 +288,17 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @throws PersistencyException
      * @throws InvalidDataException
      */
-    protected CollectionArrayList instantiateCollections(ItemPath itemPath, String descVer, PropertyArrayList newProps , Object locker)
+    protected CollectionArrayList instantiateCollections(ItemPath descItemPath, String descVer, PropertyArrayList newProps , Object locker)
             throws ObjectNotFoundException, PersistencyException, InvalidDataException
     {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
-        String[] collNames = Gateway.getStorage().getClusterContents(itemPath, ClusterType.COLLECTION);
+        String[] collNames = Gateway.getStorage().getClusterContents(descItemPath, ClusterType.COLLECTION);
 
         for (String collName : collNames) {
             @SuppressWarnings("unchecked")
             Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-            Gateway.getStorage().get(itemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
+            Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
                 Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);
