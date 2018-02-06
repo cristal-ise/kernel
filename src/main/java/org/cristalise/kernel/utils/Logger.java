@@ -60,7 +60,10 @@ public class Logger {
      */
     static private void printMessage(String message, int msgLogLevel, Object...args) {
         synchronized (logStreams) {
-            if (logStreams.isEmpty()) System.out.println(message);
+            if (logStreams.isEmpty()) {
+                if(args.length == 0) System.out.println(message);
+                else                 System.out.println(String.format(message, args));
+            }
 
             for (Iterator<PrintStream> iter = logStreams.keySet().iterator(); iter.hasNext();) {
                 PrintStream element = iter.next();

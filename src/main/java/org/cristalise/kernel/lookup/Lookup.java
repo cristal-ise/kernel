@@ -20,7 +20,9 @@
  */
 package org.cristalise.kernel.lookup;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.process.auth.Authenticator;
@@ -32,9 +34,24 @@ import org.cristalise.kernel.property.PropertyDescriptionList;
  */
 public interface Lookup {
 
+    public class PagedResult {
+        public int maxRows;
+        public List<Path> rows;
+
+        public PagedResult() {
+            maxRows = 0;
+            rows =  new ArrayList<>();
+        }
+
+        public PagedResult(int size, List<Path> result) {
+            maxRows = size;
+            rows = result;
+        }
+    }
+
     /**
-     * Connect to the directory using the credentials supplied in the Authenticator. 
-     * 
+     * Connect to the directory using the credentials supplied in the Authenticator.
+     *
      * @param user The connected Authenticator. The Lookup implementation may use the AuthObject in this to communicate with the database.
      */
     public void open(Authenticator user);
@@ -45,9 +62,9 @@ public interface Lookup {
     public void close();
 
     /**
-     * Fetch the correct subclass class of ItemPath for a particular Item, derived from its lookup entry. 
-     * This is used by the CORBA Server to make sure the correct Item subclass is used. 
-     * 
+     * Fetch the correct subclass class of ItemPath for a particular Item, derived from its lookup entry.
+     * This is used by the CORBA Server to make sure the correct Item subclass is used.
+     *
      * @param sysKey The system key of the Item
      * @return an ItemPath or AgentPath
      * @throws InvalidItemPathException When the system key is invalid/out-of-range
@@ -57,7 +74,7 @@ public interface Lookup {
 
     /**
      * Find the ItemPath for which a DomainPath is an alias.
-     * 
+     *
      * @param domainPath The path to resolve
      * @return The ItemPath it points to (should be an AgentPath if the path references an Agent)
      */
@@ -65,7 +82,7 @@ public interface Lookup {
 
     /**
      * Resolve a path to a CORBA Object Item or Agent
-     * 
+     *
      * @param path The path to be resolved
      * @return The CORBA Object's IOR
      * @throws ObjectNotFoundException When the Path doesn't exist, or doesn't have an IOR associated with it
@@ -81,15 +98,25 @@ public interface Lookup {
 
     /**
      * List the next-level-deep children of a Path
-     * 
+     *
      * @param path The parent Path
      * @return An Iterator of child Paths
      */
     public Iterator<Path> getChildren(Path path);
 
     /**
+     * List the next-level-deep children of a Path
+     *
+     * @param path The parent Path
+     * @param offset offset for paging
+     * @param limit for pagin
+     * @return A List of child Paths
+     */
+    public PagedResult getChildren(Path path, int offset, int limit);
+
+    /**
      * Find a path with a particular name (last component)
-     * 
+     *
      * @param start Search root
      * @param name The name to search for
      * @return An Iterator of matching Paths. Should be an empty Iterator if there are no matches.
@@ -121,7 +148,7 @@ public interface Lookup {
 
     /**
      * Find the AgentPath for the named Agent
-     * 
+     *
      * @param agentName then name of the Agent
      * @return the AgentPath representing the Agent
      */
@@ -129,7 +156,7 @@ public interface Lookup {
 
     /**
      * Find the RolePath for the named Role
-     * 
+     *
      * @param roleName the name of the Role
      * @return the RolePath representing the Role
      */
@@ -137,7 +164,7 @@ public interface Lookup {
 
     /**
      * Returns all of the Agents in this centre who hold this role (including sub-roles)
-     * 
+     *
      * @param rolePath the path representing the given Role
      * @return the list of Agents
      */
@@ -145,18 +172,18 @@ public interface Lookup {
 
     /**
      * Get all roles held by the given Agent
-     * 
+     *
      * @param agentPath the path representing the given Agent
      * @return the list of Roles
      */
     public RolePath[] getRoles(AgentPath agentPath);
 
     /**
-     * Checks if an agent qualifies as holding the stated Role, including any sub-role logic. 
-     * 
+     * Checks if an agent qualifies as holding the stated Role, including any sub-role logic.
+     *
      * @param agentPath the path representing the given Agent
      * @param role the path representing the given Role
-     * @return true or false 
+     * @return true or false
      */
     public boolean hasRole(AgentPath agentPath, RolePath role);
 
@@ -165,5 +192,5 @@ public interface Lookup {
      * @param agentPath the path representing the given Agent
      * @return the name string
      */
-    public String getAgentName(AgentPath agentPath) throws ObjectNotFoundException;	
+    public String getAgentName(AgentPath agentPath) throws ObjectNotFoundException;
 }
