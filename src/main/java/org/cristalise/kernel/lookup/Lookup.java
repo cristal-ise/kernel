@@ -27,13 +27,18 @@ import java.util.List;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
+import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 
 
 /**
+ *
  */
 public interface Lookup {
 
+    /**
+     *
+     */
     public class PagedResult {
         public int maxRows;
         public List<Path> rows;
@@ -108,8 +113,8 @@ public interface Lookup {
      * List the next-level-deep children of a Path
      *
      * @param path The parent Path
-     * @param offset offset for paging
-     * @param limit for pagin
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
      * @return A List of child Paths
      */
     public PagedResult getChildren(Path path, int offset, int limit);
@@ -125,6 +130,7 @@ public interface Lookup {
 
     /**
      * Search for Items in the specified path with the given property list
+     *
      * @param start Search root
      * @param props list of Properties
      * @return An Iterator of matching Paths
@@ -132,7 +138,19 @@ public interface Lookup {
     public Iterator<Path> search(Path start, Property... props);
 
     /**
+     * Search for Items in the specified path with the given property list
+     *
+     * @param start Search root
+     * @param props list of Properties
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
+     * @return PagedResult of matching Paths
+     */
+    public PagedResult search(Path start, PropertyArrayList props, int offset, int limit);
+
+    /**
      * Search for Items of a particular type, based on its PropertyDescription outcome
+     *
      * @param start Search root
      * @param props Properties unmarshalled from an ItemDescription's property description outcome.
      * @return An Iterator of matching Paths
@@ -140,11 +158,32 @@ public interface Lookup {
     public Iterator<Path> search(Path start, PropertyDescriptionList props);
 
     /**
+     * Search for Items of a particular type, based on its PropertyDescription outcome
+     *
+     * @param start Search root
+     * @param props Properties unmarshalled from an ItemDescription's property description outcome.
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
+     * @return An PagedResult of matching Paths
+     */
+    public PagedResult search(Path start, PropertyDescriptionList props, int offset, int limit);
+
+    /**
      * Find all DomainPaths that are aliases for a particular Item or Agent
      * @param itemPath The ItemPath
      * @return An Iterator of DomainPaths that are aliases for that Item
      */
     public Iterator<Path> searchAliases(ItemPath itemPath);
+
+    /**
+     * Find all DomainPaths that are aliases for a particular Item or Agent
+     *
+     * @param itemPath The ItemPath
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
+     * @return An PagedResult of DomainPaths that are aliases for that Item
+     */
+    public PagedResult searchAliases(ItemPath itemPath, int offset, int limit);
 
     /**
      * Find the AgentPath for the named Agent
@@ -171,12 +210,32 @@ public interface Lookup {
     public AgentPath[] getAgents(RolePath rolePath) throws ObjectNotFoundException;
 
     /**
+     * Returns all of the Agents who hold this role (including sub-roles)
+     *
+     * @param rolePath the path representing the given Role
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
+     * @return the PagedResult of Agents
+     */
+    public PagedResult getAgents(RolePath rolePath, int offset, int limit) throws ObjectNotFoundException;
+
+    /**
      * Get all roles held by the given Agent
      *
      * @param agentPath the path representing the given Agent
      * @return the list of Roles
      */
     public RolePath[] getRoles(AgentPath agentPath);
+
+    /**
+     * Get all roles held by the given Agent
+     *
+     * @param agentPath the path representing the given Agent
+     * @param offset the number of records to be skipped from the result
+     * @param limit the max number of records to be returned
+     * @return the PagedResult of Roles
+     */
+    public PagedResult getRoles(AgentPath agentPath, int offset, int limit) throws ObjectNotFoundException;
 
     /**
      * Checks if an agent qualifies as holding the stated Role, including any sub-role logic.
