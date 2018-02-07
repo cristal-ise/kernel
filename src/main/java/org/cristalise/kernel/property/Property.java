@@ -20,12 +20,11 @@
  */
 package org.cristalise.kernel.property;
 
+import org.cristalise.kernel.entity.C2KLocalObject;
+import org.cristalise.kernel.persistency.ClusterType;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
-
-import org.cristalise.kernel.entity.C2KLocalObject;
-import org.cristalise.kernel.persistency.ClusterStorage;
-import org.cristalise.kernel.persistency.ClusterType;
 
 @Accessors(prefix = "m") @Data
 public class Property implements C2KLocalObject {
