@@ -27,7 +27,6 @@ import java.util.List;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
-import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 
 
@@ -146,7 +145,7 @@ public interface Lookup {
      * @param limit the max number of records to be returned
      * @return PagedResult of matching Paths
      */
-    public PagedResult search(Path start, PropertyArrayList props, int offset, int limit);
+    public PagedResult search(Path start, List<Property> props, int offset, int limit);
 
     /**
      * Search for Items of a particular type, based on its PropertyDescription outcome
