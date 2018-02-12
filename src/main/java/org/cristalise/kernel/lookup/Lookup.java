@@ -234,7 +234,7 @@ public interface Lookup {
      * @param limit the max number of records to be returned
      * @return the PagedResult of Roles
      */
-    public PagedResult getRoles(AgentPath agentPath, int offset, int limit) throws ObjectNotFoundException;
+    public PagedResult getRoles(AgentPath agentPath, int offset, int limit);
 
     /**
      * Checks if an agent qualifies as holding the stated Role, including any sub-role logic.
