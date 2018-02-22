@@ -93,6 +93,18 @@
 		<field name="TerminusPoint" type="org.cristalise.kernel.graph.model.GraphPoint" direct="false">
 			<bind-xml name="TerminusPoint" node="element"/>
 		</field>
+        <field name="MultiPoints" direct="false" collection="map">
+            <bind-xml name="MultiPoint" node="element">
+                <class name="org.exolab.castor.mapping.MapItem">
+                    <field name="key" type="java.lang.Integer">
+                        <bind-xml name="id" node="attribute"/>
+                    </field>
+                    <field name="value" type="org.cristalise.kernel.graph.model.GraphPoint">
+                        <bind-xml name="GraphPoint"/>
+                    </field>
+                </class>
+            </bind-xml>
+        </field>
 		<field name="OriginVertexId" type="integer" direct="false">
 			<bind-xml name="OriginVertexId" node="attribute"/>
 		</field>

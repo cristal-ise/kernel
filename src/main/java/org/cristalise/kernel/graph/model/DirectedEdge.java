@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.graph.model;
 
+import java.util.HashMap;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -33,6 +35,17 @@ public abstract class DirectedEdge {
     private int        mOriginVertexId   = -1;
     private int        mTerminusVertexId = -1;
 
+    /**
+     * Alternative way to store the points of the Edge. If it is not empty mOriginPoint and mTerminusPoint can be omitted.
+     */
+    private HashMap<Integer, GraphPoint> mMultiPoints = new HashMap<>();
+
+    /**
+     * Used by the GUI only, and does not work with MultiPoints. Checks if the given point is 'close' to the Edge
+     *
+     * @param p the point to check
+     * @return true if the point is 'close' to the Edge
+     */
     public boolean containsPoint(GraphPoint p) {
         int midX = mOriginPoint.x + (mTerminusPoint.x - mOriginPoint.x)/2;
         int midY = mOriginPoint.y + (mTerminusPoint.y - mOriginPoint.y)/2;

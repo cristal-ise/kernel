@@ -20,9 +20,10 @@
  */
 package org.cristalise.kernel.graph.model;
 
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public class GraphPoint {
-
     public int x;
     public int y;
 

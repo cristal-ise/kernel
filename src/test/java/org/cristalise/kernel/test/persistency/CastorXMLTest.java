@@ -31,6 +31,9 @@ import java.util.UUID;
 
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.entity.agent.Job;
+import org.cristalise.kernel.graph.model.GraphPoint;
+import org.cristalise.kernel.graph.model.GraphableEdge;
+import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
@@ -209,5 +212,23 @@ public class CastorXMLTest {
             Outcome errors = new Outcome("/Outcome/Errors/0/0", marshaller.marshall(ei));
             errors.validateAndCheck();
         }
+    }
+
+    @Test
+    public void testGraphMultiPointEdge() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        GraphableEdge edge = new Next();
+
+        edge.getMultiPoints().put(1, new GraphPoint(0, 0));
+        edge.getMultiPoints().put(2, new GraphPoint(100, 100));
+        edge.getMultiPoints().put(3, new GraphPoint(200, 100));
+
+        GraphableEdge edgePrime = (GraphableEdge) marshaller.unmarshall(marshaller.marshall(edge));
+
+        assertThat(edge).isEqualToComparingFieldByField(edgePrime);
+
+        Logger.msg(marshaller.marshall(edge));
+        Logger.msg(marshaller.marshall(edgePrime));
     }
 }
