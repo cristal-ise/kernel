@@ -23,64 +23,29 @@ package org.cristalise.kernel.graph.model;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.KeyValuePair;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
-* @version $Revision: 1.2 $ $Date: 2003/05/12 13:10:20 $
-* @author  $Author: abranson $
-*/
-public abstract class GraphableEdge extends DirectedEdge
-{
+ *
+ */
+@Accessors(prefix = "m") @Getter @Setter
+public abstract class GraphableEdge extends DirectedEdge {
 
-	private GraphableVertex mParent;
-	private CastorHashMap mProperties = null;
+    private GraphableVertex mParent;
+    private CastorHashMap   mProperties = null;
 
-	public GraphableEdge()
-	{
-	    super();
-		mProperties = new CastorHashMap();
-	}
+    public GraphableEdge() {
+        super();
+        mProperties = new CastorHashMap();
+    }
 
-	public GraphableEdge(GraphableVertex pre, GraphableVertex nex)
-	{
-		mProperties = new CastorHashMap();
-		setParent(pre.getParent());
-		pre.getParent().getChildrenGraphModel().addEdgeAndCreateId(this, pre, nex);
-	}
-
-	/**
-	 * Returns the parent.
-	 * @return GraphableVertex
-	 */
-	public GraphableVertex getParent()
-	{
-		return mParent;
-	}
-
-	/**
-	 * Sets the parent.
-	 * @param parent The parent to set
-	 */
-	public void setParent(GraphableVertex parent)
-	{
-		mParent = parent;
-	}
-
-	/**
-	 * Returns the properties.
-	 * @return CastorHashMap
-	 */
-	public CastorHashMap getProperties()
-	{
-		return mProperties;
-	}
-
-	/**
-	 * Sets the properties.
-	 * @param properties The properties to set
-	 */
-	public void setProperties(CastorHashMap properties)
-	{
-		mProperties = properties;
-	}
+    public GraphableEdge(GraphableVertex pre, GraphableVertex nex) {
+        mProperties = new CastorHashMap();
+        setParent(pre.getParent());
+        pre.getParent().getChildrenGraphModel().addEdgeAndCreateId(this, pre, nex);
+    }
 
     public KeyValuePair[] getKeyValuePairs() {
         return mProperties.getKeyValuePairs();
@@ -89,7 +54,7 @@ public abstract class GraphableEdge extends DirectedEdge
     public void setKeyValuePairs(KeyValuePair[] pairs) {
         mProperties.setKeyValuePairs(pairs);
     }
-    
+
     public Object getBuiltInProperty(BuiltInEdgeProperties prop) {
         return mProperties.get(prop.getName());
     }
@@ -97,5 +62,4 @@ public abstract class GraphableEdge extends DirectedEdge
     public void setBuiltInProperty(BuiltInEdgeProperties prop, Object val) {
         mProperties.put(prop.getName(), val);
     }
-
 }

@@ -30,7 +30,6 @@ import org.cristalise.kernel.utils.Logger;
 
 public abstract class GraphableVertex extends Vertex {
 
-    // public static final String NAME = "Name";
     private CastorHashMap mProperties = null;
     private boolean       mIsLayoutable;
     protected boolean     mIsComposite;
@@ -71,7 +70,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Returns the parent.
-     * 
+     *
      * @return Graphable
      */
     public GraphableVertex getParent() {
@@ -80,7 +79,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Sets the parent.
-     * 
+     *
      * @param parent
      *            The parent to set
      */
@@ -172,7 +171,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Returns the isLayoutable.
-     * 
+     *
      * @return boolean
      */
     public boolean getIsLayoutable() {
@@ -181,7 +180,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Sets the isLayoutable.
-     * 
+     *
      * @param isLayoutable
      *            The isLayoutable to set
      */
@@ -191,7 +190,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Returns the isComposite.
-     * 
+     *
      * @return boolean
      */
     public boolean getIsComposite() {
@@ -200,7 +199,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Sets the isComposite.
-     * 
+     *
      * @param isComposite
      *            The isComposite to set
      */
@@ -215,7 +214,7 @@ public abstract class GraphableVertex extends Vertex {
 
     /**
      * Sets the childrenGraph.
-     * 
+     *
      * @param childrenGraph
      *            The childrenGraph to set
      * @throws InvalidDataException
@@ -227,10 +226,10 @@ public abstract class GraphableVertex extends Vertex {
         GraphableVertex[] graphables = this.getLayoutableChildren();
         if (graphables != null)
             for (GraphableVertex graphable : graphables)
-            graphable.setParent(this);
+                graphable.setParent(this);
         if (edges != null)
             for (DirectedEdge edge : edges)
-            ((GraphableEdge) edge).setParent(this);
+                ((GraphableEdge) edge).setParent(this);
         childrenGraph.setContainingVertex(this);
     }
 
@@ -317,7 +316,7 @@ public abstract class GraphableVertex extends Vertex {
     public void updatePropertiesFromCollection(int slotID, CastorHashMap newProps) throws InvalidDataException {
         if (getID() == slotID) {
             Logger.msg(5, "GraphableVertex.updatePropertiesFromCollection(slotID:" + slotID + ") - MERGING properties for name:" + getName()
-                    + " id:" + getID());
+            + " id:" + getID());
             newProps.dump(5);
             mProperties.merge(newProps);
         }

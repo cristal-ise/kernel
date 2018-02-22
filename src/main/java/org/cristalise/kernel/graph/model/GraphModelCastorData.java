@@ -20,31 +20,28 @@
  */
 package org.cristalise.kernel.graph.model;
 
-
-public class GraphModelCastorData
-{
-	// Deprecated: Vertex outline creator is now set by the container
-    public String             mClassNameOfVertexOutlineCreator = "";
+public class GraphModelCastorData {
+    // Deprecated: Vertex outline creator is now set by the container
+    public String         mClassNameOfVertexOutlineCreator = "";
     public Vertex[]       mVertexImpls                     = {};
     public DirectedEdge[] mEdgeImpls                       = {};
-    public int                mStartVertexId                   = 0;
-    public int                mNextId                          = 0;
+    public int            mStartVertexId                   = 0;
+    public int            mNextId                          = 0;
 
-
-    public GraphModelCastorData()
-    {
+    public GraphModelCastorData() {
     }
 
-    public GraphModelCastorData(String             classNameOfVertexOutlineCreator,
-                                Vertex[]       vertexImpls,
-                                DirectedEdge[] edgeImpls,
-                                int                startVertexId,
-                                int                nextId)
+    public GraphModelCastorData(
+            String classNameOfVertexOutlineCreator,
+            Vertex[] vertexImpls,
+            DirectedEdge[] edgeImpls,
+            int startVertexId,
+            int nextId)
     {
         mClassNameOfVertexOutlineCreator = classNameOfVertexOutlineCreator;
-        mVertexImpls                     = vertexImpls;
-        mEdgeImpls                       = edgeImpls;
-        mStartVertexId                   = startVertexId;
-        mNextId                          = nextId;
+        mVertexImpls = vertexImpls;
+        mEdgeImpls = edgeImpls;
+        mStartVertexId = startVertexId;
+        mNextId = nextId;
     }
 }
