@@ -18,50 +18,40 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
-package org.cristalise.kernel.lifecycle.instance;
+package org.cristalise.kernel.lifecycle;
 
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.model.VertexOutlineCreator;
+import org.cristalise.kernel.lifecycle.instance.Activity;
 
-public class WfVertexOutlineCreator implements VertexOutlineCreator
-{
+public class LifecycleVertexOutlineCreator implements VertexOutlineCreator {
+
     private static final int mActivityWidth   = 130;
     private static final int mActivityHeight  = 60;
     private static final int mSplitJoinWidth  = 60;
     private static final int mSplitJoinHeight = 25;
 
     @Override
-	public void setOutline(Vertex vertex)
-    {
+    public void setOutline(Vertex vertex) {
         GraphPoint   centrePoint   = vertex.getCentrePoint();
         GraphPoint[] outlinePoints = new GraphPoint[ 4 ];
         int          vertexWidth   = 0;
         int          vertexHeight  = 0;
 
-        if(vertex instanceof Activity)
-        {
+        if (vertex instanceof Activity ||  vertex instanceof ActivitySlotDef  || vertex instanceof ActivityDef) {
             vertexWidth  = mActivityWidth;
             vertexHeight = mActivityHeight;
         }
-        else
-        {
+        else {
             vertexWidth  = mSplitJoinWidth;
             vertexHeight = mSplitJoinHeight;
         }
 
-        outlinePoints[ 0 ] = new GraphPoint();
-        outlinePoints[ 0 ].x = centrePoint.x - vertexWidth / 2;
-        outlinePoints[ 0 ].y = centrePoint.y - vertexHeight / 2;
-        outlinePoints[ 1 ] = new GraphPoint();
-        outlinePoints[ 1 ].x = centrePoint.x + vertexWidth / 2;
-        outlinePoints[ 1 ].y = centrePoint.y - vertexHeight / 2;
-        outlinePoints[ 2 ] = new GraphPoint();
-        outlinePoints[ 2 ].x = centrePoint.x + vertexWidth / 2;
-        outlinePoints[ 2 ].y = centrePoint.y + vertexHeight / 2;
-        outlinePoints[ 3 ] = new GraphPoint();
-        outlinePoints[ 3 ].x = centrePoint.x - vertexWidth / 2;
-        outlinePoints[ 3 ].y = centrePoint.y + vertexHeight / 2;
+        outlinePoints[ 0 ]   = new GraphPoint(centrePoint.x - vertexWidth / 2, centrePoint.y - vertexHeight / 2);
+        outlinePoints[ 1 ]   = new GraphPoint(centrePoint.x + vertexWidth / 2, centrePoint.y - vertexHeight / 2);
+        outlinePoints[ 2 ]   = new GraphPoint(centrePoint.x + vertexWidth / 2, centrePoint.y + vertexHeight / 2);
+        outlinePoints[ 3 ]   = new GraphPoint(centrePoint.x - vertexWidth / 2, centrePoint.y + vertexHeight / 2);
 
         vertex.setOutlinePoints( outlinePoints );
     }

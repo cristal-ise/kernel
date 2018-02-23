@@ -65,7 +65,7 @@ public class CompositeActivityDef extends ActivityDef {
         setBuiltInProperty(STATE_MACHINE_NAME, "CompositeActivity");
 
         try {
-            setChildrenGraphModel(new GraphModel(new WfVertexDefOutlineCreator()));
+            setChildrenGraphModel(new GraphModel(new LifecycleVertexOutlineCreator()));
         }
         catch (InvalidDataException e) {
         } // shouldn't happen with an empty one
@@ -340,7 +340,7 @@ public class CompositeActivityDef extends ActivityDef {
     @Override
     public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
         super.setChildrenGraphModel(childrenGraph);
-        childrenGraph.setVertexOutlineCreator(new WfVertexDefOutlineCreator());
+        childrenGraph.setVertexOutlineCreator(new LifecycleVertexOutlineCreator());
         
         try {
             setRefChildActDef(findRefActDefs(childrenGraph));

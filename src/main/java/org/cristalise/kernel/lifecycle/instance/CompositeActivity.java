@@ -39,6 +39,7 @@ import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableVertex;
+import org.cristalise.kernel.lifecycle.LifecycleVertexOutlineCreator;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.State;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.Transition;
 import org.cristalise.kernel.lookup.AgentPath;
@@ -48,7 +49,7 @@ import org.cristalise.kernel.utils.Logger;
 
 
 public class CompositeActivity extends Activity {
-    
+
     public CompositeActivity() {
         super();
         setBuiltInProperty(ABORTABLE, false);
@@ -56,7 +57,7 @@ public class CompositeActivity extends Activity {
         setBuiltInProperty(STATE_MACHINE_NAME, "CompositeActivity");
 
         try {
-            setChildrenGraphModel(new GraphModel(new WfVertexOutlineCreator()));
+            setChildrenGraphModel(new GraphModel(new LifecycleVertexOutlineCreator()));
         } catch (InvalidDataException e) { } // shouldn't happen with an empty one
         setIsComposite(true);
     }
@@ -64,7 +65,7 @@ public class CompositeActivity extends Activity {
     @Override
     public void setChildrenGraphModel(GraphModel childrenGraph) throws InvalidDataException {
         super.setChildrenGraphModel(childrenGraph);
-        childrenGraph.setVertexOutlineCreator(new WfVertexOutlineCreator());
+        childrenGraph.setVertexOutlineCreator(new LifecycleVertexOutlineCreator());
     }
 
     /**
@@ -74,7 +75,7 @@ public class CompositeActivity extends Activity {
     public boolean verify() {
         boolean err = super.verify();
         GraphableVertex[] vChildren = getChildren();
-        
+
         for (int i = 0; i < vChildren.length; i++) {
             if (!((WfVertex) vChildren[i]).verify()) {
                 mErrors.add("error in children");
@@ -105,7 +106,7 @@ public class CompositeActivity extends Activity {
 
     /**
      * Adds vertex to graph cloning GraphPoint first (NPE safe)
-     * 
+     *
      * @param v
      * @param g
      */
@@ -164,7 +165,7 @@ public class CompositeActivity extends Activity {
     public Split newSplitChild(String name, String Type, boolean first, GraphPoint point) {
         Split split = null;
 
-        if      (Type.equals("Or"))   { split = new OrSplit(); } 
+        if      (Type.equals("Or"))   { split = new OrSplit(); }
         else if (Type.equals("XOr"))  { split = new XOrSplit(); }
         else if (Type.equals("Loop")) { split = new Loop(); }
         else                          { split = new AndSplit(); }
@@ -195,7 +196,7 @@ public class CompositeActivity extends Activity {
 
     /**
      * None recursive search by id
-     * 
+     *
      * @param id
      * @return WfVertex
      */
@@ -205,7 +206,7 @@ public class CompositeActivity extends Activity {
 
     /**
      * Returns the Transition that can be started automatically.
-     * 
+     *
      * @param agent performing Agent
      * @param currentState he actual State of the activity
      * @return the Transition that can be started automatically
@@ -254,7 +255,7 @@ public class CompositeActivity extends Activity {
             catch (RuntimeException e) {
                 throw e;
             }
-            catch (AccessRightsException e) { 
+            catch (AccessRightsException e) {
                 Logger.warning("Agent:"+agent+" didn't have permission to start the activity:"+getPath()+", so leave it waiting");
                 return;
             }
@@ -271,8 +272,8 @@ public class CompositeActivity extends Activity {
             Transition trans = null;
             try {
                 for (Transition possTran : getStateMachine().getPossibleTransitions(this, agent).keySet()) {
-                    // Find the next transition for automatic procedure. A non-finishing transition will override a finishing one, 
-                    // but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point. 
+                    // Find the next transition for automatic procedure. A non-finishing transition will override a finishing one,
+                    // but otherwise having more than one possible means we cannot proceed. Transition enablement should filter before this point.
 
                     if (trans == null || (trans.isFinishing() && !possTran.isFinishing())) {
                         trans = possTran;
@@ -318,7 +319,7 @@ public class CompositeActivity extends Activity {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public ArrayList<Job> calculateJobs(AgentPath agent, ItemPath itemPath, boolean recurse)
@@ -343,7 +344,7 @@ public class CompositeActivity extends Activity {
 
     @Override
     public ArrayList<Job> calculateAllJobs(AgentPath agent, ItemPath itemPath, boolean recurse)
-            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException 
+            throws InvalidAgentPathException, ObjectNotFoundException, InvalidDataException
     {
         ArrayList<Job> jobs = new ArrayList<Job>();
 
@@ -416,7 +417,7 @@ public class CompositeActivity extends Activity {
     @Override
     public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
-                   ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+            ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         Transition trans = getStateMachine().getTransition(transitionID);
         if (trans.isFinishing() && hasActive()) {
@@ -432,9 +433,9 @@ public class CompositeActivity extends Activity {
         }
 
         if (getChildrenGraphModel().getStartVertex() != null
-            && (getStateMachine().getState(state).equals(getStateMachine().getInitialState()) 
-                || getStateMachine().getTransition(transitionID).reinitializes())
-           )
+                && (getStateMachine().getState(state).equals(getStateMachine().getInitialState())
+                        || getStateMachine().getTransition(transitionID).reinitializes())
+                )
         {
             ((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
         }
