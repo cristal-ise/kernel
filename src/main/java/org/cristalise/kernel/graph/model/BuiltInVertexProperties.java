@@ -72,13 +72,13 @@ public enum BuiltInVertexProperties {
     NAME("Name"),
 
     /**
-     * String property. The type of object the Activity is going to create. Values are Schema, Script, StateMachine. Used in script
-     * DescriptionCollectionSetter. Can be null or undefined.
+     * String property. The type of object the Activity is going to create. Values are Schema, Script, StateMachine and Query.
+     * Used in script DescriptionCollectionSetter. Can be null or undefined.
      */
     OBJECT_TYPE("ObjectType"),
 
     /**
-     * String property to hold the name of the OutcomeInititator to be used by the Job associated with Activities. 
+     * String property to hold the name of the OutcomeInititator to be used by the Job associated with Activities.
      * The name is used to find the class name defined in the Config section of the module.xml. For example, the
      * OutcomeInitiator named <b>Empty</b> is defined like this:
      *
@@ -96,9 +96,9 @@ public enum BuiltInVertexProperties {
     REPEAT_WHEN("RepeatWhen"),
 
     /**
-     * String property. Routing expression associated with Splits. It is interpreted by the Script class. The content should 
+     * String property. Routing expression associated with Splits. It is interpreted by the Script class. The content should
      * start with the script engine name followed by the expression separated by a column like this:
-     * 
+     *
      * <pre>
      * javascript: new java.lang.Integer(counter % 2);
      * </pre>
@@ -108,74 +108,81 @@ public enum BuiltInVertexProperties {
     /**
      * String property to hold either the name of the Script or the UUID of the Schema Item associated with Splits.
      * If RoutingScriptVersion is null the content if any is interpreted like {@link #ROUTING_EXPR}.
-     * 
+     *
      * Can be null or undefined.
-     */ 
+     */
     ROUTING_SCRIPT_NAME("RoutingScriptName"),
 
     /**
      * Integer property to hold the version of the Schema associated with Splits.
-     * 
+     *
      * Can be null or undefined.
      */
     ROUTING_SCRIPT_VERSION("RoutingScriptVersion"),
 
     /**
-     * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities. 
-     * 
+     * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
+     *
      * Can be null or undefined.
      */
     SCHEMA_NAME("SchemaType"),
 
     /**
-     * Integer property to hold the version of the Schema associated with Activities. 
-     * 
+     * Integer property to hold the version of the Schema associated with Activities.
+     *
      * Can be null or undefined.
      */
     SCHEMA_VERSION("SchemaVersion"),
 
     /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
-     * 
+     *
      * Can be null or undefined.
      */
     SCRIPT_NAME("ScriptName"),
 
     /**
-     * Integer property to hold the version of the Script associated with Activities. 
-     * 
+     * Integer property to hold the version of the Script associated with Activities.
+     *
      * Can be null or undefined.
      */
     SCRIPT_VERSION("ScriptVersion"),
 
     /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
-     * 
+     *
      * Can be null or undefined.
      */
     QUERY_NAME("QueryName"),
 
     /**
-     * Integer property to hold the version of the Script associated with Activities. 
-     * 
+     * Integer property to hold the version of the Script associated with Activities.
+     *
      * Can be null or undefined.
      */
     QUERY_VERSION("QueryVersion"),
 
     /**
-     * String property to hold either the name of the StateMachine or the UUID of the StateMachine 
+     * String property to hold either the name of the StateMachine or the UUID of the StateMachine
      * Item associated with Activities. Can be null or undefined. The default StateMachine is called Default
-     * 
+     *
      * Can be null or undefined.
      */
     STATE_MACHINE_NAME("StateMachineName"),
 
     /**
      * Integer property to hold the version of the StateMachine associated with Activities.
-     * 
+     *
      * Can be null or undefined.
      */
     STATE_MACHINE_VERSION("StateMachineVersion"),
+
+    /**
+     * String property. It is used in Join and JoinDef to to specify if the join is a route or not
+     *
+     * Can be null or undefined.
+     */
+    TYPE("Type"),
 
     /**
      * Integer property. It is used in CollectionMember to store the version of DescriptionDependency
@@ -209,6 +216,7 @@ public enum BuiltInVertexProperties {
         return propertyName;
     }
 
+    @Override
     public String toString() {
         return getName();
     }
