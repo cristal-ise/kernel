@@ -298,7 +298,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         for (String collName : collNames) {
             @SuppressWarnings("unchecked")
             Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-            Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
+                    Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
                 Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);
