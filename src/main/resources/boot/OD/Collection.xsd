@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    This file is part of the CRISTAL-iSE kernel.
+    Copyright (c) 2001-2015 The CRISTAL Consortium. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
+    This library is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; with out even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this library; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+    http://www.fsf.org/licensing/licenses/lgpl.html
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:element name="DependencyMember">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Properties" type="keyvaluepair" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="ID"        type="xs:int" use="required" />
+            <xs:attribute name="ChildUUID" type="uuid"   use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="property">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="keyvaluepair">
+        <xs:sequence>
+            <xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="Key"        type="xs:string"  use="required" />
+                    <xs:attribute name="isAbstract" type="xs:boolean" use="required" />
+                    <xs:attribute name="String"     type="xs:string"  use="optional" />
+                    <xs:attribute name="Integer"    type="xs:integer" use="optional" />
+                    <xs:attribute name="Float"      type="xs:float"   use="optional" />
+                    <xs:attribute name="Boolean"    type="xs:boolean" use="optional" />
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="uuid">
+        <xs:restriction base="xs:string">
+            <xs:length value="36" fixed="true" />
+            <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

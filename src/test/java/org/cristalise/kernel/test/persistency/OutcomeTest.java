@@ -349,4 +349,12 @@ public class OutcomeTest {
         site1.setRecord(record);
         site1.validateAndCheck();
     }
+
+    @Test
+    public void testDependenyMember() throws Exception {
+        new Outcome(
+            FileStringUtility.url2String(OutcomeTest.class.getResource("/dependencyMember1.xml")),
+            new Schema("Collection", 0, null, FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Collection.xsd")))
+        ).validateAndCheck();
+    }
 }
