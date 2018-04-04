@@ -62,19 +62,17 @@ public class AddNewSlot extends PredefinedStep {
      *             A required object, such as the collection or a PropertyDescription outcome, wasn't found
      */
     @Override
-    protected String runActivityLogic(AgentPath agent, ItemPath item,
-            int transitionID, String requestData, Object locker)
-            throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
         String collName;
         ItemPath descKey = null;
         String descVer = "last";
-        Aggregation agg;
 
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3))
-            Logger.msg(3, "AddNewSlot: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+
+        if (Logger.doLog(3)) Logger.msg(3, "AddNewSlot: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         // resolve desc item path and version
         try {
@@ -87,6 +85,7 @@ public class AddNewSlot extends PredefinedStep {
                     descKey = new DomainPath(params[1]).getItemPath();
                 }
             }
+
             if (params.length > 2 && params[2].length() > 0) descVer = params[2];
         }
         catch (Exception e) {
@@ -94,40 +93,28 @@ public class AddNewSlot extends PredefinedStep {
         }
 
         // load collection
-        C2KLocalObject collObj;
-        try {
-            collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
-        }
-        catch (PersistencyException ex) {
-            Logger.error(ex);
-            throw new PersistencyException("AddNewSlot: Error loading collection '\"+collName+\"': " + ex.getMessage());
-        }
-        if (!(collObj instanceof Aggregation))
-            throw new InvalidDataException("AddNewSlot: AddNewSlot operates on Aggregation collections only.");
-        agg = (Aggregation) collObj;
+        C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
+
+        if (!(collObj instanceof Aggregation)) throw new InvalidDataException("AddNewSlot operates on Aggregation only.");
+
+        Aggregation agg = (Aggregation) collObj;
 
         // get props
         CastorHashMap props = new CastorHashMap();
         StringBuffer classProps = new StringBuffer();
+        
         if (descKey != null) {
             PropertyDescriptionList propList;
             propList = PropertyUtility.getPropertyDescriptionOutcome(descKey, descVer, locker);
             for (PropertyDescription pd : propList.list) {
                 props.put(pd.getName(), pd.getDefaultValue());
-                if (pd.getIsClassIdentifier())
-                    classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
+                if (pd.getIsClassIdentifier()) classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
             }
         }
 
         agg.addSlot(props, classProps.toString());
 
-        try {
-            Gateway.getStorage().put(item, agg, locker);
-        }
-        catch (PersistencyException e) {
-            Logger.error(e);
-            throw new PersistencyException("AddNewSlot: Error saving collection '" + collName + "': " + e.getMessage());
-        }
+        Gateway.getStorage().put(item, agg, locker);
 
         return requestData;
     }
