@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Aggregation;
@@ -40,40 +39,33 @@ import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class AddNewSlot extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public AddNewSlot()
-    {
+public class AddNewSlot extends PredefinedStep {
+    public AddNewSlot() {
         super();
     }
-
 
     /**
      * Creates a new slot in the given aggregation, that holds instances of the given item description
      * 
      * Params:
-     * <ol><li>Collection name</li>
+     * <ol>
+     * <li>Collection name</li>
      * <li>Item Description key (optional)</li>
      * <li>Item Description version (optional)</li>
      * </ol>
      * 
-     * @throws InvalidDataException Then the parameters were incorrect
-     * @throws PersistencyException There was a problem loading or saving the collection from persistency
-     * @throws ObjectNotFoundException A required object, such as the collection or a PropertyDescription outcome, wasn't found
+     * @throws InvalidDataException
+     *             Then the parameters were incorrect
+     * @throws PersistencyException
+     *             There was a problem loading or saving the collection from persistency
+     * @throws ObjectNotFoundException
+     *             A required object, such as the collection or a PropertyDescription outcome, wasn't found
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-    	
+    protected String runActivityLogic(AgentPath agent, ItemPath item,
+            int transitionID, String requestData, Object locker)
+            throws InvalidDataException, PersistencyException, ObjectNotFoundException {
+
         String collName;
         ItemPath descKey = null;
         String descVer = "last";
@@ -81,54 +73,60 @@ public class AddNewSlot extends PredefinedStep
 
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "AddNewSlot: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+        if (Logger.doLog(3))
+            Logger.msg(3, "AddNewSlot: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         // resolve desc item path and version
         try {
             collName = params[0];
             if (params.length > 1 && params[1].length() > 0) {
-            	try {
-            		descKey = new ItemPath(params[1]);
-            	} catch (InvalidItemPathException e) {
-            		descKey = new DomainPath(params[1]).getItemPath();
-            	}
+                try {
+                    descKey = new ItemPath(params[1]);
+                }
+                catch (InvalidItemPathException e) {
+                    descKey = new DomainPath(params[1]).getItemPath();
+                }
             }
             if (params.length > 2 && params[2].length() > 0) descVer = params[2];
-        } catch (Exception e) {
-            throw new InvalidDataException("AddNewSlot: Invalid parameters "+Arrays.toString(params));
+        }
+        catch (Exception e) {
+            throw new InvalidDataException("AddNewSlot: Invalid parameters " + Arrays.toString(params));
         }
 
         // load collection
-    	C2KLocalObject collObj;
-		try {
-			collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new PersistencyException("AddNewSlot: Error loading collection '\"+collName+\"': "+ex.getMessage());
-		}
-    	if (!(collObj instanceof Aggregation)) throw new InvalidDataException("AddNewSlot: AddNewSlot operates on Aggregation collections only.");
-        agg = (Aggregation)collObj;
+        C2KLocalObject collObj;
+        try {
+            collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new PersistencyException("AddNewSlot: Error loading collection '\"+collName+\"': " + ex.getMessage());
+        }
+        if (!(collObj instanceof Aggregation))
+            throw new InvalidDataException("AddNewSlot: AddNewSlot operates on Aggregation collections only.");
+        agg = (Aggregation) collObj;
 
         // get props
         CastorHashMap props = new CastorHashMap();
         StringBuffer classProps = new StringBuffer();
         if (descKey != null) {
-        	PropertyDescriptionList propList;
-			propList = PropertyUtility.getPropertyDescriptionOutcome(descKey, descVer, locker);
+            PropertyDescriptionList propList;
+            propList = PropertyUtility.getPropertyDescriptionOutcome(descKey, descVer, locker);
             for (PropertyDescription pd : propList.list) {
-				props.put(pd.getName(), pd.getDefaultValue());
-				if (pd.getIsClassIdentifier())
-					classProps.append((classProps.length()>0?",":"")).append(pd.getName());
-			}
+                props.put(pd.getName(), pd.getDefaultValue());
+                if (pd.getIsClassIdentifier())
+                    classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
+            }
         }
-        
+
         agg.addSlot(props, classProps.toString());
 
-		try {
+        try {
             Gateway.getStorage().put(item, agg, locker);
-        } catch (PersistencyException e) {
+        }
+        catch (PersistencyException e) {
             Logger.error(e);
-            throw new PersistencyException("AddNewSlot: Error saving collection '"+collName+"': "+e.getMessage());
+            throw new PersistencyException("AddNewSlot: Error saving collection '" + collName + "': " + e.getMessage());
         }
 
         return requestData;

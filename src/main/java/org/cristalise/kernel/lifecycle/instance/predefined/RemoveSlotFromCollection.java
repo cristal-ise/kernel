@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Collection;
@@ -36,35 +35,22 @@ import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
+public class RemoveSlotFromCollection extends PredefinedStep {
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class RemoveSlotFromCollection extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public RemoveSlotFromCollection()
-    {
+    public RemoveSlotFromCollection() {
         super();
     }
 
-
     /**
-     * Params:
-     * 0 - collection name
-     * 1 - slot number OR if -1:
-     * 2 - target entity key
-     * @throws ObjectNotFoundException 
-     * @throws PersistencyException 
+     * Params: 0 - collection name 1 - slot number OR if -1: 2 - target entity key
+     * 
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) 
-					throws InvalidDataException, ObjectNotFoundException, PersistencyException {
+    protected String runActivityLogic(AgentPath agent, ItemPath item,
+            int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException {
 
         String collName;
         int slotNo = -1;
@@ -73,68 +59,74 @@ public class RemoveSlotFromCollection extends PredefinedStep
 
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "RemoveSlotFromCollection: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+        if (Logger.doLog(3))
+            Logger.msg(3, "RemoveSlotFromCollection: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         try {
             collName = params[0];
-            if (params.length>1 && params[1].length()>0) slotNo = Integer.parseInt(params[1]);
-            if (params.length>2 && params[2].length()>0) {
-            	try {
-            		currentChild = new ItemPath(params[2]);
-            	} catch (InvalidItemPathException e) {
-            		currentChild = new DomainPath(params[2]).getItemPath();
-            	}
+            if (params.length > 1 && params[1].length() > 0) slotNo = Integer.parseInt(params[1]);
+            if (params.length > 2 && params[2].length() > 0) {
+                try {
+                    currentChild = new ItemPath(params[2]);
+                }
+                catch (InvalidItemPathException e) {
+                    currentChild = new DomainPath(params[2]).getItemPath();
+                }
             }
-        } catch (Exception e) {
-            throw new InvalidDataException("RemoveSlotFromCollection: Invalid parameters "+Arrays.toString(params));
         }
-        
+        catch (Exception e) {
+            throw new InvalidDataException("RemoveSlotFromCollection: Invalid parameters " + Arrays.toString(params));
+        }
+
         if (slotNo == -1 && currentChild == null)
-        	throw new InvalidDataException("RemoveSlotFromCollection: Must give either slot number or item UUID");
+            throw new InvalidDataException("RemoveSlotFromCollection: Must give either slot number or item UUID");
 
         // load collection
         try {
-            coll = (Collection<? extends CollectionMember>)Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new PersistencyException("RemoveSlotFromCollection: Error loading collection '\"+collName+\"': "+ex.getMessage());
-		}
+            coll = (Collection<? extends CollectionMember>) Gateway.getStorage().get(item,
+                    ClusterType.COLLECTION + "/" + collName + "/last", locker);
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new PersistencyException("RemoveSlotFromCollection: Error loading collection '\"+collName+\"': " + ex.getMessage());
+        }
 
         // check the slot is there if it's given by id
         CollectionMember slot = null;
         if (slotNo > -1) {
-			slot = coll.getMember(slotNo);
+            slot = coll.getMember(slotNo);
         }
 
         // if both parameters are supplied, check the given item is actually in that slot
         if (slot != null && currentChild != null && !slot.getItemPath().equals(currentChild)) {
-        		throw new ObjectNotFoundException("RemoveSlotFromCollection: Item "+currentChild+" was not in slot "+slotNo);
+            throw new ObjectNotFoundException("RemoveSlotFromCollection: Item " + currentChild + " was not in slot " + slotNo);
         }
 
         if (slotNo == -1) { // find slot from entity key
-        	for (CollectionMember member : coll.getMembers().list) {
-        		if (member.getItemPath().equals(currentChild)) {
-        			slotNo = member.getID();
-        			break;
-        		}
+            for (CollectionMember member : coll.getMembers().list) {
+                if (member.getItemPath().equals(currentChild)) {
+                    slotNo = member.getID();
+                    break;
+                }
             }
         }
         if (slotNo == -1) {
-            throw new ObjectNotFoundException("Could not find "+currentChild+" in collection "+coll.getName());
+            throw new ObjectNotFoundException("Could not find " + currentChild + " in collection " + coll.getName());
         }
-        
+
         // Remove the slot
-		coll.removeMember(slotNo);
+        coll.removeMember(slotNo);
 
         // Store the collection
-		try {
+        try {
             Gateway.getStorage().put(item, coll, locker);
-        } catch (PersistencyException e) {
+        }
+        catch (PersistencyException e) {
             Logger.error(e);
             throw new PersistencyException("Error storing collection");
         }
-		
+
         return requestData;
-        
+
     }
 }

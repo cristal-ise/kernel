@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Aggregation;
@@ -35,77 +34,67 @@ import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
+public class ClearSlot extends PredefinedStep {
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class ClearSlot extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public ClearSlot()
-    {
+    public ClearSlot() {
         super();
     }
 
-
     /**
-     * Params:
-     * 0 - collection name
-     * 1 - slot number
-     * @throws ObjectNotFoundException 
-     * @throws PersistencyException 
-     * @throws ObjectCannotBeUpdated 
+     * Params: 0 - collection name 1 - slot number
+     * 
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectCannotBeUpdated
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated {
-    	
+    protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated
+    {
         String collName;
         int slotNo;
         Aggregation agg;
 
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "ClearSlot: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+        if (Logger.doLog(3)) Logger.msg(3, "ClearSlot: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         try {
             collName = params[0];
             slotNo = Integer.parseInt(params[1]);
-        } catch (Exception e) {
-            throw new InvalidDataException("ClearSlot: Invalid parameters "+Arrays.toString(params));
+        }
+        catch (Exception e) {
+            throw new InvalidDataException("ClearSlot: Invalid parameters " + Arrays.toString(params));
         }
 
         // load collection
         try {
-            agg = (Aggregation)Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new PersistencyException("ClearSlot: Error loading collection '"+collName+"': "+ex.getMessage());
-		}
+            agg = (Aggregation) Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new PersistencyException("ClearSlot: Error loading collection '" + collName + "': " + ex.getMessage());
+        }
 
         // find member and clear
         boolean stored = false;
         for (AggregationMember member : agg.getMembers().list) {
             if (member.getID() == slotNo) {
                 if (member.getItemPath() == null)
-                    throw new ObjectCannotBeUpdated("ClearSlot: Member slot "+slotNo+" already empty");
+                    throw new ObjectCannotBeUpdated("ClearSlot: Member slot " + slotNo + " already empty");
                 member.clearItem();
                 stored = true;
                 break;
             }
         }
         if (!stored) {
-            throw new ObjectNotFoundException("ClearSlot: Member slot "+slotNo+" not found.");
+            throw new ObjectNotFoundException("ClearSlot: Member slot " + slotNo + " not found.");
         }
 
-
-		try {
+        try {
             Gateway.getStorage().put(item, agg, locker);
-        } catch (PersistencyException e) {
+        }
+        catch (PersistencyException e) {
             Logger.error(e);
             throw new PersistencyException("ClearSlot: Error storing collection");
         }

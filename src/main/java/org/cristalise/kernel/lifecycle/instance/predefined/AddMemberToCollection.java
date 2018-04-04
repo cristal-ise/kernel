@@ -78,12 +78,13 @@ public class AddMemberToCollection extends PredefinedStep {
             collName = params[0];
             try {
                 newChild = new ItemPath(params[1]);
-            } 
+            }
             catch (InvalidItemPathException e) {
                 newChild = new DomainPath(params[1]).getItemPath();
             }
+
             if (params.length > 2) {
-                Logger.msg(3, "AddMemberToCollection: Unmarshalling Properties");
+                Logger.msg(5, "AddMemberToCollection: Unmarshalling Properties:"+params[2]);
                 props = (CastorHashMap)Gateway.getMarshaller().unmarshall(params[2]);
             }
         }
@@ -95,7 +96,7 @@ public class AddMemberToCollection extends PredefinedStep {
         // load collection
         C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
 
-        if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection: AddMemberToCollection operates on Dependency collections only.");
+        if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection operates on Dependency only.");
 
         dep = (Dependency)collObj;
 

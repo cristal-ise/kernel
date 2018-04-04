@@ -41,9 +41,7 @@ import org.cristalise.kernel.utils.Logger;
  * be added by an Admin, who can do so using AddC2KObject.
  */
 public class AddNewCollectionDescription extends PredefinedStep {
-    /**************************************************************************
-     * Constructor for Castor
-     **************************************************************************/
+
     public AddNewCollectionDescription() {
         super();
     }
@@ -75,21 +73,13 @@ public class AddNewCollectionDescription extends PredefinedStep {
         catch (ObjectNotFoundException ex) {
             // collection doesn't exist
         }
-        catch (PersistencyException ex) {
-            Logger.error(ex);
-            throw new PersistencyException("AddNewCollectionDescription: Error checking for collection '" + collName + "': "
-                    + ex.getMessage());
-        }
 
         CollectionDescription<?> newCollDesc;
 
-        if (collType.equalsIgnoreCase("Aggregation"))
-            newCollDesc = new AggregationDescription(collName);
-        else if (collType.equalsIgnoreCase("Dependency"))
-            newCollDesc = new DependencyDescription(collName);
+        if (collType.equalsIgnoreCase("Aggregation"))     newCollDesc = new AggregationDescription(collName);
+        else if (collType.equalsIgnoreCase("Dependency")) newCollDesc = new DependencyDescription(collName);
         else
-            throw new InvalidDataException("AddNewCollectionDescription: Invalid collection type specified: '" + collType
-                    + "'. Must be Aggregation or Dependency.");
+            throw new InvalidDataException("AddNewCollectionDescription: Invalid type: '" + collType + "' /Aggregation or Dependency)");
 
         // store it
         try {
@@ -98,6 +88,7 @@ public class AddNewCollectionDescription extends PredefinedStep {
         catch (PersistencyException e) {
             throw new PersistencyException("AddNewCollectionDescription: Error saving new collection '" + collName + "': " + e.getMessage());
         }
+
         return requestData;
     }
 }

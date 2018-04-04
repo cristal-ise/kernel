@@ -20,7 +20,6 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Aggregation;
@@ -39,37 +38,25 @@ import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
+public class AssignItemToSlot extends PredefinedStep {
 
-/**************************************************************************
- *
- * @author $Author: abranson $ $Date: 2004/10/21 08:02:19 $
- * @version $Revision: 1.8 $
- **************************************************************************/
-public class AssignItemToSlot extends PredefinedStep
-{
-    /**************************************************************************
-    * Constructor for Castor
-    **************************************************************************/
-    public AssignItemToSlot()
-    {
+    public AssignItemToSlot() {
         super();
     }
 
-
     /**
-     * Params:
-     * 0 - collection name
-     * 1 - slot number
-     * 2 - target entity key
-     * @throws ObjectNotFoundException 
-     * @throws PersistencyException 
-     * @throws ObjectCannotBeUpdated 
-     * @throws InvalidCollectionModification 
+     * Params: 0 - collection name 1 - slot number 2 - target entity key
+     * 
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectCannotBeUpdated
+     * @throws InvalidCollectionModification
      */
     @Override
-	protected String runActivityLogic(AgentPath agent, ItemPath item,
-			int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException, ObjectCannotBeUpdated, InvalidCollectionModification {
-    	
+    protected String runActivityLogic(AgentPath agent, ItemPath item,
+            int transitionID, String requestData, Object locker) throws InvalidDataException, ObjectNotFoundException, PersistencyException,
+            ObjectCannotBeUpdated, InvalidCollectionModification {
+
         String collName;
         int slotNo;
         ItemPath childItem;
@@ -77,51 +64,58 @@ public class AssignItemToSlot extends PredefinedStep
 
         // extract parameters
         String[] params = getDataList(requestData);
-        if (Logger.doLog(3)) Logger.msg(3, "AssignItemToSlot: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
+
+        if (Logger.doLog(3))
+            Logger.msg(3, "AssignItemToSlot: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
 
         try {
             collName = params[0];
             slotNo = Integer.parseInt(params[1]);
-        	try {
-        		childItem = new ItemPath(params[2]);
-        	} catch (InvalidItemPathException e) {
-        		childItem = new DomainPath(params[2]).getItemPath();
-        	}
-        } catch (Exception e) {
-        	Logger.error(e);
-            throw new InvalidDataException("AssignItemToSlot: Invalid parameters "+Arrays.toString(params));
+            try {
+                childItem = new ItemPath(params[2]);
+            }
+            catch (InvalidItemPathException e) {
+                childItem = new DomainPath(params[2]).getItemPath();
+            }
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("AssignItemToSlot: Invalid parameters " + Arrays.toString(params));
         }
 
         // load collection
         C2KLocalObject collObj;
         try {
-        	collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
-		} catch (PersistencyException ex) {
-			Logger.error(ex);
-			throw new PersistencyException("AssignItemToSlot: Error loading collection '\"+collName+\"': "+ex.getMessage());
-		}
-    	if (!(collObj instanceof Aggregation)) throw new InvalidDataException("AssignItemToSlot: AssignItemToSlot operates on Aggregation collections only.");
-        agg = (Aggregation)collObj;
+            collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION + "/" + collName + "/last", locker);
+        }
+        catch (PersistencyException ex) {
+            Logger.error(ex);
+            throw new PersistencyException("AssignItemToSlot: Error loading collection '\"+collName+\"': " + ex.getMessage());
+        }
+        if (!(collObj instanceof Aggregation))
+            throw new InvalidDataException("AssignItemToSlot: AssignItemToSlot operates on Aggregation collections only.");
+        agg = (Aggregation) collObj;
 
         // find member and assign entity
         boolean stored = false;
         for (AggregationMember member : agg.getMembers().list) {
             if (member.getID() == slotNo) {
                 if (member.getItemPath() != null)
-                    throw new ObjectCannotBeUpdated("AssignItemToSlot: Member slot "+slotNo+" not empty");
+                    throw new ObjectCannotBeUpdated("AssignItemToSlot: Member slot " + slotNo + " not empty");
                 member.assignItem(childItem);
                 stored = true;
                 break;
             }
         }
         if (!stored) {
-            throw new ObjectNotFoundException("AssignItemToSlot: Member slot "+slotNo+" not found.");
+            throw new ObjectNotFoundException("AssignItemToSlot: Member slot " + slotNo + " not found.");
         }
 
-		try {
+        try {
             Gateway.getStorage().put(item, agg, locker);
-        } catch (PersistencyException e) {
-        	throw new PersistencyException("AssignItemToSlot: Error saving collection '"+collName+"': "+e.getMessage());
+        }
+        catch (PersistencyException e) {
+            throw new PersistencyException("AssignItemToSlot: Error saving collection '" + collName + "': " + e.getMessage());
         }
         return requestData;
     }
