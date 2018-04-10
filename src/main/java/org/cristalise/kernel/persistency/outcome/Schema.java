@@ -30,6 +30,7 @@ import java.io.Writer;
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.DescriptionObject;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
@@ -174,12 +175,21 @@ public class Schema implements DescriptionObject, ErrorHandler {
         FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), schemaData);
 
         if (imports != null) {
-            imports.write( "<Resource "
-                    + "name='"+getName()+"' "
-                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
-                    + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
-                    + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
-                    + "</Resource>\n");
+            if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+                imports.write( "<Resource "
+                        + "name='"+getName()+"' "
+                        + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                        + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                        + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
+                        + "</Resource>\n");
+            }
+            else {
+                imports.write( "<SchemaResource "
+                        + "name='"+getName()+"' "
+                        + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                        + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                        + "/>\n");
+            }
         }
     }
 
