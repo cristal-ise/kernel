@@ -232,6 +232,7 @@ public class StateMachine implements DescriptionObject {
 
     @Override
     public String getItemID() {
+        if (itemPath == null || itemPath.getUUID() == null) return "";
         return itemPath.getUUID().toString();
     }
 
@@ -347,13 +348,22 @@ public class StateMachine implements DescriptionObject {
 
         FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), smXML);
 
-        if (imports != null) {
+        if (imports == null) return;
+
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            imports.write("<Resource "
+                    + "name='" + getName() + "' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                    + "type='" + typeCode + "'>boot/" + typeCode + "/" + fileName
+                    + "</Resource>\n");
+        }
+        else {
             imports.write("<StateMachineResource "
-                    + "name=\"" + getName() + "\" "
-                    + (getItemPath() == null ? "" : "id=\""      + getItemID() + "\" ")
-                    + (getVersion()  == null ? "" : "version=\"" + getVersion() + "\">")
-                    + "boot/" + typeCode + "/" + fileName
-                    + "</StateMachineResource>\n");
+                    + "name='" + getName() + "' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "'")
+                    + "/>\n");
         }
     }
 }

@@ -383,17 +383,23 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     protected String getExportAttributes(String type) throws InvalidDataException, ObjectNotFoundException, IOException {
-        return "name=\"" + getActName() + "\" "
-                + (getItemPath() == null ? "" : "id=\""      + getItemID()  + "\" ")
-                + (getVersion() == null  ? "" : "version=\"" + getVersion() + "\" ")
-                + "resource=\"boot/" + type + "/" + getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml\"";
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            return "name=\"" + getActName() + "\" "
+                    + (getItemPath() == null ? "" : "id=\""      + getItemID()  + "\" ")
+                    + (getVersion() == null  ? "" : "version=\"" + getVersion() + "\" ")
+                    + "resource=\"boot/" + type + "/" + getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml\"";
+        }
+        else {
+            return "name=\"" + getActName() + "\" "
+                    + (getItemPath() == null ? "" : "id=\""      + getItemID()  + "\" ")
+                    + (getVersion() == null  ? "" : "version=\"" + getVersion() + "\" ");
+        }
     }
 
     protected String getExportCollections() throws InvalidDataException, ObjectNotFoundException, IOException {
-        return
-                (getStateMachine() == null ? "" : "<StateMachine name=\"" + getStateMachine().getName() + "\" id=\"" + getStateMachine().getItemID() + "\" version=\"" + getStateMachine().getVersion() + "\"/>")
-                + (getSchema() == null ? "" : "<Schema       name=\"" + getSchema().getName() + "\"       id=\"" + getSchema().getItemID()       + "\" version=\"" + getSchema().getVersion()       + "\"/>")
-                + (getScript() == null ? "" : "<Script       name=\"" + getScript().getName() + "\"       id=\"" + getScript().getItemID()       + "\" version=\"" + getScript().getVersion()       + "\"/>")
-                + (getQuery()  == null ? "" : "<Query        name=\"" + getQuery().getName()  + "\"       id=\"" + getQuery().getItemID()        + "\" version=\"" + getQuery().getVersion()        + "\"/>");
+        return (getStateMachine() == null ? "" : "<StateMachine name=\"" + getStateMachine().getName() + "\" id=\"" + getStateMachine().getItemID() + "\" version=\"" + getStateMachine().getVersion() + "\"/>")
+                   + (getSchema() == null ? "" : "<Schema name=\""       + getSchema().getName()       + "\" id=\"" + getSchema().getItemID()       + "\" version=\"" + getSchema().getVersion()       + "\"/>")
+                   + (getScript() == null ? "" : "<Script name=\""       + getScript().getName()       + "\" id=\"" + getScript().getItemID()       + "\" version=\"" + getScript().getVersion()       + "\"/>")
+                   + (getQuery()  == null ? "" : "<Query name=\""        + getQuery().getName()        + "\" id=\"" + getQuery().getItemID()        + "\" version=\"" + getQuery().getVersion()        + "\"/>");
     }
 }

@@ -704,6 +704,7 @@ public class Script implements DescriptionObject {
 
     @Override
     public String getItemID() {
+        if (mItemPath == null || mItemPath.getUUID() == null) return "";
         return mItemPath.getUUID().toString();
     }
 
@@ -796,11 +797,21 @@ public class Script implements DescriptionObject {
 
         FileStringUtility.string2File(new File(new File(dir, tc), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());
 
-        if (imports!=null) imports.write("<Resource name='"+getName()+"' "
-                +(getItemPath()==null?"":"id='"+getItemID()+"' ")
-                +(getVersion()==null?"":"version='"+getVersion()+"' ")
-                +"type='"+tc+"'>boot/"+tc+"/"+getName()
-                +(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+        if (imports == null) return;
+
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            imports.write("<Resource name='"+getName()+"' "
+                    +(getItemPath()==null?"":"id='"+getItemID()+"' ")
+                    +(getVersion()==null?"":"version='"+getVersion()+"' ")
+                    +"type='"+tc+"'>boot/"+tc+"/"+getName()
+                    +(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+        }
+        else {
+            imports.write("<ScriptResource name='"+getName()+"' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "'")
+                    + "/>\n");
+        }
     }
 
     static public void main(String[] args) {

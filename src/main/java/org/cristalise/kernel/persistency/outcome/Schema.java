@@ -128,6 +128,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
     @Override
     public String getItemID() {
+        if (itemPath == null || itemPath == null || itemPath.getUUID() == null) return "";
         return itemPath.getUUID().toString();
     }
 
@@ -174,22 +175,22 @@ public class Schema implements DescriptionObject, ErrorHandler {
 
         FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), schemaData);
 
-        if (imports != null) {
-            if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
-                imports.write( "<Resource "
-                        + "name='"+getName()+"' "
-                        + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
-                        + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
-                        + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
-                        + "</Resource>\n");
-            }
-            else {
-                imports.write( "<SchemaResource "
-                        + "name='"+getName()+"' "
-                        + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
-                        + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
-                        + "/>\n");
-            }
+        if (imports == null) return;
+
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            imports.write( "<Resource "
+                    + "name='"+getName()+"' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                    + "type='"+typeCode+"'>boot/"+typeCode+"/"+fileName
+                    + "</Resource>\n");
+        }
+        else {
+            imports.write( "<SchemaResource "
+                    + "name='"+getName()+"' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "'")
+                    + "/>\n");
         }
     }
 

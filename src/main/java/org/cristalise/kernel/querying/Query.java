@@ -89,6 +89,7 @@ public class Query implements DescriptionObject {
 
     @Override
     public String getItemID() {
+        if (itemPath == null || itemPath.getUUID() == null) return "";
         return itemPath.getUUID().toString();
     }
 
@@ -229,10 +230,21 @@ public class Query implements DescriptionObject {
 
         FileStringUtility.string2File(new File(new File(dir, resType), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getQueryXML());
 
-        if (imports!=null) imports.write("<Resource name=\""+getName()+"\" "
-                +(getItemPath()==null?"":"id=\""+getItemID()+"\" ")
-                +(getVersion()==null?"":"version=\""+getVersion()+"\" ")
-                +"type=\""+resType+"\">boot/"+resType+"/"+getName()
-                +(getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+        if (imports == null) return;
+
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            imports.write("<Resource name='"+getName()+"' "
+                    + (getItemPath()==null?"":"id='"+getItemID()+"' ")
+                    + (getVersion()==null?"":"version='"+getVersion()+"' ")
+                    + "type='"+resType+"'>boot/"+resType+"/"+getName()
+                    + (getVersion()==null?"":"_"+getVersion())+".xml</Resource>\n");
+        }
+        else { 
+            imports.write("<QueryResource name='"+getName()+"' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "'")
+                    + "/>\n");
+            
+        }
     }
 }
