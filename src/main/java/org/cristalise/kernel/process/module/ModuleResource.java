@@ -32,6 +32,7 @@ import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.process.Bootstrap;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.Logger;
 
@@ -63,9 +64,23 @@ public class ModuleResource extends ModuleImport {
         type = BuiltInResources.getValue(typeCode);
     }
 
+    public String getResourceDir() {
+        return "boot/" + type.getTypeCode();
+    }
+
+    public String getResourceExt() {
+        return (type == BuiltInResources.SCHEMA_RESOURCE ? "xsd": "xml");
+    }
+
     public String getResourceLocation() {
-        if (StringUtils.isBlank(resourceLocation)) resourceLocation = 
-                "boot/" + type.getTypeCode() + "/" + name + "." + (type == BuiltInResources.SCHEMA_RESOURCE ? "xsd": "xml");
+        if (StringUtils.isBlank(resourceLocation) && ns != null) {
+            if (Gateway.getProperties().getString("Resource.moduleUseFileNameWithVersion", "").equals(ns)) {
+                resourceLocation = getResourceDir() + "/" + name + "_" + version + "." + getResourceExt();
+            }
+            else {
+                resourceLocation = getResourceDir() + "/" + name + "." + getResourceExt();
+            }
+        }
 
         return resourceLocation;
     }
