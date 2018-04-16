@@ -227,12 +227,17 @@ public class AgentProxy extends ItemProxy {
     @SuppressWarnings("rawtypes")
     private  ErrorInfo callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
         Script script = job.getScript();
+        script.setActExecEnvironment(item, this, job);
 
-        if (script.getOutputParams().size() == 1) {
-            Parameter p = script.getOutputParams().values().iterator().next();
+        // At least one output parameter has to be ErrorInfo, 
+        // it is either a single unnamed parameter or a parameter named 'errors'
+        if (script.getOutputParams().size() > 0) {
+            Parameter p;
+
+            if (script.getOutputParams().size() == 1) p = script.getOutputParams().values().iterator().next();
+            else                                      p = script.getOutputParams().get("errors");
 
             if (p.getType() == ErrorInfo.class ) {
-                script.setActExecEnvironment(item, this, job);
                 Object returnVal = script.execute();
 
                 if (returnVal instanceof Map) return (ErrorInfo) ((Map)returnVal).get(p.getName());
@@ -240,12 +245,13 @@ public class AgentProxy extends ItemProxy {
             }
         }
 
-        throw new InvalidDataException("Script "+script.getName()+" must define single output of type org.cristalise.kernel.scripting.ErrorInfo");
+        throw new InvalidDataException("Script "+script.getName()+" must at least one output of org.cristalise.kernel.scripting.ErrorInfo");
     }
 
-    public String execute(ItemProxy item, String predefStep, C2KLocalObject obj) throws AccessRightsException, InvalidDataException,
-    InvalidTransitionException, ObjectNotFoundException, PersistencyException, ObjectAlreadyExistsException,
-    InvalidCollectionModification {
+    public String execute(ItemProxy item, String predefStep, C2KLocalObject obj) 
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
+                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification 
+    {
         String param;
         try {
             param = marshall(obj);
