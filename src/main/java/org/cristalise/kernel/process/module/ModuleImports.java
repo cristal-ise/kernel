@@ -92,4 +92,17 @@ public class ModuleImports extends CastorArrayList<ModuleImport> {
         }
         return subset;
     }
+
+    /**
+     * Finds the name in the imports
+     * 
+     * @param name hte name of the import
+     * @return the ModuleImport if found null otherwise
+     */
+    public ModuleImport findImport(String name) {
+        for (ModuleImport imp : list) {
+            if (imp.getName().equals(name)) return imp;
+        }
+        return null;
+    }
 }

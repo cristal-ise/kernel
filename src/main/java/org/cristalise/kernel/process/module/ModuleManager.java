@@ -40,8 +40,11 @@ import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
+import lombok.Getter;
+
 
 public class ModuleManager {
+    @Getter
     private ArrayList<Module> modules = new ArrayList<Module>();
     private HashMap<String, String> modulesXML = new HashMap<String, String>();
     

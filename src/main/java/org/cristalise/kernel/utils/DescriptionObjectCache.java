@@ -28,6 +28,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -42,6 +43,9 @@ import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.module.Module;
+import org.cristalise.kernel.process.module.ModuleImport;
+import org.cristalise.kernel.process.module.ModuleResource;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescription;
 import org.cristalise.kernel.property.PropertyDescriptionList;
@@ -69,9 +73,9 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
     }
 
     public D loadObjectFromBootstrap(String name) throws InvalidDataException, ObjectNotFoundException {
-        Logger.msg(3, "DescriptionObjectCache.loadObjectFromBootstrap() - name:" + name);
-
         try {
+            Logger.msg(3, "DescriptionObjectCache.loadObjectFromBootstrap() - name:" + name + " Loading it from kernel items");
+
             String bootItems = FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/allbootitems.txt"));
             StringTokenizer str = new StringTokenizer(bootItems, "\n\r");
             while (str.hasMoreTokens()) {
@@ -81,6 +85,20 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
                     Logger.msg(3, "DescriptionObjectCache.loadObjectFromBootstrap() - Shimming " + getTypeCode() + " " + name + " from bootstrap");
                     String resData = Gateway.getResource().getTextResource(null, "boot/" + resElem[1] + (resElem[1].startsWith("OD") ? ".xsd" : ".xml"));
                     return buildObject(name, 0, new ItemPath(resElem[0]), resData);
+                }
+            }
+
+            for (Module module: Gateway.getModuleManager().getModules()) {
+                Logger.msg(3, "DescriptionObjectCache.loadObjectFromBootstrap() - name:" + name + " Lodaing it from module:"+module.getName());
+
+                ModuleResource res = (ModuleResource) module.getImports().findImport(name);
+
+                if (res != null) {
+                    res.setNs(module.getNs());
+                    String resData = Gateway.getResource().getTextResource(module.getNs(), res.getResourceLocation());
+                    // At this point the resource loaded from classpath, which means it has no UUID so a random UUID is assigned 
+                    String uuid = res.getID() == null ? UUID.randomUUID().toString() : res.getID();
+                    return buildObject(name, 0, new ItemPath(uuid), resData);
                 }
             }
         }
@@ -140,8 +158,7 @@ public abstract class DescriptionObjectCache<D extends DescriptionObject> {
                     String defId = defItemPath.getUUID().toString();
                     thisDefEntry = cache.get(defId + "_" + version);
                     if (thisDefEntry == null) {
-                        Logger.msg(6, "DescriptionObjectCache.get() - " + name + " v" + version
-                                + " not found in cache. Loading from database.");
+                        Logger.msg(6, "DescriptionObjectCache.get() - " + name + " v" + version + " not found in cache. Loading from database.");
                         ItemProxy defItemProxy = Gateway.getProxyManager().getProxy(defItemPath);
                         if (name.equals(defId)) {
                             String itemName = defItemProxy.getName();
