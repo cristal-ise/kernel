@@ -20,29 +20,29 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-import java.util.Arrays;
-
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.entity.C2KLocalObject;
 import org.cristalise.kernel.lookup.AgentPath;
-import org.cristalise.kernel.lookup.DomainPath;
-import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.utils.CastorHashMap;
-import org.cristalise.kernel.utils.Logger;
 
 /**
+ * <pre>
+ * Generates a new slot in a Dependency for the given item
  * 
- *
+ * Params:
+ * 0 - collection name
+ * 1 - target UUID or DomainPath
+ * 2 - slot properties (optional)
+ * </pre>
  */
-public class AddMemberToCollection extends PredefinedStep {
+public class AddMemberToCollection extends PredefinedStepCollectionBase {
+    public static final String description = "Creates a new member slot for the given item in a dependency, and assigns the item";
+    
     /**
      * Constructor for Castor
      */
@@ -50,59 +50,17 @@ public class AddMemberToCollection extends PredefinedStep {
         super();
     }
 
-    /**
-     * <pre>
-     * Generates a new slot in a Dependency for the given item
-     * 
-     * Params:
-     * 0 - collection name
-     * 1 - target entity key
-     * 2 - slot properties
-     * </pre>
-     */
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
             throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification
     {
-        String collName;
-        ItemPath newChild;
-        Dependency dep;
-        CastorHashMap props = null;
+        unpackParamsAndGetCollection(item, requestData, locker);
 
-        // extract parameters
-        String[] params = getDataList(requestData);
-
-        if (Logger.doLog(3)) Logger.msg(3, "AddMemberToCollection: called by "+agent+" on "+item+" with parameters "+Arrays.toString(params));
-
-        try {
-            collName = params[0];
-            try {
-                newChild = new ItemPath(params[1]);
-            }
-            catch (InvalidItemPathException e) {
-                newChild = new DomainPath(params[1]).getItemPath();
-            }
-
-            if (params.length > 2) {
-                Logger.msg(5, "AddMemberToCollection: Unmarshalling Properties:"+params[2]);
-                props = (CastorHashMap)Gateway.getMarshaller().unmarshall(params[2]);
-            }
-        }
-        catch (Exception e) {
-            Logger.error(e);
-            throw new InvalidDataException("AddMemberToCollection: Invalid parameters "+Arrays.toString(params));
-        }
-
-        // load collection
-        C2KLocalObject collObj = Gateway.getStorage().get(item, ClusterType.COLLECTION+"/"+collName+"/last", locker);
-
-        if (!(collObj instanceof Dependency)) throw new InvalidDataException("AddMemberToCollection operates on Dependency only.");
-
-        dep = (Dependency)collObj;
+        Dependency dep = getDependency();
 
         // find member and assign entity
-        if (props == null) dep.addMember(newChild);
-        else               dep.addMember(newChild, props, dep.getClassProps());
+        if (memberNewProps == null) dep.addMember(childPath);
+        else                        dep.addMember(childPath, memberNewProps, dep.getClassProps());
 
         Gateway.getStorage().put(item, dep, locker);
 

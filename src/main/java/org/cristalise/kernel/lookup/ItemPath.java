@@ -178,4 +178,10 @@ public class ItemPath extends Path {
     public String getClusterPath() {
         return ClusterType.PATH + "/Item";
     }
+    
+    public static boolean isUUID(String entityKey) {
+        if (entityKey.startsWith("/entity/")) entityKey = entityKey.substring(8);
+
+        return entityKey.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
+    }
 }

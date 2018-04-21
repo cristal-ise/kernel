@@ -44,7 +44,6 @@ import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.Module;
-import org.cristalise.kernel.process.module.ModuleImport;
 import org.cristalise.kernel.process.module.ModuleResource;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescription;

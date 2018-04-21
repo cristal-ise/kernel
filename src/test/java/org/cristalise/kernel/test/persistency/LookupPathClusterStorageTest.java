@@ -106,4 +106,11 @@ public class LookupPathClusterStorageTest {
         assertEquals(role.getStringPath(), rolePrime.getStringPath());
         assertEquals(role.hasJobList(), rolePrime.hasJobList());
     }
+    
+    @Test
+    public void checkUUID() throws Exception {
+        assert ItemPath.isUUID("30923dec-c881-40b9-86fc-075c91592ebe");
+        assert ItemPath.isUUID("/entity/30923dec-c881-40b9-86fc-075c91592ebe");
+    }
+
 }
