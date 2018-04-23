@@ -20,52 +20,52 @@
  */
 package org.cristalise.kernel.property;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 /**
  * 
  *
  */
-@Accessors(prefix = "m") @Data
+@Accessors(prefix = "m") @Data @AllArgsConstructor @NoArgsConstructor
 public class PropertyDescription {
     /**
-     * 
+     * The name of the property
      */
     private String  mName = null;
 
     /**
-     * 
+     * The default value of the property. Use this to add value to an immutable property.
      */
     private String  mDefaultValue = null;
 
     /**
-     * 
+     * Class identifier are used in Dependency collection to check if the Item can be added or not. 
+     * It is a common practice to use immutable Type property for this purpose.
+     * ClassIdentifiers are transitive by default.
      */
     private boolean mIsClassIdentifier = false;
 
     /**
-     * 
+     * When true Property cannot change its value after instantiation
      */
     private boolean mIsMutable = false;
 
     /**
-     * Transitive Properties are converted to VertexProperties. ClassIdentifiers are Transitive as well
+     * Transitive Properties are converted to VertexProperties (e.g. Dependency collection). 
+     * ClassIdentifiers are Transitive too.l
      */
     private boolean mTransitive = false;
 
-    public PropertyDescription() {
-    }
-
+    /**
+     * Transitive Properties are converted to VertexProperties. ClassIdentifiers are Transitive as well
+     * 
+     * @return if the PropertyDesc is transitive or not
+     */
     public boolean isTransitive() {
         return mTransitive || mIsClassIdentifier;
-    }
-
-    public PropertyDescription(String name, String defaultValue, boolean isClassIdentifier, boolean isMutable) {
-        setName(name);
-        setDefaultValue(defaultValue);
-        setIsClassIdentifier(isClassIdentifier);
-        setIsMutable(isMutable);
     }
 
     //Method only kept for backward compatibility, because lombok generates different signature
@@ -88,6 +88,11 @@ public class PropertyDescription {
         return mIsMutable;
     }
 
+    /**
+     * Instantiates a new Property from this definition
+     * 
+     * @return the newly created Property
+     */
     public Property getProperty() {
         return new Property(mName, mDefaultValue, mIsMutable);
     }
