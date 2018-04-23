@@ -20,7 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.CannotManageException;
@@ -53,8 +53,8 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
      * <li>Domain context</li>
      * <li>Comma-delimited Role names to assign to the Agent</li>
      * <li>Password (optional)</li>
-     * <li>Initial properties to set in the new Agent (optional)</li>
      * <li>Description version to use(optional)</li>
+     * <li>Initial properties to set in the new Agent (optional)</li>
      * </ol>
      * @throws ObjectNotFoundException
      * @throws InvalidDataException The input parameters were incorrect
@@ -77,13 +77,13 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
 
         String            newName   = input[0];
         String            contextS  = input[1];
-        String[]          roles     = input[2].split(",");
-        String            pwd       = input.length > 3 ? input[3]: "";
-        String            descVer   = input.length > 4 ? input[4] : "last";
-        PropertyArrayList initProps = input.length > 5 ? unmarshallInitProperties(input[5]) : new PropertyArrayList();
+        String[]          roles     = StringUtils.isNotBlank(input[2]) ? input[2].split(",") : new String[0];
+        String            pwd       = input.length > 3 && StringUtils.isNotBlank(input[3]) ? input[3] : "";
+        String            descVer   = input.length > 4 && StringUtils.isNotBlank(input[4]) ? input[4] : "last";
+        PropertyArrayList initProps = input.length > 5 && StringUtils.isNotBlank(input[5]) ? unmarshallInitProperties(input[5]) : new PropertyArrayList();
 
         // generate new agent path with new UUID
-        Logger.msg(1, "CreateAgentFromDescription - Requesting new agent path name:" + newName);
+        Logger.msg(1, "CreateAgentFromDescription - Requesting new agent path name:%s, input:%s", newName, Arrays.toString(input));
         AgentPath newAgentPath = new AgentPath(new ItemPath(), newName);
 
         // check if the agent's name is already taken
@@ -104,6 +104,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
     }
 
     /**
+     * Create Corba server, AgentPath and add Roles to agent
      * 
      * @param newAgentPath
      * @param roles
@@ -112,9 +113,11 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
      * @throws ObjectCannotBeUpdated
      * @throws ObjectAlreadyExistsException
      */
-    protected ActiveEntity createAgentAddRoles(AgentPath newAgentPath, String[] roles, String pwd) throws CannotManageException, ObjectCannotBeUpdated, ObjectAlreadyExistsException {
-        // create the Agent object
+    protected ActiveEntity createAgentAddRoles(AgentPath newAgentPath, String[] roles, String pwd) 
+            throws CannotManageException, ObjectCannotBeUpdated, ObjectAlreadyExistsException
+    {
         Logger.msg(3, "CreateAgentFromDescription.createAgentAddRoles() - Creating Agent");
+        
         CorbaServer factory = Gateway.getCorbaServer();
 
         if (factory == null) throw new CannotManageException("This process cannot create new Items");
@@ -126,13 +129,17 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
             if (StringUtils.isNotBlank(pwd)) Gateway.getLookupManager().setAgentPassword(newAgentPath, pwd);
 
             for (String roleName: roles) {
-                RolePath role = Gateway.getLookupManager().getRolePath(roleName);
-                Gateway.getLookupManager().addRole(newAgentPath, role);
+                if (StringUtils.isNotBlank(roleName)) {
+                    RolePath role = Gateway.getLookupManager().getRolePath(roleName);
+                    Gateway.getLookupManager().addRole(newAgentPath, role);
+                }
             }
         }
-        catch (ObjectNotFoundException | NoSuchAlgorithmException e) {
+        catch (Exception e) {
             Logger.error(e);
             Gateway.getLookupManager().delete(newAgentPath);
+
+            throw new CannotManageException(e.getMessage());
         }
 
         return newAgent;

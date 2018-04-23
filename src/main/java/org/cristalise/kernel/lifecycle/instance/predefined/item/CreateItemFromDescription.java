@@ -27,6 +27,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.CollectionDescription;
@@ -95,8 +96,8 @@ public class CreateItemFromDescription extends PredefinedStep {
 
         String            newName   = input[0];
         String            domPath   = input[1];
-        String            descVer   = input.length > 2 ? input[2] : "last";
-        PropertyArrayList initProps = input.length > 3 ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
+        String            descVer   = input.length > 2 && StringUtils.isNotBlank(input[2]) ? input[2] : "last";
+        PropertyArrayList initProps = input.length > 3 && StringUtils.isNotBlank(input[3]) ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
 
         Logger.msg(1, "CreateItemFromDescription - name:" + newName);
 
