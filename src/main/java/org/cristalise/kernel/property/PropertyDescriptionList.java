@@ -59,14 +59,18 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
         return false;
     }
 
-    public void add(String name, String value, boolean isClassId, boolean isMutable) {
+    public void add(String name, String value, boolean isClassId, boolean isMutable, boolean isTransitive) {
         for (PropertyDescription element : list) {
             if (element.getName().equals(name)) {
                 list.remove(element);
                 break;
             }
         }
-        list.add(new PropertyDescription(name, value, isClassId, isMutable));
+        list.add(new PropertyDescription(name, value, isClassId, isMutable, isTransitive));
+    }
+
+    public void add(String name, String value, boolean isClassId, boolean isMutable) {
+        add(name, value, isClassId, isMutable, false);
     }
 
     public boolean definesProperty(String name) {
