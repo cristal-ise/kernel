@@ -226,6 +226,7 @@ public class Activity extends WfVertex {
                 updateItemProperties(itemPath, newOutcome, locker);
             }
             else {
+                updateItemProperties(itemPath, null, locker);
                 hist.addEvent(agent, delegate, usedRole, getName(), getPath(), getType(), getStateMachine(), transitionID);
             }
         }
@@ -274,7 +275,7 @@ public class Activity extends WfVertex {
                     String propValue = entry.getValue().toString();
 
                     //FIXME: use DataHelper if possible, because it will make code more general
-                    if (StringUtils.isNotBlank(propValue) && propValue.startsWith(XPATH_TOKEN)) {
+                    if (outcome != null && StringUtils.isNotBlank(propValue) && propValue.startsWith(XPATH_TOKEN)) {
                         try {
                             propValue = outcome.getFieldByXPath(propValue.substring(6));
                         }
