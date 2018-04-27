@@ -34,6 +34,7 @@ public abstract class PredefinedStepContainer extends CompositeActivity {
         createChildren();
     }
 
+    //TODO make this complete configure from the given class
     public void createChildren() {
         predInit("AddDomainPath", "Adds a new path to this item in the LDAP domain tree", new AddDomainPath());
         predInit("RemoveDomainPath", "Removes an existing path to this item from the LDAP domain tree", new RemoveDomainPath());
@@ -42,6 +43,7 @@ public abstract class PredefinedStepContainer extends CompositeActivity {
         predInit("RemoveC2KObject", "Removes the named C2Kernel object from this Item.", new RemoveC2KObject());
         predInit("WriteProperty", "Writes a property to the Item", new WriteProperty());
         predInit("WriteViewpoint", "Writes a viewpoint to the Item", new WriteViewpoint());
+        predInit(RemoveViewpoint.class.getSimpleName(), RemoveViewpoint.description, new RemoveViewpoint());
         predInit("AddNewCollectionDescription", "Creates a new collection description in this Item", new AddNewCollectionDescription());
         predInit("CreateNewCollectionVersion", "Creates a new numbered collection version in this Item from the current one.", new CreateNewCollectionVersion());
         predInit("AddNewSlot", "Creates a new slot in the given aggregation, that holds instances of the item description of the given key", new AddNewSlot());
