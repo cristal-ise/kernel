@@ -360,6 +360,17 @@ public class ItemProxy
     }
 
     /**
+     * Reads the list of existing Viewpoint names for the given schema 
+     * 
+     * @param schemaName the name of the schema
+     * @return array of strings containing the Viewpoint names
+     * @throws ObjectNotFoundException Object not found
+     */
+    public String[] getViewpoints(String schemaName) throws ObjectNotFoundException {
+        return getContents(ClusterType.VIEWPOINT+"/"+schemaName);
+    }
+
+    /**
      * Gets the named Viewpoint
      *
      * @param schemaName the name of the Schema associated with the Viewpoint
@@ -560,7 +571,7 @@ public class ItemProxy
      *
      * @param path the ClusterStorage path
      * @return list of String of the cluster content
-     * @throws ObjectNotFoundException Object nt found
+     * @throws ObjectNotFoundException Object not found
      */
     public String[] getContents( String path ) throws ObjectNotFoundException {
         try {
