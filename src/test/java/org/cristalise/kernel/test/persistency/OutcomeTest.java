@@ -33,8 +33,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
@@ -355,6 +357,15 @@ public class OutcomeTest {
         new Outcome(
             FileStringUtility.url2String(OutcomeTest.class.getResource("/dependencyMember1.xml")),
             new Schema("Collection", 0, null, FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Collection.xsd")))
+        ).validateAndCheck();
+    }
+
+    @Test
+    public void testViewpoint() throws Exception {
+        Viewpoint vp = new Viewpoint(new ItemPath(), "Phone", "last", 0, 10);
+        new Outcome(
+            Gateway.getMarshaller().marshall(vp),
+            new Schema("Viewpoint", 0, null, FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Viewpoint.xsd")))
         ).validateAndCheck();
     }
 }
