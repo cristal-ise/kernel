@@ -60,6 +60,8 @@ public class DependencyDescription extends Dependency implements CollectionDescr
                 newDep.setProperties(PropertyUtility.convertTransitiveProperties(pdList));
                 newDep.setClassProps(pdList.getClassProps());
             }
+
+            if (mProperties != null) newDep.getProperties().merge(mProperties);
         }
         return newDep;
     }
