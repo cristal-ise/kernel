@@ -76,9 +76,11 @@ public class ChangeName extends PredefinedStep {
             throw new InvalidDataException(item + " does not have any domainPath");
 
         DomainPath rootDP = currentDP.getParent();
+        DomainPath newDP = new DomainPath(rootDP, newName);
+        newDP.setItemPath(item);
 
         // Throws an exception if newName exists
-        Gateway.getLookupManager().add(new DomainPath(rootDP, newName));
+        Gateway.getLookupManager().add(newDP);
 
         try {
             Gateway.getLookupManager().delete(currentDP);
@@ -87,7 +89,7 @@ public class ChangeName extends PredefinedStep {
             Logger.error(e);
 
             //recover original state
-            Gateway.getLookupManager().delete(new DomainPath(rootDP, newName));
+            Gateway.getLookupManager().delete(newDP);
 
             throw new CannotManageException(e.getMessage());
         }
@@ -99,8 +101,8 @@ public class ChangeName extends PredefinedStep {
             Logger.error(e);
 
             //recover original state
-            Gateway.getLookupManager().delete(new DomainPath(rootDP, newName));
-            Gateway.getLookupManager().add(   new DomainPath(rootDP, oldName));
+            Gateway.getLookupManager().delete(newDP);
+            Gateway.getLookupManager().add(currentDP);
 
             throw new CannotManageException(e.getMessage());
         }
