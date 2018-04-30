@@ -22,6 +22,7 @@ package org.cristalise.kernel.entity.imports;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.BuiltInCollections;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyDescription;
@@ -69,7 +70,8 @@ public class ImportDependency {
     public Dependency create() throws InvalidCollectionModification, ObjectNotFoundException, ObjectAlreadyExistsException {
         Dependency newDep = isDescription ? new DependencyDescription(name) : new Dependency(name);
         if (version != null) newDep.setVersion(version);
-        if (itemDescriptionPath != null && itemDescriptionPath.length() > 0) {
+
+        if (StringUtils.isNotBlank(itemDescriptionPath)) {
             ItemPath itemPath;
             try {
                 itemPath = new ItemPath(itemDescriptionPath);
@@ -77,16 +79,19 @@ public class ImportDependency {
             catch (InvalidItemPathException ex) {
                 itemPath = new DomainPath(itemDescriptionPath).getItemPath();
             }
+
             String descVer = itemDescriptionVersion == null ? "last" : itemDescriptionVersion;
             PropertyDescriptionList propList = PropertyUtility.getPropertyDescriptionOutcome(itemPath, descVer, null);
             StringBuffer classProps = new StringBuffer();
+
             for (PropertyDescription pd : propList.list) {
                 props.put(pd.getName(), pd.getDefaultValue());
                 if (pd.getIsClassIdentifier()) classProps.append((classProps.length() > 0 ? "," : "")).append(pd.getName());
             }
-            newDep.setProperties(props);
             newDep.setClassProps(classProps.toString());
         }
+
+        newDep.setProperties(props);
 
         for (ImportDependencyMember thisMem : dependencyMemberList) {
             ItemPath itemPath;
