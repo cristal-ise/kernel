@@ -120,9 +120,14 @@ public class Dependency extends Collection<DependencyMember> {
      * @throws InvalidCollectionModification if Item is null or the Properties of the Item (e.g. Type) does not match the Collection's
      * @throws ObjectAlreadyExistsException Item is already a member
      */
-    public DependencyMember addMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
-        if (itemPath == null)   throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
-        if (contains(itemPath)) throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
+    public DependencyMember addMember(ItemPath itemPath) 
+            throws InvalidCollectionModification, ObjectAlreadyExistsException
+    {
+        if (itemPath == null) 
+            throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
+
+        if (contains(itemPath))
+            throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
 
         // create member object
         DependencyMember depMember = new DependencyMember();
@@ -161,9 +166,11 @@ public class Dependency extends Collection<DependencyMember> {
     public DependencyMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
             throws InvalidCollectionModification, ObjectAlreadyExistsException
     {
-        if (itemPath == null) throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
+        if (itemPath == null)
+            throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
 
-        if (contains(itemPath))
+        boolean checkUniqueness = Gateway.getProperties().getBoolean("Dependency.checkMemberUniqueness", true);
+        if (checkUniqueness && contains(itemPath))
             throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
 
         if (classProps != null && !classProps.equals(mClassProps))
