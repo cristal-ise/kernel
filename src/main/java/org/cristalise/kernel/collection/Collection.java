@@ -57,7 +57,6 @@ import org.cristalise.kernel.utils.CastorHashMap;
  */
 abstract public class Collection<E extends CollectionMember> implements C2KLocalObject {
 
-    //public static final short         EMPTY    = -1;
     private int                       mCounter = -1;   // Contains next available Member ID
     protected CollectionMemberList<E> mMembers = new CollectionMemberList<E>();
     protected String                  mName    = "";   // Not checked for uniqueness
