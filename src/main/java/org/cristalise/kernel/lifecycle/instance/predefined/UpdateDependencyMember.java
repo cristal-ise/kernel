@@ -20,16 +20,12 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
-import java.util.Map.Entry;
-
-import org.cristalise.kernel.collection.DependencyMember;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.utils.Logger;
 
 /**
  * Params:
@@ -65,19 +61,7 @@ public class UpdateDependencyMember extends PredefinedStepCollectionBase {
         if (slotID == -1 && childPath == null) throw new InvalidDataException("Must give either slot number/item UUID to update member");
         if (memberNewProps == null)            throw new InvalidDataException("Must provide properties to update member");
 
-        DependencyMember member = getDependencyMember();
-
-        // Only update existing properties otherwise throw an exception
-        for (Entry<String, Object> entry: memberNewProps.entrySet()) {
-            if (member.getProperties().containsKey(entry.getKey())) {
-                member.getProperties().put(entry.getKey(), entry.getValue());
-            }
-            else {
-                String error = "Property "+entry.getKey()+" does not exists for slotID:" + slotID;
-                Logger.error(error);
-                throw new ObjectNotFoundException(error);
-            }
-        }
+        getDependency().updateMember(childPath, slotID, memberNewProps);
 
         Gateway.getStorage().put(item, collection, locker);
 
