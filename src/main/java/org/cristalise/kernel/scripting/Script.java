@@ -88,7 +88,6 @@ public class Script implements DescriptionObject {
     Integer        mVersion;
     ItemPath       mItemPath;
     String         mLanguage;
-
     HashMap<String, Parameter> mInputParams    = new HashMap<String, Parameter>();
     HashMap<String, Parameter> mOutputParams   = new HashMap<String, Parameter>();
 
@@ -609,22 +608,22 @@ public class Script implements DescriptionObject {
             
             // set current context to the included script before executing it? (issue #124)            
             importScript.setContext(context);
-            // execute the icluded scripts first, they might set input parameters            
+            // execute the included scripts first, they might set input parameters            
             Object output = importScript.execute();
 
-            if (output == null || !(output instanceof Map)) return;
-
-            ((Map<String, Object>)output).forEach((outputKey, outputValue) -> {
-                if (mInputParams.containsKey(outputKey)) {
-                    try {
-                        Logger.msg(5, "Script.executeIncludedScripts() - setting inputs for parameter:"+outputKey);
-                        setInputParamValue(outputKey, outputValue);
+            if (output != null && output instanceof Map) {
+                ((Map<String, Object>)output).forEach((outputKey, outputValue) -> {
+                    if (mInputParams.containsKey(outputKey)) {
+                        try {
+                            Logger.msg(5, "Script.executeIncludedScripts() - setting inputs for parameter:"+outputKey);
+                            setInputParamValue(outputKey, outputValue);
+                        }
+                        catch (ParameterException e) {
+                            Logger.error(e);
+                        }
                     }
-                    catch (ParameterException e) {
-                        Logger.error(e);
-                    }
-                }
-            });
+                });
+            }
         }
     }
 
