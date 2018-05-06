@@ -140,7 +140,7 @@ public class Dependency extends Collection<DependencyMember> {
     {
         List<CollectionMember> members = resolveMembers(memberID, childPath);
 
-        if (members.size() != 1) throw new InvalidDataException();
+        if (members.size() != 1) throw new InvalidDataException("Child item '"+childPath+"' apperars more them once in collection " + mName);
 
         DependencyMember member = (DependencyMember) members.get(0);
 
