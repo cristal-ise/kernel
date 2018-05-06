@@ -38,6 +38,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.WORKFLOW_URN;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -113,6 +114,51 @@ public class Dependency extends Collection<DependencyMember> {
     }
 
     /**
+     * @return array of Property instances fully initialised from classProps (comma separated values)
+     */
+    public Property[] getClassProperties() {
+        String[] classPropNames = getClassProps().split(",");
+
+        Property[] props = new Property[classPropNames.length];
+        int i = 0;
+
+        for (String propName: classPropNames) {
+            props[i++] = new Property(propName, (String)getProperties().get(propName));
+        }
+
+        return props;
+    }
+
+    public void updateMember(ItemPath childPath, CastorHashMap memberNewProps)
+            throws ObjectNotFoundException, InvalidDataException
+    {
+        updateMember(childPath, -1, memberNewProps);
+    }
+
+    public void updateMember(ItemPath childPath, int memberID, CastorHashMap memberNewProps)
+            throws ObjectNotFoundException, InvalidDataException
+    {
+        List<CollectionMember> members = resolveMembers(memberID, childPath);
+
+        if (members.size() != 1) throw new InvalidDataException();
+
+        DependencyMember member = (DependencyMember) members.get(0);
+
+        // Only update existing properties otherwise throw an exception
+        for (Entry<String, Object> entry: memberNewProps.entrySet()) {
+            if (member.getProperties().containsKey(entry.getKey())) {
+                member.getProperties().put(entry.getKey(), entry.getValue());
+            }
+            else {
+                String error = "Property "+entry.getKey()+" does not exists for slotID:" + memberID;
+                Logger.error(error);
+                throw new ObjectNotFoundException(error);
+            }
+        }
+        
+    }
+
+    /**
      * Add a member to the Dependency
      * 
      * @param itemPath the Item to be added as a Member
@@ -139,7 +185,7 @@ public class Dependency extends Collection<DependencyMember> {
         depMember.assignItem(itemPath);
         mMembers.list.add(depMember);
         
-        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children.");
+        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
         return depMember;
     }
 
@@ -198,7 +244,7 @@ public class Dependency extends Collection<DependencyMember> {
         // assign entity
         depMember.assignItem(itemPath);
         mMembers.list.add(depMember);
-        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children.");
+        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
         return depMember;
     }
 

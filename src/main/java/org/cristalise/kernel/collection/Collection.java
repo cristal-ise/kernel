@@ -22,6 +22,9 @@ package org.cristalise.kernel.collection;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -254,4 +257,38 @@ abstract public class Collection<E extends CollectionMember> implements C2KLocal
 
         return true;
     }
+
+    /**
+     * Helper method to find all the members with the combination of the input parameters.
+     * 
+     * @param slotID the id of the slot
+     * @param childPath the UUID of the item in the slots
+     * @return the list of members 
+     * @throws ObjectNotFoundException there is not member found for the given input parameters
+     */
+    public List<CollectionMember> resolveMembers(int slotID, ItemPath childPath) throws ObjectNotFoundException {
+        // check the slot is there if it's given by id
+        ArrayList<CollectionMember> members = new ArrayList<>();
+
+        if (slotID > -1) {
+            CollectionMember slot = getMember(slotID);
+
+            // if both parameters are supplied, check the given item is actually in that slot
+            if (slot != null && childPath != null && !slot.getItemPath().equals(childPath)) {
+                throw new ObjectNotFoundException("Item " + childPath + " was not in slot " + slotID);
+            }
+
+            members.add(slot);
+        }
+        else { // find the slots from entity key
+            for (CollectionMember member: getMembers().list) {
+                if (member.getItemPath().equals(childPath)) members.add(member);
+            }
+
+            throw new ObjectNotFoundException("Could not find " + childPath + " in collection " + getName());
+        }
+
+        return members;
+    }
+
 }
