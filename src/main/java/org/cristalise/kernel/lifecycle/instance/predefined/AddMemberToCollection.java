@@ -20,7 +20,10 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
+import java.util.Arrays;
+
 import org.cristalise.kernel.collection.Dependency;
+import org.cristalise.kernel.collection.DependencyMember;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
@@ -54,16 +57,21 @@ public class AddMemberToCollection extends PredefinedStepCollectionBase {
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
             throws InvalidDataException, ObjectAlreadyExistsException, PersistencyException, ObjectNotFoundException, InvalidCollectionModification
     {
-        unpackParamsAndGetCollection(item, requestData, locker);
+        String[] params = unpackParamsAndGetCollection(item, requestData, locker);
 
         Dependency dep = getDependency();
+        DependencyMember member = null;
 
         // find member and assign entity
-        if (memberNewProps == null) dep.addMember(childPath);
-        else                        dep.addMember(childPath, memberNewProps, dep.getClassProps());
+        if (memberNewProps == null) member = dep.addMember(childPath);
+        else                        member = dep.addMember(childPath, memberNewProps, dep.getClassProps());
+
+        //put ID of the newly created member into the return data of this step
+        params = Arrays.copyOf(params, params.length+1);
+        params[params.length-1] = Integer.toString(member.getID());
 
         Gateway.getStorage().put(item, dep, locker);
 
-        return requestData;
+        return bundleData(params);
     }
 }
