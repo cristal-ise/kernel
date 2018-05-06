@@ -52,6 +52,7 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
     protected CastorHashMap memberNewProps = null;
 
     Collection<? extends CollectionMember> collection;
+    
 
     /**
      * 
@@ -120,12 +121,14 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
      * @throws PersistencyException
      * @throws ObjectNotFoundException
      */
-    protected void unpackParamsAndGetCollection(ItemPath item, String requestData, Object locker) 
+    protected String[] unpackParamsAndGetCollection(ItemPath item, String requestData, Object locker) 
             throws InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         String[] params = getDataList(requestData);
 
-        Logger.msg(2, "PredefinedStepCollectionBase.unpackParamsAndGetCollection() - params:", Arrays.toString(params));
+        if (params == null || params.length < 2) throw new InvalidDataException("CollectionBase - Invalid parameters:" + Arrays.toString(params));
+
+        Logger.msg(2, "PredefinedStepCollectionBase.unpackParamsAndGetCollection() - params:%s", Arrays.toString(params));
 
         collectionName = params[0];
 
@@ -157,6 +160,8 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
             Logger.error(e);
             throw new InvalidDataException("CollectionBase - Invalid parameters:" + Arrays.toString(params));
         }
+
+        return params;
     }
 
     /**
