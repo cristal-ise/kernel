@@ -23,6 +23,7 @@ package org.cristalise.kernel.lifecycle.instance.predefined;
 import static org.cristalise.kernel.persistency.ClusterType.COLLECTION;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Aggregation;
@@ -165,46 +166,18 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
     }
 
     /**
-     * Resolves the member using the combination of slotID and childPath
-     * 
-     * @return the 
-     * @throws ObjectNotFoundException
-     */
-    protected CollectionMember resolveMember() throws ObjectNotFoundException {
-        // check the slot is there if it's given by id
-        CollectionMember slot = null;
-
-        if (slotID > -1) {
-            slot = collection.getMember(slotID);
-
-            // if both parameters are supplied, check the given item is actually in that slot
-            if (slot != null && childPath != null && !slot.getItemPath().equals(childPath)) {
-                throw new ObjectNotFoundException("Item " + childPath + " was not in slot " + slotID);
-            }
-        }
-        else { // find slot from entity key
-            for (CollectionMember member : collection.getMembers().list) {
-                if (member.getItemPath().equals(childPath)) {
-                    slotID = member.getID();
-                    break;
-                }
-            }
-
-            if (slotID > -1) slot = collection.getMember(slotID);
-            else             throw new ObjectNotFoundException("Could not find " + childPath + " in collection " + collection.getName());
-        }
-
-        return slot;
-    }
-
-    /**
      * 
      * @return
      * @throws InvalidDataException
      * @throws ObjectNotFoundException
      */
     protected DependencyMember getDependencyMember() throws InvalidDataException, ObjectNotFoundException {
-        CollectionMember member = resolveMember();
+        List<CollectionMember> memberList = collection.resolveMembers(slotID, childPath);
+        
+        if (memberList.size() != 1)
+            throw new InvalidDataException(collectionName + "contains more the one member for slotID:"+slotID+" memberId:"+childPath);
+
+        CollectionMember member = memberList.get(0);
 
         if (!(member instanceof DependencyMember))
             throw new InvalidDataException(collectionName + " has to be Dependency (member class:" + member.getClass().getSimpleName()+")");
