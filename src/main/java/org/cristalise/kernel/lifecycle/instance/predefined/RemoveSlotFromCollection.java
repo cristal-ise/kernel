@@ -44,9 +44,6 @@ public class RemoveSlotFromCollection extends PredefinedStepCollectionBase {
     {
         unpackParamsAndGetCollection(item, requestData, locker);
 
-        // Check if the supplied parameters were OK or not
-        resolveMember();
-
         // Remove the slot
         collection.removeMember(slotID);
 
