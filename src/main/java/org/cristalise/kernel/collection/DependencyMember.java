@@ -21,6 +21,7 @@
 package org.cristalise.kernel.collection;
 
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -104,8 +105,10 @@ public class DependencyMember implements CollectionMember {
                 try {
                     String memberValue = (String) getProperties().get(aClassProp);
                     Property ItemProperty = (Property) Gateway.getStorage().get(itemPath, ClusterType.PROPERTY + "/" + aClassProp, null);
+
                     if (ItemProperty == null)
                         throw new InvalidCollectionModification("Property " + aClassProp + " does not exist for item " + itemPath);
+
                     if (!ItemProperty.getValue().equalsIgnoreCase(memberValue))
                         throw new InvalidCollectionModification("DependencyMember::checkProperty() Values of mandatory prop " + aClassProp
                                 + " do not match " + ItemProperty.getValue() + "!=" + memberValue);
@@ -175,5 +178,24 @@ public class DependencyMember implements CollectionMember {
             Logger.error(e);
             throw new InvalidDataException(e.getMessage());
         }
+    }
+    
+    /**
+     * Only update existing properties otherwise throw an exception
+     * 
+     * @param newProps the new properties 
+     * @throws ObjectNotFoundException property does not exists for member
+     * @throws InvalidCollectionModification cannot update class properties
+     */
+    public void updateProperties(CastorHashMap newProps) throws ObjectNotFoundException, InvalidCollectionModification {
+        for (Entry<String, Object> newProp: newProps.entrySet()) {
+            if (mClassProps.contains(newProp.getKey()))
+                throw new InvalidCollectionModification("Dependency cannot change classProperties:"+mClassProps);
+
+            if (getProperties().containsKey(newProp.getKey())) getProperties().put(newProp.getKey(), newProp.getValue());
+            else
+                throw new ObjectNotFoundException("Property "+newProp.getKey()+" does not exists for slotID:" + getID());
+        }
+        
     }
 }

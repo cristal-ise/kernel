@@ -38,7 +38,6 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.WORKFLOW_URN;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -129,33 +128,38 @@ public class Dependency extends Collection<DependencyMember> {
         return props;
     }
 
+    /**
+     * 
+     * @param childPath
+     * @param memberNewProps
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws InvalidCollectionModification 
+     */
     public void updateMember(ItemPath childPath, CastorHashMap memberNewProps)
-            throws ObjectNotFoundException, InvalidDataException
+            throws ObjectNotFoundException, InvalidDataException, InvalidCollectionModification
     {
         updateMember(childPath, -1, memberNewProps);
     }
 
+    /**
+     * 
+     * @param childPath
+     * @param memberID
+     * @param memberNewProps
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws InvalidCollectionModification 
+     */
     public void updateMember(ItemPath childPath, int memberID, CastorHashMap memberNewProps)
-            throws ObjectNotFoundException, InvalidDataException
+            throws ObjectNotFoundException, InvalidDataException, InvalidCollectionModification
     {
         List<CollectionMember> members = resolveMembers(memberID, childPath);
 
         if (members.size() != 1) throw new InvalidDataException("Child item '"+childPath+"' apperars more them once in collection " + mName);
 
         DependencyMember member = (DependencyMember) members.get(0);
-
-        // Only update existing properties otherwise throw an exception
-        for (Entry<String, Object> entry: memberNewProps.entrySet()) {
-            if (member.getProperties().containsKey(entry.getKey())) {
-                member.getProperties().put(entry.getKey(), entry.getValue());
-            }
-            else {
-                String error = "Property "+entry.getKey()+" does not exists for slotID:" + memberID;
-                Logger.error(error);
-                throw new ObjectNotFoundException(error);
-            }
-        }
-        
+        member.updateProperties(memberNewProps);
     }
 
     /**
@@ -219,26 +223,18 @@ public class Dependency extends Collection<DependencyMember> {
         if (checkUniqueness && contains(itemPath))
             throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
 
-        if (classProps != null && !classProps.equals(mClassProps))
-            throw new InvalidCollectionModification("Cannot change classProps in dependency member");
+        for (String classProp: mClassProps.split(",")) {
+            if (props.containsKey(classProp))
+                throw new InvalidCollectionModification("Dependency cannot change classProperties:"+mClassProps);
+        }
 
         DependencyMember depMember = new DependencyMember();
         depMember.setID(getCounter());
 
-        // merge props
-        CastorHashMap newProps = new CastorHashMap();
-        for (Object name : props.keySet()) {
-            String key = (String)name;
-            newProps.put(key, props.get(key));
-        }
+        // class props needs to be added
+        for (String classProp: mClassProps.split(",")) props.put(classProp, mProperties.get(classProp));
 
-        // class props override local
-        for (Object name : mProperties.keySet()) {
-            String key = (String)name;
-            newProps.put(key, mProperties.get(key));
-        }
-
-        depMember.setProperties(newProps);
+        depMember.setProperties(props);
         depMember.setClassProps(mClassProps);
 
         // assign entity

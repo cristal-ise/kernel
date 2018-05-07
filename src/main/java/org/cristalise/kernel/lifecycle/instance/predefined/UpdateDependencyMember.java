@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -50,11 +51,12 @@ public class UpdateDependencyMember extends PredefinedStepCollectionBase {
     }
 
     /**
+     * @throws InvalidCollectionModification 
      * 
      */
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectNotFoundException, PersistencyException
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, InvalidCollectionModification
     {
         unpackParamsAndGetCollection(item, requestData, locker);
 
