@@ -312,10 +312,11 @@ public class Activity extends WfVertex {
      * @throws ObjectNotFoundException
      * @throws PersistencyException
      * @throws CannotManageException
+     * @throws AccessRightsException 
      */
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException, InvalidCollectionModification, ObjectAlreadyExistsException, ObjectCannotBeUpdated,
-            ObjectNotFoundException, PersistencyException, CannotManageException
+            ObjectNotFoundException, PersistencyException, CannotManageException, AccessRightsException
     {
         return requestData;
     }

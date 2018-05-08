@@ -29,6 +29,7 @@ import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
@@ -141,7 +142,8 @@ public abstract class PredefinedStep extends Activity {
                     ObjectCannotBeUpdated,
                     ObjectNotFoundException,
                     PersistencyException,
-                    CannotManageException;
+                    CannotManageException,
+                    AccessRightsException;
 
     // generic bundling of parameters
     static public String bundleData(String[] data) {

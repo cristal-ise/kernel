@@ -21,8 +21,8 @@
 package org.cristalise.kernel.lifecycle.instance.predefined.agent;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
@@ -42,24 +42,39 @@ public class SetAgentPassword extends PredefinedStep {
 
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException
+            throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, AccessRightsException
     {
         String[] params = getDataList(requestData);
 
-        Logger.msg(3, "SetAgentPassword: called by " + agent + " on " + item + " with parameters " + Arrays.toString(params));
+        Logger.msg(3, "SetAgentPassword: called by " + agent + " on " + item + " with parameters length:" + params.length);
 
-        if (params.length != 1) throw new InvalidDataException("SetAgentPassword: Invalid parameters " + Arrays.toString(params));
+        //FIXME params.length != 1 case is deprecated, shall enforce identity check
+        if (params.length != 1 && params.length != 2) 
+            throw new InvalidDataException("SetAgentPassword: Invalid number of parameters length:" + params.length);
 
         try {
             AgentPath targetAgent = new AgentPath(item);
+            String newPwd;
 
-            if (!targetAgent.equals(agent) && !agent.hasRole("Admin")) {
-                throw new InvalidDataException("Agent passwords may only be set by those Agents or by an Administrator");
+            if (!targetAgent.equals(agent) && !agent.hasRole("Admin"))
+                throw new AccessRightsException("Agent passwords may only be set by those Agents or by an Administrator");
+
+            if (params.length == 1) {
+                //FIXME these case is deprecated, shall enforce identity check
+                newPwd = params[0];
+                params[0] = "REDACTED"; // censor password from outcome
+            }
+            else {
+                //Enforce identity check
+                if (!Gateway.getAuthenticator().authenticate(agent.getAgentName(), params[0], null))
+                    throw new AccessRightsException("Authentication failed");
+
+                newPwd = params[1];
+                params[0] = "REDACTED"; // censor password from outcome
+                params[1] = "REDACTED"; // censor password from outcome
             }
 
-            Gateway.getLookupManager().setAgentPassword(targetAgent, params[0]);
-
-            params[0] = "REDACTED"; // censor password from outcome
+            Gateway.getLookupManager().setAgentPassword(targetAgent, newPwd);
 
             return bundleData(params);
         }
