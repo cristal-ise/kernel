@@ -523,7 +523,7 @@ public class Script implements DescriptionObject {
 
             if (retVal == null) retVal = "";
 
-            Logger.msg(2, "Script.evaluate("+getName()+") - Script returned:'"+retVal+"'");
+            //Logger.msg(2, "Script.evaluate("+getName()+") - Script returned:'"+retVal+"'");
 
             return retVal;
         }
@@ -580,7 +580,7 @@ public class Script implements DescriptionObject {
             if (mCompScript != null) returnValue = mCompScript.eval(context);
             else                     returnValue = engine.eval(mScript);
 
-            Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
+            //Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
         }
         catch (Throwable ex) {
             Logger.error(ex);
@@ -670,7 +670,7 @@ public class Script implements DescriptionObject {
             //otherwise take data from the bindings using the output name
             Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
-            Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"= "+(outputValue==null ? "null" : outputValue.toString()));
+            Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
 
             // check the class
             if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
