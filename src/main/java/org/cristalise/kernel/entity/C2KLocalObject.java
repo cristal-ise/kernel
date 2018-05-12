@@ -66,4 +66,17 @@ public interface C2KLocalObject {
      * @return The path identifier (i.e. primary key) of the object
      */
     public String getClusterPath();
+
+    /**
+     * Use this method to ensure very strict name policy
+     * 
+     * @param name to be checked
+     * @throws IllegalArgumentException name must be alphanumeric with '_-:~' characters
+     */
+    public static void enforceValidName(String name) {
+        String regex = "^[\\w-:\\~]*$";
+
+        if (!name.matches(regex))
+            throw new IllegalArgumentException("Name='"+name+"' must be alphanumeric with '_-:~' characters");
+    }
 }

@@ -20,7 +20,10 @@
  */
 package org.cristalise.kernel.persistency.outcome;
 
-import org.apache.commons.lang3.StringUtils;
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
+
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -30,10 +33,6 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.process.Gateway;
-
-import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
-import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
-import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -88,8 +87,7 @@ public class Viewpoint implements C2KLocalObject {
     }
 
     public void setName(String n) {
-        if (!StringUtils.isAlphanumeric(n))
-            throw new IllegalArgumentException("Viewpoint name='"+n+"' must be alphanumeric only");
+        C2KLocalObject.enforceValidName(n); //throws runtime exception
 
         name = n;
     }
