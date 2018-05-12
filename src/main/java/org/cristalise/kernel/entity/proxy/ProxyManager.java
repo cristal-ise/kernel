@@ -118,7 +118,7 @@ public class ProxyManager {
 
         if (thisMessage.getItemPath() == null) {
             // must be domain path info
-            informTreeSubscribers(thisMessage.getState(), thisMessage.getPath());
+            informTreeSubscribers(thisMessage.isState(), thisMessage.getPath());
         }
         else {
             // proper proxy message

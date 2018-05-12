@@ -732,7 +732,7 @@ public class ItemProxy
                     e.remove();
                 }
                 else
-                    newSub.update(message.getPath(), message.getState());
+                    newSub.update(message.getPath(), message.isState());
             }
         }
     }

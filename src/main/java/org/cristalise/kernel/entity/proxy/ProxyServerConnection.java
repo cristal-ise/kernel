@@ -78,8 +78,10 @@ public class ProxyServerConnection extends Thread
                         } catch (InterruptedIOException ex) { // timeout - send a ping
                             sendMessage(ProxyMessage.pingMessage);
                         } catch (InvalidDataException ex) { // invalid proxy message
-                            if (input != null)
+                            if (input != null) {
+                                if (Logger.doLog(8)) Logger.error(ex);
                                 Logger.error("ProxyManager - Invalid proxy message: "+input);
+                            }
                         }
                     }
                 }
