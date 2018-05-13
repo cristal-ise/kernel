@@ -225,7 +225,7 @@ public class Query implements DescriptionObject {
     }
 
     @Override
-    public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+    public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException {
         String resType = QUERY_RESOURCE.getTypeCode();
 
         FileStringUtility.string2File(new File(new File(dir, resType), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getQueryXML());

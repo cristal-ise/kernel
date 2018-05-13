@@ -791,7 +791,7 @@ public class Script implements DescriptionObject {
      * 
      */
     @Override
-    public void export(Writer imports, File dir) throws IOException {
+    public void export(Writer imports, File dir, boolean shallow) throws IOException {
         String tc = SCRIPT_RESOURCE.getTypeCode();
 
         FileStringUtility.string2File(new File(new File(dir, tc), getName()+(getVersion()==null?"":"_"+getVersion())+".xml"), getScriptData());

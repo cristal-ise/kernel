@@ -333,7 +333,7 @@ public class StateMachine implements DescriptionObject {
     }
 
     @Override
-    public void export(Writer imports, File dir) throws IOException, InvalidDataException {
+    public void export(Writer imports, File dir, boolean shallow) throws IOException, InvalidDataException {
         String smXML;
         String typeCode = BuiltInResources.STATE_MACHINE_RESOURCE.getTypeCode();
         String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml";

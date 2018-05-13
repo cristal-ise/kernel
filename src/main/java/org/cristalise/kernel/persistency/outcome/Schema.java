@@ -169,7 +169,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
     }
 
     @Override
-    public void export(Writer imports, File dir) throws IOException {
+    public void export(Writer imports, File dir, boolean shallow) throws IOException {
         String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xsd";
         String typeCode = SCHEMA_RESOURCE.getTypeCode();
 

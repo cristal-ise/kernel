@@ -42,6 +42,6 @@ public interface DescriptionObject {
 	public String getItemID();
 	
 	public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException;
-	public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException;
+	public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException;
 
 }

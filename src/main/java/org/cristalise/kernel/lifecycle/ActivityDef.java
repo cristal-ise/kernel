@@ -354,11 +354,11 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     @Override
-    public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+    public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException {
         String actXML;
         String tc = ELEM_ACT_DESC_RESOURCE.getTypeCode();
 
-        exportCollections(imports, dir);
+        if (!shallow) exportCollections(imports, dir);
 
         try {
             actXML = Gateway.getMarshaller().marshall(this);
@@ -376,10 +376,10 @@ public class ActivityDef extends WfVertexDef implements C2KLocalObject, Descript
     }
 
     protected void exportCollections(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
-        if (getStateMachine() != null) getStateMachine().export(imports, dir);
-        if (getSchema()       != null) getSchema().export(imports, dir);
-        if (getScript()       != null) getScript().export(imports, dir);
-        if (getQuery()        != null) getQuery().export(imports, dir);
+        if (getStateMachine() != null) getStateMachine().export(imports, dir, true);
+        if (getSchema()       != null) getSchema().export(imports, dir, true);
+        if (getScript()       != null) getScript().export(imports, dir, true);
+        if (getQuery()        != null) getQuery().export(imports, dir, true);
     }
 
     protected String getExportAttributes(String type) throws InvalidDataException, ObjectNotFoundException, IOException {

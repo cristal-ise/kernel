@@ -375,23 +375,25 @@ public class CompositeActivityDef extends ActivityDef {
     }
 
     @Override
-    public void export(Writer imports, File dir) throws InvalidDataException, ObjectNotFoundException, IOException {
+    public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException {
         // rebuild the child refs in case any slots have been removed
         setRefChildActDef(findRefActDefs(getChildrenGraphModel()));
 
         // TODO: property include routing scripts in another dependency collection
 
-        //export child activitz defs, routing scripts and schemas
-        for (GraphableVertex vert: getChildren()) {
-            if (vert instanceof AndSplitDef) {
-                try {
-                    ((AndSplitDef) vert).getRoutingScript().export(imports, dir);
+        if (!shallow) {
+            //export child activitz defs, routing scripts and schemas
+            for (GraphableVertex vert: getChildren()) {
+                if (vert instanceof AndSplitDef) {
+                    try {
+                        ((AndSplitDef) vert).getRoutingScript().export(imports, dir, shallow);
+                    }
+                    catch (ObjectNotFoundException ex) {}
                 }
-                catch (ObjectNotFoundException ex) {}
-            }
-            else if (vert instanceof ActivitySlotDef) {
-                ActivityDef refAct = ((ActivitySlotDef) vert).getTheActivityDef();
-                refAct.export(imports, dir);
+                else if (vert instanceof ActivitySlotDef) {
+                    ActivityDef refAct = ((ActivitySlotDef) vert).getTheActivityDef();
+                    refAct.export(imports, dir, shallow);
+                }
             }
         }
 
