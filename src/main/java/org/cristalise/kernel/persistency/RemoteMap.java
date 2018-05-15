@@ -101,7 +101,10 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
     }
 
     public void activate() {
-        if (listener != null) return;
+        if (listener != null) {
+            Logger.debug(8, "RemoteMap.activate() - ALREADY active name:%s", mItemPath);
+            return;
+        }
 
         listener = new ProxyObserver<V>() {
             @Override
@@ -129,7 +132,7 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
             source = Gateway.getProxyManager().getProxy(mItemPath);
             source.subscribe(new MemberSubscription<V>(listener, mPath+mName, false));
 
-            Logger.debug(5, "RemoteMap activated name:"+mName+" "+mItemPath);
+            Logger.debug(5, "RemoteMap.activate() - name:"+mName+" "+mItemPath);
         }
         catch (Exception ex) {
             Logger.error("Error subscribing to remote map. Changes will NOT be received");
