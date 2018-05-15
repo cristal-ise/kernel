@@ -101,6 +101,8 @@ public class RemoteMap<V extends C2KLocalObject> extends TreeMap<String, V> impl
     }
 
     public void activate() {
+        if (listener != null) return;
+
         listener = new ProxyObserver<V>() {
             @Override
             public void add(V obj) {
