@@ -32,7 +32,9 @@ import org.cristalise.kernel.process.resource.BadArgumentsException;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 
-
+/**
+ * Abstarct base calss for all CristalSpecific applications
+ */
 abstract public class AbstractMain {
 
     public static boolean          isServer = false;
@@ -63,7 +65,6 @@ abstract public class AbstractMain {
      * @return the initialised Properties
      */
     public static Properties readC2KArgs( String[] args ) throws BadArgumentsException {
-        Properties c2kProps;
         Properties argProps = new Properties();
         int logLevel = 0;
         PrintStream logStream = System.out;
@@ -108,7 +109,6 @@ abstract public class AbstractMain {
 
         if (wMustAddNewLogStream) Logger.msg("New logStream added at logLevel %d: %s", logLevel, logStream.getClass().getName());
 
-
         // Dump params if log high enough
 
         if (Logger.doLog(3)) for (Enumeration<?> e = argProps.propertyNames(); e.hasMoreElements();) {
@@ -117,17 +117,32 @@ abstract public class AbstractMain {
         }
 
         String configPath = argProps.getProperty(MAIN_ARG_CONFIG);
-
         if (configPath == null) throw new BadArgumentsException("Config file not specified");
+        
+        String connectFile = argProps.getProperty(MAIN_ARG_CONNECT);
+        if (connectFile == null) throw new BadArgumentsException("Connect file not specified");
 
-        // Load config & connect files into c2kprops
+        Properties c2kProps = readPropertyFiles(configPath, connectFile, argProps);
+
+        Logger.msg(7, "AbstractMain.standardSetUp() - readC2KArgs() DONE.");
+
+        return c2kProps;
+    }
+
+    /**
+     * Loads config & connect files into c2kprops, and merges them with existing properties 
+     * 
+     * @param configPath path to the config file
+     * @param connectFile path to the connect (clc) file
+     * @param argProps existing properties
+     * @return fully initialized and merged list of properties
+     * @throws BadArgumentsException
+     */
+    public static Properties readPropertyFiles(String configPath, String connectFile, Properties argProps) throws BadArgumentsException {
         try {
-            c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty(MAIN_ARG_CONFIG) );
-            c2kProps.putAll(argProps); // args overlap config
-
-            String connectFile = c2kProps.getProperty(MAIN_ARG_CONNECT);
-            if (connectFile == null)
-                throw new BadArgumentsException("Connect file not specified");
+            Properties c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty(MAIN_ARG_CONFIG) );
+            
+            if (argProps != null) c2kProps.putAll(argProps); // args overlap config
 
             FileStringUtility.appendConfigFile( c2kProps, connectFile);
 
@@ -137,22 +152,30 @@ abstract public class AbstractMain {
                 c2kProps.setProperty("LocalCentre", centreId);
             }
 
-            c2kProps.putAll(argProps); // args override connect file too
+            if (argProps != null) c2kProps.putAll(argProps); // args override connect file too
+
+            return c2kProps;
         }
         catch (IOException e) {
             Logger.error(e);
             throw new BadArgumentsException(e.getMessage());
         }
-
-        Logger.msg(7, "AbstractMain::standardSetUp() - readC2KArgs() DONE.");
-
-        return c2kProps;
     }
 
+    /**
+     * Register application specific shutdown handler
+     * 
+     * @param handler the ShutdownHandler
+     */
     public static void setShutdownHandler(ShutdownHandler handler) {
         shutdownHandler = handler;
     }
 
+    /**
+     * The actual shotdown each subclass should be calling to release resource properly
+     * 
+     * @param errCode unix error code to pass to the ShutdownHandler
+     */
     public static void shutdown(int errCode) {
         Bootstrap.abort();
 
