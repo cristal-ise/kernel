@@ -140,9 +140,9 @@ abstract public class AbstractMain {
      */
     public static Properties readPropertyFiles(String configPath, String connectFile, Properties argProps) throws BadArgumentsException {
         try {
-            Properties c2kProps = FileStringUtility.loadConfigFile(argProps.getProperty(MAIN_ARG_CONFIG) );
-            
-            if (argProps != null) c2kProps.putAll(argProps); // args overlap config
+            Properties c2kProps = FileStringUtility.loadConfigFile(configPath);
+
+            if (argProps != null) c2kProps.putAll(argProps); // put args overlap config
 
             FileStringUtility.appendConfigFile( c2kProps, connectFile);
 
@@ -152,7 +152,7 @@ abstract public class AbstractMain {
                 c2kProps.setProperty("LocalCentre", centreId);
             }
 
-            if (argProps != null) c2kProps.putAll(argProps); // args override connect file too
+            if (argProps != null) c2kProps.putAll(argProps); // put args override connect file too
 
             return c2kProps;
         }
