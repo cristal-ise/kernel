@@ -181,7 +181,8 @@ public class AgentProxy extends ItemProxy {
             Logger.msg(3, "AgentProxy.execute(job) - executing script");
             try {
                 // pre-validate outcome for script if there is one
-                if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
+                // #196: Outcome can be invalid at this point, because Script will be executed later
+                //if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
                 // load script
                 ErrorInfo scriptErrors = callScript(item, job);
@@ -202,7 +203,8 @@ public class AgentProxy extends ItemProxy {
             Logger.msg(3, "AgentProxy.execute(job) - executing query (OutcomeInit != Query)");
 
             // pre-validate outcome for query if there is one
-            if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
+            // #196: Outcome can be invalid at this point, because Query will be executed later
+            //if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
             job.setOutcome(item.executeQuery(job.getQuery()));
         }
