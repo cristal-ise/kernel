@@ -486,8 +486,10 @@ public class ItemProxy
      */
     public Job getJobByTransitionName(String actName, String transName, AgentPath agentPath) throws AccessRightsException, ObjectNotFoundException,PersistencyException {
         for (Job job : getJobList(agentPath, true)) {
-            if (job.getStepName().equals(actName) && job.getTransition().getName().equals(transName))
-                return job;
+            if (job.getTransition().getName().equals(transName)) {
+                if ((actName.contains("/") && job.getStepPath().equals(actName)) || job.getStepName().equals(actName))
+                    return job;
+            }
         }
         return null;
     }
