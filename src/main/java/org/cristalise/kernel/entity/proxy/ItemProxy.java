@@ -637,6 +637,22 @@ public class ItemProxy
     }
 
     /**
+     * 
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    public String getProperty( String name, String defaultValue ) {
+        try {
+            return getProperty(name);
+        }
+        catch(ObjectNotFoundException e) {
+        }
+
+        return defaultValue;
+    }
+
+    /**
      * Retrieves the values of a named property
      *
      * @param name of the Item Property
