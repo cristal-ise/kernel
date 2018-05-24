@@ -637,10 +637,11 @@ public class ItemProxy
     }
 
     /**
+     * Retrieves the values of a named property or returns the defaulValue if no Property was found
      * 
-     * @param name
-     * @param defaultValue
-     * @return
+     * @param name of the Item Property
+     * @param defaultValue the value to be used if no Property was found
+     * @return the value or the defaultValue
      */
     public String getProperty( String name, String defaultValue ) {
         try {
