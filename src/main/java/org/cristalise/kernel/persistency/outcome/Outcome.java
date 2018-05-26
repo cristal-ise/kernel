@@ -1070,4 +1070,12 @@ public class Outcome implements C2KLocalObject {
         else
             return true;
     }
+
+    public boolean hasField(String name) {
+        return  hasField(mDOM.getDocumentElement(), name);
+    }
+
+    public boolean hasField(Element element, String name) {
+        return hasSingleField(element.getElementsByTagName(name));
+    }
 }
