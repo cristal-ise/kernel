@@ -22,13 +22,15 @@ package org.cristalise.kernel.utils;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Calendar;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+//import java.util.Calendar;
 import java.util.Date;
 
 import org.cristalise.kernel.common.GTimeStamp;
 import org.cristalise.kernel.common.InvalidDataException;
-
 
 public class DateUtility {
 
@@ -47,15 +49,16 @@ public class DateUtility {
     }
 
     static public GTimeStamp getNow() {
-        java.util.Calendar now = Calendar.getInstance();
+        ZonedDateTime now = ZonedDateTime.now();
 
-        return new GTimeStamp( now.get(Calendar.YEAR),
-                               now.get(Calendar.MONTH)+1,
-                               now.get(Calendar.DAY_OF_MONTH),
-                               now.get(Calendar.HOUR_OF_DAY),
-                               now.get(Calendar.MINUTE),
-                               now.get(Calendar.SECOND),
-                               now.get(Calendar.ZONE_OFFSET) );
+        return new GTimeStamp( now.getYear(),
+                               now.getMonth().getValue(),
+                               now.getDayOfMonth(),
+                               now.getHour(),
+                               now.getMinute(),
+                               now.getSecond(),
+                               //store millisecond for backward compability (originally java Calendar was used)
+                               now.getOffset().getTotalSeconds()*1000 ); 
     }
 
     public static String getSQLFormat(GTimeStamp timeStamp) {
@@ -146,7 +149,7 @@ public class DateUtility {
                     Integer.parseInt(time.substring(11,13)),
                     Integer.parseInt(time.substring(14,16)),
                     Integer.parseInt(time.substring(17,19)),
-                    Calendar.getInstance().get(Calendar.ZONE_OFFSET));
+                    0);
         }
         else if (time.length() == 14) {
             // support for some sql formats
@@ -157,7 +160,7 @@ public class DateUtility {
                     Integer.parseInt(time.substring(8,10)),
                     Integer.parseInt(time.substring(10,12)),
                     Integer.parseInt(time.substring(12,14)),
-                    Calendar.getInstance().get(Calendar.ZONE_OFFSET));
+                    0);
         }
         else
             throw new InvalidDataException("Unknown time format: "+time);
@@ -207,17 +210,22 @@ public class DateUtility {
                 ts.getOffset().getTotalSeconds()*1000);
     }
 
+    @SuppressWarnings("deprecation")
     public static GTimeStamp fromSqlTimestamp(Timestamp ts) {
         return new GTimeStamp(ts.getYear()+1900, ts.getMonth()+1, ts.getDate(), ts.getHours(), ts.getMinutes(), ts.getSeconds(), 0);
     }
-    
 
     public static Timestamp toSqlTimestamp(GTimeStamp gts) {
-        return new Timestamp(gts.mYear-1900, gts.mMonth-1, gts.mDay, gts.mHour, gts.mMinute, gts.mSecond, 0);
+        return Timestamp.valueOf( toOffsetDateTime(gts).atZoneSameInstant(ZoneId.of("Z")).toLocalDateTime() );
     }
 
+    @SuppressWarnings("deprecation")
     public static Date toDate(GTimeStamp gts) {
         return new Date(gts.mYear-1900, gts.mMonth-1, gts.mDay, gts.mHour, gts.mMinute, gts.mSecond);
+    }
+
+    public static String timeStampToUtcString(GTimeStamp gts) {
+        return toOffsetDateTime(gts).format(DateTimeFormatter.ISO_INSTANT);
     }
 
 }

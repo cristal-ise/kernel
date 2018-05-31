@@ -18,28 +18,24 @@
  *
  * http://www.fsf.org/licensing/licenses/lgpl.html
  */
-package org.cristalise.kernel.test.utils
+package org.cristalise.kernel.test.utils;
 
-import groovy.transform.CompileStatic
-
-import org.cristalise.kernel.common.InvalidDataException
-import org.cristalise.kernel.process.Gateway
-import org.cristalise.kernel.test.process.MainTest
-import org.cristalise.kernel.utils.CastorXMLUtility
-import org.cristalise.kernel.utils.FileStringUtility
-import org.cristalise.kernel.utils.Logger
-import org.junit.Before
-import org.junit.Test
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.test.process.MainTest;
+import org.cristalise.kernel.utils.CastorXMLUtility;
+import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.Logger;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
  *
  */
-@CompileStatic
-class CastorTests {
+public class CastorTests {
 
     @Before
-    public void setup() throws InvalidDataException {
+    public void setup() throws Exception {
         Logger.addLogStream(System.out, 1);
         Gateway.init( FileStringUtility.loadConfigFile(MainTest.class.getResource("/server.conf").getPath()) );
     }

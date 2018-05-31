@@ -53,6 +53,10 @@ public class Event implements C2KLocalObject {
     int        mOriginState, mTransition, mTargetState;
     Integer    mID, mSchemaVersion, mStateMachineVersion;
     String     mName, mStepName, mStepPath, mStepType, mSchemaName, mStateMachineName, mViewName, mAgentRole;
+
+    /**
+     * It is always in UTC
+     */
     GTimeStamp mTimeStamp;
 
 //TODO: add these fields to persitency
