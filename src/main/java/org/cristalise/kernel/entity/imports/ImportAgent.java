@@ -115,7 +115,7 @@ public class ImportAgent extends ModuleImport {
         return itemPath;
     }
 
-    public void setRoles(List<RolePath> newRoles) {
+    public void addRoles(List<RolePath> newRoles) {
         for (RolePath rp: newRoles) roles.add(ImportRole.getImportRole(rp));
     }
 }
