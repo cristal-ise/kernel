@@ -62,4 +62,13 @@ public class ImportRole extends ModuleImport {
         }
         return newRolePath;
     }
+    
+    public static ImportRole getImportRole(RolePath rp) {
+        ImportRole ir = new ImportRole();
+
+        ir.setName(rp.getName());
+        ir.jobList = rp.hasJobList();
+
+        return ir;
+    }
 }

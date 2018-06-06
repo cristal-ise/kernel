@@ -24,6 +24,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.CannotManageException;
@@ -109,5 +110,9 @@ public class ImportAgent extends ModuleImport {
             }
         }
         return itemPath;
+    }
+
+    public void setRoles(List<RolePath> newRoles) {
+        for (RolePath rp: newRoles) roles.add(ImportRole.getImportRole(rp));
     }
 }
