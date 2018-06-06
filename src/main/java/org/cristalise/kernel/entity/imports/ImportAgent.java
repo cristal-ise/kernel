@@ -32,6 +32,7 @@ import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.entity.agent.ActiveEntity;
+import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
@@ -40,6 +41,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.module.ModuleImport;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 import lombok.Getter;
@@ -80,11 +82,12 @@ public class ImportAgent extends ModuleImport {
             newAgentEnt.initialise(
                     agentPath.getSystemKey(), 
                     Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), 
-                    null, 
+                    Gateway.getMarshaller().marshall(((CompositeActivityDef)LocalObjectLoader.getCompActDef("NoWorkflow", 0)).instantiate()), 
                     null);
         }
         catch (Exception ex) {
             Logger.error(ex);
+            Gateway.getLookupManager().delete(newAgent);
             throw new CannotManageException("Error initialising new agent name:"+name);
         }
 

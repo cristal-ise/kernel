@@ -25,6 +25,7 @@ import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.Aggregation;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
@@ -278,16 +279,16 @@ public class ImportItem extends ModuleImport {
         else {
             if (compActDef == null) {
                 // default workflow version is 0 if not given
-                if (workflow != null && workflow.length() != 0) {
+                if (StringUtils.isNotBlank(workflow)) {
                     compActDef = (CompositeActivityDef) LocalObjectLoader.getActDef(workflow, workflowVer == null ? 0 : workflowVer);
-                    return (CompositeActivity) compActDef.instantiate();
                 }
                 else {
                     Logger.warning("ImportItem.createCompositeActivity() - NO Workflow was set for domainPath:"+domainPath);
+                    compActDef = (CompositeActivityDef) LocalObjectLoader.getActDef("NoWorkflow", workflowVer == null ? 0 : workflowVer);
                 }
             }
         }
-        return null;
+        return (CompositeActivity) compActDef.instantiate();
     }
 
     /**
