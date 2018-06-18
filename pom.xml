@@ -27,7 +27,7 @@
     <groupId>org.cristalise</groupId>
     <artifactId>cristalise-kernel</artifactId>
     <name>cristalise-kernel</name>
-    <version>3.4.0-SNAPSHOT</version>
+    <version>3.4.0</version>
     <description>Cristal-ise is a description-driven software platform originally developed to track the construction of 
 	the CMS ECAL detector of the LHC at CERN. This is its core library, known as the kernel, which manages 
 	business objects called Items. Items are entirely configured from data, called descriptions, held in other Items. 
