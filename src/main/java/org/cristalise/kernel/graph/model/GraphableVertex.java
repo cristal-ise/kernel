@@ -21,6 +21,7 @@
 package org.cristalise.kernel.graph.model;
 
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ACTIVITY_DEF_URN;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.NAME;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
@@ -146,10 +147,16 @@ public abstract class GraphableVertex extends Vertex {
 
     /** @return the Graphable searched or null if not this or children */
     public GraphableVertex search(String ids) {
-        if (getName().equals(ids))
+        if (getName().equals(ids))               return this;
+        if (String.valueOf(getID()).equals(ids)) return this;
+
+        if (getProperties() != null
+            && getProperties().getBuiltInProperty(NAME) != null 
+            && getProperties().getBuiltInProperty(NAME).equals(ids))
+        {
             return this;
-        if (String.valueOf(getID()).equals(ids))
-            return this;
+        }
+
         if (getIsComposite()) {
             GraphableVertex[] graphables = getChildren();
             if (ids.startsWith(String.valueOf(getID())))
