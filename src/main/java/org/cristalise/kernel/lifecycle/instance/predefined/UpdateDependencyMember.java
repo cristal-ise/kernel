@@ -20,6 +20,9 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.MEMBER_UPDATE_SCRIPT;
+
+import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -27,6 +30,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.CastorHashMap;
 
 /**
  * Params:
@@ -63,7 +67,17 @@ public class UpdateDependencyMember extends PredefinedStepCollectionBase {
         if (slotID == -1 && childPath == null) throw new InvalidDataException("Must give either slot number/item UUID to update member");
         if (memberNewProps == null)            throw new InvalidDataException("Must provide properties to update member");
 
-        getDependency().updateMember(childPath, slotID, memberNewProps);
+        Dependency dep = getDependency();
+
+        if (dep.containsBuiltInProperty(MEMBER_UPDATE_SCRIPT)) {
+            CastorHashMap scriptProps = new CastorHashMap();
+            scriptProps.put("collection", dep);
+            scriptProps.put("properties", memberNewProps);
+
+            evaluateScript(item, (String)dep.getBuiltInProperty(MEMBER_UPDATE_SCRIPT), scriptProps, locker);
+        }
+
+        dep.updateMember(childPath, slotID, memberNewProps);
 
         Gateway.getStorage().put(item, collection, locker);
 

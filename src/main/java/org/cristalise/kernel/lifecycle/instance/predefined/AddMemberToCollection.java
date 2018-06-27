@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.MEMBER_ADD_SCRIPT;
+
 import java.util.Arrays;
 
 import org.cristalise.kernel.collection.Dependency;
@@ -32,6 +34,7 @@ import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.CastorHashMap;
 
 /**
  * <pre>
@@ -63,14 +66,24 @@ public class AddMemberToCollection extends PredefinedStepCollectionBase {
         DependencyMember member = null;
 
         // find member and assign entity
-        if (memberNewProps == null) member = dep.addMember(childPath);
-        else                        member = dep.addMember(childPath, memberNewProps, dep.getClassProps());
+        if (memberNewProps == null) member = dep.createMember(childPath);
+        else                        member = dep.createMember(childPath, memberNewProps);
+
+        if (dep.containsBuiltInProperty(MEMBER_ADD_SCRIPT)) {
+            CastorHashMap scriptProps = new CastorHashMap();
+            scriptProps.put("collection", dep);
+            scriptProps.put("member", member);
+
+            evaluateScript(item, (String)dep.getBuiltInProperty(MEMBER_ADD_SCRIPT), scriptProps, locker);
+        }
+
+        dep.addMember(member);
+
+        Gateway.getStorage().put(item, dep, locker);
 
         //put ID of the newly created member into the return data of this step
         params = Arrays.copyOf(params, params.length+1);
         params[params.length-1] = Integer.toString(member.getID());
-
-        Gateway.getStorage().put(item, dep, locker);
 
         return bundleData(params);
     }
