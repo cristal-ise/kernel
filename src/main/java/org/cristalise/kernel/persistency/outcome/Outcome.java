@@ -161,7 +161,7 @@ public class Outcome implements C2KLocalObject {
             mDOM = parse(xml);
         }
         catch (IOException | SAXException ex) {
-            Logger.error("INVALID XML - schema:"+mSchema.getName()+"\n"+xml);
+            Logger.error("INVALID XML - schema:"+(null == mSchema ? null : mSchema.getName())+"\n"+xml);
             Logger.error(ex);
             throw new InvalidDataException("XML not valid for schema:"+mSchema+" error:"+ex.getMessage());
         }
