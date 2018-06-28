@@ -32,7 +32,7 @@ public enum BuiltInVertexProperties {
     ABORTABLE("Abortable"),
 
     ACTIVITY_DEF_NAME("ActivityDefName"),
-    ACTIVITY_DEF_VERSION("ActivityDefName"),
+    ACTIVITY_DEF_VERSION("ActivityDefVersion"),
 
     ACTIVITY_DEF_URN("ActivityDefURN"),
 
@@ -42,7 +42,7 @@ public enum BuiltInVertexProperties {
     AGENT_NAME("Agent Name"),
 
     /**
-     * String property. The name of the Dekegate Agent associated with Activities. Can be null or undefined.
+     * String property. The name of the Delegate Agent associated with Activities. Can be null or undefined.
      */
     DELEGATE_NAME("DelegateName"),
 
@@ -65,6 +65,54 @@ public enum BuiltInVertexProperties {
      * Used in Splits as a counter to provide unique ID for instances of {@link DirectedEdge}
      */
     LAST_NUM("LastNum"),
+
+    /**
+     * String property used in CollectionDefinition to specify the Script to be executed during AddMemberToCollection. 
+     * Its primary purpose is to  ensure referential integrity. It shall contain the Name or UUID of the Script and the version number 
+     * separated with colon.
+     * 
+     * <pre>{@code
+     * <Dependency name="Employees" isDescription="true">
+     *   <DependencyMember itemPath="/domain/path/EmployeeFactory" />
+     *   <CollectionProperties>
+     *     <KeyValuePair Key="MemberAddScript" String="Department_CheckEmployees:0"/>
+     *   </CollectionProperties>
+     * </Dependency>
+     * }</pre>
+     */
+    MEMBER_ADD_SCRIPT("MemberAddScript"),
+
+    /**
+     * String property used in CollectionDefinition to specify the Script to be executed during RemoveSlotFromCollection. 
+     * Its primary purpose is to  ensure referential integrity. It shall contain the Name or UUID of the Script and the version number 
+     * separated with colon.
+     * 
+     * <pre>{@code
+     * <Dependency name="Employees" isDescription="true">
+     *   <DependencyMember itemPath="/domain/path/EmployeeFactory" />
+     *   <CollectionProperties>
+     *     <KeyValuePair Key="MemberRemoveScript" String="Department_CheckEmployees:0"/>
+     *   </CollectionProperties>
+     * </Dependency>
+     * }</pre>
+     */
+    MEMBER_REMOVE_SCRIPT("MemberRemoveScript"),
+
+    /**
+     * String property Used in CollectionDefinition to specify the Script to be executed during UpdateDependencyMamber. 
+     * Its primary purpose is to  ensure referential integrity. It shall contain the Name or UUID of the Script and the version number 
+     * separated with colon.
+     * 
+     * <pre>{@code
+     * <Dependency name="Employees" isDescription="true">
+     *   <DependencyMember itemPath="/domain/path/EmployeeFactory" />
+     *   <CollectionProperties>
+     *     <KeyValuePair Key="MemberUpdateScript" String="Department_CheckEmployees:0"/>
+     *   </CollectionProperties>
+     * </Dependency>
+     * }</pre>
+     */
+    MEMBER_UPDATE_SCRIPT("MemberUpdateScript"),
 
     /**
      * String property. It is used in ActivitySlotDef to override the name of the ActivityDef

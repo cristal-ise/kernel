@@ -20,12 +20,17 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.MEMBER_ADD_SCRIPT;
+
+import org.cristalise.kernel.collection.Dependency;
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.utils.CastorHashMap;
 
 /**
  * Params: 0 - collection name 1 - slot number OR if -1: 2 - target entity key
@@ -40,9 +45,17 @@ public class RemoveSlotFromCollection extends PredefinedStepCollectionBase {
 
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath item, int transitionID, String requestData, Object locker)
-            throws InvalidDataException, ObjectNotFoundException, PersistencyException
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException, InvalidCollectionModification
     {
         unpackParamsAndGetCollection(item, requestData, locker);
+
+        if (collection instanceof Dependency && ((Dependency)collection).containsBuiltInProperty(MEMBER_ADD_SCRIPT)) {
+            CastorHashMap scriptProps = new CastorHashMap();
+            scriptProps.put("collection", collection);
+            scriptProps.put("slotID", slotID);
+
+            evaluateScript(item, (String)((Dependency)collection).getBuiltInProperty(MEMBER_ADD_SCRIPT), scriptProps, locker);
+        }
 
         // Remove the slot
         collection.removeMember(slotID);

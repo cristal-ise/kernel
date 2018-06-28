@@ -31,6 +31,7 @@ import org.cristalise.kernel.collection.Collection;
 import org.cristalise.kernel.collection.CollectionMember;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.collection.DependencyMember;
+import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
@@ -38,6 +39,8 @@ import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.scripting.Script;
+import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.Logger;
 
@@ -173,7 +176,7 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
      */
     protected DependencyMember getDependencyMember() throws InvalidDataException, ObjectNotFoundException {
         List<CollectionMember> memberList = collection.resolveMembers(slotID, childPath);
-        
+
         if (memberList.size() != 1)
             throw new InvalidDataException(collectionName + "contains more the one member for slotID:"+slotID+" memberId:"+childPath);
 
@@ -183,5 +186,24 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
             throw new InvalidDataException(collectionName + " has to be Dependency (member class:" + member.getClass().getSimpleName()+")");
         
         return (DependencyMember)member;
+    }
+
+    protected void evaluateScript(ItemPath item, String propertyValue, CastorHashMap scriptProps , Object locker)
+            throws ObjectNotFoundException, InvalidDataException, InvalidCollectionModification
+    {
+        if (StringUtils.isBlank(propertyValue) || !propertyValue.contains(":")) {
+            throw new InvalidDataException(this.getClass().getSimpleName() + " cannot resolve Script from '" + propertyValue + "' value");
+        }
+
+        String[] tokens = propertyValue.split(":");
+
+        try {
+            Script script = Script.getScript(tokens[0], Integer.getInteger(tokens[1]));
+            script.evaluate(item, scriptProps, getActContext(), locker);
+        }
+        catch (ScriptingEngineException e) {
+            Logger.error(e);
+            throw new InvalidCollectionModification(e.getMessage());
+        }
     }
 }
