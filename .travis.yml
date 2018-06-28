@@ -1,8 +1,10 @@
 language: java
 jdk: oraclejdk8
 branches: 
-only:
-- master
+  only:
+  - master
+  - release
+  - develop
 cache:
   directories:
   - "$HOME/.m2"
