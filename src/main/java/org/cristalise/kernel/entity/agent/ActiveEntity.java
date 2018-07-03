@@ -33,135 +33,104 @@ import org.cristalise.kernel.entity.AgentPOA;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.utils.Logger;
 
-
-/**************************************************************************
- * ActiveEntity - the CORBA object representing the Agent. All functionality
- * is delegated to the AgentImplementation, which extends ItemImplementation,
+/**
+ * ActiveEntity - the CORBA object representing the Agent. 
+ * All functionality is delegated to the AgentImplementation, which extends ItemImplementation, 
  * as this cannot extend its equivalent TraceableEntity
- * 
- **************************************************************************/
-public class ActiveEntity extends AgentPOA
-{
+ */
+public class ActiveEntity extends AgentPOA {
 
-    private final org.omg.PortableServer.POA  mPoa;
-	private final AgentImplementation mAgentImpl; 
-	
-    public ActiveEntity( AgentPath                   key,
-                         org.omg.PortableServer.POA  poa ) 
-    {
-        Logger.msg(5, "ActiveEntity::constructor() - SystemKey:" + key );
-        mPoa	= poa;	
+    private final org.omg.PortableServer.POA mPoa;
+    private final AgentImplementation        mAgentImpl;
+
+    public ActiveEntity(AgentPath key, org.omg.PortableServer.POA poa) {
+        Logger.msg(5, "ActiveEntity::constructor() - SystemKey:" + key);
+        mPoa = poa;
         mAgentImpl = new AgentImplementation(key);
     }
 
-
-   /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
-	public org.omg.PortableServer.POA _default_POA()
-    {
-        if(mPoa != null)
+    public org.omg.PortableServer.POA _default_POA() {
+        if (mPoa != null)
             return mPoa;
         else
             return super._default_POA();
     }
 
-
-   /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
-	public SystemKey getSystemKey()
-    {
-    	return mAgentImpl.getSystemKey();
+    public SystemKey getSystemKey() {
+        return mAgentImpl.getSystemKey();
     }
 
-
-   /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
-	public String queryData(String path)
-        throws AccessRightsException,
-               ObjectNotFoundException,
-               PersistencyException
-    {
+    public String queryData(String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         synchronized (this) {
-			return mAgentImpl.queryData(path);
-		}
+            return mAgentImpl.queryData(path);
+        }
     }
-
-
 
     /**
      * Called by an activity when it reckons we need to update our joblist for it
      */
-
     @Override
-	public void refreshJobList(SystemKey sysKey, String stepPath, String newJobs) {
+    public void refreshJobList(SystemKey sysKey, String stepPath, String newJobs) {
         synchronized (this) {
-			mAgentImpl.refreshJobList(sysKey, stepPath, newJobs);
-		}
+            mAgentImpl.refreshJobList(sysKey, stepPath, newJobs);
+        }
     }
 
     @Override
-	public void addRole(String roleName) throws CannotManageException, ObjectNotFoundException {
-    	synchronized (this) {
-    		mAgentImpl.addRole(roleName);
-    	}
+    public void addRole(String roleName) throws CannotManageException, ObjectNotFoundException {
+        synchronized (this) {
+            mAgentImpl.addRole(roleName);
+        }
     }
 
     @Override
-	public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {
-    	synchronized (this) {
-    		mAgentImpl.removeRole(roleName);
-    	}
+    public void removeRole(String roleName) throws CannotManageException, ObjectNotFoundException {
+        synchronized (this) {
+            mAgentImpl.removeRole(roleName);
+        }
     }
-    
-	@Override
-	public void initialise(SystemKey agentId, String propString, String initWfString,
-			String initCollsString) throws AccessRightsException,
-			InvalidDataException, PersistencyException, ObjectNotFoundException {
-		synchronized (this) {
-			mAgentImpl.initialise(agentId, propString, initWfString, initCollsString);
-		}
-		
-	}
 
-	@Override
-	public String requestAction(SystemKey agentID, String stepPath, int transitionID,
-			String requestData) throws AccessRightsException,
-			InvalidTransitionException, ObjectNotFoundException,
-			InvalidDataException, PersistencyException,
-			ObjectAlreadyExistsException, InvalidCollectionModification {
-		
-		synchronized (this) {
+    @Override
+    public void initialise(SystemKey agentId, String propString, String initWfString,
+            String initCollsString) throws AccessRightsException,
+            InvalidDataException, PersistencyException, ObjectNotFoundException
+    {
+        synchronized (this) {
+            mAgentImpl.initialise(agentId, propString, initWfString, initCollsString);
+        }
+    }
+
+    @Override
+    public String requestAction(SystemKey agentID, String stepPath, int transitionID, String requestData) 
+            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException,
+            InvalidDataException, PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        synchronized (this) {
             return mAgentImpl.requestAction(agentID, stepPath, transitionID, requestData);
         }
-		
-	}
-	
+    }
+
     @Override
-	public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId, 
-			String stepPath, int transitionID, String requestData) throws AccessRightsException,
-			InvalidTransitionException, ObjectNotFoundException,
-			InvalidDataException, PersistencyException,
-			ObjectAlreadyExistsException, InvalidCollectionModification {
+    public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId,
+            String stepPath, int transitionID, String requestData) throws AccessRightsException,
+            InvalidTransitionException, ObjectNotFoundException,
+            InvalidDataException, PersistencyException,
+            ObjectAlreadyExistsException, InvalidCollectionModification
+    {
         synchronized (this) {
             return mAgentImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
         }
     }
-	
-	@Override
-	public String queryLifeCycle(SystemKey agentId, boolean filter)
-			throws AccessRightsException, ObjectNotFoundException,
-			PersistencyException {
-		synchronized (this) {
-			return mAgentImpl.queryLifeCycle(agentId, filter);
-		}
-	}
+
+    @Override
+    public String queryLifeCycle(SystemKey agentId, boolean filter)
+            throws AccessRightsException, ObjectNotFoundException, PersistencyException
+    {
+        synchronized (this) {
+            return mAgentImpl.queryLifeCycle(agentId, filter);
+        }
+    }
 }
