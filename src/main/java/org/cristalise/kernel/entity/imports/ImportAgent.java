@@ -83,7 +83,7 @@ public class ImportAgent extends ModuleImport {
                     agentPath.getSystemKey(), 
                     Gateway.getMarshaller().marshall(new PropertyArrayList(properties)), 
                     Gateway.getMarshaller().marshall(((CompositeActivityDef)LocalObjectLoader.getCompActDef("NoWorkflow", 0)).instantiate()), 
-                    null);
+                    null, "", "");
         }
         catch (Exception ex) {
             Logger.error(ex);

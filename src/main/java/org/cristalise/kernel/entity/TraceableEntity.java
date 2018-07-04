@@ -96,16 +96,18 @@ public class TraceableEntity extends ItemPOA
 
     @Override
 	public void initialise( SystemKey agentId,
-                            String  propString,
-                            String  initWfString,
-                            String initCollsString
+                            String propString,
+                            String initWfString,
+                            String initCollsString,
+                            String initViewpointString,
+                            String initOutcomeString
                             )
         throws AccessRightsException,
                InvalidDataException,
                PersistencyException
     {
         synchronized (this) {
-        	mItemImpl.initialise(agentId, propString, initWfString, initCollsString);
+        	mItemImpl.initialise(agentId, propString, initWfString, initCollsString, initViewpointString, initOutcomeString);
         }
     }
 

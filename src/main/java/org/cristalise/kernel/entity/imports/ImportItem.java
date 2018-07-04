@@ -187,10 +187,13 @@ public class ImportItem extends ModuleImport {
 
         // (re)initialise the new item with properties, workflow and collections
         try {
-            newItem.initialise( agentPath.getSystemKey(),
+            newItem.initialise( 
+                    agentPath.getSystemKey(),
                     Gateway.getMarshaller().marshall(createItemProperties()),
                     Gateway.getMarshaller().marshall(createCompositeActivity()),
-                    Gateway.getMarshaller().marshall(createCollections()));
+                    Gateway.getMarshaller().marshall(createCollections()),
+                    "", ""
+                    );
         }
         catch (Exception ex) {
             Logger.error("Error initialising new item " + ns + "/" + name);

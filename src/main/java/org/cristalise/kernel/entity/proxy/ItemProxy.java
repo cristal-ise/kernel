@@ -141,7 +141,13 @@ public class ItemProxy
      * @throws MappingException errors in XML marshall/unmarshall mapping
      * @throws InvalidCollectionModification invalid Collection
      */
-    public void initialise(AgentPath agentId, PropertyArrayList itemProps, CompositeActivity workflow, CollectionArrayList colls)
+    public void initialise(AgentPath agentId, 
+                           PropertyArrayList itemProps, 
+                           CompositeActivity workflow, 
+                           CollectionArrayList colls,
+                           Viewpoint viewpoint,
+                           Outcome outcome
+                           )
             throws AccessRightsException,
             InvalidDataException,
             PersistencyException,
@@ -164,7 +170,13 @@ public class ItemProxy
         String collString = "";
         if (colls != null) collString = xml.marshall(colls);
 
-        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString);
+        String viewpointString = "";
+        if (viewpoint != null) viewpointString = xml.marshall(viewpoint);
+
+        String outcomeString = "";
+        if (outcome != null) outcomeString = outcome.getData();
+
+        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString, viewpointString, outcomeString);
     }
 
     /**

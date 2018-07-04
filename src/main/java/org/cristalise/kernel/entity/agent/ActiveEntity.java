@@ -94,12 +94,17 @@ public class ActiveEntity extends AgentPOA {
     }
 
     @Override
-    public void initialise(SystemKey agentId, String propString, String initWfString,
-            String initCollsString) throws AccessRightsException,
-            InvalidDataException, PersistencyException, ObjectNotFoundException
+    public void initialise( SystemKey agentId,
+                            String propString,
+                            String initWfString,
+                            String initCollsString,
+                            String initViewpointString,
+                            String initOutcomeString
+                            )
+            throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         synchronized (this) {
-            mAgentImpl.initialise(agentId, propString, initWfString, initCollsString);
+            mAgentImpl.initialise(agentId, propString, initWfString, initCollsString, initViewpointString, initOutcomeString);
         }
     }
 
