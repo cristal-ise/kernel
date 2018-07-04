@@ -20,8 +20,10 @@
  */
 package org.cristalise.kernel.lifecycle.instance.predefined.item;
 
+import static org.cristalise.kernel.collection.BuiltInCollections.SCHEMA_INITIALISE;
 import static org.cristalise.kernel.collection.BuiltInCollections.WORKFLOW;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.VERSION;
+import static org.cristalise.kernel.persistency.ClusterType.COLLECTION;
 import static org.cristalise.kernel.property.BuiltInItemProperties.CREATOR;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 
@@ -51,11 +53,13 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
+import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
+import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
@@ -98,6 +102,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         String            domPath   = input[1];
         String            descVer   = input.length > 2 && StringUtils.isNotBlank(input[2]) ? input[2] : "last";
         PropertyArrayList initProps = input.length > 3 && StringUtils.isNotBlank(input[3]) ? unmarshallInitProperties(input[3]) : new PropertyArrayList();
+        String            outcome   = input.length > 4 && StringUtils.isNotBlank(input[4]) ? input[4] : "";
 
         Logger.msg(1, "CreateItemFromDescription - name:" + newName);
 
@@ -119,7 +124,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         TraceableEntity newItem = factory.createItem(newItemPath);
         Gateway.getLookupManager().add(newItemPath);
 
-        initialiseItem(newItem, agent, descItemPath, initProps, newName, descVer, context, newItemPath, locker);
+        initialiseItem(newItem, agent, descItemPath, initProps, outcome, newName, descVer, context, newItemPath, locker);
 
         return requestData;
     }
@@ -142,8 +147,17 @@ public class CreateItemFromDescription extends PredefinedStep {
      * @throws PersistencyException
      * @throws ObjectNotFoundException
      */
-    protected void initialiseItem(ItemOperations newItem, AgentPath agent, ItemPath descItemPath, PropertyArrayList initProps, String newName, String descVer,
-            DomainPath context, ItemPath newItemPath, Object locker)
+    protected void initialiseItem(ItemOperations    newItem, 
+                                  AgentPath         agent, 
+                                  ItemPath          descItemPath, 
+                                  PropertyArrayList initProps,
+                                  String            outcome,
+                                  String            newName, 
+                                  String            descVer,
+                                  DomainPath        context, 
+                                  ItemPath          newItemPath, 
+                                  Object            locker
+                                  )
             throws ObjectCannotBeUpdated, 
                    CannotManageException,
                    InvalidDataException, 
@@ -155,15 +169,19 @@ public class CreateItemFromDescription extends PredefinedStep {
         Logger.msg(3, "CreateItemFromDescription.initialiseItem() - Initializing Item:" + newName);
 
         try {
-            PropertyArrayList   newProps    = instantiateProperties (descItemPath, descVer, initProps, newName, agent, locker);
-            CollectionArrayList newColls    = instantiateCollections(descItemPath, descVer, newProps, locker);
-            CompositeActivity   newWorkflow = instantiateWorkflow   (descItemPath, descVer, locker);
+            PropertyArrayList   newProps     = instantiateProperties (descItemPath, descVer, initProps, newName, agent, locker);
+            CollectionArrayList newColls     = instantiateCollections(descItemPath, descVer, newProps, locker);
+            CompositeActivity   newWorkflow  = instantiateWorkflow   (descItemPath, descVer, locker);
+            Viewpoint           newViewpoint = instantiateViewpoint  (descItemPath, descVer, locker);
 
-            newItem.initialise(
-                    agent.getSystemKey(),
-                    Gateway.getMarshaller().marshall(newProps),
-                    Gateway.getMarshaller().marshall(newWorkflow),
-                    Gateway.getMarshaller().marshall(newColls));
+            CastorXMLUtility xml = Gateway.getMarshaller();
+
+            newItem.initialise( agent.getSystemKey(),
+                                xml.marshall(newProps),
+                                xml.marshall(newWorkflow),
+                                xml.marshall(newColls),
+                                (newViewpoint != null) ? xml.marshall(newViewpoint) : "",
+                                (outcome != null) ? outcome: "");
         }
         catch (MarshalException | ValidationException | AccessRightsException | IOException | MappingException | InvalidCollectionModification e) {
             Logger.error(e);
@@ -315,5 +333,48 @@ public class CreateItemFromDescription extends PredefinedStep {
             }
         }
         return colls;
+    }
+
+    /**
+     * 
+     * @param descItemPath
+     * @param descVer
+     * @param locker
+     * @return
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     * @throws PersistencyException
+     */
+    protected Viewpoint instantiateViewpoint(ItemPath descItemPath, String descVer, Object locker) 
+            throws ObjectNotFoundException, InvalidDataException, PersistencyException
+    {
+        String collPath = COLLECTION + "/" + SCHEMA_INITIALISE + "/" + descVer;
+
+        if (Gateway.getStorage().getClusterContents(descItemPath, collPath).length == 0) return null;
+
+        @SuppressWarnings("unchecked")
+        Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
+                    Gateway.getStorage().get(descItemPath, collPath, locker);
+
+        CollectionMember schemaMember = thisCol.getMembers().list.get(0);
+        String           schemaName   = schemaMember.resolveItem().getName();
+        Object           schemaVerObj = schemaMember.getProperties().getBuiltInProperty(VERSION);
+        Object           viewNameObj  = schemaMember.getProperties().get("View");
+
+        if (schemaName == null) throw new InvalidDataException("No schema given or defined");
+
+        if (schemaVerObj == null || String.valueOf(schemaVerObj).length() == 0) {
+            throw new InvalidDataException("schema version number not set");
+        }
+
+        try {
+            Integer schemaVer = Integer.parseInt(schemaVerObj.toString());
+            String viewName = (viewNameObj == null) ? "last": viewNameObj.toString();
+            // random itemPath is assigned to make xml marshall work
+            return new Viewpoint(new ItemPath(), schemaName, viewName, schemaVer, -1);
+        }
+        catch (NumberFormatException ex) {
+            throw new InvalidDataException("Invalid schema version number: " + schemaVerObj.toString());
+        }
     }
 }

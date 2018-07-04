@@ -85,7 +85,13 @@ public class ItemImplementation implements ItemOperations {
     }
 
     @Override
-    public void initialise(SystemKey agentId, String propString, String initWfString, String initCollsString)
+    public void initialise( SystemKey agentId, 
+                            String propString, 
+                            String initWfString, 
+                            String initCollsString,
+                            String initViewpointString, 
+                            String initOutcomeString
+                           )
             throws AccessRightsException, InvalidDataException, PersistencyException
     {
         Logger.msg(5, "Item::initialise(" + mItemPath + ") - agent:" + agentId);
@@ -100,7 +106,7 @@ public class ItemImplementation implements ItemOperations {
         }
 
         // must supply properties
-        if (propString == null || propString.length() == 0 || propString.equals("<NULL/>")) {
+        if (StringUtils.isBlank(propString) || propString.equals("<NULL/>")) {
             throw new InvalidDataException("No properties supplied");
         }
 
@@ -109,30 +115,57 @@ public class ItemImplementation implements ItemOperations {
             PropertyArrayList props = (PropertyArrayList) Gateway.getMarshaller().unmarshall(propString);
             for (Property thisProp : props.list) mStorage.put(mItemPath, thisProp, locker);
         }
-        catch (Throwable ex) {
+        catch (Exception ex) {
             Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Properties were invalid: " + propString);
             Logger.error(ex);
             mStorage.abort(locker);
             throw new InvalidDataException("Properties were invalid");
         }
 
-        // Store an event and the initial properties
+        History hist = new History(mItemPath, locker);
+
+        // Store an event and the outcome for initial properties
         try {
             Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
             Outcome initOutcome = new Outcome(0, propString, initSchema);
-            History hist = new History(mItemPath, locker);
+
             Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", initSchema, Bootstrap.getPredefSM(), PredefinedStep.DONE, "last");
+
             initOutcome.setID(newEvent.getID());
             Viewpoint newLastView = new Viewpoint(mItemPath, initSchema, "last", newEvent.getID());
             mStorage.put(mItemPath, initOutcome, locker);
             mStorage.put(mItemPath, newLastView, locker);
         }
-        catch (Throwable ex) {
+        catch (Exception ex) {
             Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
             Logger.error(ex);
             mStorage.abort(locker);
             throw new PersistencyException("Error storing event and outcome");
         }
+
+        // Store an event and the outcome
+        if (StringUtils.isNotBlank(initViewpointString))
+            try {
+                Viewpoint vp = (Viewpoint)Gateway.getMarshaller().unmarshall(initViewpointString);
+                Schema schema = LocalObjectLoader.getSchema(vp.getSchemaName(), vp.getSchemaVersion());
+                Outcome outcome = new Outcome(-1, initOutcomeString, schema);
+                outcome.validateAndCheck();
+
+                vp.setItemPath(mItemPath);
+
+                Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, vp.getName());
+                vp.setEventId(newEvent.getID());
+                outcome.setID(newEvent.getID());
+
+                mStorage.put(mItemPath, outcome, locker);
+                mStorage.put(mItemPath, vp, locker);
+            }
+            catch (Exception ex) {
+                Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
+                Logger.error(ex);
+                mStorage.abort(locker);
+                throw new PersistencyException("Error storing event and outcome");
+            }
 
         // init collections
         if (initCollsString != null && initCollsString.length() > 0 && !initCollsString.equals("<NULL/>")) {
@@ -142,7 +175,7 @@ public class ItemImplementation implements ItemOperations {
                     mStorage.put(mItemPath, thisColl, locker);
                 }
             }
-            catch (Throwable ex) {
+            catch (Exception ex) {
                 Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Collections were invalid: " + initCollsString);
                 Logger.error(ex);
                 mStorage.abort(locker);
@@ -162,7 +195,7 @@ public class ItemImplementation implements ItemOperations {
 
             mStorage.put(mItemPath, lc, locker);
         }
-        catch (Throwable ex) {
+        catch (Exception ex) {
             Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Workflow was invalid: " + initWfString);
             Logger.error(ex);
             mStorage.abort(locker);
@@ -348,7 +381,7 @@ public class ItemImplementation implements ItemOperations {
             Logger.error(e);
             throw e;
         }
-        catch (Throwable ex) {
+        catch (Exception ex) {
             Logger.error("ItemImplementation::queryLifeCycle(" + mItemPath + ") - Unknown error");
             Logger.error(ex);
             throw new PersistencyException("Unknown error querying jobs. Please see server log.");
@@ -385,7 +418,7 @@ public class ItemImplementation implements ItemOperations {
         catch (ObjectNotFoundException ex) {
             throw ex;
         }
-        catch (Throwable ex) {
+        catch (Exception ex) {
             Logger.warning("ItemImplementation::queryData(" + mItemPath + ") - " + path + " Failed: " + ex.getClass().getName());
             throw new PersistencyException("Server exception: " + ex.getClass().getName());
         }

@@ -81,6 +81,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
         String            pwd       = input.length > 3 && StringUtils.isNotBlank(input[3]) ? input[3] : "";
         String            descVer   = input.length > 4 && StringUtils.isNotBlank(input[4]) ? input[4] : "last";
         PropertyArrayList initProps = input.length > 5 && StringUtils.isNotBlank(input[5]) ? unmarshallInitProperties(input[5]) : new PropertyArrayList();
+        String            outcome   = input.length > 6 && StringUtils.isNotBlank(input[6]) ? input[6] : "";
 
         // generate new agent path with new UUID
         Logger.msg(1, "CreateAgentFromDescription - Requesting new agent path name:%s, input:%s", newName, Arrays.toString(input));
@@ -96,7 +97,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
 
         ActiveEntity newAgent = createAgentAddRoles(newAgentPath, roles, pwd);
 
-        initialiseItem(newAgent, agentPath, descItemPath, initProps, newName, descVer, context, newAgentPath, locker);
+        initialiseItem(newAgent, agentPath, descItemPath, initProps, outcome, newName, descVer, context, newAgentPath, locker);
 
         if (input.length > 3) input[3] = "REDACTED"; // censor password from outcome
 

@@ -49,6 +49,10 @@ public enum BuiltInCollections {
      */
     SCHEMA("Schema"),
 
+    SCHEMA_INITIALISE("SchemaInitialise"),
+
+    SCHEMA_MASTER("SchemaMaster"),
+
     /**
      * CollectionDescription of elementary ActivityDef. It is instantiated as two Activity properties (see bellow). 
      * Also it is Dependency Collection of Workflow.
