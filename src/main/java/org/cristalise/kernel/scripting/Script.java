@@ -677,7 +677,7 @@ public class Script implements DescriptionObject {
                 throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
             }
 
-            outputs.put(outputParam.getName(), outputValue);
+            outputs.put(outputParam.getName(), outputValue != null ? outputValue : returnValue);
         }
         return outputs;
     }
