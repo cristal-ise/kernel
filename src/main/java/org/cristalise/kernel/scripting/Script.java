@@ -676,8 +676,10 @@ public class Script implements DescriptionObject {
             if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
                 throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
             }
-
-            outputs.put(outputParam.getName(), outputValue);
+            
+            // if the outputValue is null and returnValue has value then use the return value instead
+            // e.g. returnValue is map of item name and UUID
+            outputs.put(outputParam.getName(), outputValue != null ? outputValue : returnValue);
         }
         return outputs;
     }
