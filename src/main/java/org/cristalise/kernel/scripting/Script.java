@@ -587,12 +587,6 @@ public class Script implements DescriptionObject {
             throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getMessage());
         }
 
-        // if no outputs are defined, return null
-        if (mOutputParams.size() == 0) {
-            Logger.msg(4, "Script.execute() - No output params. Returning null.");
-            return null;
-        }
-
         return packScriptReturnValue(returnValue);
     }
 
@@ -628,22 +622,21 @@ public class Script implements DescriptionObject {
     }
 
     /**
-     * Initialise the output parameters before execution
+     * Initialise the output parameters before execution. Adds them to the context EXCEPT if the 
+     * name of output parameter is blank then it's the return type.
      */
     private void initOutputParams() {
         for (Parameter outputParam : mOutputParams.values()) {
-            //If the name is null then it's the return type. don't pre-register it
-            if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
+            if (StringUtils.isBlank(outputParam.getName())) continue; 
 
             Logger.msg(8, "Script.initOutputParams() - Initialising output bean '" + outputParam.getName() + "'");
 
-            Object emptyObject;
+            Object emptyObject = null;
             try {
                 emptyObject = outputParam.getType().newInstance();
             }
-            catch (Exception e) {
-                emptyObject = null;
-            }
+            catch (Exception e) {}
+
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
         }
     }
@@ -659,27 +652,64 @@ public class Script implements DescriptionObject {
     private Object packScriptReturnValue(Object returnValue) throws ScriptingEngineException {
         HashMap<String, Object> outputs = new HashMap<String, Object>();
 
-        for (Parameter outputParam : mOutputParams.values()) {
+        // if no outputs are defined, return null
+        if (mOutputParams.size() == 0) {
+            if (returnValue != null)
+                Logger.warning("Script.packScriptReturnValue() - No output params defined, returnValue is NOT null but it is discarded");
+            else
+                Logger.msg(4, "Script.packScriptReturnValue() - No output params defined. Returning null.");
+
+            return null;
+        }
+
+        //return the value when a single output was defined
+        if (mOutputParams.size() == 1) {
+            Parameter outputParam = mOutputParams.values().iterator().next();
             String outputName = outputParam.getName();
 
-            //return the value when a single output was defined with no name
-            if (mOutputParams.size() == 1 && StringUtils.isBlank(outputName)) return returnValue;
+            //check type
+            if (! outputParam.getType().isInstance(returnValue)) 
+                throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
 
-            if (StringUtils.isBlank(outputName)) throw new ScriptingEngineException("Script "+getName()+" - All outputs must have a name.");
-
-            //otherwise take data from the bindings using the output name
-            Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-
-            Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
-
-            // check the class
-            if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
-                throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+            //no name was defined return the value, otherwise put it into a map
+            if (StringUtils.isBlank(outputName)) {
+                return returnValue;
             }
+            else {
+                Object output = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
-            outputs.put(outputParam.getName(), outputValue);
+                if (output == null) {
+                    Logger.msg(5, "Script.packScriptReturnValue() - assigning script returnValue to named output '"+outputName+"'");
+                    output = returnValue;
+                }
+
+                outputs.put(outputName, output);
+                return outputs;
+            }
         }
-        return outputs;
+        else {
+            if (returnValue != null) Logger.msg(5, "Script.packScriptReturnValue() - returnValue is NOT null but it is discarded");
+
+            //there are more then one declared outputs
+            for (Parameter outputParam : mOutputParams.values()) {
+                String outputName = outputParam.getName();
+
+                if (StringUtils.isBlank(outputName)) throw new ScriptingEngineException("Script "+getName()+" - All outputs must have a name.");
+
+                //otherwise take data from the bindings using the output name
+                Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
+
+                Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
+
+                // check the class
+                if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
+                    throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+                }
+
+                outputs.put(outputParam.getName(), outputValue);
+            }
+            return outputs;
+        }
     }
 
     public void setScriptData(String script) throws ScriptParsingException {
@@ -720,7 +750,7 @@ public class Script implements DescriptionObject {
     public static Script getScript(String name, Integer version) 
             throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
     {
-        if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
+        if (StringUtils.isBlank(name)) throw new ScriptingEngineException("Script name is blank");
 
         if (version != null) {
             return LocalObjectLoader.getScript(name, version);
