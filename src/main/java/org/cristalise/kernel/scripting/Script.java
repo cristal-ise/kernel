@@ -668,7 +668,7 @@ public class Script implements DescriptionObject {
             String outputName = outputParam.getName();
 
             //check type
-            if (! outputParam.getType().isInstance(returnValue)) 
+            if (returnValue != null && ! outputParam.getType().isInstance(returnValue)) 
                 throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
 
             //no name was defined return the value, otherwise put it into a map
