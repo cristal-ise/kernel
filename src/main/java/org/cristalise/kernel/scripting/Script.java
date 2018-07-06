@@ -655,9 +655,9 @@ public class Script implements DescriptionObject {
         // if no outputs are defined, return null
         if (mOutputParams.size() == 0) {
             if (returnValue != null)
-                Logger.warning("Script.packScriptReturnValue() - No output params defined, returnValue is NOT null but it is discarded");
+                Logger.warning("Script.packScriptReturnValue("+getName()+") - No output params defined, returnValue is NOT null but it is discarded");
             else
-                Logger.msg(4, "Script.packScriptReturnValue() - No output params defined. Returning null.");
+                Logger.msg(4, "Script.packScriptReturnValue("+getName()+") - No output params defined. Returning null.");
 
             return null;
         }
@@ -667,21 +667,30 @@ public class Script implements DescriptionObject {
             Parameter outputParam = mOutputParams.values().iterator().next();
             String outputName = outputParam.getName();
 
-            //check type
-            if (returnValue != null && ! outputParam.getType().isInstance(returnValue)) 
-                throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
-
             //no name was defined return the value, otherwise put it into a map
             if (StringUtils.isBlank(outputName)) {
+                if (returnValue != null && ! outputParam.getType().isInstance(returnValue))
+                    throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
+
                 return returnValue;
             }
             else {
                 Object output = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
                 if (output == null) {
-                    Logger.msg(5, "Script.packScriptReturnValue() - assigning script returnValue to named output '"+outputName+"'");
-                    output = returnValue;
+                    if (! outputName.equals("errors")) {
+                        Logger.msg(5, "Script.packScriptReturnValue("+getName()+") - assigning script returnValue to named output '"+outputName+"'");
+
+                        if (returnValue != null && ! outputParam.getType().isInstance(returnValue))
+                            throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
+
+                        output = returnValue;
+                    }
+                    else
+                        Logger.msg(5, "Script.packScriptReturnValue("+getName()+") - return value for 'errors' is discarded");
                 }
+                else if (! outputParam.getType().isInstance(output))
+                    throw new ScriptingEngineException("Script '"+getName()+"' returnValue was not instance of " + outputParam.getType().getName());
 
                 outputs.put(outputName, output);
                 return outputs;
@@ -699,11 +708,11 @@ public class Script implements DescriptionObject {
                 //otherwise take data from the bindings using the output name
                 Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
-                Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
+                Logger.msg(4, "Script.packScriptReturnValue("+getName()+") - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
 
                 // check the class
                 if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
-                    throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+                    throw new ScriptingEngineException("Script '"+getName()+"' output '"+outputName+"' was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
                 }
 
                 outputs.put(outputParam.getName(), outputValue);
