@@ -40,6 +40,7 @@ module common
     **************************************************************************/
     exception CannotManageException
     {
+        string reason;
     };
 
 
@@ -51,6 +52,7 @@ module common
     **************************************************************************/
     exception InvalidTransitionException
     {
+        string reason;
     };
     
     /**************************************************************************
@@ -59,6 +61,7 @@ module common
     **************************************************************************/
     exception InvalidCollectionModification
     {
+        string reason;
     };
 
 
@@ -67,6 +70,7 @@ module common
     **************************************************************************/
     exception InvalidDataException
     {
+        string reason;
     };
 
 
@@ -75,6 +79,7 @@ module common
     **************************************************************************/
     exception AccessRightsException
     {
+        string reason;
     };
 
 
@@ -83,6 +88,7 @@ module common
     **************************************************************************/
     exception ObjectNotFoundException
     {
+        string reason;
     };
 
 
@@ -91,6 +97,7 @@ module common
     **************************************************************************/
     exception PersistencyException
     {
+        string reason;
     };
 
     /**************************************************************************
@@ -98,6 +105,7 @@ module common
     **************************************************************************/
     exception ObjectAlreadyExistsException
     {
+        string reason;
     };
 
 
@@ -106,6 +114,7 @@ module common
     **************************************************************************/
     exception ObjectCannotBeUpdated
     {
+        string reason;
     };
 
 }; //end of module common
