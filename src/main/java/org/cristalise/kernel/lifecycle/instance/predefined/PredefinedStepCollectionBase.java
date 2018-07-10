@@ -198,7 +198,7 @@ public abstract class PredefinedStepCollectionBase extends PredefinedStep {
         String[] tokens = propertyValue.split(":");
 
         try {
-            Script script = Script.getScript(tokens[0], Integer.getInteger(tokens[1]));
+            Script script = Script.getScript(tokens[0], Integer.valueOf(tokens[1]));
             script.evaluate(item, scriptProps, getActContext(), locker);
         }
         catch (ScriptingEngineException e) {
