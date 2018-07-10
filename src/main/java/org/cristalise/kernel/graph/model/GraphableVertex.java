@@ -23,6 +23,7 @@ package org.cristalise.kernel.graph.model;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ACTIVITY_DEF_URN;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.NAME;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.utils.CastorHashMap;
@@ -158,17 +159,11 @@ public abstract class GraphableVertex extends Vertex {
         }
 
         if (getIsComposite()) {
-            GraphableVertex[] graphables = getChildren();
-            if (ids.startsWith(String.valueOf(getID())))
-                ids = ids.substring(ids.indexOf("/") + 1);
-            else if (ids.startsWith(getName()))
-                ids = ids.substring(getName().length() + 1);
-            else if (ids.startsWith(getPath()))
-                ids = ids.substring(getPath().length() + 1);
-            else
-                return null;
+            if (ids.startsWith(String.valueOf(getID()))) ids = ids.substring(ids.indexOf("/") + 1);
+            else if (ids.startsWith(getName()))          ids = ids.substring(getName().length() + 1);
+            else if (ids.startsWith(getPath()))          ids = ids.substring(getPath().length() + 1);
 
-            for (GraphableVertex graphable : graphables) {
+            for (GraphableVertex graphable: getChildren()) {
                 GraphableVertex grap = graphable.search(ids);
                 if (grap != null) return grap;
             }
@@ -281,9 +276,10 @@ public abstract class GraphableVertex extends Vertex {
     }
 
     public String getPath() {
-        if (getName() != null && !getName().equals(""))
-            return getParent().getPath() + "/" + getName();
-        return getParent().getPath() + "/" + getID();
+        String root = getParent() == null ? "": getParent().getPath() + "/";
+
+        if (StringUtils.isNotBlank(getName())) return root + getName();
+        else                                   return root + getID();
     }
 
     public Object getBuiltInProperty(BuiltInVertexProperties prop) {
