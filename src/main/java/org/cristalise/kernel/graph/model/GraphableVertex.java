@@ -162,6 +162,7 @@ public abstract class GraphableVertex extends Vertex {
             if (ids.startsWith(String.valueOf(getID()))) ids = ids.substring(ids.indexOf("/") + 1);
             else if (ids.startsWith(getName()))          ids = ids.substring(getName().length() + 1);
             else if (ids.startsWith(getPath()))          ids = ids.substring(getPath().length() + 1);
+            else if (getParent() != null)                return null;
 
             for (GraphableVertex graphable: getChildren()) {
                 GraphableVertex grap = graphable.search(ids);
