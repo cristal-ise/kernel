@@ -45,11 +45,6 @@ import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
@@ -73,6 +68,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * 
@@ -582,9 +582,9 @@ public class Script implements DescriptionObject {
 
             //Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
         }
-        catch (Throwable ex) {
-            Logger.error(ex);
-            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getMessage());
+        catch (ScriptException ex) {
+            Logger.error(ex.getCause());
+            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getCause().getMessage(), ex.getCause());
         }
 
         return packScriptReturnValue(returnValue);

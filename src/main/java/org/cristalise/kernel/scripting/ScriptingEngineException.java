@@ -35,6 +35,13 @@ public class ScriptingEngineException extends java.lang.Exception {
     public ScriptingEngineException(String msg) {
         super(msg);
     }
-}
 
+    public ScriptingEngineException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ScriptingEngineException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+}
 

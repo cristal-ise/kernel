@@ -195,8 +195,8 @@ public class AgentProxy extends ItemProxy {
                 if (errorString.length() > 0) Logger.warning("Script errors: " + errorString);
             }
             catch (ScriptingEngineException ex) {
-                Logger.error(ex);
-                throw new InvalidDataException(ex.getMessage());
+                Logger.error(ex.getCause());
+                throw new InvalidDataException(ex.getCause().getMessage());
             }
         }
         else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {
