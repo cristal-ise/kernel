@@ -59,6 +59,7 @@ module common
     **************************************************************************/
     exception InvalidCollectionModification
     {
+        string details;
     };
 
 

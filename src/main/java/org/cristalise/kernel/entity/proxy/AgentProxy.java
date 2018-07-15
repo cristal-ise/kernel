@@ -59,6 +59,7 @@ import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 /**
  * It is a wrapper for the connection and communication with Agent It caches
@@ -195,8 +196,17 @@ public class AgentProxy extends ItemProxy {
                 if (errorString.length() > 0) Logger.warning("Script errors: " + errorString);
             }
             catch (ScriptingEngineException ex) {
-                Logger.error(ex.getCause());
-                throw new InvalidDataException(ex.getCause().getMessage());
+                Throwable cause = ex.getCause();
+                Logger.error(cause);
+                String msg;
+                try {
+                    // #216: If the exception has a "details" field, use that
+                    msg = (String)FieldUtils.readField(cause, "details");
+                }
+                catch (IllegalArgumentException | IllegalAccessException e) {
+                    msg = cause.getMessage();
+                }
+                throw new InvalidDataException(msg);
             }
         }
         else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {
