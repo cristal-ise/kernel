@@ -55,6 +55,7 @@ import org.cristalise.kernel.scripting.Parameter;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
+import org.cristalise.kernel.utils.CorbaExceptionUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
@@ -197,16 +198,9 @@ public class AgentProxy extends ItemProxy {
             }
             catch (ScriptingEngineException ex) {
                 Throwable cause = ex.getCause();
+                Logger.error(ex.getMessage());
                 Logger.error(cause);
-                String msg;
-                try {
-                    // #216: If the exception has a "details" field, use that
-                    msg = (String)FieldUtils.readField(cause, "details");
-                }
-                catch (IllegalArgumentException | IllegalAccessException e) {
-                    msg = cause.getMessage();
-                }
-                throw new InvalidDataException(msg);
+                throw new InvalidDataException(ex.getMessage() + " - " + CorbaExceptionUtility.unpackMessage(cause));
             }
         }
         else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {

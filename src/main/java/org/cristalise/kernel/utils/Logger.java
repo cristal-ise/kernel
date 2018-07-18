@@ -101,7 +101,15 @@ public class Logger {
     static private void printMessage(Throwable ex) {
         StringWriter msgString = new StringWriter();
         PrintWriter msg = new PrintWriter(msgString);
+
         msg.print(ex instanceof Exception ? "EXCEPTION:" : "JVM ERROR:");
+
+        // Corba exceptions might have other fields
+        String exMsg = CorbaExceptionUtility.unpackMessage(ex);
+
+        // Avoid printing the same message twice, because printStackTrace() prints the original message
+        if ( ex.getMessage() != null && exMsg != null && !ex.getMessage().equals(exMsg)) msg.print(exMsg);
+
         ex.printStackTrace(msg);
         printMessage(msgString.toString(), 0);
     }
