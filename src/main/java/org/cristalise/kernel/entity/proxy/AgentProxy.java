@@ -198,9 +198,12 @@ public class AgentProxy extends ItemProxy {
             }
             catch (ScriptingEngineException ex) {
                 Throwable cause = ex.getCause();
-                Logger.error(ex.getMessage());
+
+                if (cause == null) cause = ex;
+                else               Logger.error(ex.getMessage());
+
                 Logger.error(cause);
-                throw new InvalidDataException(ex.getMessage() + " - " + CorbaExceptionUtility.unpackMessage(cause));
+                throw new InvalidDataException(CorbaExceptionUtility.unpackMessage(cause));
             }
         }
         else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {
