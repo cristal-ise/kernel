@@ -60,7 +60,6 @@ import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 /**
  * It is a wrapper for the connection and communication with Agent It caches
