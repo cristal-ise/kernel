@@ -22,10 +22,15 @@ package org.cristalise.kernel.persistency.outcome;
 
 import static org.cristalise.kernel.process.resource.BuiltInResources.SCHEMA_RESOURCE;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
@@ -55,7 +60,7 @@ public class Schema implements DescriptionObject, ErrorHandler {
     protected StringBuffer errors = null;
 
     @Setter(AccessLevel.NONE)
-    public org.exolab.castor.xml.schema.Schema som = null;
+    public javax.xml.validation.Schema javaxSchema = null;
 
     public Schema(String name, int version, ItemPath itemPath, String schema) {
         super();
@@ -94,20 +99,47 @@ public class Schema implements DescriptionObject, ErrorHandler {
     }
 
     /**
-     * Returns the SOM
+     * Returns the SchemaObjectModel (SOM) implemented by the caster xml schema project. 
+     * WARNING: Castor implementation does not support 'xs:any'
      *
      * @return castor xml schema object
      */
     public org.exolab.castor.xml.schema.Schema getSom() {
-        if (som == null && StringUtils.isNotBlank(schemaData)) {
-            try {
-                som = new SchemaReader(new InputSource(new StringReader(schemaData))).read();
+        try {
+            errors = new StringBuffer();
+            SchemaReader mySchemaReader = new SchemaReader(new InputSource(new StringReader(schemaData)));
+
+            mySchemaReader.setErrorHandler(this);
+            mySchemaReader.setValidation(true);
+
+            org.exolab.castor.xml.schema.Schema som = mySchemaReader.read();
+
+            if (StringUtils.isNotBlank(errors)) {
+                Logger.error("Schema '" + getName() + "' was invalid:" + errors.toString());
+                return null;
             }
-            catch (IOException e) {
+            else
+                return som;
+        }
+        catch (Exception e) {
+            Logger.error(e);
+        }
+        return null;
+    }
+
+    public javax.xml.validation.Schema getJavaxSchema() {
+        if (javaxSchema == null && StringUtils.isNotBlank(schemaData)) {
+            try {
+                StreamSource source = new StreamSource(new ByteArrayInputStream(schemaData.getBytes()));
+                SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                factory.setErrorHandler(this);
+                javaxSchema = factory.newSchema(source);
+            }
+            catch (SAXException e) {
                 Logger.error(e);
             }
         }
-        return som;
+        return javaxSchema;
     }
 
     /**
@@ -117,12 +149,8 @@ public class Schema implements DescriptionObject, ErrorHandler {
      */
     public synchronized String validate() throws IOException {
         errors = new StringBuffer();
-        SchemaReader mySchemaReader = new SchemaReader(new InputSource(new StringReader(schemaData)));
-
-        mySchemaReader.setErrorHandler(this);
-        mySchemaReader.setValidation(true);
-
-        som = mySchemaReader.read();
+        javaxSchema = null; //makes sure schema is read from string and validated
+        getJavaxSchema();
         return errors.toString();
     }
 
