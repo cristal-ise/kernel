@@ -104,6 +104,9 @@ public class Script implements DescriptionObject {
     @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
     ScriptContext context;
 
+    @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
+    boolean isActExecEnvironment = false;
+
     /**
      * Constructor for castor unmarshall
      */
@@ -201,6 +204,8 @@ public class Script implements DescriptionObject {
     public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
             throws ScriptingEngineException, InvalidDataException
     {
+        isActExecEnvironment = true;
+
         // set environment - this needs to be well documented for script developers
         if (!mInputParams.containsKey("item")) {
             Logger.warning("Item param not declared in Script "+getName()+" v"+getVersion());
@@ -599,7 +604,20 @@ public class Script implements DescriptionObject {
     private void executeIncludedScripts() throws ScriptingEngineException {
         for (Script importScript : mIncludes) {
             Logger.msg(5, "Script.executeIncludedScripts() - name:"+importScript.getName()+" version:"+importScript.getVersion());
-            
+
+            if (isActExecEnvironment) {
+                try {
+                    importScript.setActExecEnvironment(
+                             (ItemProxy)context.getAttribute("item"),
+                            (AgentProxy)context.getAttribute("agent"), 
+                                   (Job)context.getAttribute("job"));
+                }
+                catch (InvalidDataException e) {
+                    Logger.error(e);
+                    throw new ScriptingEngineException(e);
+                }
+            }
+
             // set current context to the included script before executing it? (issue #124)            
             importScript.setContext(context);
             // execute the included scripts first, they might set input parameters            
