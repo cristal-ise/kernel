@@ -74,7 +74,9 @@ public enum ClusterType {
      * and each new job received is assigned an integer ID one more than the
      * highest already present.
      */
-    JOB("Job");
+    JOB("Job"),
+
+    ATTACHMENT("Attachment");
 
     private String clusterName;
 

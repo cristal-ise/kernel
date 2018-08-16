@@ -51,6 +51,7 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
         if (preLoad) loadChildren();
     }
 
+    @SuppressWarnings("unchecked")
     private void loadChildren() {
         C newMember;
         ProxyObserver<C> observer = getObserver();
@@ -100,6 +101,7 @@ public class MemberSubscription<C extends C2KLocalObject> implements Runnable {
         return (path.startsWith(interest));
     }
 
+    @SuppressWarnings("unchecked")
     public void update(String path, boolean deleted) {
         ProxyObserver<C> observer = getObserver();
         if (observer == null) return; //reaped

@@ -125,7 +125,7 @@ public class Workflow extends CompositeActivity implements C2KLocalObject {
         return mEdgeTypeNameAndConstructionInfo;
     }
 
-    public String requestAction(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath, int transitionID, String requestData)
+    public String requestAction(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath, int transitionID, String requestData, String attachmentType, byte[] attachment)
             throws ObjectNotFoundException, AccessRightsException, InvalidTransitionException, InvalidDataException,
                    ObjectAlreadyExistsException, PersistencyException, ObjectCannotBeUpdated, CannotManageException,
                    InvalidCollectionModification
@@ -133,7 +133,7 @@ public class Workflow extends CompositeActivity implements C2KLocalObject {
         Logger.msg(3, "Workflow::requestAction() - transition:" + transitionID + " step:" + stepPath + " agent:" + agent);
         GraphableVertex vert = search(stepPath);
         if (vert != null && vert instanceof Activity)
-            return ((Activity) vert).request(agent, delegator, itemPath, transitionID, requestData, this);
+            return ((Activity) vert).request(agent, delegator, itemPath, transitionID, requestData, attachmentType, attachment, this);
         else
             throw new ObjectNotFoundException(stepPath + " not found");
     }
