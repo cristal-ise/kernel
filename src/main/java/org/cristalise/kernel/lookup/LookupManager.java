@@ -97,8 +97,19 @@ public interface LookupManager extends Lookup {
      * 
      * @param agent The Agent
      * @param newPassword The Agent's new password
+     * @deprecated use the other method with 3 parameters
      */
     public void setAgentPassword(AgentPath agent, String newPassword) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
+
+
+    /**
+     * Set an Agent's password
+     * 
+     * @param agent The Agent
+     * @param newPassword The Agent's new password
+     * @param temporal whether the new password is temporal or not
+     */
+    public void setAgentPassword(AgentPath agent, String newPassword, boolean temporal) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
 
     /**
      * Set the flag specifying whether Activities holding this Role should push
