@@ -93,11 +93,10 @@ public interface LookupManager extends Lookup {
     public void removeRole(AgentPath agent, RolePath role) throws ObjectCannotBeUpdated, ObjectNotFoundException;
 
     /**
-     * Set an Agent's password
+     * Set permanent password of Agent's
      * 
      * @param agent The Agent
      * @param newPassword The Agent's new password
-     * @deprecated use the other method with 3 parameters
      */
     public void setAgentPassword(AgentPath agent, String newPassword) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
 
@@ -107,9 +106,9 @@ public interface LookupManager extends Lookup {
      * 
      * @param agent The Agent
      * @param newPassword The Agent's new password
-     * @param temporal whether the new password is temporal or not
+     * @param temporary whether the new password is temporary or not
      */
-    public void setAgentPassword(AgentPath agent, String newPassword, boolean temporal) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
+    public void setAgentPassword(AgentPath agent, String newPassword, boolean temporary) throws ObjectNotFoundException, ObjectCannotBeUpdated, NoSuchAlgorithmException;
 
     /**
      * Set the flag specifying whether Activities holding this Role should push
