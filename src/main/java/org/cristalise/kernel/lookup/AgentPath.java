@@ -134,8 +134,4 @@ public class AgentPath extends ItemPath {
     public boolean isPasswordTemporary() {
         return mPasswordTemporary;
     }
-
-    public void setPasswordTemporal(boolean isTemporary) {
-        mPasswordTemporary = isTemporary;
-    }
 }
