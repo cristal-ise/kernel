@@ -74,7 +74,8 @@ public class SetAgentPassword extends PredefinedStep {
                 params[1] = "REDACTED"; // censor password from outcome
             }
 
-            Gateway.getLookupManager().setAgentPassword(targetAgent, newPwd);
+            // Password is temporary when it was set by someone else
+            Gateway.getLookupManager().setAgentPassword(targetAgent, newPwd, !targetAgent.equals(agent));
 
             return bundleData(params);
         }
