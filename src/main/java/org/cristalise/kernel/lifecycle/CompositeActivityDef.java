@@ -28,15 +28,28 @@ import static org.cristalise.kernel.process.resource.BuiltInResources.COMP_ACT_D
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
@@ -46,11 +59,15 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * 
@@ -402,6 +419,32 @@ public class CompositeActivityDef extends ActivityDef {
         try {
             // export marshalled compAct
             String compactXML = Gateway.getMarshaller().marshall(this);
+			if (Gateway.getProperties().getBoolean("Export.replaceActivitySlotDefUUIDWithName", false)) {
+				
+				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(compactXML)));
+			
+				XPath xpath = XPathFactory.newInstance().newXPath();
+
+				String expression = "/CompositeActivityDef/childrenGraphModel/GraphModelCastorData/ActivitySlotDef/activityDef/text()";
+				NodeList nodeList = (NodeList) xpath.compile(expression).evaluate(doc, XPathConstants.NODESET);
+				
+				for (int i = 0; i < nodeList.getLength(); i++) {					 
+					 try {
+						 ItemPath itemPath = Gateway.getLookup().getItemPath(nodeList.item(i).getNodeValue());
+						 ItemProxy itemProxy = Gateway.getProxyManager().getProxy(itemPath);
+						 nodeList.item(i).setNodeValue(itemProxy.getName());
+					 }catch(Exception e) {
+						 Logger.error(e);
+						 throw new ObjectNotFoundException("Cannot find item with UIID: "+nodeList.item(i).getNodeValue());
+					 }
+				}
+							
+				StringWriter sw = new StringWriter();
+				TransformerFactory tf = TransformerFactory.newInstance();
+				Transformer transformer = tf.newTransformer();
+				transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+				transformer.transform(new DOMSource(doc), new StreamResult(sw));
+			}            
             FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
         }
         catch (Exception e) {
