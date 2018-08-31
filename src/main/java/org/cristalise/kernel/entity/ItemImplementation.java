@@ -182,15 +182,15 @@ public class ItemImplementation implements ItemOperations {
     }
 
     @Override
-    public String requestAction(SystemKey agentId, String stepPath, int transitionID, String requestData)
+    public String requestAction(SystemKey agentId, String stepPath, int transitionID, String requestData, String attachmentType, byte[] attachment)
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
             PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
-        return delegatedAction(agentId, null, stepPath, transitionID, requestData);
+        return delegatedAction(agentId, null, stepPath, transitionID, requestData, attachmentType,attachment);
     }
 
     @Override
-    public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID, String requestData)
+    public String delegatedAction(SystemKey agentId, SystemKey delegateId, String stepPath, int transitionID, String requestData, String attachmentType, byte[] attachment)
             throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException, InvalidDataException,
             PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
     {
@@ -205,7 +205,7 @@ public class ItemImplementation implements ItemOperations {
             // TODO: check if delegate is allowed valid for agent
             lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterType.LIFECYCLE + "/workflow", null);
 
-            String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData);
+            String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData, attachmentType, attachment);
 
             // store the workflow if we've changed the state of the domain wf
             if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, lifeCycle);
@@ -298,7 +298,7 @@ public class ItemImplementation implements ItemOperations {
 
             String errorOutcome = Gateway.getMarshaller().marshall(new ErrorInfo(ex));
 
-            lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, errorTransId, errorOutcome);
+            lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, errorTransId, errorOutcome, "", null);
 
             if (!(stepPath.startsWith("workflow/predefined"))) mStorage.put(mItemPath, lifeCycle, lifeCycle);
 

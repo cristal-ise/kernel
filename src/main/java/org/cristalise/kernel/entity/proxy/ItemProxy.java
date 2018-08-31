@@ -49,6 +49,7 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.OutcomeAttachment;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
@@ -208,31 +209,52 @@ public class ItemProxy
      */
     public String requestAction( Job thisJob )
             throws AccessRightsException,
-            InvalidTransitionException,
-            ObjectNotFoundException,
-            InvalidDataException,
-            PersistencyException,
-            ObjectAlreadyExistsException,
-            InvalidCollectionModification
+                   InvalidTransitionException,
+                   ObjectNotFoundException,
+                   InvalidDataException,
+                   PersistencyException,
+                   ObjectAlreadyExistsException,
+                   InvalidCollectionModification
     {
+        if (thisJob.getAgentPath() == null) throw new InvalidDataException("No Agent specified.");
+
         String outcome = thisJob.getOutcomeString();
-        // check fields that should have been filled in
 
         if (outcome == null) {
             if (thisJob.isOutcomeRequired()) throw new InvalidDataException("Outcome is required.");
             else                             outcome = "";
         }
+        
+        OutcomeAttachment attachment = thisJob.getAttachment();
+        String attachmentType = "";
+        byte[] attachmentBinary = new byte[0];
 
-        if (thisJob.getAgentPath() == null) throw new InvalidDataException("No Agent specified.");
+        if (attachment != null) {
+            attachmentType = attachment.getType();
+            attachmentBinary = attachment.getBinaryData();
+        }
 
         Logger.msg(7, "ItemProxy.requestAction() - executing "+thisJob.getStepPath()+" for "+thisJob.getAgentName());
 
-        if (thisJob.getDelegatePath() == null)
-            return getItem().requestAction (thisJob.getAgentPath().getSystemKey(), thisJob.getStepPath(),
-                    thisJob.getTransition().getId(), outcome);
-        else
-            return getItem().delegatedAction(thisJob.getAgentPath().getSystemKey(), thisJob.getDelegatePath().getSystemKey(),
-                    thisJob.getStepPath(), thisJob.getTransition().getId(), outcome);
+        if (thisJob.getDelegatePath() == null) {
+            return getItem().requestAction (
+                    thisJob.getAgentPath().getSystemKey(), 
+                    thisJob.getStepPath(),
+                    thisJob.getTransition().getId(), 
+                    outcome,
+                    attachmentType,
+                    attachmentBinary);
+        }
+        else {
+            return getItem().delegatedAction(
+                    thisJob.getAgentPath().getSystemKey(), 
+                    thisJob.getDelegatePath().getSystemKey(),
+                    thisJob.getStepPath(), 
+                    thisJob.getTransition().getId(), 
+                    outcome, 
+                    attachmentType,
+                    attachmentBinary);
+        }
     }
 
     /**
