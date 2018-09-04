@@ -827,7 +827,7 @@ public class Outcome implements C2KLocalObject {
      * @return the xml string
      * @throws InvalidDataException Transformer Exception
      */
-    static public String serialize(Document doc, boolean prettyPrint) throws InvalidDataException {
+    static public String serialize(Node node, boolean prettyPrint) throws InvalidDataException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer;
         try {
@@ -843,7 +843,7 @@ public class Outcome implements C2KLocalObject {
 
         Writer out = new StringWriter();
         try {
-            transformer.transform(new DOMSource(doc), new StreamResult(out));
+            transformer.transform(new DOMSource(node), new StreamResult(out));
         }
         catch (Exception e) {
             Logger.error(e);
