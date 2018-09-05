@@ -60,6 +60,7 @@ import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.FileStringUtility;
@@ -417,34 +418,26 @@ public class CompositeActivityDef extends ActivityDef {
         String tc = COMP_ACT_DESC_RESOURCE.getTypeCode();
 
         try {
+            NodeList nodeList = null;
+            Outcome outcome = null;
             // export marshalled compAct
             String compactXML = Gateway.getMarshaller().marshall(this);
-			if (Gateway.getProperties().getBoolean("Export.replaceActivitySlotDefUUIDWithName", false)) {
-				
-				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(compactXML)));
-			
-				XPath xpath = XPathFactory.newInstance().newXPath();
-
-				String expression = "/CompositeActivityDef/childrenGraphModel/GraphModelCastorData/ActivitySlotDef/activityDef/text()";
-				NodeList nodeList = (NodeList) xpath.compile(expression).evaluate(doc, XPathConstants.NODESET);
-				
-				for (int i = 0; i < nodeList.getLength(); i++) {					 
-					 try {
-						 ItemPath itemPath = Gateway.getLookup().getItemPath(nodeList.item(i).getNodeValue());
-						 ItemProxy itemProxy = Gateway.getProxyManager().getProxy(itemPath);
-						 nodeList.item(i).setNodeValue(itemProxy.getName());
-					 }catch(Exception e) {
-						 Logger.error(e);
-						 throw new ObjectNotFoundException("Cannot find item with UIID: "+nodeList.item(i).getNodeValue());
-					 }
-				}
-							
-				StringWriter sw = new StringWriter();
-				TransformerFactory tf = TransformerFactory.newInstance();
-				Transformer transformer = tf.newTransformer();
-				transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-				transformer.transform(new DOMSource(doc), new StreamResult(sw));
-			}            
+            if (Gateway.getProperties().getBoolean("Export.replaceActivitySlotDefUUIDWithName", false)) {
+               outcome = new Outcome(compactXML);
+               nodeList = outcome.getNodesByXPath("/CompositeActivityDef/childrenGraphModel/GraphModelCastorData/ActivitySlotDef/activityDef/text()");
+               for (int i = 0; i < nodeList.getLength(); i++) {					 
+                    try {
+                        ItemPath itemPath = Gateway.getLookup().getItemPath(nodeList.item(i).getNodeValue());
+                        ItemProxy itemProxy = Gateway.getProxyManager().getProxy(itemPath);
+                        nodeList.item(i).setNodeValue(itemProxy.getName());
+                    }
+                    catch(Exception e) {
+                         Logger.error(e);
+                         throw new ObjectNotFoundException("Cannot find item with UIID: "+nodeList.item(i).getNodeValue());
+                    }
+               }
+               compactXML = outcome.getData();
+            }            
             FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
         }
         catch (Exception e) {
