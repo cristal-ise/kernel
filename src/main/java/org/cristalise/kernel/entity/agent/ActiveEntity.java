@@ -109,24 +109,27 @@ public class ActiveEntity extends AgentPOA {
     }
 
     @Override
-    public String requestAction(SystemKey agentID, String stepPath, int transitionID, String requestData) 
-            throws AccessRightsException, InvalidTransitionException, ObjectNotFoundException,
-            InvalidDataException, PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    public String requestAction(SystemKey agentID, String stepPath, int transitionID, String requestData, String attachmentType, byte[] attachment)
+            throws AccessRightsException,
+                InvalidTransitionException, ObjectNotFoundException,
+                InvalidDataException, PersistencyException,
+                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mAgentImpl.requestAction(agentID, stepPath, transitionID, requestData);
+            return mAgentImpl.requestAction(agentID, stepPath, transitionID, requestData, attachmentType, attachment);
         }
+
     }
 
     @Override
-    public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId,
-            String stepPath, int transitionID, String requestData) throws AccessRightsException,
-            InvalidTransitionException, ObjectNotFoundException,
-            InvalidDataException, PersistencyException,
-            ObjectAlreadyExistsException, InvalidCollectionModification
+    public String delegatedAction(SystemKey agentId, SystemKey delegateAgentId, String stepPath, int transitionID, String requestData, String attachmentType, byte[] attachment)
+            throws AccessRightsException,
+                InvalidTransitionException, ObjectNotFoundException,
+                InvalidDataException, PersistencyException,
+                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mAgentImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
+            return mAgentImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData, attachmentType, attachment);
         }
     }
 

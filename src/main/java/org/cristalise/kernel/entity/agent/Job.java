@@ -46,6 +46,7 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.OutcomeAttachment;
 import org.cristalise.kernel.persistency.outcome.OutcomeInitiator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
@@ -86,7 +87,8 @@ public class Job implements C2KLocalObject {
     private ItemProxy  item = null;
     private boolean    transitionResolved = false;
 
-    private Outcome outcome = null;
+    private Outcome           outcome = null;
+    private OutcomeAttachment attachment = null;
 
     /**
      * OutcomeInitiator cache

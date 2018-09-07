@@ -368,4 +368,14 @@ public class OutcomeTest {
             new Schema("Viewpoint", 0, null, FileStringUtility.url2String(Gateway.getResource().getKernelResourceURL("boot/OD/Viewpoint.xsd")))
         ).validateAndCheck();
     }
+
+    @Test
+    public void testSerailize() throws Exception {
+        Outcome o = getOutcome("TestStateMachine.xml");
+
+        String actual = Outcome.serialize(o.getNodeByXPath("/StateMachine/State[@id='1']"), true).trim();
+        String expected = "<State id=\"1\" name=\"Started\"/>";
+
+        assertEquals(expected, actual);
+    }
 }

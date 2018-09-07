@@ -62,6 +62,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.ClusterType;
+import org.cristalise.kernel.persistency.outcome.OutcomeAttachment;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
@@ -168,9 +169,24 @@ public class Activity extends WfVertex {
         return getStateMachine().getState(getState()).isFinished();
     }
 
-    public String request(AgentPath agent, AgentPath delegate, ItemPath itemPath, int transitionID, String requestData, Object locker)
-            throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
-            ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
+    public String request(AgentPath agent,
+                          AgentPath delegate,
+                          ItemPath itemPath,
+                          int transitionID,
+                          String requestData,
+                          String attachmentType,
+                          byte[] attachment,
+                          Object locker
+                          )
+            throws AccessRightsException,
+                   InvalidTransitionException,
+                   InvalidDataException,
+                   ObjectNotFoundException,
+                   PersistencyException,
+                   ObjectAlreadyExistsException,
+                   ObjectCannotBeUpdated,
+                   CannotManageException,
+                   InvalidCollectionModification
     {
         // Find requested transition
         Transition transition = getStateMachine().getTransition(transitionID);
@@ -214,6 +230,7 @@ public class Activity extends WfVertex {
                 newOutcome.setID(eventID);
 
                 Gateway.getStorage().put(itemPath, newOutcome, locker);
+                if (attachment.length > 0) Gateway.getStorage().put(itemPath, new OutcomeAttachment(itemPath, newOutcome, attachmentType, attachment), locker);
 
                 // update specific view if defined
                 if (!viewpoint.equals("last")) {
