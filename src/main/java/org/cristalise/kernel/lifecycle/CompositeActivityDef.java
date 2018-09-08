@@ -37,6 +37,7 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.graph.model.GraphModel;
 import org.cristalise.kernel.graph.model.GraphPoint;
@@ -46,11 +47,14 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Next;
 import org.cristalise.kernel.lifecycle.instance.WfVertex;
+import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
+import org.w3c.dom.NodeList;
 
 /**
  * 
@@ -400,8 +404,26 @@ public class CompositeActivityDef extends ActivityDef {
         String tc = COMP_ACT_DESC_RESOURCE.getTypeCode();
 
         try {
+            NodeList nodeList = null;
+            Outcome outcome = null;
             // export marshalled compAct
             String compactXML = Gateway.getMarshaller().marshall(this);
+            if (Gateway.getProperties().getBoolean("Export.replaceActivitySlotDefUUIDWithName", false)) {
+               outcome = new Outcome(compactXML);
+               nodeList = outcome.getNodesByXPath("/CompositeActivityDef/childrenGraphModel/GraphModelCastorData/ActivitySlotDef/activityDef/text()");
+               for (int i = 0; i < nodeList.getLength(); i++) {					 
+                    try {
+                        ItemPath itemPath = Gateway.getLookup().getItemPath(nodeList.item(i).getNodeValue());
+                        ItemProxy itemProxy = Gateway.getProxyManager().getProxy(itemPath);
+                        nodeList.item(i).setNodeValue(itemProxy.getName());
+                    }
+                    catch(Exception e) {
+                         Logger.error(e);
+                         throw new ObjectNotFoundException("Cannot find item with UIID: "+nodeList.item(i).getNodeValue());
+                    }
+               }
+               compactXML = outcome.getData();
+            }            
             FileStringUtility.string2File(new File(new File(dir, tc), getActName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml"), compactXML);
         }
         catch (Exception e) {

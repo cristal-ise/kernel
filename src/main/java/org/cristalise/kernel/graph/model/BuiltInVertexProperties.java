@@ -42,6 +42,11 @@ public enum BuiltInVertexProperties {
     AGENT_NAME("Agent Name"),
 
     /**
+     * String property. Contains the comma separated list of mine types. Defined in ActivityDef. Can be null or undefined.
+     */
+    ATTACHMENT_MIME_TYPES("AttachmentMimeTypes"),
+
+    /**
      * String property. The name of the Delegate Agent associated with Activities. Can be null or undefined.
      */
     DELEGATE_NAME("DelegateName"),
