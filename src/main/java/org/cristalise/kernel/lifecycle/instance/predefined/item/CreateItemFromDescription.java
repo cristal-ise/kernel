@@ -52,7 +52,6 @@ import org.cristalise.kernel.lifecycle.instance.predefined.PredefinedStep;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.DomainPath;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Viewpoint;
 import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
@@ -268,7 +267,7 @@ public class CreateItemFromDescription extends PredefinedStep {
     {
         @SuppressWarnings("unchecked")
         Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-                    Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + WORKFLOW + "/" + descVer, locker);
+                    Gateway.getStorage().get(descItemPath, COLLECTION + "/" + WORKFLOW + "/" + descVer, locker);
 
         CollectionMember wfMember  = thisCol.getMembers().list.get(0);
         String           wfDefName = wfMember.resolveItem().getName();
@@ -312,12 +311,12 @@ public class CreateItemFromDescription extends PredefinedStep {
     {
         // loop through collections, collecting instantiated descriptions and finding the default workflow def
         CollectionArrayList colls = new CollectionArrayList();
-        String[] collNames = Gateway.getStorage().getClusterContents(descItemPath, ClusterType.COLLECTION);
+        String[] collNames = Gateway.getStorage().getClusterContents(descItemPath, COLLECTION);
 
         for (String collName : collNames) {
             @SuppressWarnings("unchecked")
             Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-                    Gateway.getStorage().get(descItemPath, ClusterType.COLLECTION + "/" + collName + "/" + descVer, locker);
+                    Gateway.getStorage().get(descItemPath, COLLECTION + "/" + collName + "/" + descVer, locker);
 
             if (thisCol instanceof CollectionDescription) {
                 Logger.msg(5,"CreateItemFromDescription - Instantiating CollectionDescription:"+ collName);
@@ -348,13 +347,13 @@ public class CreateItemFromDescription extends PredefinedStep {
     protected Viewpoint instantiateViewpoint(ItemPath descItemPath, String descVer, Object locker) 
             throws ObjectNotFoundException, InvalidDataException, PersistencyException
     {
-        String collPath = COLLECTION + "/" + SCHEMA_INITIALISE + "/" + descVer;
+        String collPath = COLLECTION + "/" + SCHEMA_INITIALISE;
 
         if (Gateway.getStorage().getClusterContents(descItemPath, collPath).length == 0) return null;
 
         @SuppressWarnings("unchecked")
         Collection<? extends CollectionMember> thisCol = (Collection<? extends CollectionMember>)
-                    Gateway.getStorage().get(descItemPath, collPath, locker);
+                    Gateway.getStorage().get(descItemPath, collPath + "/" + descVer, locker);
 
         CollectionMember schemaMember = thisCol.getMembers().list.get(0);
         String           schemaName   = schemaMember.resolveItem().getName();
