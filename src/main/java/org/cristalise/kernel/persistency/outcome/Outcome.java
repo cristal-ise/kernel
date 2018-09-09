@@ -407,10 +407,10 @@ public class Outcome implements C2KLocalObject {
      * Determines if the NodeList is actually a single field, an element with text data only
      *
      * @param elements NodeList
-     * @return if the NodeList has a single field or not
+     * @return if the NodeList has a single field of type ELEMENT_NODE or not
      */
-    public boolean hasSingleField(NodeList elements) {
-        return (elements != null && elements.getLength() == 1 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
+    private boolean hasSingleField(NodeList elements) {
+        return (elements != null && elements.getLength() > 0 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
     }
 
     /**
@@ -485,7 +485,7 @@ public class Outcome implements C2KLocalObject {
         if (hasSingleField(elements))
             setAttribute((Element)elements.item(0), name, data, remove);
         else
-            throw new InvalidDataException("Invalid name:'"+field+"'");
+            throw new InvalidDataException("'"+field+"' is invalid or not a single field");
     }
 
     /**
@@ -525,7 +525,7 @@ public class Outcome implements C2KLocalObject {
             setNodeValue(elements.item(0), data);
         }
         else
-            throw new InvalidDataException("Invalid name:'"+name+"'");
+            throw new InvalidDataException("'"+name+"' is invalid or not a single field");
     }
 
     /**
@@ -744,8 +744,10 @@ public class Outcome implements C2KLocalObject {
             if (StringUtils.isNotBlank(value)) return value;
             else                               return null;
         }
-        else
+        else {
+            Logger.warning("Outcome.getAttributeOfField() - '%s' is invalid or not a sinlge field", field);
             return null;
+        }
     }
 
     /**
@@ -758,9 +760,18 @@ public class Outcome implements C2KLocalObject {
     public String getField(Element element, String name) {
         try {
             NodeList elements = element.getElementsByTagName(name);
-            if (hasSingleField(elements))  return getNodeValue(elements.item(0));
+            if (hasSingleField(elements)) {
+                if (elements.getLength() > 1) 
+                    Logger.warning("Outcome.getField() - '%s' was found multiple times, returning first occurance", name);
+
+                return getNodeValue(elements.item(0));
+            }
+            else{
+                Logger.warning("Outcome.getField() - '%s' is invalid or not a sinlge field", name);
+            }
         }
         catch (InvalidDataException e) {
+            Logger.warning("Outcome.getField() - exception:"+e.getMessage());
         }
 
         return null;
