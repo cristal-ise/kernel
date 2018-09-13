@@ -440,7 +440,7 @@ public class Bootstrap
         newDomPath.setItemPath(itemPath);
         lookupManager.add(newDomPath);
         ItemProxy newItemProxy = Gateway.getProxyManager().getProxy(itemPath);
-        newItemProxy.initialise( systemAgents.get("system").getPath(), props, ca, null, null, null);
+        newItemProxy.initialise( systemAgents.get("system").getPath(), props, ca, null);
         return newItemProxy;
     }
 
