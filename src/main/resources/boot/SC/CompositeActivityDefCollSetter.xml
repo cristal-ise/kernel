@@ -53,11 +53,12 @@ while (newMemIter.hasNext()) {
 
 params = new Array(3);
 params[0] = "Activity";
-params[1] = -1;
 var oldMemIter = newDescColl.compare(oldDescColl).iterator();
 
 while (oldMemIter.hasNext()) {
-    params[2] = oldMemIter.next().getItemPath();
+    var member = oldMemIter.next()  
+    params[1] = member.getID();
+    params[2] = member.getItemPath();
     agent.execute(item, "RemoveSlotFromCollection", params);
 }
     ]]></script>
