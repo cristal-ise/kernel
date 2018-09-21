@@ -125,7 +125,7 @@ public class ItemProxy
     }
 
     /**
-     * Initialise the new Item with instance data which is normally is created from descriptions
+     * Initialise the new Item with instance data which was normally created from descriptions
      *
      * @param agentId the Agent who is creating the Item
      * @param itemProps initial list of Properties of the Item
@@ -161,7 +161,7 @@ public class ItemProxy
     }
 
     /**
-     * Initialise the new Item with instance data which is normally is created from descriptions
+     * Initialise the new Item with instance data which was normally created from descriptions
      *
      * @param agentId the Agent who is creating the Item
      * @param itemProps initial list of Properties of the Item
