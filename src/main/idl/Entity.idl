@@ -58,11 +58,11 @@ module entity
         * @param workflow The XML marshalled new lifecycle of the Item
         * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
         * @param viewpoint the XML marshalled Viewpoint to be stored to find the Outcome 
-        * @param outcome the XML data ro be stored 
+        * @param outcome the XML data to be stored 
         * @exception ObjectNotFoundException
         **/
         void initialise( in common::SystemKey  agentKey,
-        				 in string             itemProps,
+                         in string             itemProps,
                          in string             workflow,
                          in string             collections,
                          in string             viewpoint,
