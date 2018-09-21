@@ -168,7 +168,7 @@ public class ItemProxy
      * @param workflow new Lifecycle of the Item
      * @param colls the initial state of the Item's collections
      * @param viewpoint the provide viewpoint to be stored for the Outcome
-     * @param outcome the Outcome to be used (like the parameterd of the class constructor)
+     * @param outcome the Outcome to be used (like the parameters of the class constructor)
      *
      * @throws AccessRightsException Agent does not the rights to create an Item
      * @throws InvalidDataException data was invalid
