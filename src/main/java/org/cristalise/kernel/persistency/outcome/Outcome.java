@@ -407,7 +407,7 @@ public class Outcome implements C2KLocalObject {
      * Determines if the NodeList is actually a single field, an element with text data only
      *
      * @param elements NodeList
-     * @return if the NodeList has a single field of type ELEMENT_NODE or not
+     * @return true if the NodeList has a single field of type ELEMENT_NODE
      */
     private boolean hasSingleField(NodeList elements) {
         return (elements != null && elements.getLength() > 0 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
