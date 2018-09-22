@@ -1,4 +1,4 @@
-CRISTAL-iSE kernel [![Build Status](https://travis-ci.org/cristal-ise/kernel.svg?branch=master)](https://travis-ci.org/cristal-ise/kernel)[![Javadocs](http://javadoc.io/badge/org.cristalise/cristalise-kernel.svg)](http://javadoc.io/doc/org.cristalise/cristalise-kernel)
+CRISTAL-iSE kernel [![Build Status](https://img.shields.io/travis/cristal-ise/kernel/master.svg?label=master)](https://travis-ci.org/cristal-ise/kernel)[![Build Status](https://img.shields.io/travis/cristal-ise/kernel/develop.svg?label=develop)](https://travis-ci.org/cristal-ise/kernel)[![Javadocs](http://javadoc.io/badge/org.cristalise/cristalise-kernel.svg)](http://javadoc.io/doc/org.cristalise/cristalise-kernel)
 ==================
 
 [![Join the chat at https://gitter.im/cristal-ise/kernel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cristal-ise/kernel?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
