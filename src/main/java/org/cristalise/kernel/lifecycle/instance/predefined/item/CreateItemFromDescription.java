@@ -369,7 +369,7 @@ public class CreateItemFromDescription extends PredefinedStep {
         try {
             Integer schemaVer = Integer.parseInt(schemaVerObj.toString());
             String viewName = (viewNameObj == null) ? "last": viewNameObj.toString();
-            // random itemPath is assigned to make xml marshall work
+            // new ItemPath with random UUID is assigned to make xml marshall work
             return new Viewpoint(new ItemPath(), schemaName, viewName, schemaVer, -1);
         }
         catch (NumberFormatException ex) {
