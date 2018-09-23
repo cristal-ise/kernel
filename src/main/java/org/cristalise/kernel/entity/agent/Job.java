@@ -477,12 +477,17 @@ public class Job implements C2KLocalObject {
         if (outcome == null && hasOutcome()) {
             OutcomeInitiator ocInit = getOutcomeInitiator();
 
-            if (ocInit != null) {
+            boolean useViewpoint = Gateway.getProperties().getBoolean("OutcomeInit.jobUseViewpoint", false);
+
+            if (ocInit != null && !useViewpoint) {
                 outcome = ocInit.initOutcomeInstance(this);
             }
             else if (getItem().checkViewpoint(getSchema().getName(), getValidViewpointName())) {
                 Outcome tempOutcome = getLastOutcome();
                 outcome = new Outcome(tempOutcome.getData(), tempOutcome.getSchema());
+            }
+            else {
+                Logger.warning("Job.getOutcome() - Could not initilase Outcome");
             }
         }
         else {
