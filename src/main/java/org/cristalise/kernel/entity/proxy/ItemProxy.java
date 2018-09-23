@@ -134,7 +134,7 @@ public class ItemProxy
      *
      * @throws AccessRightsException Agent does not the rights to create an Item
      * @throws InvalidDataException data was invalid
-     * @throws PersistencyException there was a database probles during Item initialisation
+     * @throws PersistencyException there was a database problems during Item initialisation
      * @throws ObjectNotFoundException Object not found
      * @throws MarshalException there was a problem converting those objects to XML
      * @throws ValidationException XML was not valid
@@ -172,7 +172,7 @@ public class ItemProxy
      *
      * @throws AccessRightsException Agent does not the rights to create an Item
      * @throws InvalidDataException data was invalid
-     * @throws PersistencyException there was a database probles during Item initialisation
+     * @throws PersistencyException there was a database problems during Item initialisation
      * @throws ObjectNotFoundException Object not found
      * @throws MarshalException there was a problem converting those objects to XML
      * @throws ValidationException XML was not valid
