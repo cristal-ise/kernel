@@ -140,7 +140,7 @@ public class ItemImplementation implements ItemOperations {
             Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
             Logger.error(ex);
             mStorage.abort(locker);
-            throw new PersistencyException("Error storing event and outcome");
+            throw new PersistencyException("Error storing 'Initialize' event and outcome:" + ex.getMessage());
         }
 
         // Store an "Constructor" event and the outcome containing the "Constructor"
@@ -164,7 +164,7 @@ public class ItemImplementation implements ItemOperations {
                 Logger.msg(8, "ItemImplementation::initialise(" + mItemPath + ") - Could not store event and outcome.");
                 Logger.error(ex);
                 mStorage.abort(locker);
-                throw new PersistencyException("Error storing event and outcome");
+                throw new PersistencyException("Error storing 'Constructor event and outcome:" + ex.getMessage());
             }
 
         // init collections
