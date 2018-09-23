@@ -124,7 +124,7 @@ public class ItemImplementation implements ItemOperations {
 
         History hist = new History(mItemPath, locker);
 
-        // Store an event and the outcome for initial properties
+        // Store an "Initialize" event and the outcome containing the initial values for properties
         try {
             Schema initSchema = LocalObjectLoader.getSchema("ItemInitialization", 0);
             Outcome initOutcome = new Outcome(0, propString, initSchema);
@@ -143,7 +143,7 @@ public class ItemImplementation implements ItemOperations {
             throw new PersistencyException("Error storing event and outcome");
         }
 
-        // Store an event and the outcome
+        // Store an "Constructor" event and the outcome containing the "Constructor"
         if (StringUtils.isNotBlank(initViewpointString))
             try {
                 Viewpoint vp = (Viewpoint)Gateway.getMarshaller().unmarshall(initViewpointString);
@@ -153,7 +153,7 @@ public class ItemImplementation implements ItemOperations {
 
                 vp.setItemPath(mItemPath);
 
-                Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Initialize", "", "", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, vp.getName());
+                Event newEvent = hist.addEvent(new AgentPath(agentId), null, "", "Constructor", "", "", schema, Bootstrap.getPredefSM(), PredefinedStep.DONE, vp.getName());
                 vp.setEventId(newEvent.getID());
                 outcome.setID(newEvent.getID());
 
