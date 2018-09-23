@@ -745,7 +745,7 @@ public class Outcome implements C2KLocalObject {
             else                               return null;
         }
         else {
-            Logger.warning("Outcome.getAttributeOfField() - '%s' is invalid or not a sinlge field", field);
+            Logger.warning("Outcome.getAttributeOfField() - '%s' is invalid or not a single field", field);
             return null;
         }
     }
@@ -767,7 +767,7 @@ public class Outcome implements C2KLocalObject {
                 return getNodeValue(elements.item(0));
             }
             else{
-                Logger.warning("Outcome.getField() - '%s' is invalid or not a sinlge field", name);
+                Logger.warning("Outcome.getField() - '%s' is invalid or not a single field", name);
             }
         }
         catch (InvalidDataException e) {
