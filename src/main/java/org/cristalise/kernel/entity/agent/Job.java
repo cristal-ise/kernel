@@ -474,14 +474,20 @@ public class Job implements C2KLocalObject {
      * @throws ObjectNotFoundException Schema was not found
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
-        if (outcome == null && transition.hasOutcome(actProps)) {
-            if( getItem().checkViewpoint(getSchema().getName(), getValidViewpointName()) ) {
+        if (outcome == null && hasOutcome()) {
+            OutcomeInitiator ocInit = getOutcomeInitiator();
+
+            boolean useViewpoint = Gateway.getProperties().getBoolean("OutcomeInit.jobUseViewpoint", false);
+
+            if (ocInit != null && !useViewpoint) {
+                outcome = ocInit.initOutcomeInstance(this);
+            }
+            else if (getItem().checkViewpoint(getSchema().getName(), getValidViewpointName())) {
                 Outcome tempOutcome = getLastOutcome();
                 outcome = new Outcome(tempOutcome.getData(), tempOutcome.getSchema());
             }
             else {
-                OutcomeInitiator ocInit = getOutcomeInitiator();
-                if (ocInit != null) outcome = ocInit.initOutcomeInstance(this);
+                Logger.warning("Job.getOutcome() - Could not initilase Outcome");
             }
         }
         else {

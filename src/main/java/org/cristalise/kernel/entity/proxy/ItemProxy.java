@@ -125,16 +125,16 @@ public class ItemProxy
     }
 
     /**
-     * Initialise the new Item with instance data which is normally is created from descriptions
+     * Initialise the new Item with instance data which was normally created from descriptions
      *
      * @param agentId the Agent who is creating the Item
      * @param itemProps initial list of Properties of the Item
      * @param workflow new Lifecycle of the Item
      * @param colls the initial state of the Item's collections
      *
-     * @throws AccessRightsException Agent does not the rights to create an Item
+     * @throws AccessRightsException Agent does not have the rights to create an Item
      * @throws InvalidDataException data was invalid
-     * @throws PersistencyException there was a database probles during Item initialisation
+     * @throws PersistencyException there was a database problem during Item initialisation
      * @throws ObjectNotFoundException Object not found
      * @throws MarshalException there was a problem converting those objects to XML
      * @throws ValidationException XML was not valid
@@ -142,16 +142,60 @@ public class ItemProxy
      * @throws MappingException errors in XML marshall/unmarshall mapping
      * @throws InvalidCollectionModification invalid Collection
      */
-    public void initialise(AgentPath agentId, PropertyArrayList itemProps, CompositeActivity workflow, CollectionArrayList colls)
+    public void initialise(AgentPath agentId, 
+                           PropertyArrayList itemProps, 
+                           CompositeActivity workflow, 
+                           CollectionArrayList colls
+                           )
+             throws AccessRightsException,
+                    InvalidDataException,
+                    PersistencyException,
+                    ObjectNotFoundException,
+                    MarshalException,
+                    ValidationException,
+                    IOException,
+                    MappingException,
+                    InvalidCollectionModification
+    {
+        initialise(agentId, itemProps, workflow, colls, null, null);
+    }
+
+    /**
+     * Initialise the new Item with instance data which was normally created from descriptions
+     *
+     * @param agentId the Agent who is creating the Item
+     * @param itemProps initial list of Properties of the Item
+     * @param workflow new Lifecycle of the Item
+     * @param colls the initial state of the Item's collections
+     * @param viewpoint the provide viewpoint to be stored for the Outcome
+     * @param outcome the Outcome to be used (like the parameters of the class constructor)
+     *
+     * @throws AccessRightsException Agent does not have the rights to create an Item
+     * @throws InvalidDataException data was invalid
+     * @throws PersistencyException there was a database problem during Item initialisation
+     * @throws ObjectNotFoundException Object not found
+     * @throws MarshalException there was a problem converting those objects to XML
+     * @throws ValidationException XML was not valid
+     * @throws IOException IO errors
+     * @throws MappingException errors in XML marshall/unmarshall mapping
+     * @throws InvalidCollectionModification invalid Collection
+     */
+    public void initialise(AgentPath agentId, 
+                           PropertyArrayList itemProps, 
+                           CompositeActivity workflow, 
+                           CollectionArrayList colls,
+                           Viewpoint viewpoint,
+                           Outcome outcome
+                           )
             throws AccessRightsException,
-            InvalidDataException,
-            PersistencyException,
-            ObjectNotFoundException,
-            MarshalException,
-            ValidationException,
-            IOException,
-            MappingException,
-            InvalidCollectionModification
+                    InvalidDataException,
+                    PersistencyException,
+                    ObjectNotFoundException,
+                    MarshalException,
+                    ValidationException,
+                    IOException,
+                    MappingException,
+                    InvalidCollectionModification
     {
         Logger.msg(7, "ItemProxy.initialise() - started");
 
@@ -165,7 +209,13 @@ public class ItemProxy
         String collString = "";
         if (colls != null) collString = xml.marshall(colls);
 
-        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString);
+        String viewpointString = "";
+        if (viewpoint != null) viewpointString = xml.marshall(viewpoint);
+
+        String outcomeString = "";
+        if (outcome != null) outcomeString = outcome.getData();
+
+        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString, viewpointString, outcomeString);
     }
 
     /**

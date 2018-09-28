@@ -154,7 +154,8 @@ public class TransferItem {
         newItem.initialise(importAgentId.getSystemKey(),
                            Gateway.getMarshaller().marshall(props),
                            Gateway.getMarshaller().marshall(wf.search("workflow/domain")),
-                           Gateway.getMarshaller().marshall(colls));
+                           Gateway.getMarshaller().marshall(colls),
+                           "", "");
 
         // store objects
         importByType(ClusterType.HISTORY, objects);

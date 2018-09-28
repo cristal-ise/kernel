@@ -34,25 +34,21 @@ import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.utils.Logger;
 
 /**
- * ActiveEntity - the CORBA object representing the Agent. All functionality is delegated to the AgentImplementation, which extends
- * ItemImplementation, as this cannot extend its equivalent TraceableEntity
+ * ActiveEntity - the CORBA object representing the Agent. 
+ * All functionality is delegated to the AgentImplementation, which extends ItemImplementation, 
+ * as this cannot extend its equivalent TraceableEntity
  */
 public class ActiveEntity extends AgentPOA {
 
     private final org.omg.PortableServer.POA mPoa;
     private final AgentImplementation        mAgentImpl;
 
-    public ActiveEntity(AgentPath key,
-            org.omg.PortableServer.POA poa) {
+    public ActiveEntity(AgentPath key, org.omg.PortableServer.POA poa) {
         Logger.msg(5, "ActiveEntity::constructor() - SystemKey:" + key);
         mPoa = poa;
         mAgentImpl = new AgentImplementation(key);
     }
 
-    /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
     public org.omg.PortableServer.POA _default_POA() {
         if (mPoa != null)
@@ -61,24 +57,13 @@ public class ActiveEntity extends AgentPOA {
             return super._default_POA();
     }
 
-    /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
     public SystemKey getSystemKey() {
         return mAgentImpl.getSystemKey();
     }
 
-    /**************************************************************************
-    *
-    *
-    **************************************************************************/
     @Override
-    public String queryData(String path)
-            throws AccessRightsException,
-            ObjectNotFoundException,
-            PersistencyException {
+    public String queryData(String path) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
         synchronized (this) {
             return mAgentImpl.queryData(path);
         }
@@ -109,13 +94,18 @@ public class ActiveEntity extends AgentPOA {
     }
 
     @Override
-    public void initialise(SystemKey agentId, String propString, String initWfString, String initCollsString) 
+    public void initialise( SystemKey agentId,
+                            String propString,
+                            String initWfString,
+                            String initCollsString,
+                            String initViewpointString,
+                            String initOutcomeString
+                            )
             throws AccessRightsException, InvalidDataException, PersistencyException, ObjectNotFoundException
     {
         synchronized (this) {
-            mAgentImpl.initialise(agentId, propString, initWfString, initCollsString);
+            mAgentImpl.initialise(agentId, propString, initWfString, initCollsString, initViewpointString, initOutcomeString);
         }
-
     }
 
     @Override
@@ -145,8 +135,7 @@ public class ActiveEntity extends AgentPOA {
 
     @Override
     public String queryLifeCycle(SystemKey agentId, boolean filter)
-            throws AccessRightsException, ObjectNotFoundException,
-                PersistencyException 
+            throws AccessRightsException, ObjectNotFoundException, PersistencyException
     {
         synchronized (this) {
             return mAgentImpl.queryLifeCycle(agentId, filter);
