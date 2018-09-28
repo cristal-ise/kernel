@@ -132,7 +132,7 @@ public class ItemProxy
      * @param workflow new Lifecycle of the Item
      * @param colls the initial state of the Item's collections
      *
-     * @throws AccessRightsException Agent does not the rights to create an Item
+     * @throws AccessRightsException Agent does not have the rights to create an Item
      * @throws InvalidDataException data was invalid
      * @throws PersistencyException there was a database problems during Item initialisation
      * @throws ObjectNotFoundException Object not found
