@@ -170,9 +170,9 @@ public class ItemProxy
      * @param viewpoint the provide viewpoint to be stored for the Outcome
      * @param outcome the Outcome to be used (like the parameters of the class constructor)
      *
-     * @throws AccessRightsException Agent does not the rights to create an Item
+     * @throws AccessRightsException Agent does not have the rights to create an Item
      * @throws InvalidDataException data was invalid
-     * @throws PersistencyException there was a database problems during Item initialisation
+     * @throws PersistencyException there was a database problem during Item initialisation
      * @throws ObjectNotFoundException Object not found
      * @throws MarshalException there was a problem converting those objects to XML
      * @throws ValidationException XML was not valid
