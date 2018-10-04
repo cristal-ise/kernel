@@ -517,6 +517,49 @@ public class ItemProxy
     }
 
     /**
+     * Check if the given OutcomeAttachment exists
+     *
+     * @param schema the Schema used to create the Outcome and its OutcomeAttachment
+     * @param eventId the id of the Event created when the Outcome and its OutcomeAttachment was stored
+     * @return true if the OutcomeAttachment exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
+        return checkContent(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId));
+    }
+
+    /**
+     * Gets the selected OutcomeAttachment
+     *
+     * @param schemaName the name of the Schema used to create the Outcome and its OutcomeAttachment
+     * @param schemaVersion the version of the Schema of the Outcome
+     * @param eventId the event id
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public OutcomeAttachment getOutcomeAttachment(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        try {
+            return getOutcomeAttachment(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+        }
+        catch (InvalidDataException e) {
+            Logger.error(e);
+            throw new ObjectNotFoundException(e.getMessage());
+        }
+    }
+
+    /**
+     * Gets the selected OutcomeAttachment
+     *
+     * @param schema the Schema used to create the Outcome and its OutcomeAttachment
+     * @param eventId the id of the Event created when the Outcome and the OutcomeAttachment was stored
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public OutcomeAttachment getOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
+        return (OutcomeAttachment)getObject(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId);
+    }
+
+    /**
      * Finds the first finishing job with the given name for the given Agent in the workflow.
      *
      * @param actName the name of the Activity to look for
