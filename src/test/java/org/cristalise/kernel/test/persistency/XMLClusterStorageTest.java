@@ -20,11 +20,19 @@
  */
 package org.cristalise.kernel.test.persistency;
 
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
+import static org.cristalise.kernel.persistency.ClusterType.LIFECYCLE;
+import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
+import static org.cristalise.kernel.persistency.ClusterType.PATH;
+import static org.cristalise.kernel.persistency.ClusterType.PROPERTY;
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.cristalise.kernel.lookup.ItemPath;
@@ -34,16 +42,10 @@ import org.cristalise.kernel.test.process.MainTest;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.storage.XMLClusterStorage;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.cristalise.kernel.persistency.ClusterType.PATH;
-import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
-import static org.cristalise.kernel.persistency.ClusterType.LIFECYCLE;
-import static org.cristalise.kernel.persistency.ClusterType.OUTCOME;
-import static org.cristalise.kernel.persistency.ClusterType.PROPERTY;
-import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 
 public class XMLClusterStorageTest {
     static ItemPath itemPath;
@@ -74,7 +76,7 @@ public class XMLClusterStorageTest {
             switch (type) {
                 case PATH:
                     assertEquals(2,  contents.length);
-                    assertArrayEquals(new String[]{"Domain", "Item"}, contents);
+                    assertThat(Arrays.asList(contents), IsIterableContainingInAnyOrder.containsInAnyOrder("Domain", "Item"));
                     assertNotNull( importCluster.get(itemPath, PATH+"/Item") );
                     assertNotNull( importCluster.get(itemPath, PATH+"/Domain/Batches2016FG160707C-08") );
                     break;
