@@ -39,11 +39,11 @@
         <field name="resURL" direct="false" type="string">
             <bind-xml name="ResourceURL" node="element" />
         </field>
-        <field name="imports" direct="false" type="org.cristalise.kernel.process.module.ModuleImports">
-            <bind-xml name="Imports" node="element" />
-        </field>
         <field name="config" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleConfig">
             <bind-xml name="Config" node="element" />
+        </field>
+        <field name="imports" direct="false" type="org.cristalise.kernel.process.module.ModuleImports">
+            <bind-xml name="Imports" node="element" />
         </field>
         <field name="scripts" collection="arraylist" direct="false" type="org.cristalise.kernel.process.module.ModuleEmbeddedScript">
             <bind-xml name="EmbeddedScript" node="element" />
@@ -90,17 +90,57 @@
             <bind-xml node="text" />
         </field>
     </class>
-    <class name="org.cristalise.kernel.process.module.ModuleSchema" extends="org.cristalise.kernel.process.module.ModuleResource">
+    <!-- Removed the extending ModuleResoure mapping because we need to disable the type during marshall and unmarshall. -->
+    <class name="org.cristalise.kernel.process.module.ModuleSchema">
         <map-to xml="SchemaResource" />
+        <field name="name" direct="false" type="string">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" direct="false" type="integer">
+            <bind-xml name="version" node="attribute" />
+        </field>
+        <field name="resourceLocation" direct="false" type="string">
+            <bind-xml node="text" />
+        </field>
     </class>
-    <class name="org.cristalise.kernel.process.module.ModuleScript" extends="org.cristalise.kernel.process.module.ModuleResource">
+    <!-- Removed the extending ModuleResoure mapping because we need to disable the type during marshall and unmarshall. -->
+    <class name="org.cristalise.kernel.process.module.ModuleScript" >
         <map-to xml="ScriptResource" />
+        <field name="name" direct="false" type="string">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" direct="false" type="integer">
+            <bind-xml name="version" node="attribute" />
+        </field>
+        <field name="resourceLocation" direct="false" type="string">
+            <bind-xml node="text" />
+        </field>
     </class>
-    <class name="org.cristalise.kernel.process.module.ModuleQuery" extends="org.cristalise.kernel.process.module.ModuleResource">
+    <!-- Removed the extending ModuleResoure mapping because we need to disable the type during marshall and unmarshall. -->
+    <class name="org.cristalise.kernel.process.module.ModuleQuery">
         <map-to xml="QueryResource" />
+        <field name="name" direct="false" type="string">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" direct="false" type="integer">
+            <bind-xml name="version" node="attribute" />
+        </field>
+        <field name="resourceLocation" direct="false" type="string">
+            <bind-xml node="text" />
+        </field>
     </class>
-    <class name="org.cristalise.kernel.process.module.ModuleStateMachine" extends="org.cristalise.kernel.process.module.ModuleResource">
+    <!-- Removed the extending ModuleResoure mapping because we need to disable the type during marshall and unmarshall. -->
+    <class name="org.cristalise.kernel.process.module.ModuleStateMachine">
         <map-to xml="StateMachineResource" />
+        <field name="name" direct="false" type="string">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" direct="false" type="integer">
+            <bind-xml name="version" node="attribute" />
+        </field>
+        <field name="resourceLocation" direct="false" type="string">
+            <bind-xml node="text" />
+        </field>
     </class>
     <class name="org.cristalise.kernel.process.module.ModuleActivity">
         <map-to xml="Activity" />
@@ -116,14 +156,14 @@
         <field name="resourceLocation" direct="true" type="string">
             <bind-xml name="resource" node="attribute" />
         </field>
+        <field name="schema" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
+            <bind-xml name="Schema" node="element" />
+        </field>
         <field name="script" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
             <bind-xml name="Script" node="element" />
         </field>
         <field name="query" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
             <bind-xml name="Query" node="element" />
-        </field>
-        <field name="schema" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
-            <bind-xml name="Schema" node="element" />
         </field>
         <field name="stateMachine" direct="false" type="org.cristalise.kernel.process.module.ModuleDescRef">
             <bind-xml name="StateMachine" node="element" />

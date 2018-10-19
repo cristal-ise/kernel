@@ -27,9 +27,9 @@
         <field name="mName" type="string" direct="false" get-method="getName" set-method="setName">
             <bind-xml name="name" node="attribute" />
         </field>
-        <field name="mMutable" type="boolean" direct="false" get-method="isMutable" set-method="setMutable">
-            <bind-xml name="mutable" node="attribute" />
-        </field>
+        <!--<field name="mMutable" type="boolean" direct="false" get-method="isMutable" set-method="setMutable">-->
+        <!--<bind-xml name="mutable" node="attribute" />-->
+        <!--</field>-->
         <field name="mValue" type="string" direct="false" get-method="getValue" set-method="setValue">
             <bind-xml node="text" />
         </field>
@@ -41,7 +41,7 @@
             <bind-xml name="Name" node="attribute" />
         </field>
         <field name="mIsClassIdentifier" type="boolean" direct="false" get-method="getIsClassIdentifier"
-            set-method="setIsClassIdentifier">
+               set-method="setIsClassIdentifier">
             <bind-xml name="IsClassIdentifier" node="attribute" />
         </field>
         <field name="mDefaultValue" type="string" direct="false" get-method="getDefaultValue" set-method="setDefaultValue">

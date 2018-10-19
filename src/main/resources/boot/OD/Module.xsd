@@ -89,9 +89,10 @@
                             <xs:element name="Workflow" minOccurs="0">
                                 <xs:complexType>
                                     <xs:complexContent>
-                                        <xs:extension base="activity">
+                                        <xs:extension base="itemref">
                                             <xs:sequence>
-                                                <xs:element name="Activity" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+                                                <xs:element name="StateMachine" minOccurs="0" maxOccurs="1"         type="itemref" />
+                                                <xs:element name="Activity"     minOccurs="0" maxOccurs="unbounded" type="itemref" />
                                             </xs:sequence>
                                         </xs:extension>
                                     </xs:complexContent>
@@ -119,7 +120,7 @@
                                                         <xs:complexType>
                                                             <xs:sequence>
                                                                 <xs:element name="MemberProperties" type="collprops"
-                                                                    minOccurs="0" />
+                                                                            minOccurs="0" />
                                                             </xs:sequence>
                                                             <xs:attribute name="itemPath" type="xs:string" use="required" />
                                                         </xs:complexType>
@@ -129,7 +130,7 @@
                                                 <xs:attribute name="name" type="xs:string" use="required" />
                                                 <xs:attribute name="version" type="xs:integer" use="optional" />
                                                 <xs:attribute name="isDescription" type="xs:boolean" use="optional"
-                                                    default="false" />
+                                                              default="false" />
                                                 <xs:attribute name="itemDescriptionPath" type="xs:string" use="optional" />
                                                 <xs:attribute name="itemDescriptionVersion" type="xs:string" use="optional" />
                                             </xs:complexType>
@@ -153,17 +154,17 @@
                                                                         <xs:attribute name="y" type="xs:int" use="required" />
                                                                         <xs:attribute name="width" type="xs:int" use="required" />
                                                                         <xs:attribute name="height" type="xs:int"
-                                                                            use="required" />
+                                                                                      use="required" />
                                                                     </xs:complexType>
                                                                 </xs:element>
                                                                 <xs:element name="MemberProperties" type="collprops"
-                                                                    minOccurs="0" />
+                                                                            minOccurs="0" />
                                                             </xs:sequence>
                                                             <xs:attribute name="slotNo" type="xs:int" use="required" />
                                                             <xs:attribute name="itemDescriptionPath" type="xs:string"
-                                                                use="optional" />
+                                                                          use="optional" />
                                                             <xs:attribute name="itemDescriptionVersion" type="xs:string"
-                                                                use="optional" />
+                                                                          use="optional" />
                                                             <xs:attribute name="itemPath" type="xs:string" use="optional" />
                                                         </xs:complexType>
                                                     </xs:element>
@@ -199,7 +200,8 @@
                                     <xs:attribute name="name" type="xs:string" use="required" />
                                     <xs:attribute name="password" type="xs:string" use="required" />
                                 </xs:complexType>
-                            </xs:element>                        </xs:sequence>
+                            </xs:element>
+                        </xs:sequence>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
@@ -262,20 +264,21 @@
     </xs:complexType>
     <xs:complexType name="activity">
         <xs:sequence>
-            <xs:element name="StateMachine" minOccurs="0" maxOccurs="unbounded" type="itemref" />
-            <xs:element name="Schema" minOccurs="0" maxOccurs="unbounded" type="itemref" />
-            <xs:element name="Script" minOccurs="0" maxOccurs="unbounded" type="itemref" />
-            <xs:element name="Query" minOccurs="0" maxOccurs="unbounded" type="itemref" />
+            <xs:element name="StateMachine" minOccurs="0" maxOccurs="1" type="itemref"/>
+            <xs:element name="Schema"       minOccurs="0" maxOccurs="1" type="itemref" />
+            <xs:element name="Script"       minOccurs="0" maxOccurs="1" type="itemref" />
+            <xs:element name="Query"        minOccurs="0" maxOccurs="1" type="itemref" />
         </xs:sequence>
-        <xs:attribute name="name" type="xs:string" use="required" />
-        <xs:attribute name="version" type="xs:integer" use="optional" />
-        <xs:attribute name="id" type="uuid" use="optional" />
-        <xs:attribute name="resource" type="xs:string" use="optional" />
+        <xs:attribute name="name"     type="xs:string"  use="required" />
+        <xs:attribute name="version"  type="xs:integer" use="optional" />
+        <xs:attribute name="id"       type="uuid"       use="optional" />
+        <xs:attribute name="resource" type="xs:string"  use="optional" />
     </xs:complexType>
     <xs:complexType name="itemref">
-        <xs:attribute name="id" type="uuid" use="optional" />
-        <xs:attribute name="name" type="xs:string" use="required" />
-        <xs:attribute name="version" type="xs:int" use="required" />
+        <xs:attribute name="id"       type="uuid"      use="optional" />
+        <xs:attribute name="name"     type="xs:string" use="required" />
+        <xs:attribute name="version"  type="xs:int"    use="required" />
+        <xs:attribute name="resource" type="xs:string" use="optional" />
     </xs:complexType>
     <xs:simpleType name="uuid">
         <xs:restriction base="xs:string">
