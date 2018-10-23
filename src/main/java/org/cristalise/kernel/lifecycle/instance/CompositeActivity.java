@@ -420,10 +420,12 @@ public class CompositeActivity extends Activity {
             ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         Transition trans = getStateMachine().getTransition(transitionID);
-        if (trans.isFinishing() && hasActive()) {
 
-            if ((Boolean)getBuiltInProperty(ABORTABLE)) abort();
-            else                                        throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
+        if (trans.isFinishing() && hasActive()) {
+            if ((Boolean)getBuiltInProperty(ABORTABLE)) 
+                abort();
+            else
+                throw new InvalidTransitionException("Attempted to finish '"+getPath()+"' it had active children but was not Abortable");
         }
 
         if (getStateMachine().getTransition(transitionID).reinitializes()) {
@@ -434,8 +436,7 @@ public class CompositeActivity extends Activity {
 
         if (getChildrenGraphModel().getStartVertex() != null
                 && (getStateMachine().getState(state).equals(getStateMachine().getInitialState())
-                        || getStateMachine().getTransition(transitionID).reinitializes())
-                )
+                        || getStateMachine().getTransition(transitionID).reinitializes()))
         {
             ((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
         }
