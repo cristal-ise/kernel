@@ -28,6 +28,5 @@ public class ItemPredefinedStepContainer extends PredefinedStepContainer {
     public void createChildren() {
         super.createChildren();
         predInit("CreateItemFromDescription", "Create a new item using this item as its description", new CreateItemFromDescription());
-        predInit("Erase", "Deletes all objects and domain paths for this item.", new Erase());
     }
 }

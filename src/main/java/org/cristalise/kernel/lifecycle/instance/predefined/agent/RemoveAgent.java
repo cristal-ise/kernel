@@ -25,48 +25,26 @@ import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
-import org.cristalise.kernel.lifecycle.instance.predefined.item.Erase;
+import org.cristalise.kernel.lifecycle.instance.predefined.Erase;
 import org.cristalise.kernel.lookup.AgentPath;
-import org.cristalise.kernel.lookup.InvalidAgentPathException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.lookup.RolePath;
-import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
-public class RemoveAgent extends Erase {
+/**
+ * 
+ * @deprecated  As of release 3.5, replaced by predefinedStep Erase
+ */
+@Deprecated public class RemoveAgent extends Erase {
 
     public RemoveAgent() {
         super();
-        getProperties().put("Agent Role", "Admin");
     }
 
     @Override
     protected String runActivityLogic(AgentPath agent, ItemPath itemPath, int transitionID, String requestData, Object locker)
             throws InvalidDataException, ObjectNotFoundException, ObjectCannotBeUpdated, CannotManageException, PersistencyException
     {
-        Logger.msg(1, "RemoveAgent::request() - Starting.");
-
-        AgentPath targetAgent;
-
-        try {
-            targetAgent = new AgentPath(itemPath);
-        }
-        catch (InvalidAgentPathException ex) {
-            throw new InvalidDataException("Could not resolve " + itemPath + " as an Agent.");
-        }
-
-        String agentName = targetAgent.getAgentName();
-
-        // remove from roles
-        for (RolePath role : targetAgent.getRoles()) {
-            try {
-                Gateway.getLookupManager().removeRole(targetAgent, role);
-            }
-            catch (ObjectCannotBeUpdated | ObjectNotFoundException | CannotManageException e) {
-                Logger.error(e);
-                throw new InvalidDataException("Error removing " + agentName + " from Role " + role.getName() + " exceptoin message:" + e.getMessage());
-            }
-        }
+        Logger.msg(1, "RemoveAgent.request() - Starting.");
 
         return super.runActivityLogic(agent, itemPath, transitionID, requestData, locker);
     }
