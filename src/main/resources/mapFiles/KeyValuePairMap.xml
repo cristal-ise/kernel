@@ -25,50 +25,50 @@
 	<class name="org.cristalise.kernel.utils.KeyValuePair">
 		<map-to xml="KeyValuePair"/>
 		<field name="mKey"
-		       type="string"
-		       direct="false"
-		       get-method="getKey"
-		       set-method="setKey">
-		       <bind-xml name="Key" node="attribute"/>
+			   type="string"
+			   direct="false"
+			   get-method="getKey"
+			   set-method="setKey">
+			<bind-xml name="Key" node="attribute"/>
 		</field>
 		<field name="mAbstract"
-		       type="boolean"
-		       direct="false"
-		       get-method="isAbstract"
-		       set-method="setAbstract">
-		       <bind-xml name="isAbstract" node="attribute"/>
+			   type="boolean"
+			   direct="false"
+			   get-method="isAbstract"
+				et-method="setAbstract">
+		    <bind-xml name="isAbstract" node="attribute"/>
 		</field>
 		<field name="IntegerValue"
-		       type="java.lang.Integer"
-		       direct="false">
-		       <bind-xml name="Integer" node="attribute"/>
+			   type="java.lang.Integer"
+			   direct="false">
+			<bind-xml name="Integer" node="attribute"/>
 		</field>
 		<field name="StringValue"
-		       type="java.lang.String"
-		       direct="false">
-		       <bind-xml name="String" node="attribute"/>
+			   type="java.lang.String"
+			   direct="false">
+			<bind-xml name="String" node="attribute"/>
 		</field>
 		<field name="FloatValue"
-		       type="java.lang.Double"
-		       direct="false">
-		       <bind-xml name="Float" node="attribute"/>
-		</field>		
+			   type="java.lang.Double"
+			   direct="false">
+			<bind-xml name="Float" node="attribute"/>
+		</field>
 		<field name="BooleanValue"
-		       type="java.lang.Boolean"
-		       direct="false">
-		       <bind-xml name="Boolean" node="attribute"/>
-		</field>				
+			   type="java.lang.Boolean"
+			   direct="false">
+			<bind-xml name="Boolean" node="attribute"/>
+		</field>
 	</class>
 	<class name="org.cristalise.kernel.utils.CastorHashMap">
 		<map-to xml="CastorHashMap"/>
-    	<field name="list" 
-    		   collection="array" 
-    		   direct="false" 
-    		   get-method="getKeyValuePairs" set-method="setKeyValuePairs"
-    		   type="org.cristalise.kernel.utils.KeyValuePair">    		   
+		<field name="list"
+			   collection="array"
+			   direct="false"
+			   get-method="getKeyValuePairs" set-method="setKeyValuePairs"
+			   type="org.cristalise.kernel.utils.KeyValuePair">
 			<bind-xml name="Entry" node="element"/>
-    	</field>
-   	</class> 
+		</field>
+	</class>
 	<class name="org.cristalise.kernel.common.GTimeStamp">
 		<map-to xml="TimeStamp"/>
 		<field name="mYear" type="java.lang.Integer" direct="true"><bind-xml name="Y" node="attribute"/></field>
@@ -80,4 +80,3 @@
 		<field name="mTimeOffset" type="java.lang.Integer" direct="true"><bind-xml name="O" node="attribute"/></field>
 	</class>
 </mapping>
-

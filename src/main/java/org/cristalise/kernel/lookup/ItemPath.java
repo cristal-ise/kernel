@@ -80,7 +80,7 @@ public class ItemPath extends Path {
     @Override
     public void setPath(Path path) {
         super.setPath(path);
-   }
+    }
 
     private void checkSysKeyFromPath() throws InvalidItemPathException {
         if (mPath.length == 1) {
@@ -178,7 +178,7 @@ public class ItemPath extends Path {
     public String getClusterPath() {
         return ClusterType.PATH + "/Item";
     }
-    
+
     public static boolean isUUID(String entityKey) {
         if (entityKey.startsWith("/entity/")) entityKey = entityKey.substring(8);
 
