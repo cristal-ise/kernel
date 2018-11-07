@@ -24,7 +24,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.SystemKey;
 import org.cristalise.kernel.persistency.ClusterType;
@@ -37,8 +36,6 @@ import org.cristalise.kernel.utils.Logger;
 public class ItemPath extends Path {
 
     protected String mIOR;
-
-    protected boolean dependencyMemberPath;
 
     public ItemPath() {
         setSysKey(UUID.randomUUID());
@@ -68,16 +65,6 @@ public class ItemPath extends Path {
         if (path == null) throw new InvalidItemPathException("Path cannot be null");
 
         checkSysKeyFromPath();
-    }
-
-    /**
-     * Some paths should not be checked for UUID. e.g. '/desc/ActivityDesc/aaa/ProductWorkflow'
-     * @param path
-     * @param dependencyMemberPath
-     */
-    public ItemPath(String path, boolean dependencyMemberPath) {
-        super(path);
-        this.dependencyMemberPath = dependencyMemberPath;
     }
 
     @Override
@@ -196,16 +183,5 @@ public class ItemPath extends Path {
         if (entityKey.startsWith("/entity/")) entityKey = entityKey.substring(8);
 
         return entityKey.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    }
-
-    /**
-     * Some item paths should have no '/entity' in the path. e.g workflow '/desc/ActivityDesc/aaa/ProductWorkflow'
-     * or '/aaa/SiteFactory'
-     * @return
-     */
-    @Override
-    public String getStringPath() {
-        if (!dependencyMemberPath) return super.getStringPath();
-        else return super.getStringPath().replace(delim + getRoot(), StringUtils.EMPTY);
     }
 }
