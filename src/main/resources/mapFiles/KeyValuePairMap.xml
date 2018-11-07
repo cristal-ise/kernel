@@ -31,13 +31,13 @@
 			   set-method="setKey">
 			<bind-xml name="Key" node="attribute"/>
 		</field>
-		<!--<field name="mAbstract"-->
-		<!--type="boolean"-->
-		<!--direct="false"-->
-		<!--get-method="isAbstract"-->
-		<!--set-method="setAbstract">-->
-		<!--<bind-xml name="isAbstract" node="attribute"/>-->
-		<!--</field>-->
+		<field name="mAbstract"
+			   type="boolean"
+			   direct="false"
+			   get-method="isAbstract"
+				et-method="setAbstract">
+		    <bind-xml name="isAbstract" node="attribute"/>
+		</field>
 		<field name="IntegerValue"
 			   type="java.lang.Integer"
 			   direct="false">
