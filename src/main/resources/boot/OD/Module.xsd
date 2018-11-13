@@ -244,11 +244,12 @@
         <xs:sequence>
             <xs:element name="KeyValuePair" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="Key" type="xs:string" use="optional" />
-                    <xs:attribute name="Boolean" type="xs:boolean" use="optional" />
-                    <xs:attribute name="String" type="xs:string" use="optional" />
-                    <xs:attribute name="Integer" type="xs:int" use="optional" />
-                    <xs:attribute name="Float" type="xs:double" use="optional" />
+                    <xs:attribute name="Key"        type="xs:string"  use="optional" />
+                    <xs:attribute name="isAbstract" type="xs:boolean" use="optional" />
+                    <xs:attribute name="Boolean"    type="xs:boolean" use="optional" />
+                    <xs:attribute name="String"     type="xs:string"  use="optional" />
+                    <xs:attribute name="Integer"    type="xs:int"     use="optional" />
+                    <xs:attribute name="Float"      type="xs:double"  use="optional" />
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
@@ -256,19 +257,19 @@
     <xs:complexType name="resource">
         <xs:simpleContent>
             <xs:extension base="xs:string">
-                <xs:attribute name="name" type="xs:string" use="required" />
+                <xs:attribute name="name"    type="xs:string"  use="required" />
                 <xs:attribute name="version" type="xs:integer" use="optional" />
-                <xs:attribute name="id" type="uuid" use="optional" />
+                <xs:attribute name="id"      type="uuid"       use="optional" />
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
     <xs:complexType name="activity">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="StateMachine" minOccurs="0" maxOccurs="1" type="itemref"/>
             <xs:element name="Schema"       minOccurs="0" maxOccurs="1" type="itemref" />
             <xs:element name="Script"       minOccurs="0" maxOccurs="1" type="itemref" />
             <xs:element name="Query"        minOccurs="0" maxOccurs="1" type="itemref" />
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="name"     type="xs:string"  use="required" />
         <xs:attribute name="version"  type="xs:integer" use="optional" />
         <xs:attribute name="id"       type="uuid"       use="optional" />
