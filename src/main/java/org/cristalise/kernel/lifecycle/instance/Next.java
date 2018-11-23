@@ -23,8 +23,10 @@ package org.cristalise.kernel.lifecycle.instance;
 import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.ALIAS;
 import static org.cristalise.kernel.graph.model.BuiltInEdgeProperties.TYPE;
 
+import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.graph.model.GraphPoint;
 import org.cristalise.kernel.graph.model.GraphableEdge;
+import org.cristalise.kernel.graph.model.GraphableVertex;
 
 /**
  * This class represents the link between 2 successive activities
@@ -59,8 +61,12 @@ public class Next extends GraphableEdge {
         return true;
     }
 
-    public WfVertex getTerminusVertex() {
-        return (WfVertex) ((CompositeActivity) getParent()).getWf().search(getParent().getPath() + "/" + this.getTerminusVertexId());
+    public WfVertex getTerminusVertex() throws InvalidDataException {
+        for (GraphableVertex v: getParent().getChildren()) {
+            if (v.getID() == getTerminusVertexId()) return (WfVertex)v;
+        }
+
+        throw new InvalidDataException("Terminus Vertex Id:"+getTerminusVertexId()+" was not found in parent:"+getParent().getName());
     }
 
     @Override
