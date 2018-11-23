@@ -110,8 +110,12 @@ public class StandardServer extends AbstractMain {
 
             AbstractMain.shutdown(0);
         }
+        else if (Gateway.getProperties().containsKey(AbstractMain.MAIN_ARG_SKIPBOOTSTRAP)) {
+            //minimum initialisation only
+            Bootstrap.init();
+        }
         else {
-            //start checking bootstrap & module items
+            //initialisation and complete checking bootstrap & module items
             Bootstrap.run();
         }
 
