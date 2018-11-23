@@ -27,6 +27,7 @@ import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.utils.Logger;
 
 public class Join extends WfVertex {
     public Vector<String> mErrors;
@@ -73,6 +74,7 @@ public class Join extends WfVertex {
 
     @Override
     public void reinit(int idLoop) throws InvalidDataException {
+        Logger.msg(8, "Join.reinit(parent:" + getParent().getName()+")");
         Vertex[] outVertices = getOutGraphables();
         if (outVertices.length == 1) {
             WfVertex nextAct = (WfVertex) outVertices[0];

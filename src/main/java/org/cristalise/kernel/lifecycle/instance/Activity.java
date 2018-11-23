@@ -402,7 +402,7 @@ public class Activity extends WfVertex {
                 }
             }
 
-            if (Logger.doLog(8)) Logger.msg("Activity.next() - " + Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
+            if (Logger.doLog(8)) Logger.msg("Activity.next(parent:" + getParent().getName()+") - " + Arrays.toString(outVertices) + " " + Arrays.toString(outVertices2));
 
             if (hasNoNext) {
                 if (getParent() != null && getParent().getName().equals("domain")) {
