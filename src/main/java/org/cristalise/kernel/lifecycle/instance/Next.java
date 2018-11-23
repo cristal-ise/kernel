@@ -29,77 +29,70 @@ import org.cristalise.kernel.graph.model.GraphableEdge;
 /**
  * This class represents the link between 2 successive activities
  */
-public class Next extends GraphableEdge
-{
-	/**
-	 * @see java.lang.Object#Object()
-	 */
-	public Next()
-	{
-		super();
-	}
-
-	/**
-	 * Method Next.
-	 * 
-	 * @param pre
-	 * @param nex
-	 */
-	/** create and initialize a link between an Activities */
-	public Next(WfVertex pre, WfVertex nex)
-	{
-		super(pre, nex);
-		setBuiltInProperty(ALIAS, "");
-		setBuiltInProperty(TYPE, "Straight");
-	}
-
-	/**
-	 * Method verify.
-	 * @return boolean
-	 */
-	public boolean verify()
-	{
-		return true;
-	}
-    public WfVertex getTerminusVertex()
-    {
-        return (WfVertex)((CompositeActivity)getParent()).getWf().search(getParent().getPath()+"/"+this.getTerminusVertexId());
+public class Next extends GraphableEdge {
+    /**
+     * @see java.lang.Object#Object()
+     */
+    public Next() {
+        super();
     }
-	@Override
-	public boolean containsPoint(GraphPoint p)
-	{
-		GraphPoint originPoint = getOriginPoint();
-		GraphPoint terminusPoint = getTerminusPoint();
-		GraphPoint midPoint = new GraphPoint();
 
-		if (("Broken +".equals(getBuiltInProperty(TYPE))))
-		{
-			midPoint.x = (originPoint.x + terminusPoint.x) / 2;
-			midPoint.y = (originPoint.y + terminusPoint.y) / 2;
-		}
-		else if (("Broken -".equals(getBuiltInProperty(TYPE))))
-		{
-			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
-			midPoint.x = arrowOnY ? terminusPoint.x : (originPoint.x + terminusPoint.x) / 2;
-			midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : originPoint.y;
-		}
-		else if (("Broken |".equals(getBuiltInProperty(TYPE))))
-		{
-			boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
-			midPoint.x = arrowOnY ? originPoint.x : (originPoint.x + terminusPoint.x) / 2;
-			midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : terminusPoint.y;
-		}
-		else
-		{
-			midPoint.x = originPoint.x + (terminusPoint.x - originPoint.x) / 2;
-			midPoint.y = originPoint.y + (terminusPoint.y - originPoint.y) / 2;
-		}
+    /**
+     * Method Next.
+     * 
+     * @param pre
+     * @param nex
+     */
+    /** create and initialize a link between an Activities */
+    public Next(WfVertex pre, WfVertex nex) {
+        super(pre, nex);
+        setBuiltInProperty(ALIAS, "");
+        setBuiltInProperty(TYPE, "Straight");
+    }
 
-		int minX = midPoint.x - 10;
-		int minY = midPoint.y - 10;
-		int maxX = midPoint.x + 10;
-		int maxY = midPoint.y + 10;
+    /**
+     * Method verify.
+     * 
+     * @return boolean
+     */
+    public boolean verify() {
+        return true;
+    }
 
-		return (p.x >= minX) && (p.x <= maxX) && (p.y >= minY) && (p.y <= maxY);
-	}
+    public WfVertex getTerminusVertex() {
+        return (WfVertex) ((CompositeActivity) getParent()).getWf().search(getParent().getPath() + "/" + this.getTerminusVertexId());
+    }
+
+    @Override
+    public boolean containsPoint(GraphPoint p) {
+        GraphPoint originPoint = getOriginPoint();
+        GraphPoint terminusPoint = getTerminusPoint();
+        GraphPoint midPoint = new GraphPoint();
+
+        if (("Broken +".equals(getBuiltInProperty(TYPE)))) {
+            midPoint.x = (originPoint.x + terminusPoint.x) / 2;
+            midPoint.y = (originPoint.y + terminusPoint.y) / 2;
+        }
+        else if (("Broken -".equals(getBuiltInProperty(TYPE)))) {
+            boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
+            midPoint.x = arrowOnY ? terminusPoint.x : (originPoint.x + terminusPoint.x) / 2;
+            midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : originPoint.y;
+        }
+        else if (("Broken |".equals(getBuiltInProperty(TYPE)))) {
+            boolean arrowOnY = !(originPoint.y - terminusPoint.y < 60 && originPoint.y - terminusPoint.y > -60);
+            midPoint.x = arrowOnY ? originPoint.x : (originPoint.x + terminusPoint.x) / 2;
+            midPoint.y = arrowOnY ? (originPoint.y + terminusPoint.y) / 2 : terminusPoint.y;
+        }
+        else {
+            midPoint.x = originPoint.x + (terminusPoint.x - originPoint.x) / 2;
+            midPoint.y = originPoint.y + (terminusPoint.y - originPoint.y) / 2;
+        }
+
+        int minX = midPoint.x - 10;
+        int minY = midPoint.y - 10;
+        int maxX = midPoint.x + 10;
+        int maxY = midPoint.y + 10;
+
+        return (p.x >= minX) && (p.x <= maxX) && (p.y >= minY) && (p.y <= maxY);
+    }
 }
