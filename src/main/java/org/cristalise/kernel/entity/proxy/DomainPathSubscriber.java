@@ -22,17 +22,20 @@ package org.cristalise.kernel.entity.proxy;
 
 import org.cristalise.kernel.lookup.DomainPath;
 
-/**************************************************************************
- *
- * $Revision: 1.1 $
- * $Date: 2004/02/05 16:11:57 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
-
+/**
+ * Implement this interface to receive ProxyMessages DomainPath changes
+ */
 public interface DomainPathSubscriber {
-
+    
+    /**
+     * Domain path was added
+     * @param path which was added
+     */
     public void pathAdded(DomainPath path);
+    
+    /**
+     * Domain path was removed
+     * @param path which was removed
+     */
     public void pathRemoved(DomainPath path);
 }
