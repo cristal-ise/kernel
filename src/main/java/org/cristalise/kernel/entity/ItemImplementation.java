@@ -237,6 +237,8 @@ public class ItemImplementation implements ItemOperations {
 
             // TODO: check if delegate is allowed valid for agent
             lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterType.LIFECYCLE + "/workflow", null);
+            
+            checkPermissions(agent, delegate, stepPath, mItemPath);
 
             String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData, attachmentType, attachment);
 
@@ -297,6 +299,19 @@ public class ItemImplementation implements ItemOperations {
                 mStorage.commit(lifeCycle);
                 return errorOutcome;
             }
+        }
+    }
+
+    private void checkPermissions(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath) 
+            throws AccessRightsException, ObjectNotFoundException
+    {
+        AgentPath agentToCheck = delegator == null ? agent : delegator;
+        String name = Gateway.getProxyManager().getProxy(itemPath).getName();
+        String type = Gateway.getProxyManager().getProxy(itemPath).getType();
+        String actName = StringUtils.substringAfterLast(stepPath, "/");
+
+        if (!Gateway.getSubject(agentToCheck).isPermitted(type+":"+actName+":"+name)) {
+            throw new AccessRightsException();
         }
     }
 

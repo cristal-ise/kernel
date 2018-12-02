@@ -47,7 +47,6 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.Path;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.scripting.ErrorInfo;
@@ -69,7 +68,6 @@ public class AgentProxy extends ItemProxy {
 
     AgentPath     mAgentPath;
     String        mAgentName;
-    Authenticator auth;
 
     /**
      * Creates an AgentProxy without cache and change notification
@@ -81,22 +79,6 @@ public class AgentProxy extends ItemProxy {
     protected AgentProxy(org.omg.CORBA.Object ior, AgentPath agentPath) throws ObjectNotFoundException {
         super(ior, agentPath);
         mAgentPath = agentPath;
-    }
-
-    @Override
-    public void finalize() throws Throwable {
-        if (auth != null) {
-            auth.disconnect();
-        }
-        super.finalize();
-    }
-
-    public Authenticator getAuthObj() {
-        return auth;
-    }
-
-    public void setAuthObj(Authenticator auth) {
-        this.auth = auth;
     }
 
     @Override

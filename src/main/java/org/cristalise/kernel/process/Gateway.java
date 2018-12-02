@@ -25,6 +25,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.Factory;
 import org.cristalise.kernel.common.CannotManageException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -231,20 +238,19 @@ public class Gateway
      */
     static public Authenticator connect() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
         try {
-            Authenticator auth = getAuthenticator();
-
-            if (!auth.authenticate("System")) throw new InvalidDataException("Server authentication failed");
+            setupShiro();
+            shiroAuthenticate("System", "secret");
 
             if (mLookup != null) mLookup.close();
 
             mLookup = (Lookup)mC2KProps.getInstance("Lookup");
-            mLookup.open(auth);
+            mLookup.open(null);
 
-            mStorage = new TransactionManager(auth);
+            mStorage = new TransactionManager(null);
             mProxyManager = new ProxyManager();
 
             Logger.msg("Gateway.connect() - DONE.");
-            return auth;
+            return null;
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
             Logger.error(ex);
@@ -267,9 +273,9 @@ public class Gateway
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
     {
-        Authenticator auth = getAuthenticator();
+        setupShiro();
 
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        shiroAuthenticate(agentName, agentPassword);
 
         try {
             if (mLookup != null) mLookup.close();
@@ -280,15 +286,14 @@ public class Gateway
             Logger.error(ex);
             throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
         }
-        mLookup.open(auth);
+        mLookup.open(null);
 
-        mStorage = new TransactionManager(auth);
+        mStorage = new TransactionManager(null);
         mProxyManager = new ProxyManager();
 
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
-        agent.setAuthObj(auth);
         ScriptConsole.setUser(agent);
 
         // Run module startup scripts. Server does this during bootstrap
@@ -314,14 +319,11 @@ public class Gateway
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
             throws InvalidDataException, ObjectNotFoundException
     {
-        Authenticator auth = getAuthenticator();
-
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        shiroAuthenticate(agentName, agentPassword);
 
         // find agent proxy
         AgentPath agentPath = mLookup.getAgentPath(agentName);
         AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
-        agent.setAuthObj(auth);
 
         return agent;
     }
@@ -506,5 +508,44 @@ public class Gateway
 
         return handler;
     }
-}
 
+    public static Subject getSubject() {
+        return getSubject("System");
+    }
+
+    public static Subject getSubject(AgentPath agent) {;
+        return getSubject(agent.getAgentName());
+    }
+
+    public static Subject getSubject(String principal) {
+        PrincipalCollection principals = new SimplePrincipalCollection(principal, principal);
+        return new Subject.Builder().principals(principals).buildSubject();
+    }
+
+    private static void setupShiro() {
+        //TODO: replace this with shiro Environment initialization
+        Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        
+        org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
+        SecurityUtils.setSecurityManager(securityManager);
+    }
+
+    private static void shiroAuthenticate(String agentName, String agentPassword) throws InvalidDataException {
+        Subject agentSubject = getSubject(agentName);
+
+        if ( !agentSubject.isAuthenticated() ) {
+            UsernamePasswordToken token = new UsernamePasswordToken(agentName, agentPassword);
+
+            token.setRememberMe(true);
+
+            try {
+                agentSubject.login(token);
+            }
+            catch (Exception ex) {
+                //TODO for security reasons remove this log after development is done
+                Logger.error(ex);
+                throw new InvalidDataException("Authorisation was failed");
+            }
+        }
+    }
+}
