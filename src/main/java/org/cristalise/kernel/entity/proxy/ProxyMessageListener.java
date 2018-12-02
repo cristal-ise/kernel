@@ -20,22 +20,14 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
-import org.cristalise.kernel.lookup.DomainPath;
-
 /**
- * Implement this interface to receive DomainPath changes
+ * Implement this interface to receive all ProxyMessages of all Items
  */
-public interface DomainPathSubscriber {
-    
+public interface ProxyMessageListener {
+
     /**
-     * Domain path was added
-     * @param path which was added
+     * Notify the Listener about the new ProxyMessage
+     * @param msg the message received
      */
-    public void pathAdded(DomainPath path);
-    
-    /**
-     * Domain path was removed
-     * @param path which was removed
-     */
-    public void pathRemoved(DomainPath path);
+    void notifyMessage(ProxyMessage msg);
 }
