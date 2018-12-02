@@ -23,7 +23,7 @@ package org.cristalise.kernel.entity.proxy;
 import org.cristalise.kernel.lookup.DomainPath;
 
 /**
- * Implement this interface to receive ProxyMessages DomainPath changes
+ * Implement this interface to receive DomainPath changes
  */
 public interface DomainPathSubscriber {
     
