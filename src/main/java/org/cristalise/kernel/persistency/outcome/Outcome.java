@@ -355,32 +355,57 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException the Node is not a proper type
      */
     public void setNodeValue(Node node, String value) throws InvalidDataException {
+        setNodeValue(node, value, false);
+    }
+
+    /**
+     * Sets the value of the given TEXT, CDATA, ATTRIBUTE or ELEMENT Node
+     * 
+     * @param node the Node to work on
+     * @param value the value to set
+     * @param useCdata force to use CDATA 
+     * @throws InvalidDataException the Node is not a proper type
+     */
+    public void setNodeValue(Node node, String value, boolean useCdata) throws InvalidDataException {
         int type = node.getNodeType();
 
         if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE || type == Node.ATTRIBUTE_NODE) {
+            if (useCdata && type != Node.CDATA_SECTION_NODE )
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set cdata of attribute or text node");
+
             node.setNodeValue(value);
         }
         else if (type == Node.ELEMENT_NODE) {
             NodeList nodeChildren = node.getChildNodes();
 
             if (nodeChildren.getLength() == 0) {
-                node.appendChild(mDOM.createTextNode(value));
+                if (useCdata) node.appendChild(mDOM.createCDATASection(value));
+                else          node.appendChild(mDOM.createTextNode(value));
             }
             else if (nodeChildren.getLength() == 1) {
                 Node child = nodeChildren.item(0);
+
                 switch (child.getNodeType()) {
                     case Node.TEXT_NODE:
+                        if (useCdata) {
+                            node.replaceChild(mDOM.createCDATASection(value), child);
+                            break;
+                        }
                     case Node.CDATA_SECTION_NODE:
                         child.setNodeValue(value);
                         break;
+
                     default:
-                        throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set child node of type "+child.getNodeName());
+                        throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set child node of type "+child.getNodeType());
                 }
             }
             else
                 throw new InvalidDataException("Node '"+node.getNodeName()+"' shall have 0 or 1 children only #children:"+nodeChildren.getLength());
         }
         else if (type == Node.ATTRIBUTE_NODE) {
+            if (useCdata)
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set cdata of attribute");
+
             node.setNodeValue(value);
         }
         else {

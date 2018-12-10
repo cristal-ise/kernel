@@ -378,4 +378,17 @@ public class OutcomeTest {
 
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testCdataHadling() throws Exception {
+        testOc.setNodeValue(testOc.getNodeByXPath("//Field1"), "<xml>input</xml>", true);
+        assertEquals("<xml>input</xml>", testOc.getField("Field1"));
+
+        testOc.setNodeValue(testOc.getNodeByXPath("//Field2"), "<xml>input</xml>", true);
+        assertEquals("<xml>input</xml>", testOc.getField("Field2"));
+
+        testOc.setNodeValue(testOc.getNodeByXPath("//Field4"), "<xml>input</xml>", true);
+        assertEquals("<xml>input</xml>", testOc.getField("Field4"));
+        Logger.msg(testOc.getData());
+    }
 }
