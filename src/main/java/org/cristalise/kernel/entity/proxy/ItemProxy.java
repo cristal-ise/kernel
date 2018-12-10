@@ -1063,7 +1063,7 @@ public class ItemProxy
     public String getProperty(String name, String defaultValue, Object locker) {
         try {
             if (checkContent(ClusterType.PROPERTY.getName(), name, locker)) {
-                return getProperty(name, defaultValue, locker);
+                return getProperty(name, locker);
             }
         }
         catch(ObjectNotFoundException e) {
