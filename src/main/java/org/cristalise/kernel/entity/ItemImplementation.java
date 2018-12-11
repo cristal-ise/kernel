@@ -59,6 +59,7 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.property.Property;
 import org.cristalise.kernel.property.PropertyArrayList;
 import org.cristalise.kernel.scripting.ErrorInfo;
+import org.cristalise.kernel.security.SecurityManager;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
@@ -307,10 +308,12 @@ public class ItemImplementation implements ItemOperations {
     {
         AgentPath agentToCheck = delegator == null ? agent : delegator;
         String name = Gateway.getProxyManager().getProxy(itemPath).getName();
-        String type = Gateway.getProxyManager().getProxy(itemPath).getType();
+        String type = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
         String actName = StringUtils.substringAfterLast(stepPath, "/");
 
-        if (!Gateway.getSubject(agentToCheck).isPermitted(type+":"+actName+":"+name)) {
+        SecurityManager secMan = Gateway.getSecurityManager();
+
+        if (secMan != null && secMan.getSubject(agentToCheck).isPermitted(type+":"+actName+":"+name)) {
             throw new AccessRightsException();
         }
     }
