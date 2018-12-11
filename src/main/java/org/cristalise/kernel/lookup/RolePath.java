@@ -31,11 +31,10 @@ import org.cristalise.kernel.process.Gateway;
 
 public class RolePath extends Path {
     private boolean hasJobList = false;
-    private List<String> permissions;
+    private List<String> permissions = new ArrayList<>();
 
     public RolePath() {
         super();
-        permissions = new ArrayList<>();
     }
 
     public RolePath(String path) {
@@ -65,6 +64,11 @@ public class RolePath extends Path {
     public RolePath(String[] path, boolean jobList) {
         super(path);
         hasJobList = jobList;
+    }
+    public RolePath(String[] path, boolean jobList, List<String> permissions) {
+        super(path);
+        hasJobList = jobList;
+        this.permissions = permissions;
     }
 
     public RolePath(RolePath parent, String roleName, boolean jobList) {

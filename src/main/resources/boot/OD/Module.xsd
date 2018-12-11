@@ -153,18 +153,14 @@
                                                                         <xs:attribute name="x" type="xs:int" use="required" />
                                                                         <xs:attribute name="y" type="xs:int" use="required" />
                                                                         <xs:attribute name="width" type="xs:int" use="required" />
-                                                                        <xs:attribute name="height" type="xs:int"
-                                                                                      use="required" />
+                                                                        <xs:attribute name="height" type="xs:int" use="required" />
                                                                     </xs:complexType>
                                                                 </xs:element>
-                                                                <xs:element name="MemberProperties" type="collprops"
-                                                                            minOccurs="0" />
+                                                                <xs:element name="MemberProperties" type="collprops" minOccurs="0" />
                                                             </xs:sequence>
                                                             <xs:attribute name="slotNo" type="xs:int" use="required" />
-                                                            <xs:attribute name="itemDescriptionPath" type="xs:string"
-                                                                          use="optional" />
-                                                            <xs:attribute name="itemDescriptionVersion" type="xs:string"
-                                                                          use="optional" />
+                                                            <xs:attribute name="itemDescriptionPath" type="xs:string" use="optional" />
+                                                            <xs:attribute name="itemDescriptionVersion" type="xs:string" use="optional" />
                                                             <xs:attribute name="itemPath" type="xs:string" use="optional" />
                                                         </xs:complexType>
                                                     </xs:element>
@@ -184,17 +180,21 @@
                             </xs:element>
                             <xs:element name="Role" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute name="jobList" type="xs:boolean" use="required" />
-                                        </xs:extension>
-                                    </xs:simpleContent>
+                                    <xs:sequence>
+                                        <xs:element name="Permission" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                                    </xs:sequence>
+                                    <xs:attribute name="name" type="xs:string" use="required" />
+                                    <xs:attribute name="jobList" type="xs:boolean" use="required" />
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="Agent" minOccurs="0">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="Role" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                                        <xs:element name="Role" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string" use="required" />
+                                            </xs:complexType>
+                                        </xs:element>
                                         <xs:element name="Property" type="property" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                     <xs:attribute name="name" type="xs:string" use="required" />
