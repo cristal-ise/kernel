@@ -54,5 +54,8 @@
         <field name="hasJobList" type="boolean" direct="false" get-method="hasJobList" set-method="setHasJobList">
             <bind-xml name="hasJobList" node="attribute" />
         </field>
+        <field name="permissions" type="string" collection="arraylist" direct="false" get-method="getPermissions" set-method="setPermissions">
+            <bind-xml name="Permission" node="element" />
+        </field>
     </class>
 </mapping>

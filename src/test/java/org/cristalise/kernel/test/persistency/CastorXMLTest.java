@@ -24,8 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MACHINE_VERSION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -48,6 +50,7 @@ import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.FileStringUtility;
 import org.cristalise.kernel.utils.Logger;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -180,11 +183,13 @@ public class CastorXMLTest {
     public void testCastorRolePath() throws Exception {
         CastorXMLUtility marshaller = Gateway.getMarshaller();
 
-        RolePath role      = new RolePath("Minion", false);
+        RolePath role      = new RolePath("Minion", false, Arrays.asList("permission1", "permission2")) ;
         RolePath rolePrime = (RolePath) marshaller.unmarshall(marshaller.marshall(role));
 
-        assertEquals( role.getStringPath(), rolePrime.getStringPath());
-        assertEquals( role.hasJobList(), rolePrime.hasJobList());
+        assertEquals(role.getStringPath(), rolePrime.getStringPath());
+        assertEquals(role.hasJobList(),    rolePrime.hasJobList());
+
+        assertThat(role.getPermissions(), IsIterableContainingInAnyOrder.containsInAnyOrder(rolePrime.getPermissions().toArray()));
 
         Logger.msg(marshaller.marshall(rolePrime));
     }
