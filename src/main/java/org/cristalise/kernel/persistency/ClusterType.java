@@ -21,7 +21,6 @@
 package org.cristalise.kernel.persistency;
 
 public enum ClusterType {
-
     /**
      * The defined path of the root of the CRISTAL Kernel object cluster tree. A
      * zero-length string.
@@ -88,6 +87,7 @@ public enum ClusterType {
         return clusterName;
     }
 
+    @Override
     public String toString() {
         return getName();
     }
@@ -98,5 +98,4 @@ public enum ClusterType {
         }
         return null;
     }
-
 }
