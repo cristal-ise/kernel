@@ -239,11 +239,11 @@ public class Gateway
                 if (mSecurityManager == null) mSecurityManager = new SecurityManager();
 
                 mSecurityManager.setupShiro();
-                mSecurityManager.shiroAuthenticate("System", "secret");
+                //mSecurityManager.shiroAuthenticate("system", "secret");
             }
             else {
                 auth = getAuthenticator();
-                if (!auth.authenticate("System")) throw new InvalidDataException("Server authentication failed");
+                if (!auth.authenticate("system")) throw new InvalidDataException("Server authentication failed");
             }
 
             if (mLookup != null) mLookup.close();

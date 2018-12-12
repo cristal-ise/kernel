@@ -14,7 +14,7 @@ import org.cristalise.kernel.utils.Logger;
 public class SecurityManager {
 
     public Subject getSubject() {
-        return getSubject("System");
+        return getSubject("system");
     }
 
     public Subject getSubject(AgentPath agent) {;
