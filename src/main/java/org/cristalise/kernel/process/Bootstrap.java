@@ -520,7 +520,7 @@ public class Bootstrap
         if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
 
         // check for import Agent
-        AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 1).toString());
+        AgentProxy system = checkAgent("system", "secret", adminRole, new UUID(0, 1).toString());
         ScriptConsole.setUser(system);
 
         String ucRole = Gateway.getProperties().getString("UserCode.roleOverride", UserCodeProcess.DEFAULT_ROLE);
