@@ -307,14 +307,21 @@ public class ItemImplementation implements ItemOperations {
             throws AccessRightsException, ObjectNotFoundException
     {
         AgentPath agentToCheck = delegator == null ? agent : delegator;
+
         String name = Gateway.getProxyManager().getProxy(itemPath).getName();
         String type = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
         String actName = StringUtils.substringAfterLast(stepPath, "/");
 
         SecurityManager secMan = Gateway.getSecurityManager();
 
-        if (secMan != null && secMan.getSubject(agentToCheck).isPermitted(type+":"+actName+":"+name)) {
-            throw new AccessRightsException();
+        String permission = type+":"+actName+":"+name;
+
+        if (secMan != null && secMan.getSubject(agentToCheck).isPermitted(permission)) {
+            throw new AccessRightsException("'" + agentToCheck.getAgentName() + "' with permission '"+  permission + "' is NOT permietted");
+        }
+        else {
+            //WildcardPermission wc = new WildcardPermission("");
+            ///wc.implies();
         }
     }
 
