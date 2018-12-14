@@ -21,6 +21,7 @@
 package org.cristalise.kernel.entity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,7 @@ import org.cristalise.kernel.common.ObjectCannotBeUpdated;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.common.SystemKey;
+import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.agent.JobArrayList;
 import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.events.History;
@@ -233,13 +235,18 @@ public class ItemImplementation implements ItemOperations {
         try {
             AgentPath agent = new AgentPath(agentId);
             AgentPath delegate = delegateId == null ? null : new AgentPath(delegateId);
+            AgentPath agentToUse = delegate == null ? agent : delegate;
 
             Logger.msg(1, "ItemImplementation::request(" + mItemPath + ") - Transition " + transitionID + " on " + stepPath + " by " + (delegate == null ? "" : delegate + " on behalf of ") + agent);
 
             // TODO: check if delegate is allowed valid for agent
             lifeCycle = (Workflow) mStorage.get(mItemPath, ClusterType.LIFECYCLE + "/workflow", null);
-            
-            checkPermissions(agent, delegate, stepPath, mItemPath);
+
+            SecurityManager secMan = Gateway.getSecurityManager();
+
+            if (secMan != null && !secMan.checkPermissions(agentToUse, stepPath, mItemPath)) {
+                throw new AccessRightsException("'" + agentToUse.getAgentName() + "' is NOT permietted to execuze step:" + stepPath);
+            }
 
             String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData, attachmentType, attachment);
 
@@ -303,26 +310,21 @@ public class ItemImplementation implements ItemOperations {
         }
     }
 
-    private void checkPermissions(AgentPath agent, AgentPath delegator, String stepPath, ItemPath itemPath) 
+    private boolean checkPermissions(AgentPath agent, String stepPath, ItemPath itemPath) 
             throws AccessRightsException, ObjectNotFoundException
     {
-        AgentPath agentToCheck = delegator == null ? agent : delegator;
+        SecurityManager secMan = Gateway.getSecurityManager();
+//        if (secMan == null) return true;
 
         String name = Gateway.getProxyManager().getProxy(itemPath).getName();
         String type = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
         String actName = StringUtils.substringAfterLast(stepPath, "/");
 
-        SecurityManager secMan = Gateway.getSecurityManager();
-
         String permission = type+":"+actName+":"+name;
 
-        if (secMan != null && secMan.getSubject(agentToCheck).isPermitted(permission)) {
-            throw new AccessRightsException("'" + agentToCheck.getAgentName() + "' with permission '"+  permission + "' is NOT permietted");
-        }
-        else {
-            //WildcardPermission wc = new WildcardPermission("");
-            ///wc.implies();
-        }
+        Logger.msg(5, "ItemImplementation.checkPermissions() - agent:'%s' permission:'%s'", agent.getAgentName(), permission);
+
+        return secMan.getSubject(agent).isPermitted(permission);
     }
 
     /**
@@ -390,7 +392,11 @@ public class ItemImplementation implements ItemOperations {
 
             JobArrayList jobBag = new JobArrayList();
             CompositeActivity domainWf = (CompositeActivity) wf.search("workflow/domain");
-            jobBag.list = filter ? domainWf.calculateJobs(agent, mItemPath, true) : domainWf.calculateAllJobs(agent, mItemPath, true);
+            ArrayList<Job> jobs = filter ? domainWf.calculateJobs(agent, mItemPath, true) : domainWf.calculateAllJobs(agent, mItemPath, true);
+
+            for (Job j: jobs) {
+                if (checkPermissions(agent, j.getStepPath(), mItemPath)) jobBag.list.add(j);
+            }
 
             Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - Returning " + jobBag.list.size() + " jobs.");
 

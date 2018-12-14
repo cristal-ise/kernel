@@ -1,5 +1,6 @@
 package org.cristalise.kernel.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.IniSecurityManagerFactory;
@@ -7,8 +8,12 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
+import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.AgentPath;
+import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.utils.Logger;
 
 public class SecurityManager {
@@ -32,6 +37,8 @@ public class SecurityManager {
         
         org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
         SecurityUtils.setSecurityManager(securityManager);
+
+        Logger.msg(2, "SecurityManager.setupShiro() - Done");
     }
 
     public void shiroAuthenticate(String agentName, String agentPassword) throws InvalidDataException {
@@ -51,5 +58,19 @@ public class SecurityManager {
                 throw new InvalidDataException("Authorisation was failed");
             }
         }
+    }
+    
+    public boolean checkPermissions(AgentPath agent, String stepPath, ItemPath itemPath) 
+            throws AccessRightsException, ObjectNotFoundException
+    {
+        String name    = Gateway.getProxyManager().getProxy(itemPath).getName();
+        String type    = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
+        String actName = StringUtils.substringAfterLast(stepPath, "/");
+
+        String permission = type+":"+actName+":"+name;
+
+        Logger.msg(5, "SecurityManager.checkPermissions() - agent:'%s' permission:'%s'", agent.getAgentName(), permission);
+
+        return getSubject(agent).isPermitted(permission);
     }
 }
