@@ -55,9 +55,7 @@ public class ImportRole extends ModuleImport {
                 Gateway.getLookupManager().createRole(newRolePath); //FIXME: throws ObjectAlreadyExistsException?????
             }
 
-            if (newRolePath.getPermissions().size() != 0) {
-                Gateway.getLookupManager().setPermission(newRolePath, newRolePath.getPermissions());
-            }
+            Gateway.getLookupManager().setPermissions(newRolePath, newRolePath.getPermissions());
         }
         else {
             Logger.msg("ImportRole.create() - Creating Role:"+name+" joblist:"+jobList);
@@ -66,6 +64,7 @@ public class ImportRole extends ModuleImport {
             newRolePath.getParent();
 
             Gateway.getLookupManager().createRole(newRolePath);
+            Gateway.getLookupManager().setPermissions(newRolePath, newRolePath.getPermissions());
         }
         return newRolePath;
     }
