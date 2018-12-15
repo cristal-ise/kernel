@@ -310,23 +310,6 @@ public class ItemImplementation implements ItemOperations {
         }
     }
 
-    private boolean checkPermissions(AgentPath agent, String stepPath, ItemPath itemPath) 
-            throws AccessRightsException, ObjectNotFoundException
-    {
-        SecurityManager secMan = Gateway.getSecurityManager();
-//        if (secMan == null) return true;
-
-        String name = Gateway.getProxyManager().getProxy(itemPath).getName();
-        String type = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
-        String actName = StringUtils.substringAfterLast(stepPath, "/");
-
-        String permission = type+":"+actName+":"+name;
-
-        Logger.msg(5, "ItemImplementation.checkPermissions() - agent:'%s' permission:'%s'", agent.getAgentName(), permission);
-
-        return secMan.getSubject(agent).isPermitted(permission);
-    }
-
     /**
      *
      * @param agentId
@@ -394,8 +377,12 @@ public class ItemImplementation implements ItemOperations {
             CompositeActivity domainWf = (CompositeActivity) wf.search("workflow/domain");
             ArrayList<Job> jobs = filter ? domainWf.calculateJobs(agent, mItemPath, true) : domainWf.calculateAllJobs(agent, mItemPath, true);
 
-            for (Job j: jobs) {
-                if (checkPermissions(agent, j.getStepPath(), mItemPath)) jobBag.list.add(j);
+            SecurityManager secMan = Gateway.getSecurityManager();
+
+            if (secMan != null) {
+                for (Job j: jobs) {
+                    if (secMan.checkPermissions(agent, j.getStepPath(), mItemPath)) jobBag.list.add(j);
+                }
             }
 
             Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - Returning " + jobBag.list.size() + " jobs.");
