@@ -244,7 +244,7 @@ public class ItemImplementation implements ItemOperations {
 
             SecurityManager secMan = Gateway.getSecurityManager();
 
-            if (secMan != null && !secMan.checkPermissions(agentToUse, stepPath, mItemPath)) {
+            if (secMan != null && !secMan.checkPermissions(agentToUse, (Activity) lifeCycle.search(stepPath), mItemPath)) {
                 throw new AccessRightsException("'" + agentToUse.getAgentName() + "' is NOT permietted to execuze step:" + stepPath);
             }
 
@@ -381,7 +381,7 @@ public class ItemImplementation implements ItemOperations {
 
             if (secMan != null) {
                 for (Job j: jobs) {
-                    if (secMan.checkPermissions(agent, j.getStepPath(), mItemPath)) jobBag.list.add(j);
+                    if (secMan.checkPermissions(agent, (Activity) wf.search(j.getStepPath()), mItemPath)) jobBag.list.add(j);
                 }
             }
             else

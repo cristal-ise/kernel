@@ -31,9 +31,13 @@ import org.apache.shiro.util.Factory;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.entity.proxy.ItemProxy;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
+import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.utils.Logger;
 
 public class SecurityManager {
@@ -79,18 +83,61 @@ public class SecurityManager {
             }
         }
     }
-    
-    public boolean checkPermissions(AgentPath agent, String stepPath, ItemPath itemPath) 
+
+    /**
+     * 
+     * @param agent
+     * @param stepPath
+     * @param itemPath
+     * @return
+     * @throws AccessRightsException
+     * @throws ObjectNotFoundException Item was not found
+     */
+    public boolean checkPermissions(AgentPath agent, Activity act, ItemPath itemPath) 
             throws AccessRightsException, ObjectNotFoundException
     {
-        String name    = Gateway.getProxyManager().getProxy(itemPath).getName();
-        String type    = Gateway.getProxyManager().getProxy(itemPath).getType(); //FIXME Type can be null
-        String actName = StringUtils.substringAfterLast(stepPath, "/");
+        String domain = getWildcardPermissionDomain(itemPath);
+        String action = getWildcardPermissionAction(act);
+        String target = Gateway.getProxyManager().getProxy(itemPath).getName();
 
-        String permission = type+":"+actName+":"+name;
+        //The Shiro's WildcardPermission string 
+        String permission = domain+":"+action+":"+target;
 
         Logger.msg(5, "SecurityManager.checkPermissions() - agent:'%s' permission:'%s'", agent.getAgentName(), permission);
 
         return getSubject(agent).isPermitted(permission);
+    }
+    
+    /**
+     * 
+     * @param itemPath
+     * @return
+     * @throws ObjectNotFoundException Item was not found 
+     * @throws AccessRightsException 
+     */
+    private String getWildcardPermissionDomain(ItemPath itemPath) throws ObjectNotFoundException, AccessRightsException {
+        ItemProxy item = Gateway.getProxyManager().getProxy(itemPath);
+        String type = item.getType();
+
+        String domain = item.getProperty(BuiltInItemProperties.SECURITY_DOMAIN, type);
+
+        if (StringUtils.isBlank(domain)) throw new AccessRightsException("Domain was blank - Specify 'SecurityDomain' or 'Type' ItemProperties");
+
+        return domain;
+    }
+
+    /**
+     * 
+     * @param act
+     * @return
+     * @throws AccessRightsException 
+     */
+    private String getWildcardPermissionAction(Activity act) throws AccessRightsException {
+        String action = (String) act.getBuiltInProperty(BuiltInVertexProperties.SECURITY_ACTION);
+
+        if (StringUtils.isBlank(action)) action = act.getName();
+        if (StringUtils.isBlank(action)) throw new AccessRightsException("Action was blank - Specify 'SecurityAction' or 'Name' ActivityProperties");
+
+        return action;
     }
 }

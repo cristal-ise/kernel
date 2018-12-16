@@ -202,6 +202,12 @@ public enum BuiltInVertexProperties {
     SCRIPT_VERSION("ScriptVersion"),
 
     /**
+     * 
+     * Can be null or undefined.
+     */
+    SECURITY_ACTION("SecurityAction"),
+
+    /**
      * String property. Either the name of the Schema or the UUID of the Schema Item associated with Activities.
      *
      * Can be null or undefined.
