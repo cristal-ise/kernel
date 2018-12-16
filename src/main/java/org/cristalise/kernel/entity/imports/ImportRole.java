@@ -46,16 +46,9 @@ public class ImportRole extends ModuleImport {
     {
         RolePath newRolePath = new RolePath(name.split("/"), (jobList == null) ? false : jobList, permissions);
 
-        if(Gateway.getLookup().exists(newRolePath)) {
-            //If jobList is null it means it was not set in the module.xml, therefore existing Role cannot be updated
-            if (jobList != null && newRolePath.hasJobList() != jobList) {
-                Logger.msg("ImportRole.create() - Updating Role:"+this.name+" joblist:"+jobList);
-
-                newRolePath.setHasJobList(jobList);
-                Gateway.getLookupManager().createRole(newRolePath); //FIXME: throws ObjectAlreadyExistsException?????
-            }
-
-            Gateway.getLookupManager().setPermissions(newRolePath, newRolePath.getPermissions());
+        if (Gateway.getLookup().exists(newRolePath)) {
+            //If jobList is null it means it was NOT set in the module.xml, therefore existing Role cannot be updated
+            if (jobList != null) update(agentPath);
         }
         else {
             Logger.msg("ImportRole.create() - Creating Role:"+name+" joblist:"+jobList);
@@ -68,12 +61,38 @@ public class ImportRole extends ModuleImport {
         }
         return newRolePath;
     }
-    
+
+    /**
+     * 
+     * @param agentPath
+     * @throws ObjectAlreadyExistsException
+     * @throws ObjectCannotBeUpdated
+     * @throws CannotManageException
+     * @throws ObjectNotFoundException
+     */
+    public void update(AgentPath agentPath) 
+            throws ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, ObjectNotFoundException
+    {
+        RolePath rolePath = new RolePath(name.split("/"), (jobList == null) ? false : jobList, permissions);
+
+        if (!Gateway.getLookup().exists(rolePath)) 
+            throw new ObjectNotFoundException("Role '" + rolePath.getName() + "' does NOT exists.");
+
+        Gateway.getLookupManager().setHasJobList(rolePath, (jobList == null) ? false : jobList);
+        Gateway.getLookupManager().setPermissions(rolePath, permissions);
+    }
+
+    /**
+     * 
+     * @param rp
+     * @return
+     */
     public static ImportRole getImportRole(RolePath rp) {
         ImportRole ir = new ImportRole();
 
         ir.setName(rp.getName());
         ir.jobList = rp.hasJobList();
+        ir.permissions = (ArrayList<String>) rp.getPermissions();
 
         return ir;
     }
