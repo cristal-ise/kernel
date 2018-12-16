@@ -752,6 +752,17 @@ public class ItemProxy
     }
 
     /**
+     * Retrieves the values of a BuiltInItemProperty or returns the defaulValue if no Property was found
+     * 
+     * @param prop one of the Built-In Item Property
+     * @param defaultValue the value to be used if no Property was found
+     * @return
+     */
+    public String getProperty( BuiltInItemProperties prop, String defaultValue) {
+        return getProperty(prop.getName(), defaultValue);
+    }
+
+    /**
      * Retrieves the values of a named property or returns the defaulValue if no Property was found
      * 
      * @param name of the Item Property
@@ -789,12 +800,7 @@ public class ItemProxy
      * @return the name of the Item or null of no Name Property
      */
     public String getName() {
-        try {
-            return getProperty(NAME);
-        }
-        catch (ObjectNotFoundException ex) {
-            return null;
-        }
+        return getProperty(NAME, null);
     }
 
     /**
@@ -803,14 +809,8 @@ public class ItemProxy
      * @return the type of the Item or null of no Type Property
      */
     public String getType() {
-        try {
-            return getProperty(TYPE);
-        }
-        catch (ObjectNotFoundException ex) {
-            return null;
-        }
+        return getProperty(TYPE, null);
     }
-
 
     //**************************************************************************
     // Subscription methods
