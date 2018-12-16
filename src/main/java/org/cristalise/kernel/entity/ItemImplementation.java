@@ -384,6 +384,8 @@ public class ItemImplementation implements ItemOperations {
                     if (secMan.checkPermissions(agent, j.getStepPath(), mItemPath)) jobBag.list.add(j);
                 }
             }
+            else
+                jobBag.list = jobs;
 
             Logger.msg(1, "ItemImplementation::queryLifeCycle(" + mItemPath + ") - Returning " + jobBag.list.size() + " jobs.");
 
