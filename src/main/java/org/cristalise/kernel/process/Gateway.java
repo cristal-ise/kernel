@@ -239,7 +239,6 @@ public class Gateway
                 if (mSecurityManager == null) mSecurityManager = new SecurityManager();
 
                 mSecurityManager.setupShiro();
-                //mSecurityManager.shiroAuthenticate("system", "secret");
             }
             else {
                 auth = getAuthenticator();
@@ -284,7 +283,8 @@ public class Gateway
             if (mSecurityManager == null) mSecurityManager = new SecurityManager();
 
             mSecurityManager.setupShiro();
-            mSecurityManager.shiroAuthenticate(agentName, agentPassword);
+
+            if (!mSecurityManager.shiroAuthenticate(agentName, agentPassword))  throw new InvalidDataException("Login failed");
         }
         else {
             auth = getAuthenticator();
@@ -335,7 +335,7 @@ public class Gateway
             throws InvalidDataException, ObjectNotFoundException
     {
         if (mSecurityManager != null) {
-            mSecurityManager.shiroAuthenticate(agentName, agentPassword);
+            if (!mSecurityManager.shiroAuthenticate(agentName, agentPassword))  throw new InvalidDataException("Login failed");
         }
         else {
             Authenticator auth = getAuthenticator();

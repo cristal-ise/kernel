@@ -65,7 +65,7 @@ public class SecurityManager {
         Logger.msg(2, "SecurityManager.setupShiro() - Done");
     }
 
-    public void shiroAuthenticate(String agentName, String agentPassword) throws InvalidDataException {
+    public boolean shiroAuthenticate(String agentName, String agentPassword) {
         Subject agentSubject = getSubject(agentName);
 
         if ( !agentSubject.isAuthenticated() ) {
@@ -75,13 +75,14 @@ public class SecurityManager {
 
             try {
                 agentSubject.login(token);
+                return true;
             }
             catch (Exception ex) {
                 //TODO for security reasons remove this log after development is done
                 Logger.error(ex);
-                throw new InvalidDataException("Authorisation was failed");
             }
         }
+        return false;
     }
 
     /**
