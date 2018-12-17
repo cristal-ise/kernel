@@ -41,7 +41,7 @@
             <bind-xml name="Name" node="attribute" />
         </field>
         <field name="mIsClassIdentifier" type="boolean" direct="false" get-method="getIsClassIdentifier"
-            set-method="setIsClassIdentifier">
+               set-method="setIsClassIdentifier">
             <bind-xml name="IsClassIdentifier" node="attribute" />
         </field>
         <field name="mDefaultValue" type="string" direct="false" get-method="getDefaultValue" set-method="setDefaultValue">

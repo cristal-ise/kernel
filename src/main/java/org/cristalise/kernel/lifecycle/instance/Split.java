@@ -87,6 +87,7 @@ public abstract class Split extends WfVertex {
 
     @Override
     public void reinit(int idLoop) throws InvalidDataException {
+        Logger.msg(8, "Split.reinit(parent:" + getParent().getName()+")");
         Vertex[] outVertices = getOutGraphables();
         for (Vertex outVertice : outVertices)
             ((WfVertex) outVertice).reinit(idLoop);

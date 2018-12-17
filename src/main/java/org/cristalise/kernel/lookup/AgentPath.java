@@ -34,6 +34,7 @@ import org.cristalise.kernel.process.Gateway;
 public class AgentPath extends ItemPath {
 
     private String mAgentName = null;
+    private boolean mPasswordTemporary = false;
 
     public AgentPath() {
         super();
@@ -42,6 +43,12 @@ public class AgentPath extends ItemPath {
     public AgentPath(UUID uuid, String ior, String agentName) {
         super(uuid, ior);
         mAgentName = agentName;
+    }
+
+    public AgentPath(UUID uuid, String ior, String agentName, boolean isPwdTemporary) {
+        super(uuid, ior);
+        mAgentName = agentName;
+        mPasswordTemporary = isPwdTemporary;
     }
 
     public AgentPath(UUID uuid) throws InvalidAgentPathException {
@@ -122,5 +129,9 @@ public class AgentPath extends ItemPath {
     @Override
     public String dump() {
         return super.dump() + "\n        agentID=" + mAgentName;
+    }
+
+    public boolean isPasswordTemporary() {
+        return mPasswordTemporary;
     }
 }

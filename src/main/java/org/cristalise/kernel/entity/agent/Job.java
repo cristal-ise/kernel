@@ -46,6 +46,7 @@ import org.cristalise.kernel.lookup.InvalidItemPathException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
+import org.cristalise.kernel.persistency.outcome.OutcomeAttachment;
 import org.cristalise.kernel.persistency.outcome.OutcomeInitiator;
 import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.Gateway;
@@ -86,7 +87,8 @@ public class Job implements C2KLocalObject {
     private ItemProxy  item = null;
     private boolean    transitionResolved = false;
 
-    private Outcome outcome = null;
+    private Outcome           outcome = null;
+    private OutcomeAttachment attachment = null;
 
     /**
      * OutcomeInitiator cache
@@ -472,14 +474,20 @@ public class Job implements C2KLocalObject {
      * @throws ObjectNotFoundException Schema was not found
      */
     public Outcome getOutcome() throws InvalidDataException, ObjectNotFoundException {
-        if (outcome == null && transition.hasOutcome(actProps)) {
-            if( getItem().checkViewpoint(getSchema().getName(), getValidViewpointName()) ) {
+        if (outcome == null && hasOutcome()) {
+            OutcomeInitiator ocInit = getOutcomeInitiator();
+
+            boolean useViewpoint = Gateway.getProperties().getBoolean("OutcomeInit.jobUseViewpoint", false);
+
+            if (ocInit != null && !useViewpoint) {
+                outcome = ocInit.initOutcomeInstance(this);
+            }
+            else if (getItem().checkViewpoint(getSchema().getName(), getValidViewpointName())) {
                 Outcome tempOutcome = getLastOutcome();
                 outcome = new Outcome(tempOutcome.getData(), tempOutcome.getSchema());
             }
             else {
-                OutcomeInitiator ocInit = getOutcomeInitiator();
-                if (ocInit != null) outcome = ocInit.initOutcomeInstance(this);
+                Logger.warning("Job.getOutcome() - Could not initilase Outcome");
             }
         }
         else {

@@ -161,7 +161,7 @@ public class Outcome implements C2KLocalObject {
             mDOM = parse(xml);
         }
         catch (IOException | SAXException ex) {
-            Logger.error("INVALID XML - schema:"+mSchema.getName()+"\n"+xml);
+            Logger.error("INVALID XML - schema:"+(null == mSchema ? null : mSchema.getName())+"\n"+xml);
             Logger.error(ex);
             throw new InvalidDataException("XML not valid for schema:"+mSchema+" error:"+ex.getMessage());
         }
@@ -355,32 +355,57 @@ public class Outcome implements C2KLocalObject {
      * @throws InvalidDataException the Node is not a proper type
      */
     public void setNodeValue(Node node, String value) throws InvalidDataException {
+        setNodeValue(node, value, false);
+    }
+
+    /**
+     * Sets the value of the given TEXT, CDATA, ATTRIBUTE or ELEMENT Node
+     * 
+     * @param node the Node to work on
+     * @param value the value to set
+     * @param useCdata force to use CDATA 
+     * @throws InvalidDataException the Node is not a proper type
+     */
+    public void setNodeValue(Node node, String value, boolean useCdata) throws InvalidDataException {
         int type = node.getNodeType();
 
         if (type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE || type == Node.ATTRIBUTE_NODE) {
+            if (useCdata && type != Node.CDATA_SECTION_NODE )
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set cdata of attribute or text node");
+
             node.setNodeValue(value);
         }
         else if (type == Node.ELEMENT_NODE) {
             NodeList nodeChildren = node.getChildNodes();
 
             if (nodeChildren.getLength() == 0) {
-                node.appendChild(mDOM.createTextNode(value));
+                if (useCdata) node.appendChild(mDOM.createCDATASection(value));
+                else          node.appendChild(mDOM.createTextNode(value));
             }
             else if (nodeChildren.getLength() == 1) {
                 Node child = nodeChildren.item(0);
+
                 switch (child.getNodeType()) {
                     case Node.TEXT_NODE:
+                        if (useCdata) {
+                            node.replaceChild(mDOM.createCDATASection(value), child);
+                            break;
+                        }
                     case Node.CDATA_SECTION_NODE:
                         child.setNodeValue(value);
                         break;
+
                     default:
-                        throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set child node of type "+child.getNodeName());
+                        throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set child node of type "+child.getNodeType());
                 }
             }
             else
                 throw new InvalidDataException("Node '"+node.getNodeName()+"' shall have 0 or 1 children only #children:"+nodeChildren.getLength());
         }
         else if (type == Node.ATTRIBUTE_NODE) {
+            if (useCdata)
+                throw new InvalidDataException("Node '"+node.getNodeName()+"' can't set cdata of attribute");
+
             node.setNodeValue(value);
         }
         else {
@@ -407,10 +432,10 @@ public class Outcome implements C2KLocalObject {
      * Determines if the NodeList is actually a single field, an element with text data only
      *
      * @param elements NodeList
-     * @return if the NodeList has a single field or not
+     * @return true if the NodeList has a single field of type ELEMENT_NODE
      */
-    public boolean hasSingleField(NodeList elements) {
-        return (elements != null && elements.getLength() == 1 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
+    private boolean hasSingleField(NodeList elements) {
+        return (elements != null && elements.getLength() > 0 && elements.item(0).getNodeType() == Node.ELEMENT_NODE);
     }
 
     /**
@@ -485,7 +510,7 @@ public class Outcome implements C2KLocalObject {
         if (hasSingleField(elements))
             setAttribute((Element)elements.item(0), name, data, remove);
         else
-            throw new InvalidDataException("Invalid name:'"+field+"'");
+            throw new InvalidDataException("'"+field+"' is invalid or not a single field");
     }
 
     /**
@@ -525,7 +550,7 @@ public class Outcome implements C2KLocalObject {
             setNodeValue(elements.item(0), data);
         }
         else
-            throw new InvalidDataException("Invalid name:'"+name+"'");
+            throw new InvalidDataException("'"+name+"' is invalid or not a single field");
     }
 
     /**
@@ -744,8 +769,10 @@ public class Outcome implements C2KLocalObject {
             if (StringUtils.isNotBlank(value)) return value;
             else                               return null;
         }
-        else
+        else {
+            Logger.warning("Outcome.getAttributeOfField() - '%s' is invalid or not a single field", field);
             return null;
+        }
     }
 
     /**
@@ -758,9 +785,18 @@ public class Outcome implements C2KLocalObject {
     public String getField(Element element, String name) {
         try {
             NodeList elements = element.getElementsByTagName(name);
-            if (hasSingleField(elements))  return getNodeValue(elements.item(0));
+            if (hasSingleField(elements)) {
+                if (elements.getLength() > 1) 
+                    Logger.warning("Outcome.getField() - '%s' was found multiple times, returning first occurance", name);
+
+                return getNodeValue(elements.item(0));
+            }
+            else{
+                Logger.warning("Outcome.getField() - '%s' is invalid or not a single field", name);
+            }
         }
         catch (InvalidDataException e) {
+            Logger.warning("Outcome.getField() - exception:"+e.getMessage());
         }
 
         return null;
@@ -827,7 +863,7 @@ public class Outcome implements C2KLocalObject {
      * @return the xml string
      * @throws InvalidDataException Transformer Exception
      */
-    static public String serialize(Document doc, boolean prettyPrint) throws InvalidDataException {
+    static public String serialize(Node node, boolean prettyPrint) throws InvalidDataException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer;
         try {
@@ -843,7 +879,7 @@ public class Outcome implements C2KLocalObject {
 
         Writer out = new StringWriter();
         try {
-            transformer.transform(new DOMSource(doc), new StreamResult(out));
+            transformer.transform(new DOMSource(node), new StreamResult(out));
         }
         catch (Exception e) {
             Logger.error(e);

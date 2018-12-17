@@ -55,6 +55,7 @@ import org.cristalise.kernel.scripting.Parameter;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
+import org.cristalise.kernel.utils.CorbaExceptionUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
@@ -109,11 +110,12 @@ public class AgentProxy extends ItemProxy {
     }
 
     /**
-     * Extended execution of jobs when the client knows there there is a Transition to be used in case of an error.
+     * Extended execution of jobs when the client knows that there is a Transition to be used in case of an error.
      * All execution parameters are taken from the job where they're probably going to be correct.
      *
      * @param job the Actual Job to be executed
-     * @param errorJob the erroro Job the be exeucted in case there was an exception to execute the origonal Job
+     * @param errorJob the Job the be executed in case there was an exception while executing the original Job.
+     *        The client calling this method knows (configured) which Job is need to be used.
      * @return The outcome after processing. May have been altered by the step. Aternatively it contains
      *         the xml of marshalles ErrorInfo if the errorJob was exeuted
      *
@@ -148,7 +150,6 @@ public class AgentProxy extends ItemProxy {
                 Logger.error(e);
                 throw new InvalidDataException(e.getMessage());
             }
-
         }
     }
 
@@ -180,7 +181,6 @@ public class AgentProxy extends ItemProxy {
         if (job.hasScript()) {
             Logger.msg(3, "AgentProxy.execute(job) - executing script");
             try {
-                // pre-validate outcome for script if there is one
                 // #196: Outcome can be invalid at this point, because Script will be executed later
                 //if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
@@ -195,14 +195,18 @@ public class AgentProxy extends ItemProxy {
                 if (errorString.length() > 0) Logger.warning("Script errors: " + errorString);
             }
             catch (ScriptingEngineException ex) {
-                Logger.error(ex);
-                throw new InvalidDataException(ex.getMessage());
+                Throwable cause = ex.getCause();
+
+                if (cause == null) cause = ex;
+                else               Logger.error(ex.getMessage());
+
+                Logger.error(cause);
+                throw new InvalidDataException(CorbaExceptionUtility.unpackMessage(cause));
             }
         }
         else if (job.hasQuery() &&  !"Query".equals(job.getActProp(BuiltInVertexProperties.OUTCOME_INIT))) {
             Logger.msg(3, "AgentProxy.execute(job) - executing query (OutcomeInit != Query)");
 
-            // pre-validate outcome for query if there is one
             // #196: Outcome can be invalid at this point, because Query will be executed later
             //if (job.hasOutcome() && job.isOutcomeSet()) job.getOutcome().validateAndCheck();
 
@@ -292,7 +296,13 @@ public class AgentProxy extends ItemProxy {
         if (schemaName.equals("PredefinedStepOutcome")) param = PredefinedStep.bundleData(params);
         else                                            param = params[0];
 
-        return item.getItem().requestAction(mAgentPath.getSystemKey(), "workflow/predefined/" + predefStep, PredefinedStep.DONE, param);
+        return item.getItem().requestAction(
+                mAgentPath.getSystemKey(), 
+                "workflow/predefined/" + predefStep, 
+                PredefinedStep.DONE, 
+                param,
+                "",
+                new byte[0]);
     }
 
     /**

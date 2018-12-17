@@ -96,16 +96,18 @@ public class TraceableEntity extends ItemPOA
 
     @Override
 	public void initialise( SystemKey agentId,
-                            String  propString,
-                            String  initWfString,
-                            String initCollsString
+                            String propString,
+                            String initWfString,
+                            String initCollsString,
+                            String initViewpointString,
+                            String initOutcomeString
                             )
         throws AccessRightsException,
                InvalidDataException,
                PersistencyException
     {
         synchronized (this) {
-        	mItemImpl.initialise(agentId, propString, initWfString, initCollsString);
+        	mItemImpl.initialise(agentId, propString, initWfString, initCollsString, initViewpointString, initOutcomeString);
         }
     }
 
@@ -113,7 +115,9 @@ public class TraceableEntity extends ItemPOA
 	public String requestAction( SystemKey agentId,
                                String stepPath,
                                int transitionID,
-                               String requestData
+                               String requestData,
+                               String attachmentType,
+                               byte[] attachment
                               )
         throws AccessRightsException,
                InvalidTransitionException,
@@ -123,16 +127,18 @@ public class TraceableEntity extends ItemPOA
                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mItemImpl.requestAction(agentId, stepPath, transitionID, requestData);
+            return mItemImpl.requestAction(agentId, stepPath, transitionID, requestData, attachmentType, attachment);
         }
     }
-    
+
     @Override
-	public String delegatedAction( SystemKey agentId,
-							   SystemKey delegateAgentId,
-                               String stepPath,
-                               int transitionID,
-                               String requestData
+    public String delegatedAction( SystemKey agentId,
+                                SystemKey delegateAgentId,
+                                String stepPath,
+                                int transitionID,
+                                String requestData,
+                                String attachmentType,
+                                byte[] attachment
                               )
         throws AccessRightsException,
                InvalidTransitionException,
@@ -142,7 +148,7 @@ public class TraceableEntity extends ItemPOA
                ObjectAlreadyExistsException, InvalidCollectionModification
     {
         synchronized (this) {
-            return mItemImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData);
+            return mItemImpl.delegatedAction(agentId, delegateAgentId, stepPath, transitionID, requestData, attachmentType, attachment);
         }
     }
 

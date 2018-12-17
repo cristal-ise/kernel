@@ -41,7 +41,7 @@ module entity
     * in a tree structure. 
     **/ 
 
-     interface Item
+    interface Item
     {
 
         /**
@@ -57,12 +57,16 @@ module entity
     	* Property objects of the Item
         * @param workflow The XML marshalled new lifecycle of the Item
         * @param collection The XML marshalled CollectionArrayList of the initial state of the Item's collections
+        * @param viewpoint the XML marshalled Viewpoint to be stored to find the Outcome 
+        * @param outcome the XML data to be stored 
         * @exception ObjectNotFoundException
         **/
         void initialise( in common::SystemKey  agentKey,
-        				 in string             itemProps,
+                         in string             itemProps,
                          in string             workflow,
-                         in string             collections )
+                         in string             collections,
+                         in string             viewpoint,
+                         in string             outcome )
             raises( common::AccessRightsException,
                     common::InvalidDataException,
                     common::PersistencyException,
@@ -94,6 +98,8 @@ module entity
                     common::ObjectNotFoundException,
                     common::PersistencyException );
 
+        typedef sequence<octet> OctetSequence;
+
         /**
         * Requests a transition of an Activity in this Item's workflow. If possible and permitted, an Event is 
         * generated and stored, the Activity's state is updated, which may cause the Workflow to proceed. If 
@@ -114,6 +120,10 @@ module entity
         * @param requestData The XML Outcome of the work defined by the Activity. Must be valid to the XML Schema,
         * though this is not verified on the server, rather in the AgentProxy in the Client API.
         *
+        * @param attachmentType the MimeType of the attachment (can be empty)
+        *
+        * @param attachment binary data associated with the Outcome (can be empty)
+        *
         * @throws AccessRightsException The Agent is not permitted to perform the operation. Either it does not 
         * have the correct role, or the Activity is reserved by another Agent. Also thrown when the given Agent ID doesn't exist.
         * @throws InvalidTransitionException The Activity is not in the correct state to make the requested transition.
@@ -126,7 +136,9 @@ module entity
         string requestAction( in common::SystemKey agentKey,
                             in string              stepPath,
                             in unsigned long       transitionID,
-                            in string    			requestData
+                            in string              requestData,
+                            in string              attachmentType,
+                            in OctetSequence       attachment
                           )
             raises( common::AccessRightsException,
                     common::InvalidTransitionException,
@@ -137,10 +149,12 @@ module entity
                     common::InvalidCollectionModification);
 
         string delegatedAction( in common::SystemKey agentKey,
-					        in common::SystemKey delegateAgentKey,
-                            in string              stepPath,
-                            in unsigned long       transitionID,
-                            in string    			requestData
+                                in common::SystemKey delegateAgentKey,
+                                in string            stepPath,
+                                in unsigned long     transitionID,
+                                in string            requestData,
+                                in string            attachmentType,
+                                in OctetSequence     attachment
                           )
             raises( common::AccessRightsException,
                     common::InvalidTransitionException,

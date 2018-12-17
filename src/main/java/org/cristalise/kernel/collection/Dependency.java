@@ -43,6 +43,7 @@ import org.cristalise.kernel.common.InvalidCollectionModification;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.ActivityDef;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
@@ -173,6 +174,30 @@ public class Dependency extends Collection<DependencyMember> {
     public DependencyMember addMember(ItemPath itemPath) 
             throws InvalidCollectionModification, ObjectAlreadyExistsException
     {
+        DependencyMember depMember = createMember(itemPath);
+        mMembers.list.add(depMember);
+
+        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
+        return depMember;
+    }
+
+    /**
+     * 
+     * @param depMember
+     * @throws InvalidCollectionModification
+     * @throws ObjectAlreadyExistsException
+     */
+    public void addMember(DependencyMember depMember) throws InvalidCollectionModification, ObjectAlreadyExistsException {
+        mMembers.list.add(depMember);
+    }
+    /**
+     * 
+     * @param itemPath
+     * @return
+     * @throws InvalidCollectionModification
+     * @throws ObjectAlreadyExistsException
+     */
+    public DependencyMember createMember(ItemPath itemPath) throws InvalidCollectionModification, ObjectAlreadyExistsException {
         if (itemPath == null) 
             throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
 
@@ -187,9 +212,6 @@ public class Dependency extends Collection<DependencyMember> {
 
         // assign entity
         depMember.assignItem(itemPath);
-        mMembers.list.add(depMember);
-        
-        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
         return depMember;
     }
 
@@ -216,10 +238,28 @@ public class Dependency extends Collection<DependencyMember> {
     public DependencyMember addMember(ItemPath itemPath, CastorHashMap props, String classProps)
             throws InvalidCollectionModification, ObjectAlreadyExistsException
     {
+        DependencyMember depMember = createMember(itemPath, props);
+        mMembers.list.add(depMember);
+        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
+        return depMember;
+    }
+
+    /**
+     * 
+     * @param itemPath
+     * @param props
+     * @return
+     * @throws InvalidCollectionModification
+     * @throws ObjectAlreadyExistsException
+     */
+    public DependencyMember createMember(ItemPath itemPath, CastorHashMap props) 
+            throws InvalidCollectionModification, ObjectAlreadyExistsException
+    {
         if (itemPath == null)
             throw new InvalidCollectionModification("Cannot add empty slot to Dependency collection");
 
         boolean checkUniqueness = Gateway.getProperties().getBoolean("Dependency.checkMemberUniqueness", true);
+
         if (checkUniqueness && contains(itemPath))
             throw new ObjectAlreadyExistsException("Item "+itemPath+" already exists in Dependency "+getName());
 
@@ -239,8 +279,6 @@ public class Dependency extends Collection<DependencyMember> {
 
         // assign entity
         depMember.assignItem(itemPath);
-        mMembers.list.add(depMember);
-        Logger.msg(8, "Dependency.addMember(" + itemPath + ") added to children with slotId:"+depMember.getID());
         return depMember;
     }
 
@@ -383,7 +421,7 @@ public class Dependency extends Collection<DependencyMember> {
                     }
                     catch (ObjectNotFoundException e) {
                         //Schema dependency could be defined in Properties
-                        if(props.containsKey(SCHEMA_NAME)) {
+                        if(props.containsKey(SCHEMA_NAME.getName())) {
                             Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
                             String uuid = LocalObjectLoader.getSchema(props).getItemPath().getUUID().toString();
                             props.setBuiltInProperty(SCHEMA_NAME, uuid);
@@ -399,7 +437,7 @@ public class Dependency extends Collection<DependencyMember> {
                     }
                     catch (ObjectNotFoundException e) {
                         //Backward compability: Script dependency could be defined in Properties
-                        if(props.containsKey(SCRIPT_NAME)) {
+                        if(props.containsKey(SCRIPT_NAME.getName())) {
                             Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
                             String uuid = LocalObjectLoader.getScript(props).getItemPath().getUUID().toString();
                             props.setBuiltInProperty(SCRIPT_NAME, uuid);
@@ -415,7 +453,7 @@ public class Dependency extends Collection<DependencyMember> {
                     }
                     catch (ObjectNotFoundException e) {
                         //Backward compability: Query dependency could be defined in Properties
-                        if(props.containsKey(QUERY_NAME)) {
+                        if(props.containsKey(QUERY_NAME.getName())) {
                             Logger.msg(8, "Dependency.addToVertexProperties() - BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
                             String uuid = LocalObjectLoader.getQuery(props).getItemPath().getUUID().toString();
                             props.setBuiltInProperty(QUERY_NAME, uuid);
@@ -430,7 +468,7 @@ public class Dependency extends Collection<DependencyMember> {
                         props.setBuiltInProperty(STATE_MACHINE_VERSION, memberVer);
                     }
                     catch (ObjectNotFoundException e) {
-                        if(props.containsKey(STATE_MACHINE_NAME)) {
+                        if(props.containsKey(STATE_MACHINE_NAME.getName())) {
                             Logger.msg(8, "Dependency.addToVertexProperties() -  BACKWARD COMPABILITY: Dependency '"+getName()+"' is defined in Properties");
                             String uuid = LocalObjectLoader.getStateMachine(props).getItemPath().getUUID().toString();
                             props.setBuiltInProperty(STATE_MACHINE_NAME, uuid);
@@ -442,7 +480,7 @@ public class Dependency extends Collection<DependencyMember> {
                     ActivityDef actDef = LocalObjectLoader.getActDef(memberUUID, memberVer);
                     CastorHashMap chm = null;
 
-                    if(props.containsKey(ACTIVITY_DEF_URN)) {
+                    if(props.containsKey(ACTIVITY_DEF_URN.getName())) {
                         chm = (CastorHashMap)props.getBuiltInProperty(ACTIVITY_DEF_URN);
                     }
                     else {
@@ -482,5 +520,25 @@ public class Dependency extends Collection<DependencyMember> {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Method of convenience to get property value using BuiltInVertexProperties
+     * 
+     * @param prop the property to read
+     * @return the value, can be null
+     */
+    public Object getBuiltInProperty(BuiltInVertexProperties prop) {
+        return mProperties.get(prop.getName());
+    }
+
+    /**
+     * Method of convenience to check if property exists
+     * 
+     * @param prop the property to check
+     * @return true if property exist, false otherwise
+     */
+    public boolean containsBuiltInProperty(BuiltInVertexProperties prop) {
+        return mProperties.containsKey(prop.getName());
     }
 }

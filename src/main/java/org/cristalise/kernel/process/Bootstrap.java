@@ -78,20 +78,39 @@ public class Bootstrap
     public static boolean shutdown = false;
     static StateMachine predefSM;
 
-    public static StateMachine getPredefSM() {
+    /**
+     * Get the StateMachine of a Predefined Step
+     * 
+     * @return the fully initialised StateMachine DescriptionObject
+     * @throws ObjectNotFoundException StateMachine called 'PredefinedStep' version '0' does not exists
+     * @throws InvalidDataException the stored state machine data was invalid
+     */
+    public static StateMachine getPredefSM() throws ObjectNotFoundException, InvalidDataException {
+        if (predefSM == null) predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
+
         return predefSM;
+    }
+    
+    /**
+     * Initilaise Bootstrap
+     * 
+     * @throws Exception in case of any error
+     */
+    public static void init() throws Exception {
+        getPredefSM();
+
+        // check for system agents
+        checkAdminAgents();
+
+        // create the server's mother item
+        createServerItem();
     }
 
     /**
      * Run everything without timing-out the service wrapper
      */
     public static void run() throws Exception {
-        predefSM = LocalObjectLoader.getStateMachine("PredefinedStep", 0);
-        // check for system agents
-        checkAdminAgents();
-
-        // create the server's mother item
-        createServerItem();
+        init();
 
         new Thread(new Runnable() {
             @Override
@@ -187,7 +206,7 @@ public class Bootstrap
 
 
     /**
-     * Create a resource item from its module definition. The item should not already exist.
+     * Create a resource item from its module definition. The item should not exist.
      */
     public static DomainPath createResource(String ns, String itemName, int version, String itemType, Set<Outcome> outcomes, boolean reset)
             throws Exception

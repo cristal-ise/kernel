@@ -178,7 +178,7 @@ public class Transition {
     }
 
     public String getReservation(Activity act, AgentPath agent) {
-        if (StringUtils.isEmpty(reservation)) reservation = targetState.finished ? "clear" : "set";
+        if (StringUtils.isBlank(reservation)) reservation = targetState.finished ? "clear" : "set";
 
         String reservedAgent = act.getCurrentAgentName();
 

@@ -51,7 +51,7 @@ public class Loop extends XOrSplit {
 
     @Override
     public void reinit(int idLoop) throws InvalidDataException {
-        Logger.msg(8, "Loop.reinit");
+        Logger.msg(8, "Loop.reinit(parent:" + getParent().getName()+")");
         if (idLoop == getID())
             return;
         else {

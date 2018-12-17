@@ -109,6 +109,7 @@ public class LookupPathClusterStorageTest {
     
     @Test
     public void checkUUID() throws Exception {
+        assert ItemPath.isUUID("00000000-0000-0000-0000-000000000000");
         assert ItemPath.isUUID("30923dec-c881-40b9-86fc-075c91592ebe");
         assert ItemPath.isUUID("/entity/30923dec-c881-40b9-86fc-075c91592ebe");
     }

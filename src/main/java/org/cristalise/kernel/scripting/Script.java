@@ -45,11 +45,6 @@ import javax.script.SimpleScriptContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.collection.Dependency;
@@ -73,6 +68,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * 
@@ -104,6 +104,9 @@ public class Script implements DescriptionObject {
     @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
     ScriptContext context;
 
+    @Setter(AccessLevel.NONE) @Getter(AccessLevel.NONE)
+    boolean isActExecEnvironment = false;
+
     /**
      * Constructor for castor unmarshall
      */
@@ -120,11 +123,11 @@ public class Script implements DescriptionObject {
 
     /**
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
-     * Output class is forced to an object.
      * 
      * @param lang - script language
      * @param expr - the script to run
      * @param returnType Class of the return of the Script
+     * @throws ScriptingEngineException
      */
     public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException {
         mName = "<expr>";
@@ -149,6 +152,14 @@ public class Script implements DescriptionObject {
         setInputParamValue("agent", agent);
     }
 
+    /**
+     * Creates a script executor for the supplied expression, bypassing the xml parsing bit
+     * Output class is forced to an object.
+     * 
+     * @param lang - script language
+     * @param expr - the script to run
+     * @throws ScriptingEngineException
+     */
     public Script(String lang, String expr) throws ScriptingEngineException {
         this(lang, expr, Object.class);
     }
@@ -201,6 +212,8 @@ public class Script implements DescriptionObject {
     public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
             throws ScriptingEngineException, InvalidDataException
     {
+        isActExecEnvironment = true;
+
         // set environment - this needs to be well documented for script developers
         if (!mInputParams.containsKey("item")) {
             Logger.warning("Item param not declared in Script "+getName()+" v"+getVersion());
@@ -582,15 +595,9 @@ public class Script implements DescriptionObject {
 
             //Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
         }
-        catch (Throwable ex) {
-            Logger.error(ex);
-            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getMessage());
-        }
-
-        // if no outputs are defined, return null
-        if (mOutputParams.size() == 0) {
-            Logger.msg(4, "Script.execute() - No output params. Returning null.");
-            return null;
+        catch (ScriptException ex) {
+            Logger.error(ex.getCause());
+            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getCause().getMessage(), ex.getCause());
         }
 
         return packScriptReturnValue(returnValue);
@@ -605,7 +612,20 @@ public class Script implements DescriptionObject {
     private void executeIncludedScripts() throws ScriptingEngineException {
         for (Script importScript : mIncludes) {
             Logger.msg(5, "Script.executeIncludedScripts() - name:"+importScript.getName()+" version:"+importScript.getVersion());
-            
+
+            if (isActExecEnvironment) {
+                try {
+                    importScript.setActExecEnvironment(
+                             (ItemProxy)context.getAttribute("item"),
+                            (AgentProxy)context.getAttribute("agent"), 
+                                   (Job)context.getAttribute("job"));
+                }
+                catch (InvalidDataException e) {
+                    Logger.error(e);
+                    throw new ScriptingEngineException(e);
+                }
+            }
+
             // set current context to the included script before executing it? (issue #124)            
             importScript.setContext(context);
             // execute the included scripts first, they might set input parameters            
@@ -628,22 +648,21 @@ public class Script implements DescriptionObject {
     }
 
     /**
-     * Initialise the output parameters before execution
+     * Initialise the output parameters before execution. Adds them to the context EXCEPT if the 
+     * name of output parameter is blank then it's the return type.
      */
     private void initOutputParams() {
         for (Parameter outputParam : mOutputParams.values()) {
-            //If the name is null then it's the return type. don't pre-register it
-            if (outputParam.getName() == null || outputParam.getName().length() == 0) continue; 
+            if (StringUtils.isBlank(outputParam.getName())) continue; 
 
             Logger.msg(8, "Script.initOutputParams() - Initialising output bean '" + outputParam.getName() + "'");
 
-            Object emptyObject;
+            Object emptyObject = null;
             try {
                 emptyObject = outputParam.getType().newInstance();
             }
-            catch (Exception e) {
-                emptyObject = null;
-            }
+            catch (Exception e) {}
+
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
         }
     }
@@ -659,27 +678,73 @@ public class Script implements DescriptionObject {
     private Object packScriptReturnValue(Object returnValue) throws ScriptingEngineException {
         HashMap<String, Object> outputs = new HashMap<String, Object>();
 
-        for (Parameter outputParam : mOutputParams.values()) {
+        // if no outputs are defined, return null
+        if (mOutputParams.size() == 0) {
+            if (returnValue != null)
+                Logger.warning("Script.packScriptReturnValue("+getName()+") - No output params defined, returnValue is NOT null but it is discarded");
+            else
+                Logger.msg(4, "Script.packScriptReturnValue("+getName()+") - No output params defined. Returning null.");
+
+            return null;
+        }
+
+        //return the value when a single output was defined
+        if (mOutputParams.size() == 1) {
+            Parameter outputParam = mOutputParams.values().iterator().next();
             String outputName = outputParam.getName();
 
-            //return the value when a single output was defined with no name
-            if (mOutputParams.size() == 1 && StringUtils.isBlank(outputName)) return returnValue;
+            //no name was defined return the value, otherwise put it into a map
+            if (StringUtils.isBlank(outputName)) {
+                if (returnValue != null && ! outputParam.getType().isInstance(returnValue))
+                    throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
 
-            if (StringUtils.isBlank(outputName)) throw new ScriptingEngineException("Script "+getName()+" - All outputs must have a name.");
-
-            //otherwise take data from the bindings using the output name
-            Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
-
-            Logger.msg(4, "Script.packScriptReturnValue() - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
-
-            // check the class
-            if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
-                throw new ScriptingEngineException("Script "+getName()+" - output "+outputName+" was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+                return returnValue;
             }
+            else {
+                Object output = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
 
-            outputs.put(outputParam.getName(), outputValue);
+                if (output == null) {
+                    if (! outputName.equals("errors")) {
+                        Logger.msg(5, "Script.packScriptReturnValue("+getName()+") - assigning script returnValue to named output '"+outputName+"'");
+
+                        if (returnValue != null && ! outputParam.getType().isInstance(returnValue))
+                            throw new ScriptingEngineException("Script returnValue was not instance of " + outputParam.getType().getName());
+
+                        output = returnValue;
+                    }
+                    else
+                        Logger.msg(5, "Script.packScriptReturnValue("+getName()+") - return value for 'errors' is discarded");
+                }
+                else if (! outputParam.getType().isInstance(output))
+                    throw new ScriptingEngineException("Script '"+getName()+"' returnValue was not instance of " + outputParam.getType().getName());
+
+                outputs.put(outputName, output);
+                return outputs;
+            }
         }
-        return outputs;
+        else {
+            if (returnValue != null) Logger.msg(5, "Script.packScriptReturnValue() - returnValue is NOT null but it is discarded");
+
+            //there are more then one declared outputs
+            for (Parameter outputParam : mOutputParams.values()) {
+                String outputName = outputParam.getName();
+
+                if (StringUtils.isBlank(outputName)) throw new ScriptingEngineException("Script "+getName()+" - All outputs must have a name.");
+
+                //otherwise take data from the bindings using the output name
+                Object outputValue = context.getBindings(ScriptContext.ENGINE_SCOPE).get(outputParam.getName());
+
+                Logger.msg(4, "Script.packScriptReturnValue("+getName()+") - Output "+ outputName+"="+(outputValue==null ? "null" : outputValue.toString()));
+
+                // check the class
+                if (outputValue != null && !(outputParam.getType().isInstance(outputValue)))  {
+                    throw new ScriptingEngineException("Script '"+getName()+"' output '"+outputName+"' was not null and it was not instance of " + outputParam.getType().getName() + ", it was a " + outputValue.getClass().getName());    
+                }
+
+                outputs.put(outputParam.getName(), outputValue);
+            }
+            return outputs;
+        }
     }
 
     public void setScriptData(String script) throws ScriptParsingException {
@@ -720,7 +785,7 @@ public class Script implements DescriptionObject {
     public static Script getScript(String name, Integer version) 
             throws ScriptingEngineException, ObjectNotFoundException, InvalidDataException
     {
-        if (name == null || name.length() == 0) throw new ScriptingEngineException("Script name is empty");
+        if (StringUtils.isBlank(name)) throw new ScriptingEngineException("Script name is blank");
 
         if (version != null) {
             return LocalObjectLoader.getScript(name, version);

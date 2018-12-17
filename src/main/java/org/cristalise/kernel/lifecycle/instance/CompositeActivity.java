@@ -250,7 +250,7 @@ public class CompositeActivity extends Activity {
 
         if (autoStart != null) {
             try {
-                request(agent, null, itemPath, autoStart.getId(), null, locker);
+                request(agent, null, itemPath, autoStart.getId(), null, "", null, locker);
             }
             catch (RuntimeException e) {
                 throw e;
@@ -304,7 +304,7 @@ public class CompositeActivity extends Activity {
                 }
 
                 try {
-                    request(agent, null, itemPath, trans.getId(), null, locker);
+                    request(agent, null, itemPath, trans.getId(), null, "", null, locker);
                     if (!trans.isFinishing()) // don't run next if we didn't finish
                         return;
                 }
@@ -415,15 +415,17 @@ public class CompositeActivity extends Activity {
     }
 
     @Override
-    public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, Object locker)
+    public String request(AgentPath agent, AgentPath delegator, ItemPath itemPath, int transitionID, String requestData, String attachmentType, byte[] attachment, Object locker)
             throws AccessRightsException, InvalidTransitionException, InvalidDataException, ObjectNotFoundException, PersistencyException,
             ObjectAlreadyExistsException, ObjectCannotBeUpdated, CannotManageException, InvalidCollectionModification
     {
         Transition trans = getStateMachine().getTransition(transitionID);
-        if (trans.isFinishing() && hasActive()) {
 
-            if ((Boolean)getBuiltInProperty(ABORTABLE)) abort();
-            else                                        throw new InvalidTransitionException("Attempted to finish a composite activity that had active children but was not Abortable");
+        if (trans.isFinishing() && hasActive()) {
+            if ((Boolean)getBuiltInProperty(ABORTABLE)) 
+                abort();
+            else
+                throw new InvalidTransitionException("Attempted to finish '"+getPath()+"' it had active children but was not Abortable");
         }
 
         if (getStateMachine().getTransition(transitionID).reinitializes()) {
@@ -434,13 +436,12 @@ public class CompositeActivity extends Activity {
 
         if (getChildrenGraphModel().getStartVertex() != null
                 && (getStateMachine().getState(state).equals(getStateMachine().getInitialState())
-                        || getStateMachine().getTransition(transitionID).reinitializes())
-                )
+                        || getStateMachine().getTransition(transitionID).reinitializes()))
         {
             ((WfVertex) getChildrenGraphModel().getStartVertex()).run(agent, itemPath, locker);
         }
 
-        return super.request(agent, delegator, itemPath, transitionID, requestData, locker);
+        return super.request(agent, delegator, itemPath, transitionID, requestData, attachmentType, attachment, locker);
     }
 
     public void refreshJobs(ItemPath itemPath) {
