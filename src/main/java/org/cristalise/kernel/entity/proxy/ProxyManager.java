@@ -51,6 +51,8 @@ public class ProxyManager {
     HashMap<DomainPathSubscriber, DomainPath>  treeSubscribers = new HashMap<DomainPathSubscriber, DomainPath>();
     HashMap<String, ProxyServerConnection>     connections     = new HashMap<String, ProxyServerConnection>();
 
+    ProxyMessageListener messageListener = null;
+
     /**
      * Create a proxy manager to listen for proxy events and reap unused proxies
      */
@@ -73,6 +75,16 @@ public class ProxyManager {
                 Logger.error("Exception retrieving proxy server connection data for "+thisServerResult);
                 Logger.error(ex);
             }
+        }
+
+        try {
+            if (Gateway.getProperties().containsKey("ProxyMessageListener")) {
+                messageListener = (ProxyMessageListener) Gateway.getProperties().getInstance("ProxyMessageListener");
+            }
+        }
+        catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            Logger.error(e);
+            throw new InvalidDataException(e.getMessage());
         }
     }
 
@@ -137,19 +149,24 @@ public class ProxyManager {
                 }
             }
         }
+
+        if (messageListener != null) messageListener.notifyMessage(thisMessage);
     }
 
     private void informTreeSubscribers(boolean state, String path) {
         DomainPath last = new DomainPath(path);
-        DomainPath parent; boolean first = true;
-        synchronized(treeSubscribers) {
-            while((parent = last.getParent()) != null) {
+        DomainPath parent;
+        boolean first = true;
+
+        synchronized (treeSubscribers) {
+            while ((parent = last.getParent()) != null) {
                 ArrayList<DomainPathSubscriber> currentKeys = new ArrayList<DomainPathSubscriber>();
                 currentKeys.addAll(treeSubscribers.keySet());
+
                 for (DomainPathSubscriber sub : currentKeys) {
                     DomainPath interest = treeSubscribers.get(sub);
 
-                    if (interest!= null && interest.equals(parent)) {
+                    if (interest != null && interest.equals(parent)) {
                         if (state == ProxyMessage.ADDED) sub.pathAdded(last);
                         else if (first)                  sub.pathRemoved(last);
                     }

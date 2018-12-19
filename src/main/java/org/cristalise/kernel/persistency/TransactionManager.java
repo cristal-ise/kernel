@@ -22,7 +22,10 @@ package org.cristalise.kernel.persistency;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.entity.C2KLocalObject;
@@ -55,6 +58,9 @@ public class TransactionManager {
         return storage;
     }
 
+    /**
+     * Closing will abort all all transactions
+     */
     public void close() {
         if (pendingTransactions.size() != 0) {
             Logger.error("There were pending transactions on shutdown. All changes were lost.");
@@ -64,16 +70,71 @@ public class TransactionManager {
         storage.close();
     }
 
+    /**
+     * 
+     * @param query
+     * @return
+     * @throws PersistencyException
+     */
     public String executeQuery(Query query) throws PersistencyException {
         return storage.executeQuery(query);
     }
 
+    /**
+     * Retrieves the ids of the root level of a cluster
+     * 
+     * @param itemPath the item 
+     * @param type the type of the cluster
+     * @return array of ids
+     * @throws PersistencyException
+     */
     public String[] getClusterContents(ItemPath itemPath, ClusterType type) throws PersistencyException {
         return getClusterContents(itemPath, type.getName());
     }
+
+    /**
+     * Retrieves the ids of the next level of a cluster
+     * 
+     * @param itemPath the item 
+     * @param path the cluster path
+     * @return array of ids
+     * @throws PersistencyException
+     */
     public String[] getClusterContents(ItemPath itemPath, String path) throws PersistencyException {
+        return getClusterContents(itemPath, path, null);
+    }
+
+    /**
+     * Retrieves the ids of the next level of a cluster
+     * Checks the transaction table first to see if the caller has uncommitted changes
+     * 
+     * @param itemPath the item 
+     * @param path the cluster path
+     * @param locker the transaction kez
+     * @return array of ids
+     * @throws PersistencyException
+     */
+    public String[] getClusterContents(ItemPath itemPath, String path, Object locker) throws PersistencyException {
         if (path.startsWith("/") && path.length() > 1) path = path.substring(1);
-        return storage.getClusterContents(itemPath, path);
+
+        List<String> uncomittedContents = new ArrayList<>();
+
+        if (locks.containsKey(itemPath) && locks.get(itemPath).equals(locker)) {
+            for (TransactionEntry thisEntry : pendingTransactions.get(locker)) {
+                if (itemPath.equals(thisEntry.itemPath) && thisEntry.path.startsWith(path)) {
+                    if (thisEntry.obj == null)
+                        throw new PersistencyException("TransactionManager.get() - Cluster " + path + " has been deleted in " + itemPath +
+                                " but not yet committed");
+                    String content = StringUtils.substringAfterLast(thisEntry.path, "/");
+                    uncomittedContents.add(content);
+                }
+            }
+        }
+
+        return ArrayUtils.addAll(
+                storage.getClusterContents(itemPath, path), 
+                uncomittedContents.toArray(new String[uncomittedContents.size()])
+        );
     }
 
     /**

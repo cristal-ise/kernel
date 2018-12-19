@@ -123,11 +123,11 @@ public class Script implements DescriptionObject {
 
     /**
      * Creates a script executor for the supplied expression, bypassing the xml parsing bit
-     * Output class is forced to an object.
      * 
      * @param lang - script language
      * @param expr - the script to run
      * @param returnType Class of the return of the Script
+     * @throws ScriptingEngineException
      */
     public Script(String lang, String expr, Class<?> returnType) throws ScriptingEngineException {
         mName = "<expr>";
@@ -152,6 +152,14 @@ public class Script implements DescriptionObject {
         setInputParamValue("agent", agent);
     }
 
+    /**
+     * Creates a script executor for the supplied expression, bypassing the xml parsing bit
+     * Output class is forced to an object.
+     * 
+     * @param lang - script language
+     * @param expr - the script to run
+     * @throws ScriptingEngineException
+     */
     public Script(String lang, String expr) throws ScriptingEngineException {
         this(lang, expr, Object.class);
     }

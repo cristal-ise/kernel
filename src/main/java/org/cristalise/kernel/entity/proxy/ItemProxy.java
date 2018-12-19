@@ -20,6 +20,7 @@
  */
 package org.cristalise.kernel.entity.proxy;
 
+import static org.cristalise.kernel.persistency.ClusterType.HISTORY;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
 
@@ -43,8 +44,10 @@ import org.cristalise.kernel.entity.Item;
 import org.cristalise.kernel.entity.ItemHelper;
 import org.cristalise.kernel.entity.agent.Job;
 import org.cristalise.kernel.entity.agent.JobArrayList;
+import org.cristalise.kernel.events.Event;
 import org.cristalise.kernel.lifecycle.instance.CompositeActivity;
 import org.cristalise.kernel.lifecycle.instance.Workflow;
+import org.cristalise.kernel.lifecycle.instance.predefined.WriteProperty;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
@@ -215,11 +218,11 @@ public class ItemProxy
         String outcomeString = "";
         if (outcome != null) outcomeString = outcome.getData();
 
-        getItem().initialise( agentId.getSystemKey(), propString, wfString, collString, viewpointString, outcomeString);
+        getItem().initialise(agentId.getSystemKey(), propString, wfString, collString, viewpointString, outcomeString);
     }
 
     /**
-     * Sets the vlaue of the given Property
+     * Sets the value of the given Property
      *
      * @param agent the Agent who is setting the Property
      * @param name the name of the Property
@@ -233,7 +236,7 @@ public class ItemProxy
     {
         try {
             String[] params = {name, value};
-            agent.execute(this, "WriteProperty", params);
+            agent.execute(this, WriteProperty.class.getSimpleName(), params);
         }
         catch (AccessRightsException | PersistencyException | InvalidDataException e) {
             throw (e);
@@ -375,6 +378,19 @@ public class ItemProxy
     }
 
     /**
+     * Gets the current version of the named Collection. This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     *
+     * @param collection The built-in collection
+     * @param locker the transaction key
+     * @return the Collection object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Collection<?> getCollection(BuiltInCollections collection, Object locker) throws ObjectNotFoundException {
+        return getCollection(collection, null, locker);
+    }
+
+    /**
      * Gets a numbered version (snapshot) of a collection
      *
      * @param collection The built-in Collection
@@ -383,7 +399,20 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection, Integer version) throws ObjectNotFoundException {
-        return getCollection(collection.getName(), version);
+        return getCollection(collection, version, null);
+    }
+
+    /**
+     * Gets a numbered version (snapshot) of a collection
+     *
+     * @param collection The built-in Collection
+     * @param version The collection number. Use null to get the 'last' version.
+     * @param locker
+     * @return the Collection object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Collection<?> getCollection(BuiltInCollections collection, Integer version, Object locker) throws ObjectNotFoundException {
+        return getCollection(collection.getName(), version, locker);
     }
 
     /**
@@ -394,7 +423,20 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName) throws ObjectNotFoundException {
-        return getCollection(collName, null);
+        return getCollection(collName, null, null);
+    }
+
+    /**
+     * Gets the last version of the named collection. This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     *
+     * @param collName The collection name
+     * @param locker the transaction key
+     * @return the Collection object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Collection<?> getCollection(String collName, Object locker) throws ObjectNotFoundException {
+        return getCollection(collName, null, locker);
     }
 
     /**
@@ -406,21 +448,48 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
-        String verStr = version==null?"last":String.valueOf(version);
-        return (Collection<?>)getObject(ClusterType.COLLECTION+"/"+collName+"/"+verStr);
+        return getCollection(collName, version, null);
     }
 
-    /** Gets the Workflow object of this Item
+    /**
+     * Gets a numbered version (snapshot) of a collection. This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     *
+     * @param collName The collection name
+     * @param version The collection number. Use null to get the 'last' version.
+     * @param locker the transaction key
+     * @return the Collection object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Collection<?> getCollection(String collName, Integer version, Object locker) throws ObjectNotFoundException {
+        String verStr = version == null ? "last" : String.valueOf(version);
+        return (Collection<?>) getObject(ClusterType.COLLECTION+"/"+collName+"/"+verStr, locker);
+    }
+
+    /** 
+     * Gets the Workflow object of this Item
      *
      * @return the Item's Workflow object
      * @throws ObjectNotFoundException objects were not found
      */
     public Workflow getWorkflow() throws ObjectNotFoundException {
-        return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow");
+        return getWorkflow(null);
     }
 
     /**
-     * Check if the given Viewvpoint exists
+     * Gets the Workflow object of this Item. This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     *
+     * @param locker the transaction key
+     * @return the Item's Workflow object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Workflow getWorkflow(Object locker) throws ObjectNotFoundException {
+        return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow", locker);
+    }
+
+    /**
+     * Check if the given Viewpoint exists
      *
      * @param schemaName the name of the Schema associated with the Viewpoint
      * @param viewName the name of the View
@@ -432,6 +501,20 @@ public class ItemProxy
     }
 
     /**
+     * Check if the given Viewpoint exists.This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     *
+     * @param schemaName the name of the Schema associated with the Viewpoint
+     * @param viewName the name of the View
+     * @param locker the transaction key
+     * @return true if the ViewPoint exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkViewpoint(String schemaName, String viewName, Object locker) throws ObjectNotFoundException {
+        return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName, locker);
+    }
+
+    /**
      * Reads the list of existing Viewpoint names for the given schema 
      * 
      * @param schemaName the name of the schema
@@ -440,6 +523,19 @@ public class ItemProxy
      */
     public String[] getViewpoints(String schemaName) throws ObjectNotFoundException {
         return getContents(ClusterType.VIEWPOINT+"/"+schemaName);
+    }
+
+    /**
+     * Reads the list of existing Viewpoint names for the given schema. This method can be used in server 
+     * side Script to find uncommitted changes during the active transaction.
+     * 
+     * @param schemaName the name of the schema
+     * @param locker the transaction key
+     * @return array of strings containing the Viewpoint names
+     * @throws ObjectNotFoundException Object not found
+     */
+    public String[] getViewpoints(String schemaName, Object locker) throws ObjectNotFoundException {
+        return getContents(ClusterType.VIEWPOINT+"/"+schemaName, locker);
     }
 
     /**
@@ -455,6 +551,20 @@ public class ItemProxy
     }
 
     /**
+     * Gets the named Viewpoint. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     * 
+     * @param schemaName the name of the Schema associated with the Viewpoint
+     * @param viewName name if the View
+     * @param locker the transaction key
+     * @return a Viewpoint object
+     * @throws ObjectNotFoundException objects were not found
+     */
+    public Viewpoint getViewpoint(String schemaName, String viewName, Object locker) throws ObjectNotFoundException {
+        return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName, locker);
+    }
+
+    /**
      * Check if the given Outcome exists
      *
      * @param schemaName the name of the Schema used to create the Outcome
@@ -464,8 +574,23 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        return checkOutcome(schemaName, schemaVersion, eventId, null);
+    }
+
+    /**
+     * Check if the given Outcome exists. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param schemaName the name of the Schema used to create the Outcome
+     * @param schemaVersion the version of the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @param locker the transaction key
+     * @return true if the Outcome exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcome(String schemaName, int schemaVersion, int eventId, Object locker) throws ObjectNotFoundException {
         try {
-            return checkOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+            return checkOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -482,11 +607,26 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
-        return checkContent(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId));
+        return checkOutcome(schema, eventId, null);
     }
 
     /**
-     * Gets the selected Outcome
+     * Check if the given Outcome exists. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     * 
+     * @param schema the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @param locker transaction key
+     * @return true if the Outcome exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcome(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
+        return checkContent(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker);
+    }
+
+    /**
+     * Gets the selected Outcome. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
      *
      * @param schemaName the name of the Schema of the Outcome
      * @param schemaVersion the version of the Schema of the Outcome
@@ -495,8 +635,23 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public Outcome getOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        return getOutcome(schemaName, schemaVersion, eventId, null);
+    }
+
+    /**
+     * Gets the selected Outcome. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param schemaName the name of the Schema of the Outcome
+     * @param schemaVersion the version of the Schema of the Outcome
+     * @param eventId the event id
+     * @param locker the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(String schemaName, int schemaVersion, int eventId, Object locker) throws ObjectNotFoundException {
         try {
-            return getOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+            return getOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -505,7 +660,7 @@ public class ItemProxy
     }
 
     /**
-     * Gets the selected Outcome
+     * Gets the selected Outcome,
      *
      * @param schema the Schema used to create the Outcome
      * @param eventId the id of the Event created when the Outcome was stored
@@ -513,7 +668,21 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public Outcome getOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
-        return (Outcome)getObject(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId);
+        return getOutcome(schema, eventId, null);
+    }
+
+    /**
+     * Gets the selected Outcome. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param schema the Schema used to create the Outcome
+     * @param eventId the id of the Event created when the Outcome was stored
+     * @param locker the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
+        return (Outcome)getObject(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker);
     }
 
     /**
@@ -525,7 +694,21 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
-        return checkContent(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId));
+        return checkOutcomeAttachment(schema, eventId, null);
+    }
+
+    /**
+     * Check if the given OutcomeAttachment exists. This method can be used in server side Script 
+     * to find uncommitted changes during the active transaction.
+     *
+     * @param schema the Schema used to create the Outcome and its OutcomeAttachment
+     * @param eventId the id of the Event created when the Outcome and its OutcomeAttachment was stored
+     * @param locker the transaction key
+     * @return true if the OutcomeAttachment exist false otherwise
+     * @throws ObjectNotFoundException Object not found
+     */
+    public boolean checkOutcomeAttachment(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
+        return checkContent(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker);
     }
 
     /**
@@ -538,8 +721,25 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public OutcomeAttachment getOutcomeAttachment(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
+        return getOutcomeAttachment(schemaName, schemaVersion, eventId, null);
+    }
+
+    /**
+     * Gets the selected OutcomeAttachment. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param schemaName the name of the Schema used to create the Outcome and its OutcomeAttachment
+     * @param schemaVersion the version of the Schema of the Outcome
+     * @param eventId the event id
+     * @param locker the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public OutcomeAttachment getOutcomeAttachment(String schemaName, int schemaVersion, int eventId, Object locker)
+            throws ObjectNotFoundException
+    {
         try {
-            return getOutcomeAttachment(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId);
+            return getOutcomeAttachment(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -556,7 +756,21 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public OutcomeAttachment getOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
-        return (OutcomeAttachment)getObject(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId);
+        return getOutcomeAttachment(schema, eventId, null);
+    }
+
+    /**
+     * Gets the selected OutcomeAttachment. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param schema the Schema used to create the Outcome and its OutcomeAttachment
+     * @param eventId the id of the Event created when the Outcome and the OutcomeAttachment was stored
+     * @param locker the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public OutcomeAttachment getOutcomeAttachment(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
+        return (OutcomeAttachment)getObject(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker);
     }
 
     /**
@@ -627,7 +841,7 @@ public class ItemProxy
      * @return the data in XML form
      * @throws ObjectNotFoundException path was not correct
      */
-    public String queryData( String path ) throws ObjectNotFoundException {
+    public String queryData(String path) throws ObjectNotFoundException {
         try {
             Logger.msg(7, "ItemProxy.queryData() - "+mItemPath+"/"+path);
 
@@ -640,7 +854,7 @@ public class ItemProxy
                 for (int i = 0; i < result.length; i++) {
                     retString.append(result[i]);
 
-                    if (i<result.length-1) retString.append(",");
+                    if (i < result.length-1) retString.append(",");
                 }
                 Logger.msg(7, "ItemProxy.queryData() - "+retString.toString());
                 return retString.toString();
@@ -667,20 +881,59 @@ public class ItemProxy
      * @return true if there is content false otherwise
      * @throws ObjectNotFoundException path was not correct
      */
-    public boolean checkContent( String path, String name ) throws ObjectNotFoundException {
-        for (String key : getContents(path)) if (key.equals(name)) return true;
+    public boolean checkContent(String path, String name) throws ObjectNotFoundException {
+        return checkContent(path, name, null);
+    }
+
+    /**
+     * Check the root content of the given ClusterType
+     *
+     * @param cluster the type of the cluster
+     * @param name the name of the content to be checked
+     * @return true if there is content false otherwise
+     * @throws ObjectNotFoundException path was not correct
+     */
+    public boolean checkContent(ClusterType cluster, String name) throws ObjectNotFoundException {
+        return checkContent(cluster.getName(), name, null);
+    }
+
+    /**
+     * Check if the data of the Item located by the ClusterStorage path is exist. This method can be used
+     * in server side Script to find uncommitted changes during the active transaction.
+     *
+     * @param cluster the type of the cluster
+     * @param name the name of the content to be checked
+     * @param locker the transaction key
+     * @return true if there is content false otherwise
+     * @throws ObjectNotFoundException path was not correct
+     */
+    public boolean checkContent(String path, String name, Object locker) throws ObjectNotFoundException {
+        for (String key : getContents(path, locker)) if (key.equals(name)) return true;
         return false;
     }
 
     /**
-     * List the root content of the given ClusterType
+     * List the root content of the given ClusterType.
      *
      * @param type the type of the cluster
      * @return list of String of the cluster content
      * @throws ObjectNotFoundException Object nt found
      */
-    public String[] getContents( ClusterType type ) throws ObjectNotFoundException {
+    public String[] getContents(ClusterType type) throws ObjectNotFoundException {
         return getContents(type.getName());
+    }
+
+    /**
+     * List the root content of the given ClusterType. This method can be used in server side Script 
+     * to find uncommitted changes during the active transaction.
+     *
+     * @param type the type of the cluster
+     * @param locker the transaction key
+     * @return list of String of the cluster content
+     * @throws ObjectNotFoundException Object nt found
+     */
+    public String[] getContents(ClusterType type, Object locker) throws ObjectNotFoundException {
+        return getContents(type.getName(), locker);
     }
 
     /**
@@ -690,9 +943,23 @@ public class ItemProxy
      * @return list of String of the cluster content
      * @throws ObjectNotFoundException Object not found
      */
-    public String[] getContents( String path ) throws ObjectNotFoundException {
+    public String[] getContents(String path) throws ObjectNotFoundException {
+        return getContents(path, null);
+    }
+
+    /**
+     * List the content of the cluster located by the cluster path. This method can be used in server side Script 
+     * to find uncommitted changes during the active transaction.
+     *
+     * @param path the ClusterStorage path
+     * @param locker the transaction key
+     * @return list of String of the cluster content
+     * @throws ObjectNotFoundException Object not found
+     */
+    public String[] getContents(String path, Object locker) throws ObjectNotFoundException {
         try {
             return Gateway.getStorage().getClusterContents(mItemPath, path);
+            //return Gateway.getStorage().getClusterContents(mItemPath, path, locker);
         }
         catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());
@@ -717,7 +984,7 @@ public class ItemProxy
      * @return the C2KLocalObject
      * @throws ObjectNotFoundException the type did not result in a C2KLocalObject
      */
-    public C2KLocalObject getObject( ClusterType type ) throws ObjectNotFoundException {
+    public C2KLocalObject getObject(ClusterType type) throws ObjectNotFoundException {
         return getObject(type.getName());
     }
 
@@ -728,10 +995,22 @@ public class ItemProxy
      * @return the C2KLocalObject
      * @throws ObjectNotFoundException the path did not result in a C2KLocalObject
      */
-    public C2KLocalObject getObject( String path ) throws ObjectNotFoundException {
-        // load from storage, falling back to proxy loader if not found in others
+    public C2KLocalObject getObject(String path) throws ObjectNotFoundException {
+        return getObject(path, null);
+    }
+
+    /**
+     * Retrieve the C2KLocalObject for the Cluster path. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     * 
+     * @param path the path to the cluster object
+     * @param locker the transaction key
+     * @return the C2KLocalObject
+     * @throws ObjectNotFoundException the path did not result in a C2KLocalObject
+     */
+    public C2KLocalObject getObject(String path, Object locker) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().get( mItemPath, path , null);
+            return Gateway.getStorage().get(mItemPath, path , locker);
         }
         catch( PersistencyException ex ) {
             Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+path);
@@ -756,9 +1035,9 @@ public class ItemProxy
      * 
      * @param prop one of the Built-In Item Property
      * @param defaultValue the value to be used if no Property was found
-     * @return
+     * @return the value or the defaultValue
      */
-    public String getProperty( BuiltInItemProperties prop, String defaultValue) {
+    public String getProperty(BuiltInItemProperties prop, String defaultValue) {
         return getProperty(prop.getName(), defaultValue);
     }
 
@@ -769,26 +1048,54 @@ public class ItemProxy
      * @param defaultValue the value to be used if no Property was found
      * @return the value or the defaultValue
      */
-    public String getProperty( String name, String defaultValue ) {
+    public String getProperty(String name, String defaultValue) {
+        return getProperty(name, defaultValue, null);
+    }
+
+    /**
+     * Retrieves the value of a named property. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param name of the Item Property
+     * @param defaultValue the value to be used if no Property was found
+     * @param locker the transaction key
+     * @return the value of the property
+     */
+    public String getProperty(String name, String defaultValue, Object locker) {
         try {
-            return getProperty(name);
+            if (checkContent(ClusterType.PROPERTY.getName(), name, locker)) {
+                return getProperty(name, locker);
+            }
         }
         catch(ObjectNotFoundException e) {
+            //This line should never happen because of the use of checkContent()
         }
 
         return defaultValue;
     }
 
     /**
-     * Retrieves the values of a named property
+     * Retrieves the value of a named property
      *
      * @param name of the Item Property
      * @return the value of the property
      * @throws ObjectNotFoundException property was not found
      */
     public String getProperty( String name ) throws ObjectNotFoundException {
+        return getProperty(name, (Object)null);
+    }
+
+    /**
+     * 
+     * @param name
+     * @param locker
+     * @return
+     * @throws ObjectNotFoundException
+     */
+    public String getProperty(String name, Object locker) throws ObjectNotFoundException {
         Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
-        Property prop = (Property)getObject(ClusterType.PROPERTY+"/"+name);
+
+        Property prop = (Property)getObject(ClusterType.PROPERTY+"/"+name, locker);
 
         if(prop != null) return prop.getValue();
         else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not find property "+name+" from item "+mItemPath);
@@ -797,19 +1104,43 @@ public class ItemProxy
     /**
      * Get the name of the Item from its Property called Name
      *
-     * @return the name of the Item or null of no Name Property
+     * @return the name of the Item or null if no Name Property exists
      */
     public String getName() {
-        return getProperty(NAME, null);
+        return getProperty(NAME, (String)null);
     }
 
     /**
      * Get the type of the Item from its Property called Type
      *
-     * @return the type of the Item or null of no Type Property
+     * @return the type of the Item or null if no Type Property exists
      */
     public String getType() {
-        return getProperty(TYPE, null);
+        return getProperty(TYPE, (String)null);
+    }
+
+    /**
+     * Retrieves the Event of the given id.
+     * 
+     * @param eventId the id of the Event
+     * @return the Event object
+     * @throws ObjectNotFoundException there is no event for the given id
+     */
+    public Event getEvent(int eventId) throws ObjectNotFoundException {
+        return getEvent(eventId, null);
+    }
+
+    /**
+     * Retrieves the Event of the given id. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     * 
+     * @param eventId the id of the Event
+     * @param locker the transaction key
+     * @return the Event object
+     * @throws ObjectNotFoundException there is no event for the given id
+     */
+    public Event getEvent(int eventId, Object locker) throws ObjectNotFoundException {
+        return (Event) getObject(HISTORY + "/" + eventId, locker);
     }
 
     //**************************************************************************
