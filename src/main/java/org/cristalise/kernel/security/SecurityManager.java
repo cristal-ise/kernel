@@ -93,9 +93,9 @@ public class SecurityManager {
             if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
         }
 
-        // find agent proxy
-        AgentPath ap = Gateway.getLookup().getAgentPath(agentName);
-        return (AgentProxy) Gateway.getProxyManager().getProxy(ap);
+        // It can be invoked before ProxyManager and Lookup is initialised
+        if (Gateway.getProxyManager() != null) return Gateway.getProxyManager().getAgentProxy(agentName);
+        else                                   return null;
     }
 
     /**
