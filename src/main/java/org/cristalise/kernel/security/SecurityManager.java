@@ -31,40 +31,121 @@ import org.apache.shiro.util.Factory;
 import org.cristalise.kernel.common.AccessRightsException;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ItemProxy;
 import org.cristalise.kernel.graph.model.BuiltInVertexProperties;
 import org.cristalise.kernel.lifecycle.instance.Activity;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.utils.Logger;
 
-public class SecurityManager {
+import lombok.Getter;
 
+public class SecurityManager {
+    
+    @Getter
+    private Authenticator auth = null;
+    private boolean shiroEnabled = false;
+
+    /**
+     * 
+     * @throws InvalidDataException
+     */
+    public SecurityManager() throws InvalidDataException {
+        if ("Shiro".equals(Gateway.getProperties().getString("Authenticator", ""))) {
+            setupShiro();
+        }
+        else {
+            auth = Gateway.getAuthenticator();
+        }
+    }
+
+    /**
+     * 
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    public void authenticate() throws InvalidDataException, ObjectNotFoundException {
+        if (!shiroEnabled) {
+            if (!auth.authenticate("system")) throw new InvalidDataException("Server authentication failed");
+        }
+    }
+
+    /**
+     * 
+     * @param agentName
+     * @param agentPassword
+     * @param resource
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    public AgentProxy authenticate(String agentName, String agentPassword, String resource)
+            throws InvalidDataException, ObjectNotFoundException
+    {
+        if (shiroEnabled) {
+            if (!shiroAuthenticate(agentName, agentPassword)) throw new InvalidDataException("Login failed");
+        }
+        else {
+            if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        }
+
+        // find agent proxy
+        AgentPath ap = Gateway.getLookup().getAgentPath(agentName);
+        return (AgentProxy) Gateway.getProxyManager().getProxy(ap);
+    }
+
+    /**
+     * 
+     * @return
+     */
     public Subject getSubject() {
         return getSubject("system");
     }
 
+    /**
+     * 
+     * @param agent
+     * @return
+     */
     public Subject getSubject(AgentPath agent) {;
         return getSubject(agent.getAgentName());
     }
 
+    /**
+     * 
+     * @param principal
+     * @return
+     */
     public Subject getSubject(String principal) {
         PrincipalCollection principals = new SimplePrincipalCollection(principal, principal);
         return new Subject.Builder().principals(principals).buildSubject();
     }
 
+    /**
+     * 
+     */
     public void setupShiro() {
         //TODO: replace this with shiro Environment initialization
         Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-        
+
         org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
         SecurityUtils.setSecurityManager(securityManager);
 
         Logger.msg(2, "SecurityManager.setupShiro() - Done");
+
+        shiroEnabled = true;
     }
 
+    /**
+     * 
+     * @param agentName
+     * @param agentPassword
+     * @return
+     */
     public boolean shiroAuthenticate(String agentName, String agentPassword) {
         Subject agentSubject = getSubject(agentName);
 
