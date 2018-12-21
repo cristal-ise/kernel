@@ -119,11 +119,13 @@ public abstract class PredefinedStep extends Activity {
     }
 
     static public String getPredefStepSchemaName(String stepName) {
-        PredefinedStepContainer[] allSteps = { new ItemPredefinedStepContainer(), new AgentPredefinedStepContainer(),
-                new ServerPredefinedStepContainer() };
+        PredefinedStepContainer[] allSteps = 
+            { new ItemPredefinedStepContainer(), new AgentPredefinedStepContainer(), new ServerPredefinedStepContainer() };
+
         for (PredefinedStepContainer thisContainer : allSteps) {
             String stepPath = thisContainer.getName() + "/" + stepName;
             Activity step = (Activity) thisContainer.search(stepPath);
+
             if (step != null) {
                 return (String) step.getBuiltInProperty(SCHEMA_NAME);
             }
