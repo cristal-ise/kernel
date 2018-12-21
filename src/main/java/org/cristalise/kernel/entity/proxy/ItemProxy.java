@@ -311,13 +311,27 @@ public class ItemProxy
     }
 
     /**
+     * Get the list of active Jobs of the Item that can be executed by the Agent
      *
-     * @param agentPath
-     * @param filter
-     * @return
-     * @throws AccessRightsException
-     * @throws ObjectNotFoundException
-     * @throws PersistencyException
+     * @param agentPath the Agent requesting the job
+     * @return list of active Jobs
+     * @throws AccessRightsException Agent does not the rights to execute this operation
+     * @throws PersistencyException there was a database problems during this operations
+     * @throws ObjectNotFoundException data was invalid
+     */
+    public ArrayList<Job> getJobList(AgentPath agentPath) throws AccessRightsException, ObjectNotFoundException, PersistencyException {
+        return getJobList(agentPath, false);
+    }
+
+    /**
+     * Get the list of Jobs of the Item that can be executed by the Agent
+     *
+     * @param agentPath the Agent requesting the job
+     * @param filter if true, then only Activities which are currently active will be included.
+     * @return list of Jobs
+     * @throws AccessRightsException Agent does not the rights to execute this operation
+     * @throws PersistencyException there was a database problems during this operations
+     * @throws ObjectNotFoundException data was invalid
      */
     private ArrayList<Job> getJobList(AgentPath agentPath, boolean filter)
             throws AccessRightsException, ObjectNotFoundException, PersistencyException
@@ -336,7 +350,7 @@ public class ItemProxy
     }
 
     /**
-     * Get the list of Job if the Item that can be executed by the Agent
+     * Get the list of active Jobs of the Item that can be executed by the Agent
      *
      * @param agent the Agent requesting the job
      * @return list of Jobs
