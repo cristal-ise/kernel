@@ -532,6 +532,12 @@ public class Script implements DescriptionObject {
             if (getAllInputParams().containsKey("agent"))
                 setInputParamValue("agent", Gateway.getProxyManager().getProxy(Gateway.getLookup().getAgentPath("system")));
 
+            final String paramName = "locker";
+            Parameter param = mInputParams.get(paramName);
+            if (getAllInputParams().containsKey(paramName) && (param == null || !param.getInitialised())) {
+                setInputParamValue(paramName, locker);
+            }
+
             Object retVal = execute();
 
             if (retVal == null) retVal = "";
