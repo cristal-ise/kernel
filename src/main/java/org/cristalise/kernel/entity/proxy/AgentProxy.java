@@ -236,7 +236,42 @@ public class AgentProxy extends ItemProxy {
         throw new InvalidDataException("Script "+script.getName()+" must at least one output of org.cristalise.kernel.scripting.ErrorInfo");
     }
 
-    public String execute(ItemProxy item, String predefStep, C2KLocalObject obj) 
+    /**
+     * 
+     * @param item
+     * @param predefStep
+     * @param obj
+     * @return
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
+    public String execute(ItemProxy item, Class<?> predefStep, C2KLocalObject obj)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
+                   PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification 
+    {
+        return execute(item, predefStep.getSimpleName(), obj);
+    }
+
+    /**
+     * 
+     * @param item
+     * @param predefStep
+     * @param obj
+     * @return
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
+    public String execute(ItemProxy item, String predefStep, C2KLocalObject obj)
             throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException, 
                    PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification 
     {
@@ -249,6 +284,27 @@ public class AgentProxy extends ItemProxy {
             throw new InvalidDataException("Error on marshall");
         }
         return execute(item, predefStep, param);
+    }
+
+    /**
+     * 
+     * @param item
+     * @param predefStep
+     * @param params
+     * @return
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
+    public String execute(ItemProxy item, Class<?> predefStep, String[] params)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
+            PersistencyException, ObjectAlreadyExistsException, InvalidCollectionModification
+    {
+        return execute(item, predefStep.getSimpleName(), params);
     }
 
     /**
@@ -285,6 +341,27 @@ public class AgentProxy extends ItemProxy {
                 param,
                 "",
                 new byte[0]);
+    }
+
+    /**
+     * 
+     * @param item
+     * @param predefStep
+     * @param param
+     * @return
+     * @throws AccessRightsException
+     * @throws InvalidDataException
+     * @throws InvalidTransitionException
+     * @throws ObjectNotFoundException
+     * @throws PersistencyException
+     * @throws ObjectAlreadyExistsException
+     * @throws InvalidCollectionModification
+     */
+    public String execute(ItemProxy item, Class<?> predefStep, String param)
+            throws AccessRightsException, InvalidDataException, InvalidTransitionException, ObjectNotFoundException,
+            PersistencyException, ObjectAlreadyExistsException,InvalidCollectionModification
+    {
+        return execute(item, predefStep.getSimpleName(), param);
     }
 
     /**
