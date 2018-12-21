@@ -119,8 +119,6 @@ public class Gateway
         // report version info
         Logger.msg("Gateway.init() - Kernel version: "+getKernelVersion());
 
-        mSecurityManager = new SecurityManager();
-
         // load kernel mapfiles giving the resourse loader and the properties of
         // the application to be able to configure castor
         try {
@@ -150,6 +148,8 @@ public class Gateway
 
         // Overwrite with argument props
         if (props != null) mC2KProps.putAll(props);
+
+        mSecurityManager = new SecurityManager();
 
         // dump properties
         Logger.msg("Gateway.init() - DONE");
@@ -299,9 +299,11 @@ public class Gateway
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
     {
-        AgentProxy agent = mSecurityManager.authenticate(agentName, agentPassword, resource);
+        mSecurityManager.authenticate(agentName, agentPassword, resource);
 
         setup(mSecurityManager.getAuth());
+
+        AgentProxy agent = Gateway.getProxyManager().getAgentProxy(agentName);
 
         //TODO: swingui specific initialization
         ScriptConsole.setUser(agent);
