@@ -482,7 +482,7 @@ public class Script implements DescriptionObject {
         if (!mAllInputParams.containsKey(name)) return false;
 
         if (param != null) { // param is in this script
-            if (!param.getType().isInstance(value)) {
+            if (value != null && !param.getType().isInstance(value)) {
                 throw new ParameterException( "Parameter "+name+" in script "+mName+" v"+mVersion+" is wrong type \n"+
                         "Required: "+param.getType().toString()+"\n"+"Supplied: "+value.getClass().toString());
             }
@@ -515,11 +515,14 @@ public class Script implements DescriptionObject {
                 }
             }
 
-            if (getAllInputParams().containsKey("item"))
+            if (getAllInputParams().containsKey("item") && getAllInputParams().get("item") != null)
                 setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
 
-            if (getAllInputParams().containsKey("agent"))
+            if (getAllInputParams().containsKey("agent") && getAllInputParams().get("agent") != null)
                 setInputParamValue("agent", Gateway.getProxyManager().getProxy(Gateway.getLookup().getAgentPath("system")));
+
+            if (getAllInputParams().containsKey("locker") && getAllInputParams().get("locker") != null)
+                setInputParamValue("locker", locker);
 
             Object retVal = execute();
 
