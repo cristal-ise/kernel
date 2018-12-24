@@ -301,7 +301,7 @@ public class Script implements DescriptionObject {
             scriptDoc = domBuilder.parse(new InputSource(new StringReader(scriptXML)));
         }
         catch (Exception ex) {
-            throw new ScriptParsingException("Error parsing Script XML : " + ex.toString());
+            throw new ScriptParsingException("Error parsing Script XML", ex);
         }
 
         parseScriptTag (scriptDoc.getElementsByTagName("script"));
@@ -353,20 +353,9 @@ public class Script implements DescriptionObject {
                     addIncludedInputParam(includeParam.getName(), includeParam.getType());
                 }
             }
-            catch (NumberFormatException e) {
-                throw new ScriptParsingException("Invalid version in imported script name:'"+includeName+"', version:'"+includeVersion+"'");
-            }
-            catch (ScriptingEngineException e) {
+            catch (NumberFormatException | ScriptingEngineException | ObjectNotFoundException | InvalidDataException e) {
                 Logger.error(e);
-                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+": "+e.getMessage());
-            }
-            catch (ObjectNotFoundException e) {
-                Logger.error(e);
-                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" not found.");
-            }
-            catch (InvalidDataException e) {
-                Logger.error(e);
-                throw new ScriptParsingException("Error parsing imported script "+includeName+" v"+includeVersion+" was invalid: "+e.getMessage());
+                throw new ScriptParsingException("Included script '"+includeName+" v"+includeVersion+"' parse error", e);
             }
         }
     }
@@ -382,7 +371,7 @@ public class Script implements DescriptionObject {
             setScriptEngine(scriptElem.getAttribute("language"));
         }
         catch (ScriptingEngineException ex) {
-            throw new ScriptParsingException(ex.getMessage());
+            throw new ScriptParsingException(ex.getMessage(), ex);
         }
 
         // get script source from CDATA
@@ -410,7 +399,7 @@ public class Script implements DescriptionObject {
             addInputParam(name, Gateway.getResource().getClassForName(type));
         }
         catch (ClassNotFoundException ex) {
-            throw new ParameterException("Input parameter " + name + " specifies class " + type + " which was not found.");
+            throw new ParameterException("Input parameter " + name + " specifies class " + type + " which was not found.", ex);
         }
     }
 
@@ -460,7 +449,7 @@ public class Script implements DescriptionObject {
             addOutput(name, Gateway.getResource().getClassForName(type));
         }
         catch (ClassNotFoundException ex) {
-            throw new ParameterException("Output parameter " + name + " specifies class " + type + " which was not found.");
+            throw new ParameterException("Output parameter " + name + " specifies class " + type + " which was not found.", ex);
         }
     }
 
@@ -543,7 +532,7 @@ public class Script implements DescriptionObject {
         catch (Exception e) {
             Logger.error("Script.evaluate() - Script:" + getName());
             Logger.error(e);
-            throw new ScriptingEngineException(e.getMessage());
+            throw new ScriptingEngineException(e);
         }
     }
 
@@ -573,7 +562,7 @@ public class Script implements DescriptionObject {
 
         // croak if any missing
         if (missingParams.length() > 0) {
-            throw new ScriptingEngineException("Execution aborted, the following declared parameters were not set: \n" + missingParams.toString());
+            throw new ScriptingEngineException("Parameters were not set: \n" + missingParams.toString());
         }
 
         initOutputParams();
@@ -661,7 +650,10 @@ public class Script implements DescriptionObject {
             try {
                 emptyObject = outputParam.getType().newInstance();
             }
-            catch (Exception e) {}
+            catch (Exception e) {
+                //This case was originally not logged
+                Logger.warning("Script.initOutputParams() - Failed to init output:%s error:%s", outputParam.getName(), e.getMessage());
+            }
 
             context.getBindings(ScriptContext.ENGINE_SCOPE).put(outputParam.getName(), emptyObject);
         }
@@ -757,7 +749,7 @@ public class Script implements DescriptionObject {
             }
             catch (ScriptException e) {
                 Logger.error(e);
-                throw new ScriptParsingException(e.getMessage());
+                throw new ScriptParsingException(e);
             }
         }
     }
@@ -842,9 +834,13 @@ public class Script implements DescriptionObject {
         for (Script script : mIncludes) {
             try {
                 includeColl.addMember(script.getItemPath());
-            } catch (InvalidCollectionModification e) {
+            }
+            catch (InvalidCollectionModification e) {
+                Logger.error(e);
                 throw new InvalidDataException("Could not add "+script.getName()+" to description collection. "+e.getMessage());
-            } catch (ObjectAlreadyExistsException e) {	
+            }
+            catch (ObjectAlreadyExistsException e) {	
+                Logger.error(e);
                 throw new InvalidDataException("Script "+script.getName()+" included more than once.");
             } // 
         }
