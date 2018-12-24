@@ -55,6 +55,8 @@ public abstract class Path implements C2KLocalObject {
      * Create a path by appending a child string to an existing path
      */
     protected Path(Path parent, String child) {
+        if (child.contains(delim)) throw new IllegalArgumentException("Child name '"+child+"' contains delimiter:"+delim);
+
         mPath = Arrays.copyOf(parent.getPath(), parent.getPath().length + 1);
         mPath[mPath.length - 1] = child;
     }
