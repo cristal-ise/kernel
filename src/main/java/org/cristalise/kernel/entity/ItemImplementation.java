@@ -256,7 +256,7 @@ public class ItemImplementation implements ItemOperations {
         catch (AccessRightsException | InvalidTransitionException   | ObjectNotFoundException | PersistencyException |
                 InvalidDataException  | ObjectAlreadyExistsException | InvalidCollectionModification ex)
         {
-            if (Logger.doLog(8)) Logger.error(ex);
+            Logger.error(ex);
 
             String errorOutcome = handleError(agentId, delegateId, stepPath, lifeCycle, ex);
 
@@ -270,7 +270,7 @@ public class ItemImplementation implements ItemOperations {
             }
         }
         catch (InvalidAgentPathException | ObjectCannotBeUpdated | CannotManageException ex) {
-            if (Logger.doLog(8)) Logger.error(ex);
+            Logger.error(ex);
 
             String errorOutcome = handleError(agentId, delegateId, stepPath, lifeCycle, ex);
 
@@ -423,7 +423,7 @@ public class ItemImplementation implements ItemOperations {
             throw new PersistencyException("Server exception: " + ex.getClass().getName());
         }
 
-        if (Logger.doLog(9)) Logger.msg(9, "ItemImplementation::queryData(" + mItemPath + ") - result:" + result);
+        if (Logger.doLog(8)) Logger.msg(9, "ItemImplementation::queryData(" + mItemPath + ") - result:" + result);
 
         return result;
     }

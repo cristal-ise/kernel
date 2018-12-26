@@ -22,29 +22,42 @@ package org.cristalise.kernel.scripting;
 
 public class ScriptErrorException extends java.lang.Exception {
 
-     /**
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4298189043503060615L;
+    /**
      * Creates new <code>sciptingEngineException</code> without detail message.
      */
-	ErrorInfo errors;
+    ErrorInfo errors;
+
     public ScriptErrorException() {
     }
 
     /**
      * Constructs an <code>sciptingEngineException</code> with the specified detail message.
-     * @param msg the detail message.
+     * 
+     * @param msg
+     *            the detail message.
      */
     public ScriptErrorException(String msg) {
         super(msg);
     }
-    
+
     public ScriptErrorException(ErrorInfo errors) {
-        super(errors.toString()); 
+        super(errors.toString());
         this.errors = errors;
     }
 
-	public ErrorInfo getErrors() {
-		return errors;
-	}
+    public ErrorInfo getErrors() {
+        return errors;
+    }
+
+    public ScriptErrorException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ScriptErrorException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }
-
-
