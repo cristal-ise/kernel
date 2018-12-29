@@ -515,20 +515,23 @@ public class Script implements DescriptionObject {
                 }
             }
 
-            if (getAllInputParams().containsKey("item") && getAllInputParams().get("item") != null)
-                setInputParamValue("item", Gateway.getProxyManager().getProxy(itemPath));
+            if (getAllInputParams().containsKey("item") && getAllInputParams().get("item") != null) {
+                ItemProxy item = Gateway.getProxyManager().getProxy(itemPath);
+                item.setTransactionKey(locker);
+                setInputParamValue("item", item);
+            }
 
-            if (getAllInputParams().containsKey("agent") && getAllInputParams().get("agent") != null)
+            if (getAllInputParams().containsKey("agent") && getAllInputParams().get("agent") != null) {
                 setInputParamValue("agent", Gateway.getProxyManager().getProxy(Gateway.getLookup().getAgentPath("system")));
+            }
 
-            if (getAllInputParams().containsKey("locker") && getAllInputParams().get("locker") != null)
+            if (getAllInputParams().containsKey("locker") && getAllInputParams().get("locker") != null) {
                 setInputParamValue("locker", locker);
+            }
 
             Object retVal = execute();
 
             if (retVal == null) retVal = "";
-
-            //Logger.msg(2, "Script.evaluate("+getName()+") - Script returned:'"+retVal+"'");
 
             return retVal;
         }
