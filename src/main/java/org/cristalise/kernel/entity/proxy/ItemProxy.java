@@ -67,6 +67,9 @@ import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 
+import lombok.Getter;
+import lombok.Setter;
+
 
 /**
  * It is a wrapper for the connection and communication with Item.
@@ -79,6 +82,12 @@ public class ItemProxy
     protected org.omg.CORBA.Object  mIOR;
 
     private final HashMap<MemberSubscription<?>, ProxyObserver<?>> mSubscriptions;
+
+    /**
+     * Set Transaction key (aka locker) when ItemProxy is used in server side scripting
+     */
+    @Getter @Setter
+    private Object transactionKey = null;
 
     /**
      *
@@ -374,7 +383,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection) throws ObjectNotFoundException {
-        return getCollection(collection, null);
+        return getCollection(collection, (Integer)null);
     }
 
     /**
@@ -387,7 +396,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection, Object locker) throws ObjectNotFoundException {
-        return getCollection(collection, null, locker);
+        return getCollection(collection, (Integer)null, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -399,7 +408,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection, Integer version) throws ObjectNotFoundException {
-        return getCollection(collection, version, null);
+        return getCollection(collection, version, transactionKey);
     }
 
     /**
@@ -407,12 +416,12 @@ public class ItemProxy
      *
      * @param collection The built-in Collection
      * @param version The collection number. Use null to get the 'last' version.
-     * @param locker
+     * @param locker the transaction key
      * @return the Collection object
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(BuiltInCollections collection, Integer version, Object locker) throws ObjectNotFoundException {
-        return getCollection(collection.getName(), version, locker);
+        return getCollection(collection.getName(), version, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -423,7 +432,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName) throws ObjectNotFoundException {
-        return getCollection(collName, null, null);
+        return getCollection(collName, (Integer)null, transactionKey);
     }
 
     /**
@@ -436,7 +445,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName, Object locker) throws ObjectNotFoundException {
-        return getCollection(collName, null, locker);
+        return getCollection(collName, (Integer)null, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -448,7 +457,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Collection<?> getCollection(String collName, Integer version) throws ObjectNotFoundException {
-        return getCollection(collName, version, null);
+        return getCollection(collName, version, transactionKey);
     }
 
     /**
@@ -463,7 +472,7 @@ public class ItemProxy
      */
     public Collection<?> getCollection(String collName, Integer version, Object locker) throws ObjectNotFoundException {
         String verStr = version == null ? "last" : String.valueOf(version);
-        return (Collection<?>) getObject(ClusterType.COLLECTION+"/"+collName+"/"+verStr, locker);
+        return (Collection<?>) getObject(ClusterType.COLLECTION+"/"+collName+"/"+verStr, locker == null ? transactionKey : locker);
     }
 
     /** 
@@ -485,7 +494,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Workflow getWorkflow(Object locker) throws ObjectNotFoundException {
-        return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow", locker);
+        return (Workflow)getObject(ClusterType.LIFECYCLE+"/workflow", locker == null ? transactionKey : locker);
     }
 
     /**
@@ -511,7 +520,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkViewpoint(String schemaName, String viewName, Object locker) throws ObjectNotFoundException {
-        return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName, locker);
+        return checkContent(ClusterType.VIEWPOINT+"/"+schemaName, viewName, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -535,7 +544,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public String[] getViewpoints(String schemaName, Object locker) throws ObjectNotFoundException {
-        return getContents(ClusterType.VIEWPOINT+"/"+schemaName, locker);
+        return getContents(ClusterType.VIEWPOINT+"/"+schemaName, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -561,7 +570,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException objects were not found
      */
     public Viewpoint getViewpoint(String schemaName, String viewName, Object locker) throws ObjectNotFoundException {
-        return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName, locker);
+        return (Viewpoint)getObject(ClusterType.VIEWPOINT+"/"+schemaName+"/"+viewName, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -574,7 +583,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
-        return checkOutcome(schemaName, schemaVersion, eventId, null);
+        return checkOutcome(schemaName, schemaVersion, eventId, transactionKey);
     }
 
     /**
@@ -590,7 +599,7 @@ public class ItemProxy
      */
     public boolean checkOutcome(String schemaName, int schemaVersion, int eventId, Object locker) throws ObjectNotFoundException {
         try {
-            return checkOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
+            return checkOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker == null ? transactionKey : locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -607,7 +616,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
-        return checkOutcome(schema, eventId, null);
+        return checkOutcome(schema, eventId, transactionKey);
     }
 
     /**
@@ -621,7 +630,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcome(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
-        return checkContent(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker);
+        return checkContent(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker == null ? transactionKey : locker);
     }
 
     /**
@@ -635,7 +644,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public Outcome getOutcome(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
-        return getOutcome(schemaName, schemaVersion, eventId, null);
+        return getOutcome(schemaName, schemaVersion, eventId, transactionKey);
     }
 
     /**
@@ -651,7 +660,7 @@ public class ItemProxy
      */
     public Outcome getOutcome(String schemaName, int schemaVersion, int eventId, Object locker) throws ObjectNotFoundException {
         try {
-            return getOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
+            return getOutcome(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker == null ? transactionKey : locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -668,7 +677,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public Outcome getOutcome(Schema schema, int eventId) throws ObjectNotFoundException {
-        return getOutcome(schema, eventId, null);
+        return getOutcome(schema, eventId, transactionKey);
     }
 
     /**
@@ -682,7 +691,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public Outcome getOutcome(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
-        return (Outcome)getObject(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker);
+        return (Outcome)getObject(ClusterType.OUTCOME+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -694,7 +703,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
-        return checkOutcomeAttachment(schema, eventId, null);
+        return checkOutcomeAttachment(schema, eventId, transactionKey);
     }
 
     /**
@@ -708,7 +717,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public boolean checkOutcomeAttachment(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
-        return checkContent(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker);
+        return checkContent(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion(), String.valueOf(eventId), locker == null ? transactionKey : locker);
     }
 
     /**
@@ -721,7 +730,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public OutcomeAttachment getOutcomeAttachment(String schemaName, int schemaVersion, int eventId) throws ObjectNotFoundException {
-        return getOutcomeAttachment(schemaName, schemaVersion, eventId, null);
+        return getOutcomeAttachment(schemaName, schemaVersion, eventId, transactionKey);
     }
 
     /**
@@ -739,7 +748,7 @@ public class ItemProxy
             throws ObjectNotFoundException
     {
         try {
-            return getOutcomeAttachment(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker);
+            return getOutcomeAttachment(LocalObjectLoader.getSchema(schemaName, schemaVersion), eventId, locker == null ? transactionKey : locker);
         }
         catch (InvalidDataException e) {
             Logger.error(e);
@@ -756,7 +765,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public OutcomeAttachment getOutcomeAttachment(Schema schema, int eventId) throws ObjectNotFoundException {
-        return getOutcomeAttachment(schema, eventId, null);
+        return getOutcomeAttachment(schema, eventId, transactionKey);
     }
 
     /**
@@ -770,7 +779,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException object was not found
      */
     public OutcomeAttachment getOutcomeAttachment(Schema schema, int eventId, Object locker) throws ObjectNotFoundException {
-        return (OutcomeAttachment)getObject(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker);
+        return (OutcomeAttachment)getObject(ClusterType.ATTACHMENT+"/"+schema.getName()+"/"+schema.getVersion()+"/"+eventId, locker == null ? transactionKey : locker);
     }
 
     /**
@@ -842,6 +851,18 @@ public class ItemProxy
      * @throws ObjectNotFoundException path was not correct
      */
     public String queryData(String path) throws ObjectNotFoundException {
+        return queryData(path, transactionKey);
+    }
+
+    /**
+     * Query data of the Item located by the ClusterStorage path
+     *
+     * @param path the ClusterStorage path
+     * @param locker the transaction key
+     * @return the data in XML form
+     * @throws ObjectNotFoundException path was not correct
+     */
+    public String queryData(String path, Object locker) throws ObjectNotFoundException {
         try {
             Logger.msg(7, "ItemProxy.queryData() - "+mItemPath+"/"+path);
 
@@ -860,7 +881,7 @@ public class ItemProxy
                 return retString.toString();
             }
             else {
-                C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, null);
+                C2KLocalObject target = Gateway.getStorage().get(mItemPath, path, locker == null ? transactionKey : locker);
                 return Gateway.getMarshaller().marshall(target);
             }
         }
@@ -882,7 +903,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException path was not correct
      */
     public boolean checkContent(String path, String name) throws ObjectNotFoundException {
-        return checkContent(path, name, null);
+        return checkContent(path, name, transactionKey);
     }
 
     /**
@@ -894,7 +915,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException path was not correct
      */
     public boolean checkContent(ClusterType cluster, String name) throws ObjectNotFoundException {
-        return checkContent(cluster.getName(), name, null);
+        return checkContent(cluster.getName(), name, transactionKey);
     }
 
     /**
@@ -908,7 +929,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException path was not correct
      */
     public boolean checkContent(String path, String name, Object locker) throws ObjectNotFoundException {
-        for (String key : getContents(path, locker)) if (key.equals(name)) return true;
+        for (String key : getContents(path, locker == null ? transactionKey : locker)) if (key.equals(name)) return true;
         return false;
     }
 
@@ -933,7 +954,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object nt found
      */
     public String[] getContents(ClusterType type, Object locker) throws ObjectNotFoundException {
-        return getContents(type.getName(), locker);
+        return getContents(type.getName(), locker == null ? transactionKey : locker);
     }
 
     /**
@@ -944,7 +965,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException Object not found
      */
     public String[] getContents(String path) throws ObjectNotFoundException {
-        return getContents(path, null);
+        return getContents(path, transactionKey);
     }
 
     /**
@@ -958,8 +979,8 @@ public class ItemProxy
      */
     public String[] getContents(String path, Object locker) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().getClusterContents(mItemPath, path);
-            //return Gateway.getStorage().getClusterContents(mItemPath, path, locker);
+            //return Gateway.getStorage().getClusterContents(mItemPath, path);
+            return Gateway.getStorage().getClusterContents(mItemPath, path, locker == null ? transactionKey : locker);
         }
         catch (PersistencyException e) {
             throw new ObjectNotFoundException(e.toString());
@@ -996,7 +1017,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException the path did not result in a C2KLocalObject
      */
     public C2KLocalObject getObject(String path) throws ObjectNotFoundException {
-        return getObject(path, null);
+        return getObject(path, transactionKey);
     }
 
     /**
@@ -1010,7 +1031,7 @@ public class ItemProxy
      */
     public C2KLocalObject getObject(String path, Object locker) throws ObjectNotFoundException {
         try {
-            return Gateway.getStorage().get(mItemPath, path , locker);
+            return Gateway.getStorage().get(mItemPath, path , locker == null ? transactionKey : locker);
         }
         catch( PersistencyException ex ) {
             Logger.error("ItemProxy.getObject() - Exception loading object:"+mItemPath+"/"+path);
@@ -1048,7 +1069,7 @@ public class ItemProxy
      * @return the value or the defaultValue
      */
     public String getProperty(String name, String defaultValue) {
-        return getProperty(name, defaultValue, null);
+        return getProperty(name, defaultValue, transactionKey);
     }
 
     /**
@@ -1062,8 +1083,8 @@ public class ItemProxy
      */
     public String getProperty(String name, String defaultValue, Object locker) {
         try {
-            if (checkContent(ClusterType.PROPERTY.getName(), name, locker)) {
-                return getProperty(name, locker);
+            if (checkContent(ClusterType.PROPERTY.getName(), name, locker == null ? transactionKey : locker)) {
+                return getProperty(name, locker == null ? transactionKey : locker);
             }
         }
         catch(ObjectNotFoundException e) {
@@ -1094,7 +1115,7 @@ public class ItemProxy
     public String getProperty(String name, Object locker) throws ObjectNotFoundException {
         Logger.msg(5, "ItemProxy.getProperty() - "+name+" from item "+mItemPath);
 
-        Property prop = (Property)getObject(ClusterType.PROPERTY+"/"+name, locker);
+        Property prop = (Property)getObject(ClusterType.PROPERTY+"/"+name, locker == null ? transactionKey : locker);
 
         if(prop != null) return prop.getValue();
         else             throw new ObjectNotFoundException("ItemProxy.getProperty() - COULD not find property "+name+" from item "+mItemPath);
@@ -1126,7 +1147,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException there is no event for the given id
      */
     public Event getEvent(int eventId) throws ObjectNotFoundException {
-        return getEvent(eventId, null);
+        return getEvent(eventId, transactionKey);
     }
 
     /**
@@ -1139,7 +1160,7 @@ public class ItemProxy
      * @throws ObjectNotFoundException there is no event for the given id
      */
     public Event getEvent(int eventId, Object locker) throws ObjectNotFoundException {
-        return (Event) getObject(HISTORY + "/" + eventId, locker);
+        return (Event) getObject(HISTORY + "/" + eventId, locker == null ? transactionKey : locker);
     }
 
 
