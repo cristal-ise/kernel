@@ -695,6 +695,36 @@ public class ItemProxy
     }
 
     /**
+     * Gets the Outcome selected by the Viewpoint
+     *
+     * @param view the Viewpoint to be used
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(Viewpoint view) throws ObjectNotFoundException {
+        return getOutcome(view, transactionKey);
+    }
+
+    /**
+     * Gets the Outcome selected by the Viewpoint. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     *
+     * @param view the Viewpoint to be used
+     * @param locker the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(Viewpoint view, Object locker) throws ObjectNotFoundException {
+        try {
+            return view.getOutcome(locker == null ? transactionKey : locker);
+        }
+        catch (PersistencyException e) {
+            Logger.error(e);
+            throw new ObjectNotFoundException(e.getMessage());
+        }
+    }
+
+    /**
      * Check if the given OutcomeAttachment exists
      *
      * @param schema the Schema used to create the Outcome and its OutcomeAttachment
