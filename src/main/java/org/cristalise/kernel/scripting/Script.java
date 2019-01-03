@@ -32,7 +32,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -93,17 +92,17 @@ public class Script implements DescriptionObject {
     /**
      * Declared Input Parameters 
      */
-    Map<String, Parameter> mInputParams = new ConcurrentHashMap<String, Parameter>();
+    Map<String, Parameter> mInputParams = new HashMap<String, Parameter>();
 
     /**
      * Declared Output Parameters 
      */
-    Map<String, Parameter> mOutputParams = new ConcurrentHashMap<String, Parameter>();
+    Map<String, Parameter> mOutputParams = new HashMap<String, Parameter>();
 
     /**
      * All declared parameters, including those of imported Scripts
      */
-    Map<String, Parameter> mAllInputParams = new ConcurrentHashMap<String, Parameter>();
+    Map<String, Parameter> mAllInputParams = new HashMap<String, Parameter>();
 
     ArrayList<Script> mIncludes = new ArrayList<Script>();
 
