@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -88,13 +89,21 @@ public class Script implements DescriptionObject {
     Integer        mVersion;
     ItemPath       mItemPath;
     String         mLanguage;
-    HashMap<String, Parameter> mInputParams    = new HashMap<String, Parameter>();
-    HashMap<String, Parameter> mOutputParams   = new HashMap<String, Parameter>();
 
     /**
-     * All declared parameters, including those of imported scripts
+     * Declared Input Parameters 
      */
-    HashMap<String, Parameter> mAllInputParams = new HashMap<String, Parameter>();
+    Map<String, Parameter> mInputParams = new ConcurrentHashMap<String, Parameter>();
+
+    /**
+     * Declared Output Parameters 
+     */
+    Map<String, Parameter> mOutputParams = new ConcurrentHashMap<String, Parameter>();
+
+    /**
+     * All declared parameters, including those of imported Scripts
+     */
+    Map<String, Parameter> mAllInputParams = new ConcurrentHashMap<String, Parameter>();
 
     ArrayList<Script> mIncludes = new ArrayList<Script>();
 
@@ -209,7 +218,7 @@ public class Script implements DescriptionObject {
      * @param subject AgentProxy representing executing Agent
      * @param job Job to be executed
      */
-    public void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
+    private void setActExecEnvironment(ItemProxy object, AgentProxy subject, Job job) 
             throws ScriptingEngineException, InvalidDataException
     {
         isActExecEnvironment = true;
@@ -499,6 +508,19 @@ public class Script implements DescriptionObject {
     }
 
     /**
+     * 
+     * @param itemPath
+     * @param inputProps
+     * @param actContext
+     * @param locker
+     * @return
+     * @throws ScriptingEngineException
+     */
+    public Object evaluate(ItemPath itemPath, CastorHashMap inputProps, String actContext, Object locker) throws ScriptingEngineException {
+        return evaluate(itemPath, inputProps, actContext, false, locker);
+    }
+
+    /**
      * Reads and evaluates input properties, set input parameters from those properties and executes the Script
      * 
      * @param itemPath the Item context
@@ -507,17 +529,23 @@ public class Script implements DescriptionObject {
      * @param locker transaction locker
      * @return the values returned by the Script
      */
-    public Object evaluate(ItemPath itemPath, CastorHashMap inputProps, String actContext, Object locker) throws ScriptingEngineException {
+    public synchronized Object evaluate(ItemPath itemPath, CastorHashMap inputProps, String actContext, boolean actExecEnv, Object locker) 
+            throws ScriptingEngineException
+    {
         try {
+            ItemProxy item = Gateway.getProxyManager().getProxy(itemPath);
+
+            if (actExecEnv) setActExecEnvironment(item, (AgentProxy)inputProps.get("agent"), (Job)inputProps.get("job"));
+
             for (String inputParamName: getAllInputParams().keySet()) {
                 if (inputProps.containsKey(inputParamName)) {
                     setInputParamValue(inputParamName, inputProps.evaluateProperty(itemPath, inputParamName, actContext, locker));
                 }
             }
 
+            item.setTransactionKey(locker);
+
             if (getAllInputParams().containsKey("item") && getAllInputParams().get("item") != null) {
-                ItemProxy item = Gateway.getProxyManager().getProxy(itemPath);
-                item.setTransactionKey(locker);
                 setInputParamValue("item", item);
             }
 
@@ -531,6 +559,7 @@ public class Script implements DescriptionObject {
 
             Object retVal = execute();
 
+            //FIXME I believe (kovax) this line could be deleted - check routing script handling
             if (retVal == null) retVal = "";
 
             return retVal;
@@ -621,9 +650,9 @@ public class Script implements DescriptionObject {
                 }
             }
 
-            // set current context to the included script before executing it? (issue #124)            
+            // set current context to the included script before executing it? (issue #124)
             importScript.setContext(context);
-            // execute the included scripts first, they might set input parameters            
+            // execute the included scripts first, they might set input parameters
             Object output = importScript.execute();
 
             if (output != null && output instanceof Map) {
