@@ -52,28 +52,34 @@ public class RolePath extends Path {
 
     public RolePath(String path, boolean jobList) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
     }
 
     public RolePath(String path, boolean jobList, List<String> permissions) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
         this.permissions = permissions;
     }
 
     public RolePath(String[] path, boolean jobList) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
     }
     public RolePath(String[] path, boolean jobList, List<String> permissions) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
         this.permissions = permissions;
     }
 
     public RolePath(RolePath parent, String roleName, boolean jobList) {
         this(parent, roleName);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
+    }
+
+    public RolePath(RolePath parent, String roleName, boolean jobList, List<String> permissions) {
+        this(parent, roleName);
+        this.hasJobList = jobList;
+        this.permissions = permissions;
     }
 
     public RolePath getParent() throws ObjectNotFoundException {
