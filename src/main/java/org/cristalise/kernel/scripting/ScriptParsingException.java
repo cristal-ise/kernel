@@ -22,7 +22,12 @@ package org.cristalise.kernel.scripting;
 
 public class ScriptParsingException extends ScriptingEngineException {
 
-     /**
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8076468979611699004L;
+
+    /**
      * Creates new <code>ScriptParsingException</code> without detail message.
      */
     public ScriptParsingException() {
@@ -35,6 +40,14 @@ public class ScriptParsingException extends ScriptingEngineException {
      */
     public ScriptParsingException(String msg) {
         super(msg);
+    }
+
+    public ScriptParsingException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ScriptParsingException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }
 
