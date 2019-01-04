@@ -202,6 +202,8 @@ public enum BuiltInVertexProperties {
     SCRIPT_VERSION("ScriptVersion"),
 
     /**
+     * It is used during the permission checks based on Shiro WildcardPermission. If not blank it replaces the name of the Activity 
+     * used for the 'actions' section in the constructed permission string.
      * 
      * Can be null or undefined.
      */

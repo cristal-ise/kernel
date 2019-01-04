@@ -59,7 +59,10 @@ public enum BuiltInItemProperties {
     TYPE("Type"),
 
     /**
-     * It id used when checking permission for the 'domain' part of Shiro WildcardPermission. Can be null or undefined
+     * It is used during the permission checks based on Shiro WildcardPermission. If not blank it replaces the type of the Item 
+     * used for the 'domain' section in the constructed permission string.
+     * 
+     * Can be null or undefined.
      */
     SECURITY_DOMAIN("SecurityDomain"),
 

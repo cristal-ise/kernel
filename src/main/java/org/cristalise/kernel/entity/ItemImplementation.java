@@ -245,7 +245,7 @@ public class ItemImplementation implements ItemOperations {
             SecurityManager secMan = Gateway.getSecurityManager();
 
             if (secMan != null && !secMan.checkPermissions(agentToUse, (Activity) lifeCycle.search(stepPath), mItemPath)) {
-                throw new AccessRightsException("'" + agentToUse.getAgentName() + "' is NOT permietted to execuze step:" + stepPath);
+                throw new AccessRightsException("'" + agentToUse.getAgentName() + "' is NOT permitted to execute step:" + stepPath);
             }
 
             String finalOutcome = lifeCycle.requestAction(agent, delegate, stepPath, mItemPath, transitionID, requestData, attachmentType, attachment);

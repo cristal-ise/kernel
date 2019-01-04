@@ -72,6 +72,9 @@ public class SecurityManager {
         if (!shiroEnabled) {
             if (!auth.authenticate("system")) throw new InvalidDataException("Server authentication failed");
         }
+        //NOTE: the else case is not required because shiro cannot authentcate users without a password, and the current
+        //setup does not allow us to create the 'system' Agent with password. Also the original auth.authenticate("system") 
+        //code simply sets up the connection to the underlying technology (LDAP/AD/JDBC) to 'authenticate' the system user
     }
 
     /**
@@ -96,14 +99,6 @@ public class SecurityManager {
         // It can be invoked before ProxyManager and Lookup is initialised
         if (Gateway.getProxyManager() != null) return Gateway.getProxyManager().getAgentProxy(agentName);
         else                                   return null;
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public Subject getSubject() {
-        return getSubject("system");
     }
 
     /**
@@ -159,8 +154,8 @@ public class SecurityManager {
                 return true;
             }
             catch (Exception ex) {
-                //TODO for security reasons remove this log after development is done
-                Logger.error(ex);
+                //NOTE: Enable this log for testing security problems only, but always remove it when merged
+                //Logger.error(ex);
             }
         }
         return false;
