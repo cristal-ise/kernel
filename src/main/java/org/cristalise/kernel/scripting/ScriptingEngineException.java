@@ -21,8 +21,12 @@
 package org.cristalise.kernel.scripting;
 
 public class ScriptingEngineException extends java.lang.Exception {
-
      /**
+     * 
+     */
+    private static final long serialVersionUID = 2902580887959991152L;
+
+    /**
      * Creates new <code>sciptingEngineException</code> without detail message.
      */
     public ScriptingEngineException() {

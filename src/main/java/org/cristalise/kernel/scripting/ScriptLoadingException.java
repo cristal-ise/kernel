@@ -20,16 +20,13 @@
  */
 package org.cristalise.kernel.scripting;
 
-/**************************************************************************
- *
- * $Revision: 1.1 $
- * $Date: 2003/04/06 12:32:51 $
- *
- * Copyright (C) 2003 CERN - European Organization for Nuclear Research
- * All rights reserved.
- **************************************************************************/
 public class ScriptLoadingException extends ScriptingEngineException {
-  /**
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 395106341865890224L;
+
+    /**
      *
      */
     public ScriptLoadingException() {
@@ -40,5 +37,13 @@ public class ScriptLoadingException extends ScriptingEngineException {
      */
     public ScriptLoadingException(String msg) {
         super(msg);
+    }
+
+    public ScriptLoadingException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ScriptLoadingException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 }

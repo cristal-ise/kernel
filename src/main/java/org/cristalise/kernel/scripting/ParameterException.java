@@ -22,7 +22,12 @@ package org.cristalise.kernel.scripting;
 
 public class ParameterException extends ScriptingEngineException {
 
-     /**
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7549607286659193866L;
+
+    /**
      * Creates new <code>ParameterException</code> without detail message.
      */
     public ParameterException() {
@@ -35,6 +40,12 @@ public class ParameterException extends ScriptingEngineException {
     public ParameterException(String msg) {
         super(msg);
     }
+
+    public ParameterException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ParameterException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }
-
-
