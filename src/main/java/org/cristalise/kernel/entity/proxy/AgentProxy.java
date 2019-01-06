@@ -54,6 +54,7 @@ import org.cristalise.kernel.scripting.Parameter;
 import org.cristalise.kernel.scripting.Script;
 import org.cristalise.kernel.scripting.ScriptErrorException;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
+import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.CorbaExceptionUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.exolab.castor.mapping.MappingException;
@@ -215,7 +216,11 @@ public class AgentProxy extends ItemProxy {
     @SuppressWarnings("rawtypes")
     private  ErrorInfo callScript(ItemProxy item, Job job) throws ScriptingEngineException, InvalidDataException, ObjectNotFoundException {
         Script script = job.getScript();
-        script.setActExecEnvironment(item, this, job);
+
+        CastorHashMap params = new CastorHashMap();
+        params.put("item", item);
+        params.put("agent", this);
+        params.put("job", job);
 
         // At least one output parameter has to be ErrorInfo, 
         // it is either a single unnamed parameter or a parameter named 'errors'
@@ -226,7 +231,7 @@ public class AgentProxy extends ItemProxy {
             else                                      p = script.getOutputParams().get("errors");
 
             if (p.getType() == ErrorInfo.class ) {
-                Object returnVal = script.execute();
+                Object returnVal = script.evaluate(item.getPath(), params, job.getStepPath(), true, null);
 
                 if (returnVal instanceof Map) return (ErrorInfo) ((Map)returnVal).get(p.getName());
                 else                          return (ErrorInfo) returnVal;
