@@ -33,7 +33,6 @@ import org.cristalise.kernel.entity.CorbaServer;
 import org.cristalise.kernel.entity.proxy.AgentProxy;
 import org.cristalise.kernel.entity.proxy.ProxyManager;
 import org.cristalise.kernel.entity.proxy.ProxyServer;
-import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.Lookup;
 import org.cristalise.kernel.lookup.LookupManager;
 import org.cristalise.kernel.persistency.TransactionManager;
@@ -45,6 +44,7 @@ import org.cristalise.kernel.process.resource.Resource;
 import org.cristalise.kernel.process.resource.ResourceImportHandler;
 import org.cristalise.kernel.process.resource.ResourceLoader;
 import org.cristalise.kernel.scripting.ScriptConsole;
+import org.cristalise.kernel.security.SecurityManager;
 import org.cristalise.kernel.utils.CastorXMLUtility;
 import org.cristalise.kernel.utils.Logger;
 import org.cristalise.kernel.utils.ObjectProperties;
@@ -79,6 +79,7 @@ public class Gateway
     static private CorbaServer          mCorbaServer;
     static private CastorXMLUtility     mMarshaller;
     static private ResourceLoader       mResource;
+    static private SecurityManager      mSecurityManager = null;
 
     //FIXME: Move this cache to Resource class - requires to extend ResourceLoader with getResourceImportHandler()
     static private HashMap<BuiltInResources, ResourceImportHandler> resourceImportHandlerCache = new HashMap<BuiltInResources, ResourceImportHandler>();
@@ -147,6 +148,8 @@ public class Gateway
 
         // Overwrite with argument props
         if (props != null) mC2KProps.putAll(props);
+
+        mSecurityManager = new SecurityManager();
 
         // dump properties
         Logger.msg("Gateway.init() - DONE");
@@ -221,6 +224,29 @@ public class Gateway
     }
 
     /**
+     * Initialises the {@link Lookup}, {@link TransactionManager} and {@link ProxyManager}
+     *
+     * @param auth the Authenticator instance
+     * @throws InvalidDataException bad params
+     * @throws PersistencyException error starting storages
+     */
+    private static void setup(Authenticator auth) throws InvalidDataException, PersistencyException {
+        if (mLookup != null) mLookup.close();
+
+        try {
+            mLookup = (Lookup)mC2KProps.getInstance("Lookup");
+            mLookup.open(auth);
+        }
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            Logger.error(ex);
+            throw new InvalidDataException("Cannot connect server process. Please check config.");
+        }
+
+        mStorage = new TransactionManager(auth);
+        mProxyManager = new ProxyManager();
+    }
+
+    /**
      * Connects to the Lookup server in an administrative context - using the admin username and
      * password available in the implementation of the Authenticator. It shall be
      * used in server processes only.
@@ -230,31 +256,18 @@ public class Gateway
      * @throws ObjectNotFoundException - object not found
      */
     static public Authenticator connect() throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-        try {
-            Authenticator auth = getAuthenticator();
+        mSecurityManager.authenticate();
 
-            if (!auth.authenticate("System")) throw new InvalidDataException("Server authentication failed");
+        setup(mSecurityManager.getAuth());
 
-            if (mLookup != null) mLookup.close();
+        Logger.msg("Gateway.connect(system) - DONE.");
 
-            mLookup = (Lookup)mC2KProps.getInstance("Lookup");
-            mLookup.open(auth);
-
-            mStorage = new TransactionManager(auth);
-            mProxyManager = new ProxyManager();
-
-            Logger.msg("Gateway.connect() - DONE.");
-            return auth;
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-            Logger.error(ex);
-            throw new InvalidDataException("Cannot connect server process. Please check config.");
-        }
+        return mSecurityManager.getAuth();
     }
 
     /**
-     * Log in with the given username and password, and initialises the {@link Lookup}, {@link TransactionManager} and {@link ProxyManager}.
-     * It shall be uses in client processes only.
+     * Log in with the given username and password, and initialises the {@link Lookup}, 
+     * {@link TransactionManager} and {@link ProxyManager}. It shall be uses in client processes only.
      * 
      * @param agentName - username
      * @param agentPassword - password
@@ -264,31 +277,35 @@ public class Gateway
      * @throws PersistencyException - error starting storages
      * @throws ObjectNotFoundException - object not found
      */
+    static public AgentProxy connect(String agentName, String agentPassword) 
+            throws InvalidDataException, ObjectNotFoundException, PersistencyException
+    {
+        return connect(agentName, agentPassword, null);
+    }
+
+    /**
+     * Log in with the given username and password, and initialises the {@link Lookup}, 
+     * {@link TransactionManager} and {@link ProxyManager}. It shall be uses in client processes only.
+     * 
+     * @param agentName - username
+     * @param agentPassword - password
+     * @param resource - resource
+     * @return an AgentProxy on the requested user
+     * 
+     * @throws InvalidDataException - bad params
+     * @throws PersistencyException - error starting storages
+     * @throws ObjectNotFoundException - object not found
+     */
     static public AgentProxy connect(String agentName, String agentPassword, String resource)
             throws InvalidDataException, ObjectNotFoundException, PersistencyException
     {
-        Authenticator auth = getAuthenticator();
+        mSecurityManager.authenticate(agentName, agentPassword, resource);
 
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
+        setup(mSecurityManager.getAuth());
 
-        try {
-            if (mLookup != null) mLookup.close();
+        AgentProxy agent = Gateway.getProxyManager().getAgentProxy(agentName);
 
-            mLookup = (Lookup)mC2KProps.getInstance("Lookup");
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-            Logger.error(ex);
-            throw new InvalidDataException("Lookup "+mC2KProps.getString("Lookup")+" could not be instantiated");
-        }
-        mLookup.open(auth);
-
-        mStorage = new TransactionManager(auth);
-        mProxyManager = new ProxyManager();
-
-        // find agent proxy
-        AgentPath agentPath = mLookup.getAgentPath(agentName);
-        AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
-        agent.setAuthObj(auth);
+        //TODO: swingui specific initialization
         ScriptConsole.setUser(agent);
 
         // Run module startup scripts. Server does this during bootstrap
@@ -301,7 +318,7 @@ public class Gateway
     }
 
     /**
-     * Authenticates the agent using the configured {@link Authenticator}
+     * Authenticates the agent
      * 
      * @param agentName the name of the agent
      * @param agentPassword the password of the agent
@@ -310,22 +327,20 @@ public class Gateway
      * 
      * @throws InvalidDataException - bad params
      * @throws ObjectNotFoundException - object not found
+     * @deprecated use {@link SecurityManager#authenticate(String, String, String)}
      */
+    @Deprecated
     static public AgentProxy login(String agentName, String agentPassword, String resource) 
             throws InvalidDataException, ObjectNotFoundException
     {
-        Authenticator auth = getAuthenticator();
-
-        if (!auth.authenticate(agentName, agentPassword, resource)) throw new InvalidDataException("Login failed");
-
-        // find agent proxy
-        AgentPath agentPath = mLookup.getAgentPath(agentName);
-        AgentProxy agent = (AgentProxy) mProxyManager.getProxy(agentPath);
-        agent.setAuthObj(auth);
-
-        return agent;
+        return mSecurityManager.authenticate(agentName, agentPassword, resource);
     }
 
+    /**
+     * 
+     * @return
+     * @throws InvalidDataException
+     */
     static public Authenticator getAuthenticator() throws InvalidDataException {
         try {
             return (Authenticator)mC2KProps.getInstance("Authenticator");
@@ -334,12 +349,6 @@ public class Gateway
             Logger.error(ex);
             throw new InvalidDataException("Authenticator "+mC2KProps.getString("Authenticator")+" could not be instantiated");
         } 
-    }
-
-    static public AgentProxy connect(String agentName, String agentPassword) 
-            throws InvalidDataException, ObjectNotFoundException, PersistencyException, InstantiationException, IllegalAccessException, ClassNotFoundException
-    {
-        return connect(agentName, agentPassword, null);
     }
 
     /**
@@ -402,6 +411,10 @@ public class Gateway
             mORB = org.omg.CORBA.ORB.init(new String[0], mC2KProps);
         }
         return mORB;
+    }
+
+    static public SecurityManager getSecurityManager() {
+        return mSecurityManager;
     }
 
     static public Lookup getLookup() {
@@ -506,5 +519,5 @@ public class Gateway
 
         return handler;
     }
-}
 
+}

@@ -20,7 +20,9 @@
  */
 package org.cristalise.kernel.lookup;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
@@ -29,6 +31,7 @@ import org.cristalise.kernel.process.Gateway;
 
 public class RolePath extends Path {
     private boolean hasJobList = false;
+    private List<String> permissions = new ArrayList<>();
 
     public RolePath() {
         super();
@@ -42,19 +45,41 @@ public class RolePath extends Path {
         super(parent, roleName);
     }
 
+    public RolePath(RolePath parent, String roleName, List<String> permissions) {
+        super(parent, roleName);
+        this.permissions = permissions;
+    }
+
     public RolePath(String path, boolean jobList) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
+    }
+
+    public RolePath(String path, boolean jobList, List<String> permissions) {
+        super(path);
+        this.hasJobList = jobList;
+        this.permissions = permissions;
     }
 
     public RolePath(String[] path, boolean jobList) {
         super(path);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
+    }
+    public RolePath(String[] path, boolean jobList, List<String> permissions) {
+        super(path);
+        this.hasJobList = jobList;
+        this.permissions = permissions;
     }
 
     public RolePath(RolePath parent, String roleName, boolean jobList) {
         this(parent, roleName);
-        hasJobList = jobList;
+        this.hasJobList = jobList;
+    }
+
+    public RolePath(RolePath parent, String roleName, boolean jobList, List<String> permissions) {
+        this(parent, roleName);
+        this.hasJobList = jobList;
+        this.permissions = permissions;
     }
 
     public RolePath getParent() throws ObjectNotFoundException {
@@ -75,6 +100,14 @@ public class RolePath extends Path {
      */
     public void setHasJobList(boolean hasJobList) {
         this.hasJobList = hasJobList;
+    }
+
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
     }
 
     public Iterator<Path> getChildren() {

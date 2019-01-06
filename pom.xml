@@ -118,13 +118,21 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+        </dependency>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+        <dependency>
             <groupId>xmlunit</groupId>
             <artifactId>xmlunit</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.18</version>
+            <version>1.18.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -175,7 +183,6 @@
             <version>3.3</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>
@@ -206,6 +213,16 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.4</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-core</artifactId>
+                <version>1.4.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>1.6.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -215,10 +232,14 @@
                 <directory>src/main/resources</directory>
                 <targetPath>org/cristalise/kernel/utils/resources</targetPath>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>shiro.ini</exclude>
+                </excludes>
             </resource>
             <resource>
                 <directory>.</directory>
                 <includes>
+                    <include>shiro.ini</include>
                     <include>log4j.properties</include>
                     <include>LICENSE</include>
                 </includes>

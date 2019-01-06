@@ -187,7 +187,7 @@ public class CorbaServer {
     }
 
     public ActiveEntity createAgent(AgentPath agentPath) throws CannotManageException, ObjectAlreadyExistsException {
-        if (agentPath.exists()) throw new ObjectAlreadyExistsException();
+        if (agentPath.exists()) throw new ObjectAlreadyExistsException("Agent:"+agentPath.getAgentName());
 
         agentPath.setIOR( getAgentIOR(agentPath) );
 

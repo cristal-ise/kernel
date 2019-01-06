@@ -529,6 +529,9 @@ public class Script implements DescriptionObject {
                 setInputParamValue("locker", locker);
             }
 
+            if (getAllInputParams().containsKey("locker") && getAllInputParams().get("locker") != null)
+                setInputParamValue("locker", locker);
+
             Object retVal = execute();
 
             if (retVal == null) retVal = "";

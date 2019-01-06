@@ -246,6 +246,11 @@ public class ProxyManager {
 
     }
 
+    public AgentProxy getAgentProxy( String agentName ) throws ObjectNotFoundException {
+        AgentPath path = Gateway.getLookup().getAgentPath(agentName);
+        return (AgentProxy) getProxy(path);
+    }
+
     public AgentProxy getAgentProxy( AgentPath path ) throws ObjectNotFoundException {
         return (AgentProxy) getProxy(path);
     }

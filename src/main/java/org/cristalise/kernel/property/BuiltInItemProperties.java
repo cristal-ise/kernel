@@ -41,7 +41,7 @@ public enum BuiltInItemProperties {
     KERNEL_VERSION("KernelVersion"),
 
     /**
-     * The name or ID of the Item, specified by the Factory usually and sent as the first parameter in the
+     * The name or ID of the Item, specified by the Factory Item and sent as the first parameter in the
      * {@link CreateItemFromDescription} predefined Step. It will be automatically added even if it was not defined.
      */
     NAME("Name"),
@@ -51,10 +51,20 @@ public enum BuiltInItemProperties {
     MODULE("Module"),
 
     /**
-     * The type of the Item, used in Dev module, but it is a good practice to set it as an immutable, fixed value 
-     * Property. It is convenient to use in lookup searches for Description Items.
+     * The type of the Item, it is a good practice to set it as an immutable, fixed value Property. 
+     * It is convenient to use in lookup.search() to find Items of the same type.
+     * It is used in Dev module extensively, and it is also used when checking permission 
+     * for the 'domain' part of Shiro WildcardPermission (use 'SecurityDomain' Property to overwrite it)
      */
     TYPE("Type"),
+
+    /**
+     * It is used during the permission checks based on Shiro WildcardPermission. If not blank it replaces the type of the Item 
+     * used for the 'domain' section in the constructed permission string.
+     * 
+     * Can be null or undefined.
+     */
+    SECURITY_DOMAIN("SecurityDomain"),
 
     VERSION("Version"),
 

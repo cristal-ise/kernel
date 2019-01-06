@@ -21,6 +21,7 @@
 package org.cristalise.kernel.lookup;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import org.cristalise.kernel.common.ObjectAlreadyExistsException;
 import org.cristalise.kernel.common.ObjectCannotBeUpdated;
@@ -128,4 +129,24 @@ public interface LookupManager extends Lookup {
      * @throws ObjectCannotBeUpdated there was a probelm updating the ior
      */
     public void setIOR(ItemPath item, String ior) throws ObjectNotFoundException, ObjectCannotBeUpdated;
+
+    /**
+     * Sets the permission of the given Role. Use blank string to clear the permissions
+     * 
+     * @param role the RolePath to change
+     * @param permission String using WildcardPermission format of shiro
+     * @throws ObjectNotFoundException Role does not exists
+     * @throws ObjectCannotBeUpdated there was a problem updating the permissions
+     */
+    public void setPermission(RolePath role, String permission) throws ObjectNotFoundException, ObjectCannotBeUpdated;
+
+    /**
+     * Sets the list of permission of the given Role. Use empty list to clear the permissions
+     * 
+     * @param role the RolePath to change
+     * @param permissions list of String using WildcardPermission format of shiro
+     * @throws ObjectNotFoundException Role does not exists
+     * @throws ObjectCannotBeUpdated there was a problem updating the permissions
+     */
+    public void setPermissions(RolePath role, List<String> permissions) throws ObjectNotFoundException, ObjectCannotBeUpdated;
 }

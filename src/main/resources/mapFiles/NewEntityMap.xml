@@ -169,10 +169,13 @@
 	<class name="org.cristalise.kernel.entity.imports.ImportRole">
 		<map-to xml="Role"/>
 		<field name="name" type="string" direct="false">
-			<bind-xml name="name" node="text"/>
+			<bind-xml name="name" node="attribute"/>
 		</field>
 		<field name="jobList" type="boolean" direct="true">
 			<bind-xml name="jobList" node="attribute"/>
+		</field>
+		<field name="permissions" collection="arraylist" type="string" direct="true">
+		    <bind-xml name="Permission" node="element"/>
 		</field>
 	</class>
 </mapping>

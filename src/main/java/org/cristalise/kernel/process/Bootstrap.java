@@ -464,14 +464,14 @@ public class Bootstrap
     }
 
     /**
-     * Checks for the existence of a agents so it can be used
+     * Checks for the existence of a agents and creates it if needed so it can be used
      *
-     * @param name
-     * @param pass
-     * @param rolePath
-     * @param uuid
+     * @param name the name of the agent
+     * @param pass the password of the agent
+     * @param rolePath the role of the agent
+     * @param uuid the UUID os the agent
      * @return the Proxy representing the Agent
-     * @throws Exception
+     * @throws Exception any exception found
      */
     private static AgentProxy checkAgent(String name, String pass, RolePath rolePath, String uuid) throws Exception {
         Logger.msg(1, "Bootstrap.checkAgent() - Checking for existence of '"+name+"' agent.");
@@ -495,14 +495,13 @@ public class Bootstrap
 
             if (StringUtils.isNotBlank(pass)) lookup.setAgentPassword(agentPath, pass);
 
-            // assign admin role
+            // assign role
             Logger.msg("Bootstrap.checkAgent() - Assigning role '"+rolePath.getName()+"'");
             Gateway.getLookupManager().addRole(agentPath, rolePath);
             Gateway.getStorage().put(agentPath, new Property(NAME, name, true), null);
             Gateway.getStorage().put(agentPath, new Property(TYPE, "Agent", false), null);
             AgentProxy agentProxy = Gateway.getProxyManager().getAgentProxy(agentPath);
-            //TODO: properly init agent here with wf, props and colls
-            //agentProxy.initialise(agentId, itemProps, workflow, colls);
+            //TODO: properly init agent here with wf, props and colls -> use CreatItemFromDescription
             systemAgents.put(name, agentProxy);
             return agentProxy;
         }
@@ -512,12 +511,18 @@ public class Bootstrap
         }
     }
 
+    /**
+     * 
+     * @throws Exception
+     */
     public static void checkAdminAgents() throws Exception {
-        // check for administrative user & admin role
         RolePath rootRole = new RolePath();
         if (!rootRole.exists()) Gateway.getLookupManager().createRole(rootRole);
+
+        // check for admin role
         RolePath adminRole = new RolePath(rootRole, "Admin", false);
         if (!adminRole.exists()) Gateway.getLookupManager().createRole(adminRole);
+        Gateway.getLookupManager().setPermission(adminRole, "*");
 
         // check for import Agent
         AgentProxy system = checkAgent("system", null, adminRole, new UUID(0, 1).toString());
