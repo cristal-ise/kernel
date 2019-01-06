@@ -594,8 +594,10 @@ public class Script implements DescriptionObject {
             //Logger.msg(7, "Script.execute("+getName()+") - script returned '" + returnValue + "'");
         }
         catch (ScriptException ex) {
+            final String msg = "Error executing script " + getName() + ": " + ex.getCause().getMessage();
+            Logger.error(msg);
             Logger.error(ex.getCause());
-            throw new ScriptingEngineException("Error executing script "+getName()+": " + ex.getCause().getMessage(), ex.getCause());
+            throw new ScriptingEngineException(msg, ex.getCause());
         }
 
         return packScriptReturnValue(returnValue);
