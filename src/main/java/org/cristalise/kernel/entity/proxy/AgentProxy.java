@@ -222,23 +222,31 @@ public class AgentProxy extends ItemProxy {
         params.put("agent", this);
         params.put("job", job);
 
+        Object returnVal = script.evaluate(item.getPath(), params, job.getStepPath(), true, null);
+
         // At least one output parameter has to be ErrorInfo, 
         // it is either a single unnamed parameter or a parameter named 'errors'
-        if (script.getOutputParams().size() > 0) {
-            Parameter p;
-
-            if (script.getOutputParams().size() == 1) p = script.getOutputParams().values().iterator().next();
-            else                                      p = script.getOutputParams().get("errors");
-
-            if (p.getType() == ErrorInfo.class ) {
-                Object returnVal = script.evaluate(item.getPath(), params, job.getStepPath(), true, null);
-
-                if (returnVal instanceof Map) return (ErrorInfo) ((Map)returnVal).get(p.getName());
-                else                          return (ErrorInfo) returnVal;
-            }
+        if (returnVal instanceof Map) {
+            return (ErrorInfo) ((Map)returnVal).get(getErrorInfoParameterName(script));
         }
+        else {
+            if (returnVal instanceof ErrorInfo)
+                return (ErrorInfo) returnVal;
+            else
+                throw new InvalidDataException("Script "+script.getName()+" return value must be of org.cristalise.kernel.scripting.ErrorInfo");
+        }
+    }
 
-        throw new InvalidDataException("Script "+script.getName()+" must at least one output of org.cristalise.kernel.scripting.ErrorInfo");
+    private String getErrorInfoParameterName(Script script) throws InvalidDataException {
+        Parameter p;
+
+        if (script.getOutputParams().size() == 1) p = script.getOutputParams().values().iterator().next();
+        else                                      p = script.getOutputParams().get("errors");
+
+        if (p.getType() != ErrorInfo.class )
+            throw new InvalidDataException("Script "+script.getName()+" must have at least one output of org.cristalise.kernel.scripting.ErrorInfo");
+        
+        return p.getName();
     }
 
     /**
