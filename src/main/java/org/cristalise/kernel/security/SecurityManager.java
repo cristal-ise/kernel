@@ -48,6 +48,7 @@ public class SecurityManager {
     
     @Getter
     private Authenticator auth = null;
+    @Getter
     private boolean shiroEnabled = false;
 
     /**

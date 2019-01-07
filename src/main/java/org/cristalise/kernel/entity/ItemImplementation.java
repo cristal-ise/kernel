@@ -244,7 +244,7 @@ public class ItemImplementation implements ItemOperations {
 
             SecurityManager secMan = Gateway.getSecurityManager();
 
-            if (secMan != null && !secMan.checkPermissions(agentToUse, (Activity) lifeCycle.search(stepPath), mItemPath)) {
+            if (secMan.isShiroEnabled() && !secMan.checkPermissions(agentToUse, (Activity) lifeCycle.search(stepPath), mItemPath)) {
                 throw new AccessRightsException("'" + agentToUse.getAgentName() + "' is NOT permitted to execute step:" + stepPath);
             }
 
@@ -379,7 +379,7 @@ public class ItemImplementation implements ItemOperations {
 
             SecurityManager secMan = Gateway.getSecurityManager();
 
-            if (secMan != null) {
+            if (secMan.isShiroEnabled()) {
                 for (Job j: jobs) {
                     if (secMan.checkPermissions(agent, (Activity) wf.search(j.getStepPath()), mItemPath)) jobBag.list.add(j);
                 }
