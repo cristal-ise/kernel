@@ -127,7 +127,7 @@ public class CreateAgentFromDescription extends CreateItemFromDescription {
         Gateway.getLookupManager().add(newAgentPath);
 
         try {
-            if (StringUtils.isNotBlank(pwd)) Gateway.getLookupManager().setAgentPassword(newAgentPath, pwd);
+            if (StringUtils.isNotBlank(pwd)) Gateway.getLookupManager().setAgentPassword(newAgentPath, pwd, true);
 
             for (String roleName: roles) {
                 if (StringUtils.isNotBlank(roleName)) {
