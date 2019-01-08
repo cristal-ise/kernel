@@ -35,6 +35,7 @@ import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.routingHelpers.DataHelperUtility;
 import org.cristalise.kernel.lookup.AgentPath;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.scripting.ScriptingEngineException;
 import org.cristalise.kernel.utils.Logger;
 
@@ -189,7 +190,12 @@ public abstract class Split extends WfVertex {
 
                 if (returnValue == null) nexts = "";
                 else if (returnValue instanceof String) nexts = (String) returnValue;
-                else throw new InvalidDataException("Routing expression '"+ expr +"' must return String");
+                else {
+                    if (Gateway.getProperties().getBoolean("RoutingScript.enforceStringReturnValue", false))
+                        nexts = returnValue.toString();
+                    else
+                        throw new InvalidDataException("Routing expression '"+ expr +"' must return String");
+                }
             }
             catch (Exception e) {
                 Logger.error(e);
