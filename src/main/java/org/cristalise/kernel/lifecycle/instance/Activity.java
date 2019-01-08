@@ -265,18 +265,23 @@ public class Activity extends WfVertex {
     private String resolveViewpointName(Outcome outcome) throws InvalidDataException {
         String viewpointString = (String)getBuiltInProperty(VIEW_POINT);
 
+        Logger.msg(5, "Activity.resolveViewpointName() - act:%s viewpointString:%s", getName(), viewpointString);
+
         if (StringUtils.isBlank(viewpointString)) {
-            return "last";
+            viewpointString = "last";
         }
         //FIXME: use DataHelper if possible, because it will make code more general
         else if(viewpointString.startsWith(XPATH_TOKEN)) {
             try {
-                return outcome.getFieldByXPath(viewpointString.substring(6));
+                viewpointString = outcome.getFieldByXPath(viewpointString.substring(XPATH_TOKEN.length()));
             }
             catch (XPathExpressionException e) {
                 throw new InvalidDataException(e.getMessage());
             }
         }
+
+        if (StringUtils.isBlank(viewpointString))
+            throw new InvalidDataException("Resolved viewpoint name cannot be blank for activity:" + getName());
 
         return viewpointString;
     }
@@ -294,7 +299,7 @@ public class Activity extends WfVertex {
                     //FIXME: use DataHelper if possible, because it will make code more general
                     if (outcome != null && StringUtils.isNotBlank(propValue) && propValue.startsWith(XPATH_TOKEN)) {
                         try {
-                            propValue = outcome.getFieldByXPath(propValue.substring(6));
+                            propValue = outcome.getFieldByXPath(propValue.substring(XPATH_TOKEN.length()));
                         }
                         catch (XPathExpressionException e) {
                             throw new InvalidDataException(e.getMessage());
