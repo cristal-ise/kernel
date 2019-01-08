@@ -26,10 +26,12 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.ROUTING_SCRIPT_VERSION;
 
-import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.graph.model.Vertex;
 import org.cristalise.kernel.graph.traversal.GraphTraversal;
 import org.cristalise.kernel.lifecycle.routingHelpers.DataHelperUtility;
@@ -178,52 +180,52 @@ public abstract class Split extends WfVertex {
         return loop2;
     }
 
-    public String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
-        String nexts;
+    private String[] getRoutingReturnValue(Object value) throws InvalidDataException {
+        String stringValue;
+
+        if (value == null) {
+            return new String[0];
+        }
+        else if (value instanceof String) {
+            stringValue = (String) value;
+        }
+        else {
+            if (Gateway.getProperties().getBoolean("RoutingScript.enforceStringReturnValue", false))
+                stringValue = value.toString();
+            else
+                throw new InvalidDataException("Routing script or expression must return String");
+        }
+
+        return stringValue.split(",");
+    }
+
+    protected String[] calculateNexts(ItemPath itemPath, Object locker) throws InvalidDataException {
         String expr = (String) getBuiltInProperty(ROUTING_EXPR);
         String scriptName = (String) getBuiltInProperty(ROUTING_SCRIPT_NAME);
         Integer scriptVersion = deriveVersionNumber(getBuiltInProperty(ROUTING_SCRIPT_VERSION));
 
-        if (expr != null && expr.length() > 0) {
+        if (StringUtils.isNotBlank(expr)) {
             try {
                 Object returnValue = DataHelperUtility.evaluateValue(itemPath, expr, getActContext(), locker);
-
-                if (returnValue == null) nexts = "";
-                else if (returnValue instanceof String) nexts = (String) returnValue;
-                else {
-                    if (Gateway.getProperties().getBoolean("RoutingScript.enforceStringReturnValue", false))
-                        nexts = returnValue.toString();
-                    else
-                        throw new InvalidDataException("Routing expression '"+ expr +"' must return String");
-                }
+                return getRoutingReturnValue(returnValue);
             }
-            catch (Exception e) {
+            catch (PersistencyException | ObjectNotFoundException e) {
                 Logger.error(e);
                 throw new InvalidDataException("Routing expression evaulation failed: " + expr + " with " + e.getMessage());
             }
         }
-        else if (scriptName != null && scriptName.length() > 0) {
+        else if (StringUtils.isNotBlank(scriptName)) {
             try {
                 Object returnValue = evaluateScript(scriptName, scriptVersion, itemPath, locker);
-
-                if (returnValue == null) nexts = "";
-                else if (returnValue instanceof String) nexts = (String) returnValue;
-                else throw new InvalidDataException("RoutingScript '" + scriptName + " v" + scriptVersion + "' must return String");
+                return getRoutingReturnValue(returnValue);
             }
             catch (ScriptingEngineException e) {
                 Logger.error(e);
-                throw new InvalidDataException("Error running RoutingScript " + scriptName + " v" + scriptVersion);
+                throw new InvalidDataException("Error running Routing script " + scriptName + " v" + scriptVersion);
             }
         }
         else
-            throw new InvalidDataException("Split is invalid without valid Routing Script or expression");
-
-        StringTokenizer tok = new StringTokenizer(nexts, ",");
-        String[] nextsTab = new String[tok.countTokens()];
-
-        for (int i = 0; i < nextsTab.length; i++) nextsTab[i] = tok.nextToken();
-
-        return nextsTab;
+            throw new InvalidDataException("Split is invalid without valid Routing script or expression");
     }
 
     public String[] nextNames() {
