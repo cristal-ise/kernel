@@ -185,24 +185,32 @@ public abstract class Split extends WfVertex {
 
         if (expr != null && expr.length() > 0) {
             try {
-                nexts = (String) DataHelperUtility.evaluateValue(itemPath, expr, getActContext(), locker);
+                Object returnValue = DataHelperUtility.evaluateValue(itemPath, expr, getActContext(), locker);
+
+                if (returnValue == null) nexts = "";
+                else if (returnValue instanceof String) nexts = (String) returnValue;
+                else throw new InvalidDataException("Routing expression '"+ expr +"' must return String");
             }
             catch (Exception e) {
                 Logger.error(e);
-                throw new InvalidDataException("XORSplit expression evaulation failed: " + expr + " with " + e.getMessage());
+                throw new InvalidDataException("Routing expression evaulation failed: " + expr + " with " + e.getMessage());
             }
         }
         else if (scriptName != null && scriptName.length() > 0) {
             try {
-                nexts = evaluateScript(scriptName, scriptVersion, itemPath, locker).toString();
+                Object returnValue = evaluateScript(scriptName, scriptVersion, itemPath, locker);
+
+                if (returnValue == null) nexts = "";
+                else if (returnValue instanceof String) nexts = (String) returnValue;
+                else throw new InvalidDataException("RoutingScript '" + scriptName + " v" + scriptVersion + "' must return String");
             }
             catch (ScriptingEngineException e) {
                 Logger.error(e);
-                throw new InvalidDataException("Error running routing script " + scriptName + " v" + scriptVersion);
+                throw new InvalidDataException("Error running RoutingScript " + scriptName + " v" + scriptVersion);
             }
         }
         else
-            throw new InvalidDataException("Split is invalid without valid routing script or expression");
+            throw new InvalidDataException("Split is invalid without valid Routing Script or expression");
 
         StringTokenizer tok = new StringTokenizer(nexts, ",");
         String[] nextsTab = new String[tok.countTokens()];
