@@ -191,9 +191,9 @@ public abstract class Split extends WfVertex {
         }
         else {
             if (Gateway.getProperties().getBoolean("RoutingScript.enforceStringReturnValue", false))
-                stringValue = value.toString();
-            else
                 throw new InvalidDataException("Routing script or expression must return String");
+            else
+                stringValue = value.toString();
         }
 
         return stringValue.split(",");
