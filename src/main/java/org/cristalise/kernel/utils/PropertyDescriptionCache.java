@@ -25,7 +25,6 @@ package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lookup.ItemPath;
-import org.cristalise.kernel.persistency.outcome.Schema;
 import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 
