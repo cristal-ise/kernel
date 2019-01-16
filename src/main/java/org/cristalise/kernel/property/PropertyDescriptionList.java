@@ -20,21 +20,49 @@
  */
 package org.cristalise.kernel.property;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
+import org.cristalise.kernel.common.ObjectNotFoundException;
+import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.utils.CastorArrayList;
+import org.cristalise.kernel.utils.DescriptionObject;
+
+import lombok.Getter;
+import lombok.Setter;
 
 
-public class PropertyDescriptionList extends CastorArrayList<PropertyDescription>
-{
+@Getter @Setter
+public class PropertyDescriptionList extends CastorArrayList<PropertyDescription> implements DescriptionObject {
+    String   name;
+    Integer  version;
+    ItemPath itemPath;
+
     public PropertyDescriptionList() {
         super();
     }
 
+    public PropertyDescriptionList(String name, Integer version, ItemPath itemPath) {
+        super();
+        this.name = name;
+        this.version = version;
+        this.itemPath = itemPath;
+    }
+
     public PropertyDescriptionList(ArrayList<PropertyDescription> aList) {
         super(aList);
+    }
+
+    public PropertyDescriptionList(String name, Integer version, ItemPath itemPath, ArrayList<PropertyDescription> aList) {
+        super(aList);
+        this.name = name;
+        this.version = version;
+        this.itemPath = itemPath;
     }
 
     public String getClassProps() {
@@ -110,5 +138,21 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
             propInst.list.add( new Property(propName, propVal, pd.getIsMutable()));
         }
         return propInst;
+    }
+
+    @Override
+    public String getItemID() {
+        return (itemPath != null) ? itemPath.getUUID().toString() : null;
+    }
+
+    @Override
+    public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException {
+        // TODO Auto-generated method stub
     }
 }
