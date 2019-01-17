@@ -739,6 +739,30 @@ public class ItemProxy
     }
 
     /**
+     * Gets the Outcome associated with the Event.
+     * 
+     * @param event the Event to be used
+     * @return the Outcome object
+     * @throws ObjectNotFoundException
+     */
+    public Outcome getOutcome(Event event) throws ObjectNotFoundException {
+        return getOutcome(event, transactionKey);
+    }
+
+    /**
+     * Gets the Outcome associated with the Event. This method can be used in server side Script to find uncommitted changes
+     * during the active transaction.
+     * 
+     * @param event the Event to be used
+     * @param locker  the transaction key
+     * @return the Outcome object
+     * @throws ObjectNotFoundException object was not found
+     */
+    public Outcome getOutcome(Event event, Object locker) throws ObjectNotFoundException {
+        return getOutcome(event.getSchemaName(), event.getSchemaVersion(), event.getID(), locker);
+    }
+
+    /**
      * Check if the given OutcomeAttachment exists
      *
      * @param schema the Schema used to create the Outcome and its OutcomeAttachment
