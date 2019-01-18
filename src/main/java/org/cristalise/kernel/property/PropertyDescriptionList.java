@@ -30,8 +30,12 @@ import org.cristalise.kernel.collection.CollectionArrayList;
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.CastorArrayList;
 import org.cristalise.kernel.utils.DescriptionObject;
+import org.cristalise.kernel.utils.FileStringUtility;
+import org.cristalise.kernel.utils.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -47,22 +51,20 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
         super();
     }
 
-    public PropertyDescriptionList(String name, Integer version, ItemPath itemPath) {
+    public PropertyDescriptionList(String name, Integer version) {
         super();
         this.name = name;
         this.version = version;
-        this.itemPath = itemPath;
     }
 
     public PropertyDescriptionList(ArrayList<PropertyDescription> aList) {
         super(aList);
     }
 
-    public PropertyDescriptionList(String name, Integer version, ItemPath itemPath, ArrayList<PropertyDescription> aList) {
+    public PropertyDescriptionList(String name, Integer version, ArrayList<PropertyDescription> aList) {
         super(aList);
         this.name = name;
         this.version = version;
-        this.itemPath = itemPath;
     }
 
     public String getClassProps() {
@@ -147,12 +149,41 @@ public class PropertyDescriptionList extends CastorArrayList<PropertyDescription
 
     @Override
     public CollectionArrayList makeDescCollections() throws InvalidDataException, ObjectNotFoundException {
-        // TODO Auto-generated method stub
-        return null;
+        return new CollectionArrayList();
     }
 
     @Override
     public void export(Writer imports, File dir, boolean shallow) throws InvalidDataException, ObjectNotFoundException, IOException {
-        // TODO Auto-generated method stub
+        String xml;
+        String typeCode = BuiltInResources.PROPERTY_DESC_RESOURCE.getTypeCode();
+        String fileName = getName() + (getVersion() == null ? "" : "_" + getVersion()) + ".xml";
+
+        try {
+            xml = Gateway.getMarshaller().marshall(this);
+        }
+        catch (Exception e) {
+            Logger.error(e);
+            throw new InvalidDataException("Couldn't marshall PropertyDescriptionList name:" + getName());
+        }
+
+        FileStringUtility.string2File(new File(new File(dir, typeCode), fileName), xml);
+
+        if (imports == null) return;
+
+        if (Gateway.getProperties().getBoolean("Resource.useOldImportFormat", false)) {
+            imports.write("<Resource "
+                    + "name='" + getName() + "' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "' ")
+                    + "type='" + typeCode + "'>boot/" + typeCode + "/" + fileName
+                    + "</Resource>\n");
+        }
+        else {
+            imports.write("<PropertyDescriptionResource "
+                    + "name='" + getName() + "' "
+                    + (getItemPath() == null ? "" : "id='"      + getItemID()  + "' ")
+                    + (getVersion()  == null ? "" : "version='" + getVersion() + "'")
+                    + "/>\n");
+        }
     }
 }

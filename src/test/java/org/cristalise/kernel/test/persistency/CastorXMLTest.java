@@ -26,6 +26,8 @@ import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.STATE_MA
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
+import static org.unitils.reflectionassert.ReflectionComparatorMode.LENIENT_ORDER;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -43,6 +45,8 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.lookup.RolePath;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.property.PropertyDescription;
+import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.ErrorInfo;
 import org.cristalise.kernel.test.process.MainTest;
@@ -235,5 +239,18 @@ public class CastorXMLTest {
 
         Logger.msg(marshaller.marshall(edge));
         Logger.msg(marshaller.marshall(edgePrime));
+    }
+
+    @Test
+    public void testPropertyDescriptionList() throws Exception {
+        CastorXMLUtility marshaller = Gateway.getMarshaller();
+
+        PropertyDescriptionList pdl = new PropertyDescriptionList();
+        pdl.list.add(new PropertyDescription("Name", "", false, true, false));
+        pdl.list.add(new PropertyDescription("Type", "Item", true, false, true));
+
+        PropertyDescriptionList pdlPrime = (PropertyDescriptionList) marshaller.unmarshall(marshaller.marshall(pdl));
+
+        assertReflectionEquals(pdl, pdlPrime, LENIENT_ORDER);
     }
 }

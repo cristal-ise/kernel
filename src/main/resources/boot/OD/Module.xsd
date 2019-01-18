@@ -85,6 +85,7 @@
                             <xs:element name="ScriptResource" type="resource" minOccurs="0" />
                             <xs:element name="QueryResource" type="resource" minOccurs="0" />
                             <xs:element name="StateMachineResource" type="resource" minOccurs="0" />
+                            <xs:element name="PropertyDescriptionResource" type="resource" minOccurs="0" />
                             <xs:element name="Activity" type="activity" minOccurs="0" />
                             <xs:element name="Workflow" minOccurs="0">
                                 <xs:complexType>
@@ -129,8 +130,7 @@
                                                 </xs:sequence>
                                                 <xs:attribute name="name" type="xs:string" use="required" />
                                                 <xs:attribute name="version" type="xs:integer" use="optional" />
-                                                <xs:attribute name="isDescription" type="xs:boolean" use="optional"
-                                                              default="false" />
+                                                <xs:attribute name="isDescription" type="xs:boolean" use="optional" default="false" />
                                                 <xs:attribute name="itemDescriptionPath" type="xs:string" use="optional" />
                                                 <xs:attribute name="itemDescriptionVersion" type="xs:string" use="optional" />
                                             </xs:complexType>
