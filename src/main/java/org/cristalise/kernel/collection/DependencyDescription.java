@@ -27,6 +27,7 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.property.PropertyUtility;
 import org.cristalise.kernel.utils.CastorHashMap;
+import org.cristalise.kernel.utils.Logger;
 
 public class DependencyDescription extends Dependency implements CollectionDescription<DependencyMember> {
 
@@ -54,15 +55,21 @@ public class DependencyDescription extends Dependency implements CollectionDescr
         if (mMembers.list.size() == 1) {
             DependencyMember mem = mMembers.list.get(0);
             String descVer = getDescVer(mem);
+
             PropertyDescriptionList pdList = PropertyUtility.getPropertyDescriptionOutcome(mem.getItemPath(), descVer, null);
 
             if (pdList != null) {
                 newDep.setProperties(PropertyUtility.convertTransitiveProperties(pdList));
                 newDep.setClassProps(pdList.getClassProps());
             }
+            else
+                Logger.warning("DependencyDescription.newInstance("+getName()+") - No PropertyDesc was found. Dependency cannot check member type.");
 
             if (mProperties != null) newDep.getProperties().merge(mProperties);
         }
+        else
+            Logger.warning("DependencyDescription.newInstance("+getName()+") - No PropertyDesc was found. Dependency cannot check member type.");
+
         return newDep;
     }
 
@@ -83,5 +90,4 @@ public class DependencyDescription extends Dependency implements CollectionDescr
         if (mMembers.list.size() > 0)
             throw new InvalidCollectionModification("Dependency descriptions may not have more than one member.");
     }
-
 }

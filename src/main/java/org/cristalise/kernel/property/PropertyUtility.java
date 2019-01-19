@@ -20,6 +20,10 @@
  */
 package org.cristalise.kernel.property;
 
+import static org.cristalise.kernel.process.resource.BuiltInResources.PROPERTY_DESC_RESOURCE;
+import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
+import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -29,7 +33,9 @@ import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
+import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.CastorHashMap;
+import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
 
 public class PropertyUtility {
@@ -50,6 +56,10 @@ public class PropertyUtility {
             Logger.error(e);
         }
         return false;
+    }
+
+    public static Property getProperty(ItemPath itemPath, BuiltInItemProperties prop, Object locker) throws ObjectNotFoundException {
+        return getProperty(itemPath, prop.getName(), locker);
     }
 
     public static Property getProperty(ItemPath itemPath, String propName, Object locker) throws ObjectNotFoundException {
@@ -85,8 +95,14 @@ public class PropertyUtility {
 
     static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException {
         try {
-            Outcome outc = (Outcome) Gateway.getStorage().get(itemPath,ClusterType.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
-            return (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(outc.getData());
+            if (getProperty(itemPath, TYPE, locker).getValue().equals(PROPERTY_DESC_RESOURCE.getSchemaName())) {
+                String name = getProperty(itemPath, NAME, locker).getValue();
+                return LocalObjectLoader.getPropertyDescriptionList(name, Integer.parseInt(descVer));
+            }
+            else  {
+                Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterType.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
+                return (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(outc.getData());
+            }
         }
         catch (Exception ex) {
             Logger.error(ex);
