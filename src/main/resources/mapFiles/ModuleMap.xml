@@ -142,6 +142,18 @@
             <bind-xml node="text" />
         </field>
     </class>
+    <class name="org.cristalise.kernel.process.module.ModulePropertyDescription">
+        <map-to xml="PropertyDescriptionResource" />
+        <field name="name" direct="false" type="string">
+            <bind-xml name="name" node="attribute" />
+        </field>
+        <field name="version" direct="false" type="integer">
+            <bind-xml name="version" node="attribute" />
+        </field>
+        <field name="resourceLocation" direct="false" type="string">
+            <bind-xml node="text" />
+        </field>
+    </class>
     <class name="org.cristalise.kernel.process.module.ModuleActivity">
         <map-to xml="Activity" />
         <field name="name" direct="false" type="string">

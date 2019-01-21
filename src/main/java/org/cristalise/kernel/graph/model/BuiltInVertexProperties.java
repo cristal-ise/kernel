@@ -144,6 +144,20 @@ public enum BuiltInVertexProperties {
     OUTCOME_INIT("OutcomeInit"),
 
     /**
+     * String property. It contains either the name or the UUID of the PropertyDescription Item.
+     *
+     * Can be null or undefined.
+     */
+    PROPERTY_DEF_NAME("PropertyDefName"),
+    
+    /**
+     * Integer property. It contains the version number of PropertyDescription Item.
+     *
+     * Can be null or undefined.
+     */
+    PROPERTY_DEF_VERSION("PropertyDefVersion"),
+
+    /**
      * Boolean property. Enables the Loop Transition of the CompositeActivity StateMachine
      */
     REPEAT_WHEN("RepeatWhen"),

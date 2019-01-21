@@ -20,6 +20,8 @@
  */
 package org.cristalise.kernel.utils;
 
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.PROPERTY_DEF_NAME;
+import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.PROPERTY_DEF_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_NAME;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.QUERY_VERSION;
 import static org.cristalise.kernel.graph.model.BuiltInVertexProperties.SCHEMA_NAME;
@@ -39,18 +41,20 @@ import org.cristalise.kernel.lifecycle.CompositeActivityDef;
 import org.cristalise.kernel.lifecycle.instance.stateMachine.StateMachine;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.outcome.Schema;
+import org.cristalise.kernel.property.PropertyDescriptionList;
 import org.cristalise.kernel.querying.Query;
 import org.cristalise.kernel.scripting.Script;
 
 
 public class LocalObjectLoader {
-    private static ActDefCache actCache     = new ActDefCache(null);
-    private static ActDefCache compActCache = new ActDefCache(true);
-    private static ActDefCache elemActCache = new ActDefCache(false);
-    private static StateMachineCache smCache = new StateMachineCache();
-    private static SchemaCache schCache = new SchemaCache();
-    private static ScriptCache scrCache = new ScriptCache();
-    private static QueryCache queryCache = new QueryCache();
+    private static ActDefCache              actCache      = new ActDefCache(null);
+    private static ActDefCache              compActCache  = new ActDefCache(true);
+    private static ActDefCache              elemActCache  = new ActDefCache(false);
+    private static StateMachineCache        smCache       = new StateMachineCache();
+    private static SchemaCache              schCache      = new SchemaCache();
+    private static ScriptCache              scrCache      = new ScriptCache();
+    private static QueryCache               queryCache    = new QueryCache();
+    private static PropertyDescriptionCache propDescCache = new PropertyDescriptionCache();
 
     /**
      * Retrieves a named version of a script from the database
@@ -187,8 +191,39 @@ public class LocalObjectLoader {
         return smCache.get(smName, smVersion);
     }
 
+    /**
+     * 
+     * @param properties
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
     static public StateMachine getStateMachine(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
         return (StateMachine)getDescObjectByProperty(properties, STATE_MACHINE_NAME, STATE_MACHINE_VERSION);
+    }
+
+    /**
+     * 
+     * @param name
+     * @param version
+     * @return
+     * @throws ObjectNotFoundException
+     * @throws InvalidDataException
+     */
+    static public PropertyDescriptionList getPropertyDescriptionList(String name, int version) throws ObjectNotFoundException, InvalidDataException {
+        Logger.msg(5, "LocalObjectLoader.PropertyDescriptionList("+name+" v"+version+")");
+        return propDescCache.get(name, version);
+    }
+
+    /**
+     * 
+     * @param properties
+     * @return
+     * @throws InvalidDataException
+     * @throws ObjectNotFoundException
+     */
+    static public PropertyDescriptionList getPropertyDescriptionList(CastorHashMap properties) throws InvalidDataException, ObjectNotFoundException {
+        return (PropertyDescriptionList)getDescObjectByProperty(properties, PROPERTY_DEF_NAME, PROPERTY_DEF_VERSION);
     }
 
     /**
