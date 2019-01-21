@@ -151,7 +151,7 @@ public enum BuiltInVertexProperties {
     PROPERTY_DEF_NAME("PropertyDefName"),
     
     /**
-     * Ibteger property. It contains the version number of PropertyDescription Item.
+     * Integer property. It contains the version number of PropertyDescription Item.
      *
      * Can be null or undefined.
      */
