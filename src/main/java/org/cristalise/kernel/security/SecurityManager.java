@@ -41,11 +41,13 @@ import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.auth.Authenticator;
 import org.cristalise.kernel.property.BuiltInItemProperties;
 import org.cristalise.kernel.utils.Logger;
-
 import lombok.Getter;
 
 public class SecurityManager {
     
+    private static final String securityMsgBegin = "[errorMessage]";
+    private static final String securityMsgEnd   = "[/errorMessage]";
+
     @Getter
     private Authenticator auth = null;
     @Getter
@@ -137,12 +139,33 @@ public class SecurityManager {
     }
 
     /**
+     * Reads the message from the exception that can be show to the user.
+     * 
+     * @param ex the exception to be processed
+     * @return returns the message or null if nothing was found
+     */
+    public static String decodePublicSecurityMessage(Exception ex) {
+        return StringUtils.substringBetween(ex.getMessage(), securityMsgBegin, securityMsgEnd);
+    }
+
+    /**
+     * Wraps the massage with specific tokens indicating the the exception has a message to the user.
+     * 
+     * @param msg the message to be wrapped
+     * @return the wrapped message
+     */
+    public static String encodePublicSecurityMessage(String msg) {
+        return securityMsgBegin + msg + securityMsgEnd;
+    }
+
+    
+    /**
      * 
      * @param agentName
      * @param agentPassword
      * @return
      */
-    public boolean shiroAuthenticate(String agentName, String agentPassword) {
+    public boolean shiroAuthenticate(String agentName, String agentPassword) throws InvalidDataException {
         Subject agentSubject = getSubject(agentName);
 
         if ( !agentSubject.isAuthenticated() ) {
@@ -155,10 +178,18 @@ public class SecurityManager {
                 return true;
             }
             catch (Exception ex) {
-                //NOTE: Enable this log for testing security problems only, but always remove it when merged
-                //Logger.error(ex);
+              //NOTE: Enable this log for testing security problems only, but always remove it when merged
+              //Logger.error(ex);
+
+              String publicMsg = decodePublicSecurityMessage(ex);
+
+              if (StringUtils.isNotBlank(publicMsg)) {
+                Logger.msg(5, "SecurityManager.shiroAuthenticate() - Failed with public message:%s", publicMsg);
+                throw new InvalidDataException(encodePublicSecurityMessage(publicMsg));
+              }
             }
         }
+
         return false;
     }
 
