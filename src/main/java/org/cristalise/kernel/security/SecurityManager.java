@@ -144,8 +144,14 @@ public class SecurityManager {
      * @param ex the exception to be processed
      * @return returns the message or null if nothing was found
      */
-    public static String decodePublicSecurityMessage(Exception ex) {
-        return StringUtils.substringBetween(ex.getMessage(), securityMsgBegin, securityMsgEnd);
+    public static String decodePublicSecurityMessage(Throwable ex) {
+        String msg = StringUtils.substringBetween(ex.getMessage(), securityMsgBegin, securityMsgEnd);
+
+        if (StringUtils.isBlank(msg) && ex.getCause() != null) {
+            return decodePublicSecurityMessage(ex.getCause());
+        }
+
+        return msg;
     }
 
     /**
@@ -179,7 +185,7 @@ public class SecurityManager {
             }
             catch (Exception ex) {
               //NOTE: Enable this log for testing security problems only, but always remove it when merged
-              //Logger.error(ex);
+              Logger.error(ex);
 
               String publicMsg = decodePublicSecurityMessage(ex);
 
