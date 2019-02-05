@@ -20,20 +20,19 @@
  */
 package org.cristalise.kernel.property;
 
+import static org.cristalise.kernel.persistency.ClusterType.VIEWPOINT;
 import static org.cristalise.kernel.process.resource.BuiltInResources.PROPERTY_DESC_RESOURCE;
 import static org.cristalise.kernel.property.BuiltInItemProperties.NAME;
 import static org.cristalise.kernel.property.BuiltInItemProperties.TYPE;
-
 import java.util.ArrayList;
 import java.util.Iterator;
-
+import org.apache.commons.lang3.StringUtils;
 import org.cristalise.kernel.common.ObjectNotFoundException;
 import org.cristalise.kernel.common.PersistencyException;
 import org.cristalise.kernel.lookup.ItemPath;
 import org.cristalise.kernel.persistency.ClusterType;
 import org.cristalise.kernel.persistency.outcome.Outcome;
 import org.cristalise.kernel.process.Gateway;
-import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.utils.CastorHashMap;
 import org.cristalise.kernel.utils.LocalObjectLoader;
 import org.cristalise.kernel.utils.Logger;
@@ -99,25 +98,47 @@ public class PropertyUtility {
             if (getProperty(itemPath, TYPE, locker).getValue().equals(PROPERTY_DESC_RESOURCE.getSchemaName())) {
                 String name = getProperty(itemPath, NAME, locker).getValue();
 
-                int version = 0;
-
-                if ("last".equals(descVer)) {
-                  //String[] versions = Gateway.getStorage().getClusterContents(itemPath, "", locker);
-                }
-                else 
-                  version = Integer.parseInt(descVer);
+                int version = getVersionID(itemPath, descVer, PROPERTY_DESC_RESOURCE.getSchemaName(), locker);
 
                 return LocalObjectLoader.getPropertyDescriptionList(name, version);
             }
             else  {
-                Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterType.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
+                Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
                 return (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(outc.getData());
             }
         }
         catch (Exception ex) {
             Logger.error(ex);
-            throw new ObjectNotFoundException("Could not fetch PropertyDescription from " + itemPath);
+            throw new ObjectNotFoundException("Could not fetch PropertyDescription from '"+itemPath+"' error:"+ex.getMessage());
         }
+    }
+
+    private static int getVersionID(ItemPath itemPath, String descVer, String schema, Object locker)
+        throws PersistencyException, ObjectNotFoundException
+    {
+        int version = 0;
+
+        //find the 'last' version
+        if ("last".equals(descVer)) {
+            String[] views = Gateway.getStorage().getClusterContents(itemPath, VIEWPOINT+"/"+schema, locker);
+            version = -1;
+
+            for (int i = 0; i < views.length; i ++) {
+                if (StringUtils.isNumeric(views[i])) {
+                    int aVersion = Integer.parseInt(views[i]);
+                    if (version < aVersion) version = aVersion;
+                }
+            }
+
+            if (version == -1)
+                throw new ObjectNotFoundException(String.format("itemPath:%s schema:%s does not have any version", itemPath, schema));
+        }
+        else {
+            if (StringUtils.isNumeric(descVer)) version = Integer.parseInt(descVer);
+            else throw new ObjectNotFoundException("descVer:'"+descVer+"' must be 'last' or positive integer");
+        }
+
+        return version;
     }
 
     /**
