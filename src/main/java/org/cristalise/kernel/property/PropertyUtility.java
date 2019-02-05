@@ -95,9 +95,19 @@ public class PropertyUtility {
 
     static public PropertyDescriptionList getPropertyDescriptionOutcome(ItemPath itemPath, String descVer, Object locker) throws ObjectNotFoundException {
         try {
+            //the type of the Item is a PropertyDesc
             if (getProperty(itemPath, TYPE, locker).getValue().equals(PROPERTY_DESC_RESOURCE.getSchemaName())) {
                 String name = getProperty(itemPath, NAME, locker).getValue();
-                return LocalObjectLoader.getPropertyDescriptionList(name, Integer.parseInt(descVer));
+
+                int version = 0;
+
+                if ("last".equals(descVer)) {
+                  //String[] versions = Gateway.getStorage().getClusterContents(itemPath, "", locker);
+                }
+                else 
+                  version = Integer.parseInt(descVer);
+
+                return LocalObjectLoader.getPropertyDescriptionList(name, version);
             }
             else  {
                 Outcome outc = (Outcome) Gateway.getStorage().get(itemPath, ClusterType.VIEWPOINT+"/PropertyDescription/"+descVer+"/data", locker);
