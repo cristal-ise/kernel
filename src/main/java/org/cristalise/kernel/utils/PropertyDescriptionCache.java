@@ -25,6 +25,7 @@ package org.cristalise.kernel.utils;
 
 import org.cristalise.kernel.common.InvalidDataException;
 import org.cristalise.kernel.lookup.ItemPath;
+import org.cristalise.kernel.process.Gateway;
 import org.cristalise.kernel.process.resource.BuiltInResources;
 import org.cristalise.kernel.property.PropertyDescriptionList;
 
@@ -43,7 +44,10 @@ public class PropertyDescriptionCache extends DescriptionObjectCache<PropertyDes
     @Override
     public PropertyDescriptionList buildObject(String name, int version, ItemPath path, String data) throws InvalidDataException {
         try {
-            PropertyDescriptionList pdl = new PropertyDescriptionList();
+            PropertyDescriptionList pdl = (PropertyDescriptionList) Gateway.getMarshaller().unmarshall(data);
+            pdl.setName(name);
+            pdl.setVersion(version);
+            pdl.setItemPath(path);
             return pdl;
         }
         catch (Exception ex) {
