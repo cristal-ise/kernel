@@ -254,6 +254,7 @@ public class LocalObjectLoader {
                 case SCRIPT_NAME:        return getScript(resName, resVer);
                 case QUERY_NAME :        return getQuery(resName, resVer);
                 case STATE_MACHINE_NAME: return getStateMachine(resName, resVer);
+                case PROPERTY_DEF_NAME:  return getPropertyDescriptionList(resName, resVer);
                 default:
                     throw new InvalidDataException("LocalObjectLoader CANNOT handle BuiltInVertexPropertie:"+nameProp);
             }
