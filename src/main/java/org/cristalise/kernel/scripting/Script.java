@@ -507,6 +507,17 @@ public class Script implements DescriptionObject {
     }
 
     /**
+     * Use this when a Script is executed without an Item or Transaction context
+     * 
+     * @param inputProps the inputs of the script
+     * @return the result of the execution
+     * @throws ScriptingEngineException something went wrong during the execution
+     */
+    public Object evaluate(CastorHashMap inputProps) throws ScriptingEngineException {
+       return evaluate(null, inputProps, null, false, null);
+    }
+
+    /**
      * 
      * @param itemPath
      * @param inputProps
@@ -523,7 +534,7 @@ public class Script implements DescriptionObject {
      * Reads and evaluates input properties, set input parameters from those properties and executes the Script
      * 
      * @param itemPath the Item context
-     * @param inputProps imput properties
+     * @param inputProps input properties
      * @param actContext activity path
      * @param locker transaction locker
      * @return the values returned by the Script
@@ -532,7 +543,8 @@ public class Script implements DescriptionObject {
             throws ScriptingEngineException
     {
         try {
-            ItemProxy item = Gateway.getProxyManager().getProxy(itemPath);
+            //it is possible to execute a script outside of the context of an Item
+            ItemProxy item = itemPath == null ? null : Gateway.getProxyManager().getProxy(itemPath);
 
             if (actExecEnv) setActExecEnvironment(item, (AgentProxy)inputProps.get("agent"), (Job)inputProps.get("job"));
 
@@ -542,7 +554,8 @@ public class Script implements DescriptionObject {
                 }
             }
 
-            item.setTransactionKey(locker);
+            //server side scripts are always executed with an Item context
+            if (item != null) item.setTransactionKey(locker);
 
             if (getAllInputParams().containsKey("item") && getAllInputParams().get("item") != null) {
                 setInputParamValue("item", item);

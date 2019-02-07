@@ -120,7 +120,9 @@ public class CastorHashMap extends HashMap<String, Object> {
     }
 
     public Object evaluateProperty(ItemPath itemPath, String propName, String actContext, Object locker) throws InvalidDataException, PersistencyException, ObjectNotFoundException {
-        return DataHelperUtility.evaluateValue(itemPath, get(propName), actContext, locker);
+        //DataHelper can only be used when ItemPath is not null
+        if (itemPath != null) return DataHelperUtility.evaluateValue(itemPath, get(propName), actContext, locker);
+        else                  return get(propName);
     }
 
     /**
